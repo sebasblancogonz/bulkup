@@ -11,5 +11,5 @@ import SwiftData
 // MARK: - Vista de Preview
 #Preview {
     ContentView()
-        .modelContainer(ModelContainer.dietAppContainer)
+        .modelContainer(ModelContainer.bulkUpContainer)
 }

@@ -100,17 +100,62 @@ class APIService: ObservableObject {
     
     // MARK: - Método para requests con cuerpo JSON
     func requestWithBody<T: Codable, U: Codable>(
-        endpoint: String,
-        method: HTTPMethod,
-        body: U
-    ) async throws -> T {
-        
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        let jsonData = try encoder.encode(body)
-        
-        return try await request(endpoint: endpoint, method: method, body: jsonData)
-    }
+            endpoint: String,
+            method: HTTPMethod,
+            body: U
+        ) async throws -> T {
+            
+            guard let url = URL(string: "\(APIConfig.baseURL)/\(endpoint)") else {
+                throw APIError.invalidURL
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = method.rawValue
+            
+            // Headers
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+            
+            // Encode body
+            let encoder = JSONEncoder()
+            request.httpBody = try encoder.encode(body)
+            
+            do {
+                let (data, response) = try await session.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    throw APIError.networkError("Respuesta inválida")
+                }
+                
+                switch httpResponse.statusCode {
+                case 200...299:
+                    break
+                case 401:
+                    throw APIError.unauthorized
+                default:
+                    throw APIError.serverError(httpResponse.statusCode)
+                }
+                
+                // Debug: Imprimir respuesta
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("API Response: \(jsonString)")
+                }
+                
+                let decoder = JSONDecoder()
+                return try decoder.decode(T.self, from: data)
+                
+            } catch {
+                if error is APIError {
+                    throw error
+                } else if error is DecodingError {
+                    print("Decoding error: \(error)")
+                    throw APIError.decodingError
+                } else {
+                    print("Network error: \(error)")
+                    throw APIError.networkError(error.localizedDescription)
+                }
+            }
+        }
     
     // MARK: - Obtener token de autenticación (implementar según tu sistema)
     private func getAuthToken() async -> String? {

@@ -36,6 +36,9 @@ struct LoadDietPlanResponse: Codable {
     let success: Bool
     let dietData: [ServerDietDay]?
     let planId: String?
+    let filename: String?
+    let createdAt: String?
+    let updatedAt: String?
 }
 
 struct LoadDietPlanOuterResponse: Codable {
@@ -87,6 +90,101 @@ struct ServerSupplement: Codable {
     let notes: String?
 }
 
+struct LoadTrainingPlanOuterResponse: Codable {
+    let success: Bool
+    let data: LoadTrainingPlanResponse
+}
+
+struct LoadTrainingPlanResponse: Codable {
+    let success: Bool
+    let trainingData: [ServerTrainingDay]?
+    let planId: String?
+    let filename: String?
+    let createdAt: String?
+    let updatedAt: String?
+}
+
+struct ServerTrainingDay: Codable {
+    let day: String
+    let workoutName: String?
+    let output: [ServerExercise]
+    
+    enum CodingKeys: String, CodingKey {
+        case day
+        case workoutName = "workout_name"
+        case output
+    }
+}
+
+struct ServerExercise: Codable {
+    let name: String
+    let sets: Int
+    let reps: String  // Mantener como String
+    let restSeconds: Int
+    let notes: String?
+    let tempo: String?
+    let weightTracking: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case name, sets, notes, tempo
+        case restSeconds = "rest_seconds"
+        case weightTracking = "weight_tracking"
+        case reps
+    }
+    
+    // ✅ ARREGLO: Custom decoding para manejar reps como Int o String
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        name = try container.decode(String.self, forKey: .name)
+        sets = try container.decode(Int.self, forKey: .sets)
+        restSeconds = try container.decode(Int.self, forKey: .restSeconds)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+        tempo = try container.decodeIfPresent(String.self, forKey: .tempo)
+        weightTracking = try container.decode(Bool.self, forKey: .weightTracking)
+        
+        // ✅ Manejar reps como Int o String
+        if let repsInt = try? container.decode(Int.self, forKey: .reps) {
+            reps = String(repsInt)
+        } else {
+            reps = try container.decode(String.self, forKey: .reps)
+        }
+    }
+    
+    // ✅ Custom encoding (en caso de que necesites enviar datos de vuelta)
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(name, forKey: .name)
+        try container.encode(sets, forKey: .sets)
+        try container.encode(restSeconds, forKey: .restSeconds)
+        try container.encodeIfPresent(notes, forKey: .notes)
+        try container.encodeIfPresent(tempo, forKey: .tempo)
+        try container.encode(weightTracking, forKey: .weightTracking)
+        try container.encode(reps, forKey: .reps)
+    }
+}
+
+struct SaveWeightsRequest: Codable {
+    let userId: String
+    let planId: String
+    let weightRecord: WeightRecordRequest
+    let weekStart: String
+}
+
+struct WeightRecordRequest: Codable {
+    let day: String
+    let exerciseName: String
+    let exerciseIndex: Int
+    let sets: [ServerWeightSet]
+    let note: String
+}
+
+struct ServerWeightSet: Codable {
+    let weight: Double
+    let reps: Int
+}
+
 struct APIResponse<T: Codable>: Codable {
     let success: Bool
     let data: T?
@@ -119,3 +217,6 @@ enum APIError: Error, LocalizedError {
         }
     }
 }
+
+struct EmptyResponse: Codable {}
+

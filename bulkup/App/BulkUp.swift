@@ -9,10 +9,13 @@ import SwiftData
 
 @main
 struct BulkUp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
+        @StateObject private var authManager = AuthManager(modelContext: ModelContainer.bulkUpContainer.mainContext)
+        var body: some Scene {
+            WindowGroup {
+                MainAppView(modelContext: ModelContainer.bulkUpContainer.mainContext)
+                    .environmentObject(authManager)
+            }
+            .modelContainer(ModelContainer.bulkUpContainer)
         }
-        .modelContainer(ModelContainer.dietAppContainer)
-    }
 }
+

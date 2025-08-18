@@ -60,6 +60,8 @@ class AuthManager: ObservableObject {
         
         self.user = newUser
         self.isAuthenticated = true
+        
+        NotificationCenter.default.post(name: .userDidLogin, object: newUser)
     }
     
     func register(email: String, password: String, name: String) async throws {
@@ -80,6 +82,8 @@ class AuthManager: ObservableObject {
         
         self.user = newUser
         self.isAuthenticated = true
+        
+        NotificationCenter.default.post(name: .userDidLogin, object: newUser)
     }
     
     func logout() {

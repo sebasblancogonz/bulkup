@@ -10,7 +10,7 @@ import SwiftData
 
 // MARK: - Configuración del ModelContainer
 extension ModelContainer {
-    static let dietAppContainer: ModelContainer = {
+    static let bulkUpContainer: ModelContainer = {
         let schema = Schema([
             DietDay.self,
             User.self,
@@ -18,13 +18,17 @@ extension ModelContainer {
             MealOption.self,
             MealConditions.self,
             ConditionalMeal.self,
-            Supplement.self
+            Supplement.self,
+            TrainingDay.self,
+            Exercise.self,
+            WeightRecord.self,
+            WeightSet.self
         ])
         
         let modelConfiguration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false,
-            cloudKitDatabase: .none // No usar CloudKit
+            cloudKitDatabase: .none
         )
         
         do {

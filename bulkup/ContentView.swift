@@ -15,7 +15,7 @@ struct ContentView: View {
     
     init() {
         // Use a placeholder, will be replaced in .onAppear
-        self._authManager = StateObject(wrappedValue: AuthManager(modelContext: ModelContainer.dietAppContainer.mainContext))
+        self._authManager = StateObject(wrappedValue: AuthManager(modelContext: ModelContainer.bulkUpContainer.mainContext))
     }
     
     var body: some View {
@@ -41,5 +41,5 @@ struct ContentView: View {
 // MARK: - Vista de Preview
 #Preview {
     ContentView()
-        .modelContainer(ModelContainer.dietAppContainer)
+        .modelContainer(ModelContainer.bulkUpContainer)
 }
