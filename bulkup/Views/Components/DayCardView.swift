@@ -1,3 +1,14 @@
+//
+//  DayCardView.swift
+//  bulkup
+//
+//  Created by sebastian.blanco on 17/8/25.
+//
+
+import SwiftUI
+import SwiftData
+
+
 struct DayCardView: View {
     let day: DietDay
     let dayIndex: Int

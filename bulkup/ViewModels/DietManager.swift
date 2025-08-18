@@ -1,3 +1,14 @@
+//
+//  DietManager.swift
+//  bulkup
+//
+//  Created by sebastian.blanco on 17/8/25.
+//
+
+import Foundation
+import SwiftData
+
+
 @MainActor
 class DietManager: ObservableObject {
     @Published var dietData: [DietDay] = []
@@ -5,7 +16,7 @@ class DietManager: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private let modelContext: ModelContext
+    public var modelContext: ModelContext // <-- Make public for external access
     private let apiService = APIService.shared
     
     init(modelContext: ModelContext) {
@@ -13,10 +24,8 @@ class DietManager: ObservableObject {
         loadLocalDietData()
     }
     
-    private func loadLocalDietData() {
-        let descriptor = FetchDescriptor<DietDay>(
-            sortBy: [SortDescriptor(\.day)]
-        )
+    public func loadLocalDietData() {
+        let descriptor = FetchDescriptor<DietDay>() // Remove sortBy to preserve API order
         
         do {
             dietData = try modelContext.fetch(descriptor)
@@ -83,27 +92,22 @@ class DietManager: ObservableObject {
         return serverData.map { serverDay in
             let localDay = DietDay(day: serverDay.day)
             
-            localDay.meals = serverDay.meals.map { serverMeal in
+            localDay.meals = serverDay.meals.enumerated().map { (idx, serverMeal) in
                 let localMeal = Meal(
                     type: serverMeal.type,
                     time: serverMeal.time,
                     date: serverMeal.date,
-                    notes: serverMeal.notes
+                    notes: serverMeal.notes,
+                    order: idx // <-- Set order from API index
                 )
                 
                 if let serverOptions = serverMeal.options {
-                    localMeal.options = serverOptions.compactMap { option in
-                        if let optionDict = option as? [String: Any],
-                           let description = optionDict["description"] as? String {
-                            let ingredients = optionDict["ingredients"] as? [String] ?? []
-                            let instructions = optionDict["instructions"] as? [String] ?? []
-                            return MealOption(
-                                description: description,
-                                ingredients: ingredients,
-                                instructions: instructions
-                            )
-                        }
-                        return nil
+                    localMeal.options = serverOptions.map { serverOption in
+                        MealOption(
+                            optionDescription: serverOption.description,
+                            ingredients: serverOption.ingredients, // Will be stored as string
+                            instructions: serverOption.instructions ?? [] // Will be stored as string
+                        )
                     }
                 }
                 
@@ -113,14 +117,14 @@ class DietManager: ObservableObject {
                     
                     if let trainingDays = serverConditions.trainingDays {
                         localConditions.trainingDays = ConditionalMeal(
-                            description: trainingDays.description,
+                            mealDescription: trainingDays.description,
                             ingredients: trainingDays.ingredients
                         )
                     }
                     
                     if let nonTrainingDays = serverConditions.nonTrainingDays {
                         localConditions.nonTrainingDays = ConditionalMeal(
-                            description: nonTrainingDays.description,
+                            mealDescription: nonTrainingDays.description,
                             ingredients: nonTrainingDays.ingredients
                         )
                     }

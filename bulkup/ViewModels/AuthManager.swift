@@ -1,10 +1,19 @@
+//
+//  AuthManager.swift
+//  bulkup
+//
+//  Created by sebastian.blanco on 17/8/25.
+//
+import Foundation
+import SwiftData
+
 @MainActor
 class AuthManager: ObservableObject {
     @Published var user: User?
     @Published var isAuthenticated = false
     @Published var isLoading = false
     
-    private let modelContext: ModelContext
+    public var modelContext: ModelContext // <-- Make public for external access
     private let apiService = APIService.shared
     
     init(modelContext: ModelContext) {
@@ -12,7 +21,7 @@ class AuthManager: ObservableObject {
         loadStoredUser()
     }
     
-    private func loadStoredUser() {
+    public func loadStoredUser() {
         let descriptor = FetchDescriptor<User>()
         do {
             let users = try modelContext.fetch(descriptor)

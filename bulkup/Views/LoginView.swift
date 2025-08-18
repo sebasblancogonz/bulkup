@@ -5,18 +5,19 @@
 //  Created by sebastian.blanco on 17/8/25.
 //
 
+import SwiftUI
+import SwiftData
 
 struct LoginView: View {
-    @StateObject private var authManager: AuthManager
+    @EnvironmentObject var authManager: AuthManager  // Changed from @StateObject
+    @Environment(\.modelContext) private var modelContext  // Add this if you need the context
     @State private var email = ""
     @State private var password = ""
     @State private var name = ""
     @State private var isRegistering = false
     @State private var errorMessage: String?
     
-    init(modelContext: ModelContext) {
-        self._authManager = StateObject(wrappedValue: AuthManager(modelContext: modelContext))
-    }
+    // Remove the init with modelContext parameter - no longer needed
     
     var body: some View {
         NavigationView {
@@ -91,7 +92,6 @@ struct LoginView: View {
             }
             .navigationBarHidden(true)
         }
-        .environmentObject(authManager)
     }
     
     private func handleAuthAction() {
@@ -104,6 +104,8 @@ struct LoginView: View {
                 } else {
                     try await authManager.login(email: email, password: password)
                 }
+                // The view will automatically switch because authManager.isAuthenticated
+                // is now true and ContentView is watching this same instance
             } catch {
                 errorMessage = error.localizedDescription
             }

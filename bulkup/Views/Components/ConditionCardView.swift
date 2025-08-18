@@ -5,6 +5,9 @@
 //  Created by sebastian.blanco on 17/8/25.
 //
 
+import SwiftUI
+import SwiftData
+
 
 struct ConditionCardView: View {
     let condition: ConditionalMeal

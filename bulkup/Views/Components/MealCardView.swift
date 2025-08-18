@@ -5,6 +5,8 @@
 //  Created by sebastian.blanco on 17/8/25.
 //
 
+import SwiftUI
+import SwiftData
 
 // MARK: - Componentes auxiliares
 struct MealCardView: View {

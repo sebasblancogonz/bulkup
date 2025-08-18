@@ -1,3 +1,14 @@
+//
+//  MealOptionView.swift
+//  bulkup
+//
+//  Created by sebastian.blanco on 17/8/25.
+//
+
+import SwiftUI
+import SwiftData
+
+
 struct MealOptionView: View {
     let option: MealOption
     let mealType: String
@@ -8,7 +19,8 @@ struct MealOptionView: View {
                 .font(.subheadline)
                 .fontWeight(.medium)
             
-            if !option.ingredients.isEmpty || !option.instructions.isEmpty {
+            let instructions = option.instructions
+            if !option.ingredients.isEmpty || !instructions.isEmpty {
                 HStack(alignment: .top, spacing: 16) {
                     // Ingredientes
                     if !option.ingredients.isEmpty {
@@ -36,7 +48,7 @@ struct MealOptionView: View {
                     }
                     
                     // Instrucciones
-                    if !option.instructions.isEmpty {
+                    if !instructions.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
                             Label("Preparación", systemImage: "arrow.right")
                                 .font(.caption)
@@ -44,7 +56,7 @@ struct MealOptionView: View {
                                 .foregroundColor(.primary)
                             
                             VStack(alignment: .leading, spacing: 4) {
-                                ForEach(option.instructions.indices, id: \.self) { index in
+                                ForEach(instructions.indices, id: \.self) { index in
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("\(index + 1)")
                                             .font(.caption)
@@ -54,7 +66,7 @@ struct MealOptionView: View {
                                             .background(Color.blue)
                                             .clipShape(Circle())
                                         
-                                        Text(option.instructions[index])
+                                        Text(instructions[index])
                                             .font(.caption)
                                             .foregroundColor(.primary)
                                     }
