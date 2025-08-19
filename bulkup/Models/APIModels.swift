@@ -5,11 +5,11 @@
 //  Created by sebastian.blanco on 17/8/25.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 struct APIConfig {
-    static let baseURL = "http://localhost:8080" // Cambia por tu URL
+    static let baseURL = "http://localhost:8080"  // Cambia por tu URL
     static let timeout: TimeInterval = 30.0
 }
 
@@ -59,18 +59,18 @@ struct ServerMeal: Codable {
     let notes: String?
     let options: [MealOptionData]?
     let conditions: ServerMealConditions?
-    
+
     struct MealOptionData: Codable {
         let description: String
         let ingredients: [String]
-        let instructions: [String]? // <-- Optional now
+        let instructions: [String]?  // <-- Optional now
     }
 }
 
 struct ServerMealConditions: Codable {
     let trainingDays: ServerConditionalMeal?
     let nonTrainingDays: ServerConditionalMeal?
-    
+
     enum CodingKeys: String, CodingKey {
         case trainingDays = "training_days"
         case nonTrainingDays = "non_training_days"
@@ -108,7 +108,7 @@ struct ServerTrainingDay: Codable {
     let day: String
     let workoutName: String?
     let output: [ServerExercise]
-    
+
     enum CodingKeys: String, CodingKey {
         case day
         case workoutName = "workout_name"
@@ -124,25 +124,28 @@ struct ServerExercise: Codable {
     let notes: String?
     let tempo: String?
     let weightTracking: Bool
-    
+
     enum CodingKeys: String, CodingKey {
         case name, sets, notes, tempo
         case restSeconds = "rest_seconds"
         case weightTracking = "weight_tracking"
         case reps
     }
-    
+
     // ✅ ARREGLO: Custom decoding para manejar reps como Int o String
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         name = try container.decode(String.self, forKey: .name)
         sets = try container.decode(Int.self, forKey: .sets)
         restSeconds = try container.decode(Int.self, forKey: .restSeconds)
         notes = try container.decodeIfPresent(String.self, forKey: .notes)
         tempo = try container.decodeIfPresent(String.self, forKey: .tempo)
-        weightTracking = try container.decode(Bool.self, forKey: .weightTracking)
-        
+        weightTracking = try container.decode(
+            Bool.self,
+            forKey: .weightTracking
+        )
+
         // ✅ Manejar reps como Int o String
         if let repsInt = try? container.decode(Int.self, forKey: .reps) {
             reps = String(repsInt)
@@ -150,11 +153,11 @@ struct ServerExercise: Codable {
             reps = try container.decode(String.self, forKey: .reps)
         }
     }
-    
+
     // ✅ Custom encoding (en caso de que necesites enviar datos de vuelta)
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
+
         try container.encode(name, forKey: .name)
         try container.encode(sets, forKey: .sets)
         try container.encode(restSeconds, forKey: .restSeconds)
@@ -199,7 +202,7 @@ enum APIError: Error, LocalizedError {
     case networkError(String)
     case serverError(Int)
     case unauthorized
-    
+
     var errorDescription: String? {
         switch self {
         case .invalidURL:
@@ -220,3 +223,26 @@ enum APIError: Error, LocalizedError {
 
 struct EmptyResponse: Codable {}
 
+struct LoadWeightsRequest: Codable {
+    let userId: String
+    let weekStart: String
+}
+
+struct LoadWeightsResponse: Codable {
+    let success: Bool?
+    let weights: [ServerWeightRecord]?
+}
+
+struct ServerWeightRecord: Codable {
+    let day: String
+    let exerciseName: String
+    let exerciseIndex: Int
+    let sets: [ServerWeightSet]?
+    let planId: String?
+    let note: String?
+}
+
+struct LoadWeightsOuterResponse: Codable {
+    let success: Bool
+    let data: LoadWeightsResponse
+}

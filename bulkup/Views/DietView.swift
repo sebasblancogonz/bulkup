@@ -10,8 +10,8 @@ import SwiftUI
 
 struct DietView: View {
     @EnvironmentObject var authManager: AuthManager
+    @EnvironmentObject var dietManager: DietManager
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var dietManager: DietManager
     @State private var viewMode: ViewMode = .day
     @State private var selectedDay = ""
     @State private var expandedDay = 0
@@ -35,14 +35,6 @@ struct DietView: View {
             case .day: return "calendar.day.timeline.left"
             }
         }
-    }
-
-    init() {
-        self._dietManager = StateObject(
-            wrappedValue: DietManager(
-                modelContext: ModelContainer.bulkUpContainer.mainContext
-            )
-        )
     }
 
     var body: some View {

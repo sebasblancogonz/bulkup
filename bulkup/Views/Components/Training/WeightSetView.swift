@@ -19,7 +19,6 @@ struct WeightSetView: View {
     
     var body: some View {
         let weightKey = trainingManager.generateWeightKey(
-            planId: trainingManager.trainingPlanId,
             day: dayName,
             exerciseIndex: exerciseIndex,
             setIndex: setIndex

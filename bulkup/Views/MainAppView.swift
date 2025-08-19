@@ -11,8 +11,8 @@ struct MainAppView: View {
     let modelContext: ModelContext
 
     @EnvironmentObject var authManager: AuthManager
-    @StateObject private var dietManager: DietManager
-    @StateObject private var trainingManager: TrainingManager
+    @StateObject private var dietManager = DietManager.shared
+    @StateObject private var trainingManager = TrainingManager.shared
 
     @State private var selectedTab: AppTab = .upload
     @State private var showingProfile = false
@@ -114,55 +114,55 @@ struct MainAppView: View {
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
-        self._dietManager = StateObject(
-            wrappedValue: DietManager(modelContext: modelContext)
-        )
-        self._trainingManager = StateObject(
-            wrappedValue: TrainingManager(modelContext: modelContext)
-        )
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // ✅ Header simplificado
-                simplifiedHeaderView
-
-                // ✅ Navegación por tabs solo en desktop
-                if geometry.size.width > 600 {
-                    tabNavigationView
+        Group {
+            if authManager.isLoadingUserData {
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text("Cargando tus datos...")
+                        .font(.headline)
                 }
+            } else {
+                GeometryReader { geometry in
+                    VStack(spacing: 0) {
+                        simplifiedHeaderView
 
-                // ✅ Contenido sin ScrollView innecesario
-                contentView
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            .overlay(
-                // ✅ Tab bar móvil arreglado
-                Group {
-                    if geometry.size.width <= 600 {
-                        fixedMobileTabBar
+                        if geometry.size.width > 600 {
+                            tabNavigationView
+                        }
+
+                        contentView
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                },
-                alignment: .bottom
-            )
-        }
-        .environmentObject(dietManager)
-        .environmentObject(trainingManager)
-        .onReceive(NotificationCenter.default.publisher(for: .userDidLogin)) {
-            notification in
-
-            Task {
-                await loadInitialData()
+                    .overlay(
+                        Group {
+                            if geometry.size.width <= 600 {
+                                fixedMobileTabBar
+                            }
+                        },
+                        alignment: .bottom
+                    )
+                }
+                .environmentObject(dietManager)
+                .environmentObject(trainingManager)
+                .onReceive(
+                    NotificationCenter.default.publisher(for: .userDidLogout)
+                ) { _ in
+                    showingProfile = false
+                    showingNotifications = false
+                    selectedTab = .upload
+                }
+                .sheet(isPresented: $showingProfile) {
+                    ProfileView()
+                        .environmentObject(authManager)
+                }
+                .sheet(isPresented: $showingNotifications) {
+                    NotificationView()
+                }
             }
-
-        }
-        .sheet(isPresented: $showingProfile) {
-            ProfileView()
-                .environmentObject(authManager)
-        }
-        .sheet(isPresented: $showingNotifications) {
-            NotificationView()
         }
     }
 
@@ -351,7 +351,7 @@ struct MainAppView: View {
                     selectedTab = .upload
                 }
             } else {
-                TrainingView(modelContext: modelContext)
+                TrainingView()
                     .environmentObject(authManager)
                     .environmentObject(trainingManager)
             }
@@ -410,17 +410,4 @@ struct MainAppView: View {
         }
     }
 
-    private func loadInitialData() async {
-        guard let user = authManager.user else { return }
-
-        await withTaskGroup(of: Void.self) { group in
-            group.addTask {
-                await dietManager.loadActiveDietPlan(userId: user.id)
-            }
-
-            group.addTask {
-                await trainingManager.loadActiveTrainingPlan(userId: user.id)
-            }
-        }
-    }
 }

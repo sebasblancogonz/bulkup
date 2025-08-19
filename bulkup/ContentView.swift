@@ -5,23 +5,22 @@
 //  Created by sebastian.blanco on 17/8/25.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
+
+// MARK: - Vista de Contenido Principal
+import SwiftData
+import SwiftUI
 
 // MARK: - Vista de Contenido Principal
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var authManager: AuthManager
-    
-    init() {
-        // Use a placeholder, will be replaced in .onAppear
-        self._authManager = StateObject(wrappedValue: AuthManager(modelContext: ModelContainer.bulkUpContainer.mainContext))
-    }
-    
+    @StateObject private var authManager = AuthManager.shared
+
     var body: some View {
         Group {
             if authManager.isAuthenticated {
-                DietView()
+                MainAppView(modelContext: modelContext)
                     .environmentObject(authManager)
             } else {
                 LoginView()
@@ -29,12 +28,13 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            // Re-initialize authManager with the correct context if needed
+            // ✅ Configurar el contexto solo una vez
             if authManager.modelContext !== modelContext {
                 authManager.modelContext = modelContext
                 authManager.loadStoredUser()
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: authManager.isAuthenticated)
     }
 }
 

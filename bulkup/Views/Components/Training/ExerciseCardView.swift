@@ -26,7 +26,6 @@ struct ExerciseCardView: View {
         let progressPercentage = exercise.weightTracking ? Double(completedSets) / Double(exercise.sets) * 100 : 0
         
         let key = trainingManager.generateWeightKey(
-            planId: trainingManager.trainingPlanId,
             day: dayName,
             exerciseIndex: exerciseIndex
         )
@@ -115,7 +114,6 @@ struct ExerciseCardView: View {
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         .onAppear {
             let noteKey = trainingManager.generateWeightKey(
-                planId: trainingManager.trainingPlanId,
                 day: dayName,
                 exerciseIndex: exerciseIndex
             )

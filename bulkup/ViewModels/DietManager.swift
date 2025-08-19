@@ -11,6 +11,8 @@ import SwiftData
 
 @MainActor
 class DietManager: ObservableObject {
+    static let shared = DietManager(modelContext: ModelContainer.bulkUpContainer.mainContext)
+
     @Published var dietData: [DietDay] = []
     @Published var dietPlanId: String?
     @Published var isLoading = false
