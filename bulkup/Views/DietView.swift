@@ -11,12 +11,19 @@ import SwiftUI
 struct DietView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var dietManager: DietManager
-    @Environment(\.modelContext) private var modelContext
     @State private var viewMode: ViewMode = .day
     @State private var selectedDay = ""
     @State private var expandedDay = 0
-    @State private var showingProfile = false
     @State private var currentDayIndex = 0
+
+    // ✅ Estados mejorados para el scroll
+    @State private var scrollOffset: CGFloat = 0
+    @State private var lastScrollOffset: CGFloat = 0
+    @State private var headerOffset: CGFloat = 0
+
+    // Constantes para el comportamiento del header
+    private let headerHeight: CGFloat = 100
+    private let scrollThreshold: CGFloat = 5
 
     enum ViewMode: String, CaseIterable {
         case week = "week"
@@ -38,7 +45,6 @@ struct DietView: View {
     }
 
     var body: some View {
-        // ✅ Quitar NavigationView para que ocupe toda la pantalla
         Group {
             if dietManager.isLoading {
                 loadingView
@@ -66,7 +72,40 @@ struct DietView: View {
                 await dietManager.loadActiveDietPlan(userId: user.id)
             }
         }
-        .environmentObject(dietManager)
+    }
+
+    // ✅ Función mejorada para actualizar el header basado en el scroll
+    private func updateHeaderOffset() {
+        let scrollDelta = scrollOffset - lastScrollOffset
+
+        // Solo actualizar si el cambio es significativo
+        guard abs(scrollDelta) > scrollThreshold else { return }
+
+        withAnimation(
+            .interactiveSpring(
+                response: 0.25,
+                dampingFraction: 0.86,
+                blendDuration: 0.25
+            )
+        ) {
+            if scrollDelta < 0 {
+                // Scrolling down (content going up) - hide header
+                headerOffset = max(
+                    headerOffset + (scrollDelta * 1.5),
+                    -headerHeight
+                )
+            } else {
+                // Scrolling up (content going down) - show header
+                headerOffset = min(headerOffset + (scrollDelta * 1.5), 0)
+            }
+
+            // Asegurar que el header esté visible cuando estamos en el top
+            if scrollOffset >= -10 {
+                headerOffset = 0
+            }
+        }
+
+        lastScrollOffset = scrollOffset
     }
 
     // MARK: - Subvistas
@@ -162,19 +201,28 @@ struct DietView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    // ✅ Vista semanal con scroll mejorado
     private var weeklyPlanView: some View {
         VStack(spacing: 0) {
-            // Header con toggle para vista semanal si hay múltiples días
+            // Header fijo que no se mueve
             if dietManager.dietData.count > 1 {
                 viewModeHeader
             }
 
-            ScrollView {
-                LazyVStack(spacing: 20) {
-                    // Header con estadísticas
-                    weeklyStatsHeader
+            // Header colapsable con altura dinámica
+            weeklyStatsHeader
+                .frame(height: max(0, headerHeight + headerOffset))
+                .clipped()
+                .opacity(headerOffset < -headerHeight * 0.8 ? 0 : 1)
 
-                    // ✅ Ordenar comidas correctamente
+            // Contenido principal con mejor detección de scroll
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Detector de scroll al inicio del contenido
+                    Color.clear
+                        .frame(height: 1)
+                        .scrollOffset($scrollOffset)
+
                     let sortedMeals = dietManager.dietData[0].meals.sorted(by: {
                         $0.orderIndex < $1.orderIndex
                     })
@@ -202,27 +250,37 @@ struct DietView: View {
                     }
                 }
                 .padding()
-                .animation(
-                    .spring(response: 0.6, dampingFraction: 0.8),
-                    value: dietManager.dietData
-                )
+            }
+            .coordinateSpace(name: "scroll")
+            .onChange(of: scrollOffset) { _, _ in
+                updateHeaderOffset()
             }
         }
     }
 
+    // ✅ Vista multi-día con scroll mejorado
     private var multiDayPlanView: some View {
         VStack(spacing: 0) {
-            // Header con controles de vista
+            // Header fijo que no se mueve
             viewModeHeader
 
+            // Header colapsable con altura dinámica (solo en vista diaria)
             if viewMode == .day {
                 enhancedDayNavigationView
+                    .frame(height: max(0, headerHeight + headerOffset))
+                    .clipped()
+                    .opacity(headerOffset < -headerHeight * 0.8 ? 0 : 1)
             }
 
+            // Contenido principal
             ScrollView {
-                LazyVStack(spacing: 20) {
+                VStack(spacing: 20) {
+                    // Detector de scroll al inicio del contenido
+                    Color.clear
+                        .frame(height: 1)
+                        .scrollOffset($scrollOffset)
+
                     if viewMode == .week {
-                        // ✅ Arreglar problema de expansión/contracción
                         ForEach(0..<dietManager.dietData.count, id: \.self) {
                             dayIndex in
                             DayCardView(
@@ -230,7 +288,6 @@ struct DietView: View {
                                 dayIndex: dayIndex,
                                 isExpanded: expandedDay == dayIndex,
                                 onToggleExpand: {
-                                    // ✅ Toggle directo SIN withAnimation
                                     expandedDay =
                                         expandedDay == dayIndex ? -1 : dayIndex
                                 }
@@ -269,7 +326,10 @@ struct DietView: View {
                     }
                 }
                 .padding()
-                // ✅ Remover animaciones que pueden causar conflictos
+            }
+            .coordinateSpace(name: "scroll")
+            .onChange(of: scrollOffset) { _, _ in
+                updateHeaderOffset()
             }
         }
         .onAppear {
@@ -278,13 +338,12 @@ struct DietView: View {
                 currentDayIndex = 0
             }
         }
-        // ✅ Resetear estado cuando cambian los datos
         .onChange(of: dietManager.dietData) { _, _ in
-            expandedDay = -1  // Contraer todo cuando cambien los datos
+            expandedDay = -1
         }
     }
 
-    // ✅ Nuevo header compacto para controles de vista
+    // ✅ Header compacto para controles de vista
     private var viewModeHeader: some View {
         HStack {
             Text("Vista:")
@@ -447,6 +506,7 @@ struct DietView: View {
         .padding(.horizontal)
     }
 
+    // MARK: - Funciones auxiliares
     private func navigateToPreviousDay() {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             guard

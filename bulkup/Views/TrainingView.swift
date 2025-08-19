@@ -3,11 +3,21 @@ import SwiftUI
 
 struct TrainingView: View {
     @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var trainingManager: TrainingManager  // ✅ Cambiar a EnvironmentObject
+    @EnvironmentObject var trainingManager: TrainingManager
     @State private var viewMode: ViewMode = .day
     @State private var selectedDay = ""
     @State private var expandedDay = -1
-    @State private var currentDayIndex = 0  // ✅ Agregar como en DietView
+    @State private var currentDayIndex = 0
+
+    // ✅ Estados mejorados para el scroll
+    @State private var scrollOffset: CGFloat = 0
+    @State private var lastScrollOffset: CGFloat = 0
+    @State private var headerOffset: CGFloat = 0
+    @State private var isDragging: Bool = false
+
+    // Constantes para el comportamiento del header
+    private let headerHeight: CGFloat = 100
+    private let scrollThreshold: CGFloat = 8  // Aumentado para menos sensibilidad
 
     enum ViewMode: String, CaseIterable {
         case week = "week"
@@ -28,22 +38,13 @@ struct TrainingView: View {
         }
     }
 
-    // ✅ Quitar el init personalizado
-
     var body: some View {
-        let _ = print(
-            "🎯 TrainingView body - isLoading: \(trainingManager.isLoading), isFullyLoaded: \(trainingManager.isFullyLoaded), trainingData.count: \(trainingManager.trainingData.count)"
-        )
-
         Group {
             if trainingManager.isLoading {
-                let _ = print("🔄 Mostrando loading view")
                 loadingView
             } else if trainingManager.trainingData.isEmpty {
-                let _ = print("📭 Mostrando empty state")
                 emptyStateView
             } else if !trainingManager.isFullyLoaded {
-                // ✅ Vista específica para cuando hay datos pero los pesos no están listos
                 dataLoadedButWeightsLoadingView
             } else {
                 mainContentView
@@ -62,7 +63,6 @@ struct TrainingView: View {
                 }
             }
 
-            // ✅ Configurar selectedDay como en DietView
             if selectedDay.isEmpty && !trainingManager.trainingData.isEmpty {
                 selectedDay = trainingManager.trainingData[0].day
                 currentDayIndex = 0
@@ -78,10 +78,49 @@ struct TrainingView: View {
                 await trainingManager.loadWeightsForWeek(newWeek)
             }
         }
-        // ✅ Resetear estado cuando cambian los datos como en DietView
         .onChange(of: trainingManager.trainingData) { _, _ in
             expandedDay = -1
         }
+    }
+
+    // ✅ Función mejorada para actualizar el header basado en el scroll
+    private func updateHeaderOffset() {
+        // No actualizar si estamos arrastrando para evitar flicks
+        guard !isDragging else { return }
+
+        let scrollDelta = scrollOffset - lastScrollOffset
+
+        // Solo actualizar si el cambio es significativo
+        guard abs(scrollDelta) > scrollThreshold else { return }
+
+        // Limitar el delta para evitar cambios bruscos
+        let clampedDelta = min(max(scrollDelta, -20), 20)
+
+        withAnimation(
+            .interactiveSpring(
+                response: 0.35,
+                dampingFraction: 0.86,
+                blendDuration: 0.25
+            )
+        ) {
+            if clampedDelta < 0 {
+                // Scrolling down (content going up) - hide header
+                headerOffset = max(
+                    headerOffset + (clampedDelta * 1.2),
+                    -headerHeight
+                )
+            } else {
+                // Scrolling up (content going down) - show header
+                headerOffset = min(headerOffset + (clampedDelta * 1.2), 0)
+            }
+
+            // Asegurar que el header esté visible cuando estamos en el top
+            if scrollOffset >= -10 {
+                headerOffset = 0
+            }
+        }
+
+        lastScrollOffset = scrollOffset
     }
 
     // MARK: - Subvistas
@@ -196,33 +235,55 @@ struct TrainingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    // ✅ Estructura simplificada con scroll mejorado
     private var mainContentView: some View {
         VStack(spacing: 0) {
-            // ✅ Header con controles de vista igual que DietView
+            // ✅ Header fijo que no se mueve
             viewModeHeader
 
-            // ✅ Navegación condicional igual que DietView
-            if viewMode == .day {
-                enhancedDayNavigationView
-            } else {
-                weekNavigationView
+            // ✅ Header colapsable con altura dinámica
+            Group {
+                if viewMode == .day {
+                    enhancedDayNavigationView
+                        .frame(height: max(0, headerHeight + headerOffset))
+                        .clipped()
+                        .opacity(headerOffset < -headerHeight * 0.8 ? 0 : 1)
+                } else {
+                    weekNavigationView
+                        .frame(height: max(0, headerHeight + headerOffset))
+                        .clipped()
+                        .opacity(headerOffset < -headerHeight * 0.8 ? 0 : 1)
+                }
             }
 
-            // Contenido
-            ScrollView {
-                LazyVStack(spacing: 20) {
+            // ✅ Contenido principal con detección de scroll mejorada
+            ScrollView(.vertical, showsIndicators: true) {
+                VStack(spacing: 20) {
+                    // Detector de scroll al inicio del contenido
+                    Color.clear
+                        .frame(height: 1)
+                        .scrollOffset($scrollOffset)
+
                     if viewMode == .week {
                         weekView
                     } else {
                         dayView
                     }
+
+                    // Espaciador inferior para mejor scroll en contenido expandido
+                    Color.clear
+                        .frame(height: 50)
                 }
-                .padding()
+                .padding(.top, 20)
+                .padding(.horizontal)
+            }
+            .coordinateSpace(name: "scroll")
+            .onChange(of: scrollOffset) { _, _ in
+                updateHeaderOffset()
             }
         }
     }
 
-    // ✅ Header compacto igual que DietView
     private var viewModeHeader: some View {
         HStack {
             Text("Vista:")
@@ -244,7 +305,6 @@ struct TrainingView: View {
         .background(Color(.systemGray6).opacity(0.5))
     }
 
-    // ✅ Navegación de día mejorada igual que DietView
     private var enhancedDayNavigationView: some View {
         VStack(spacing: 12) {
             HStack(spacing: 16) {
@@ -311,7 +371,6 @@ struct TrainingView: View {
                 }
             }
 
-            // ✅ Indicador de progreso igual que DietView
             if trainingManager.trainingData.count > 1 {
                 HStack(spacing: 4) {
                     ForEach(0..<trainingManager.trainingData.count, id: \.self)
@@ -401,6 +460,14 @@ struct TrainingView: View {
         ForEach(Array(trainingManager.trainingData.enumerated()), id: \.offset)
         { index, day in
             weekDayCard(for: day, at: index)
+                .transition(
+                    .asymmetric(
+                        insertion: .move(edge: .trailing).combined(
+                            with: .opacity
+                        ),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    )
+                )
         }
     }
 
@@ -411,6 +478,14 @@ struct TrainingView: View {
 
             if expandedDay == index {
                 weekDayExpandedContent(for: day)
+                    .transition(
+                        .asymmetric(
+                            insertion: .opacity.combined(
+                                with: .move(edge: .top)
+                            ),
+                            removal: .opacity.combined(with: .move(edge: .top))
+                        )
+                    )
             }
         }
         .background(
@@ -419,15 +494,19 @@ struct TrainingView: View {
                 .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         )
         .padding(.horizontal)
-        .id("\(viewMode.rawValue)-\(index)")
+        .animation(
+            .spring(response: 0.3, dampingFraction: 0.8),
+            value: expandedDay
+        )
     }
 
     @ViewBuilder
     private func weekDayHeader(for day: TrainingDay, at index: Int) -> some View
     {
         Button(action: {
-            // ✅ Toggle directo SIN withAnimation como en DietView
-            expandedDay = expandedDay == index ? -1 : index
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                expandedDay = expandedDay == index ? -1 : index
+            }
         }) {
             HStack {
                 Circle()
@@ -477,14 +556,14 @@ struct TrainingView: View {
             Divider()
                 .padding(.horizontal)
 
-            VStack(spacing: 16) {
+            VStack(spacing: 12) {
                 let sortedExercises = day.exercises.sorted(by: {
                     $0.orderIndex < $1.orderIndex
                 })
-                ForEach(Array(sortedExercises.enumerated()), id: \.element.id) {
+                ForEach(Array(sortedExercises.enumerated()), id: \.offset) {
                     exerciseIndex,
                     exercise in
-                    Group {
+                    VStack(spacing: 12) {
                         ExerciseCardView(
                             exercise: exercise,
                             exerciseIndex: exerciseIndex,
@@ -492,6 +571,7 @@ struct TrainingView: View {
                         )
                         .environmentObject(trainingManager)
                         .environmentObject(authManager)
+                        .fixedSize(horizontal: false, vertical: true)
 
                         if exerciseIndex < sortedExercises.count - 1 {
                             Divider()
@@ -540,8 +620,6 @@ struct TrainingView: View {
     }
 
     // MARK: - Funciones auxiliares
-
-    // ✅ Funciones de navegación igual que DietView
     private func navigateToPreviousDay() {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             guard
