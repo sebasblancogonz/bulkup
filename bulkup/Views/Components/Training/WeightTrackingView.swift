@@ -4,101 +4,124 @@
 //
 //  Created by sebastian.blanco on 18/8/25.
 //
-import SwiftUI
+
 import SwiftData
+import SwiftUI
 
 struct WeightTrackingView: View {
     let exercise: Exercise
     let exerciseIndex: Int
-    let dayName: String
+    let currentDate: Date  // ✅ Fecha del calendario para guardar
     @Binding var localNote: String
     let isSaving: Bool
     let isSaved: Bool
-    
+
     @EnvironmentObject var trainingManager: TrainingManager
     @EnvironmentObject var authManager: AuthManager
-    
+
+    // ✅ Formateador para convertir currentDate a día de la semana
+    private var dayFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "es_ES")
+        f.dateFormat = "EEEE"
+        f.calendar = Calendar(identifier: .gregorian)
+        f.calendar?.firstWeekday = 2  // Lunes como primer día
+        return f
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Image(systemName: "dumbbell.fill")
-                    .foregroundColor(.blue)
-                
-                Text("Registro de Pesos")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            
-            // Grid de series
-            LazyVGrid(columns: createColumns(), spacing: 12) {
-                ForEach(0..<exercise.sets, id: \.self) { setIndex in
-                    WeightSetView(
-                        setIndex: setIndex,
-                        exercise: exercise,
-                        exerciseIndex: exerciseIndex,
-                        dayName: dayName
-                    )
-                    .environmentObject(trainingManager)
-                }
-            }
-            
-            // Campo de notas
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Notas del ejercicio")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-                
-                TextField("Agregar notas sobre técnica, sensaciones, etc.", text: $localNote, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .lineLimit(2...4)
-            }
-            
-            // Botón de guardar
-            HStack {
-                Spacer()
-                
-                Button(action: saveWeights) {
-                    HStack(spacing: 8) {
-                        if isSaving {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        } else if isSaved {
-                            Image(systemName: "checkmark.circle.fill")
-                        } else {
-                            Image(systemName: "square.and.arrow.down")
-                        }
-                        
-                        Text(isSaving ? "Guardando..." : isSaved ? "¡Guardado!" : "Guardar")
-                            .fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: 20) {
+            // ✅ Sin navegación de fechas - solo el contenido
+
+            // Scroll horizontal de sets
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(0..<exercise.sets, id: \.self) { setIndex in
+                        WeightSetView(
+                            setIndex: setIndex,
+                            exercise: exercise,
+                            exerciseIndex: exerciseIndex,
+                            dayName: dayFormatter.string(from: currentDate)
+                                .capitalized  // ✅ Convertimos currentDate a día
+                        )
+                        .frame(width: UIScreen.main.bounds.width * 0.75)
+                        .shadow(
+                            color: .black.opacity(0.05),
+                            radius: 3,
+                            x: 0,
+                            y: 2
+                        )
                     }
-                    .frame(minWidth: 120)
-                    .frame(height: 44)
-                    .background(
-                        isSaved ? Color.green : Color.blue
-                    )
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .disabled(isSaving)
                 }
+                .padding(.horizontal, 16)
+            }
+            .overlay(
+                HStack {
+                    LinearGradient(
+                        colors: [
+                            Color(.systemBackground),
+                            Color(.systemBackground).opacity(0),
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: 20)
+
+                    Spacer()
+
+                    LinearGradient(
+                        colors: [
+                            Color(.systemBackground).opacity(0),
+                            Color(.systemBackground),
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: 20)
+                }
+            )
+            .frame(height: 160)
+
+            // Nota del ejercicio
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Notas")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                TextEditor(text: $localNote)
+                    .frame(height: 80)
+                    .padding(8)
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(8)
+            }
+
+            // Botón guardar
+            Button(action: saveWeights) {
+                HStack {
+                    if isSaving {
+                        ProgressView()
+                    } else if isSaved {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    }
+                    Text(isSaved ? "Guardado" : "Guardar")
+                        .fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(isSaved ? Color.green.opacity(0.2) : Color.blue)
+                .foregroundColor(isSaved ? .green : .white)
+                .cornerRadius(10)
             }
         }
         .padding()
-        .background(Color(.systemGray6).opacity(0.5))
-        .cornerRadius(12)
     }
-    
-    private func createColumns() -> [GridItem] {
-        let columnCount = min(exercise.sets, 4) // Máximo 4 columnas
-        return Array(repeating: GridItem(.flexible()), count: columnCount)
-    }
-    
+
     private func saveWeights() {
         guard let user = authManager.user else { return }
-        
         Task {
             await trainingManager.saveWeightsToDatabase(
-                day: dayName,
+                day: dayFormatter.string(from: currentDate).capitalized,
                 exerciseIndex: exerciseIndex,
                 exerciseName: exercise.name,
                 note: localNote,

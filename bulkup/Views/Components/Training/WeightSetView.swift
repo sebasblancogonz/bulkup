@@ -96,13 +96,5 @@ struct WeightSetView: View {
                 )
             }
         }
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Listo") {
-                    isFocused = false
-                }
-            }
-        }
     }
 }

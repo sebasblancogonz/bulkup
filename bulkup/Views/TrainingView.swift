@@ -3,21 +3,24 @@ import SwiftUI
 
 struct TrainingView: View {
     @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var trainingManager: TrainingManager
+    @StateObject var trainingManager = TrainingManager.shared
     @State private var viewMode: ViewMode = .day
     @State private var selectedDay = ""
     @State private var expandedDay = -1
     @State private var currentDayIndex = 0
 
-    // ✅ Estados mejorados para el scroll
+    // Estado para navegación de fechas
+    @State private var currentDate: Date = Date()
+
+    // Estados para el scroll
     @State private var scrollOffset: CGFloat = 0
     @State private var lastScrollOffset: CGFloat = 0
     @State private var headerOffset: CGFloat = 0
     @State private var isDragging: Bool = false
 
     // Constantes para el comportamiento del header
-    private let headerHeight: CGFloat = 100
-    private let scrollThreshold: CGFloat = 8  // Aumentado para menos sensibilidad
+    private let headerHeight: CGFloat = 180
+    private let scrollThreshold: CGFloat = 20
 
     enum ViewMode: String, CaseIterable {
         case week = "week"
@@ -36,6 +39,61 @@ struct TrainingView: View {
             case .day: return "calendar.day.timeline.left"
             }
         }
+    }
+
+    // Formateadores para fechas
+    private var dayFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "es_ES")
+        f.dateFormat = "EEEE"
+        f.calendar = Calendar(identifier: .gregorian)
+        f.calendar?.firstWeekday = 2
+        return f
+    }
+
+    private var dateFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "es_ES")
+        f.dateFormat = "dd/MM/yyyy"
+        f.calendar = Calendar(identifier: .gregorian)
+        f.calendar?.firstWeekday = 2
+        return f
+    }
+
+    private var calendar: Calendar {
+        var cal = Calendar(identifier: .gregorian)
+        cal.locale = Locale(identifier: "es_ES")
+        cal.firstWeekday = 2
+        return cal
+    }
+
+    // Función para mapear fecha del calendario a día de entrenamiento
+    private func getTrainingDayForDate(_ date: Date) -> String? {
+        let dayName = dayFormatter.string(from: date).lowercased()
+
+        let dayMapping: [String: String] = [
+            "lunes": "lunes",
+            "martes": "martes",
+            "miércoles": "miercoles",
+            "jueves": "jueves",
+            "viernes": "viernes",
+            "sábado": "sabado",
+            "domingo": "domingo",
+        ]
+
+        let mappedDay = dayMapping[dayName]
+
+        return trainingManager.trainingData.first { trainingDay in
+            trainingDay.day.lowercased() == mappedDay?.lowercased()
+                || trainingDay.day.lowercased().contains(
+                    mappedDay?.lowercased() ?? ""
+                )
+        }?.day
+    }
+
+    // Computed property para el día de entrenamiento actual
+    private var currentTrainingDay: String? {
+        return getTrainingDayForDate(currentDate)
     }
 
     var body: some View {
@@ -83,17 +141,11 @@ struct TrainingView: View {
         }
     }
 
-    // ✅ Función mejorada para actualizar el header basado en el scroll
+    // Función para actualizar el header basado en el scroll
     private func updateHeaderOffset() {
-        // No actualizar si estamos arrastrando para evitar flicks
         guard !isDragging else { return }
-
         let scrollDelta = scrollOffset - lastScrollOffset
-
-        // Solo actualizar si el cambio es significativo
         guard abs(scrollDelta) > scrollThreshold else { return }
-
-        // Limitar el delta para evitar cambios bruscos
         let clampedDelta = min(max(scrollDelta, -20), 20)
 
         withAnimation(
@@ -104,17 +156,14 @@ struct TrainingView: View {
             )
         ) {
             if clampedDelta < 0 {
-                // Scrolling down (content going up) - hide header
                 headerOffset = max(
                     headerOffset + (clampedDelta * 1.2),
                     -headerHeight
                 )
             } else {
-                // Scrolling up (content going down) - show header
                 headerOffset = min(headerOffset + (clampedDelta * 1.2), 0)
             }
 
-            // Asegurar que el header esté visible cuando estamos en el top
             if scrollOffset >= -10 {
                 headerOffset = 0
             }
@@ -208,7 +257,7 @@ struct TrainingView: View {
             }
 
             Button(action: {
-                // Acción para subir plan - se manejará desde MainAppView
+                // Acción para subir plan
             }) {
                 HStack(spacing: 12) {
                     Image(systemName: "plus.circle.fill")
@@ -235,42 +284,36 @@ struct TrainingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // ✅ Estructura simplificada con scroll mejorado
     private var mainContentView: some View {
         VStack(spacing: 0) {
-            // ✅ Header fijo que no se mueve
+            // Header fijo (selector de vista)
             viewModeHeader
-
-            // ✅ Header colapsable con altura dinámica
-            Group {
-                if viewMode == .day {
-                    enhancedDayNavigationView
-                        .frame(height: max(0, headerHeight + headerOffset))
-                        .clipped()
-                        .opacity(headerOffset < -headerHeight * 0.8 ? 0 : 1)
-                } else {
-                    weekNavigationView
-                        .frame(height: max(0, headerHeight + headerOffset))
-                        .clipped()
-                        .opacity(headerOffset < -headerHeight * 0.8 ? 0 : 1)
-                }
-            }
-
-            // ✅ Contenido principal con detección de scroll mejorada
+            
+            // Contenido principal con ScrollView
             ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 20) {
-                    // Detector de scroll al inicio del contenido
+                    // Detector de scroll - DEBE IR PRIMERO
                     Color.clear
                         .frame(height: 1)
                         .scrollOffset($scrollOffset)
-
+                    
+                    // Espacio dinámico para el header basado en el scroll
+                    Color.clear
+                        .frame(height: calculateHeaderSpacing())
+                        .animation(.interactiveSpring(
+                            response: 0.35,
+                            dampingFraction: 0.86,
+                            blendDuration: 0.25
+                        ), value: scrollOffset)
+                    
+                    // Contenido según el modo de vista
                     if viewMode == .week {
                         weekView
                     } else {
                         dayView
                     }
-
-                    // Espaciador inferior para mejor scroll en contenido expandido
+                    
+                    // Espacio inferior
                     Color.clear
                         .frame(height: 50)
                 }
@@ -278,11 +321,95 @@ struct TrainingView: View {
                 .padding(.horizontal)
             }
             .coordinateSpace(name: "scroll")
-            .onChange(of: scrollOffset) { _, _ in
-                updateHeaderOffset()
+            .overlay(alignment: .top) {
+                // Header colapsable con altura dinámica basada en el scroll
+                VStack(spacing: 0) {
+                    if viewMode == .day {
+                        ZStack {
+                            // Fondo
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color(.systemBackground))
+                                .shadow(
+                                    color: .black.opacity(0.05),
+                                    radius: 6,
+                                    x: 0,
+                                    y: 3
+                                )
+                            
+                            // Contenido del header de día
+                            enhancedDayNavigationViewWithDate
+                                .opacity(calculateHeaderOpacity())
+                        }
+                        .frame(height: calculateHeaderHeight())
+                        .clipped()
+                    } else {
+                        ZStack {
+                            // Fondo
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemBackground))
+                                .shadow(
+                                    color: .black.opacity(0.05),
+                                    radius: 4,
+                                    x: 0,
+                                    y: 2
+                                )
+                            
+                            // Contenido del header de semana
+                            weekNavigationView
+                                .opacity(calculateHeaderOpacity())
+                        }
+                        .frame(height: calculateHeaderHeight())
+                        .clipped()
+                    }
+                }
+                .animation(.interactiveSpring(
+                    response: 0.35,
+                    dampingFraction: 0.86,
+                    blendDuration: 0.25
+                ), value: scrollOffset)
             }
         }
     }
+
+    // FUNCIONES AUXILIARES PARA CALCULAR LA ALTURA Y OPACIDAD DEL HEADER
+    private func calculateHeaderHeight() -> CGFloat {
+        // El header empieza a colapsarse cuando scrollOffset pasa de 0
+        // y se colapsa completamente cuando llega a -headerHeight
+        
+        if scrollOffset >= 10 {
+            // Completamente visible cuando está en la parte superior
+            return headerHeight
+        } else if scrollOffset <= -headerHeight {
+            // Completamente colapsado
+            return 0
+        } else {
+            // Altura proporcional basada en el scroll
+            // scrollOffset va de 0 a -headerHeight
+            // queremos que la altura vaya de headerHeight a 0
+            let progress = -scrollOffset / (headerHeight * 0.5)
+            return headerHeight * (1 - progress)
+        }
+    }
+
+    private func calculateHeaderOpacity() -> Double {
+        // Calculamos la opacidad basada en el progreso del colapso
+        if scrollOffset >= 0 {
+            return 1.0
+        } else if scrollOffset <= -headerHeight {
+            return 0.0
+        } else {
+            // Opacidad proporcional, pero empieza a desvanecerse más rápido
+            let progress = -scrollOffset / headerHeight
+            // Usamos una curva para que se desvanezca más suavemente
+            return Double(1 - (progress * 1.2)).clamped(to: 0...1)
+        }
+    }
+
+    private func calculateHeaderSpacing() -> CGFloat {
+        // El espacio debe coincidir con la altura del header
+        return calculateHeaderHeight()
+    }
+
 
     private var viewModeHeader: some View {
         HStack {
@@ -305,99 +432,161 @@ struct TrainingView: View {
         .background(Color(.systemGray6).opacity(0.5))
     }
 
-    private var enhancedDayNavigationView: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 16) {
-                if trainingManager.trainingData.count > 1 {
-                    Button(action: navigateToPreviousDay) {
-                        Image(systemName: "chevron.left.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.blue, .blue.opacity(0.7)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+    // Vista de navegación de día con fechas - Restaurada con más información
+    private var enhancedDayNavigationViewWithDate: some View {
+        VStack(spacing: 16) {
+            // Navegación de fechas
+            HStack {
+                Button {
+                    withAnimation {
+                        currentDate =
+                            calendar.date(
+                                byAdding: .day,
+                                value: -1,
+                                to: currentDate
+                            ) ?? currentDate
                     }
-                    .disabled(currentDayIndex == 0)
+                } label: {
+                    Image(systemName: "chevron.left.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.blue, .blue.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+                .disabled(
+                    calendar.isDate(
+                        currentDate,
+                        inSameDayAs: calendar.date(
+                            byAdding: .year,
+                            value: -1,
+                            to: Date()
+                        ) ?? Date()
+                    )
+                )
+
+                Spacer()
+
+                VStack(spacing: 6) {
+                    Text(dayFormatter.string(from: currentDate).capitalized)
+                        .font(.headline)  // Smaller than title2
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+
+                    Text(dateFormatter.string(from: currentDate))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    // Mostrar el entrenamiento correspondiente al día
+                    if currentTrainingDay == nil {
+                        Text("Día de descanso")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(12)
+                    }
+
+                    // Indicador de día actual
+                    if calendar.isDateInToday(currentDate) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar.circle.fill")
+                                .foregroundColor(.green)
+                                .font(.caption2)
+                            Text("Hoy")
+                                .font(.caption2)
+                                .foregroundColor(.green)
+                                .fontWeight(.medium)
+                        }
+                    } else if calendar.isDateInYesterday(currentDate) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar.circle")
+                                .foregroundColor(.orange)
+                                .font(.caption2)
+                            Text("Ayer")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                                .fontWeight(.medium)
+                        }
+                    } else if calendar.isDateInTomorrow(currentDate) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar.circle")
+                                .foregroundColor(.blue)
+                                .font(.caption2)
+                            Text("Mañana")
+                                .font(.caption2)
+                                .foregroundColor(.blue)
+                                .fontWeight(.medium)
+                        }
+                    }
                 }
 
                 Spacer()
 
-                VStack(spacing: 4) {
-                    Text(formatDayName(selectedDay))
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                Button {
+                    withAnimation {
+                        currentDate =
+                            calendar.date(
+                                byAdding: .day,
+                                value: 1,
+                                to: currentDate
+                            ) ?? currentDate
+                    }
+                } label: {
+                    Image(systemName: "chevron.right.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.blue, .blue.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+                .disabled(
+                    calendar.isDate(
+                        currentDate,
+                        inSameDayAs: calendar.date(
+                            byAdding: .month,
+                            value: 1,
+                            to: Date()
+                        ) ?? Date()
+                    )
+                )
+            }
 
-                    if let workout = trainingManager.trainingData.first(where: {
-                        $0.day == selectedDay
-                    })?.workoutName {
+            // Información adicional
+            if trainingManager.trainingData.count > 1 {
+                VStack(spacing: 6) {
+                    if let trainingDay = currentTrainingDay,
+                        let workout = trainingManager.trainingData.first(
+                            where: { $0.day == trainingDay })?.workoutName
+                    {
                         Text(workout)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(8)
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.blue.opacity(0.15))
+                            .cornerRadius(12)
                     }
 
                     Text(
-                        "Día \(currentDayIndex + 1) de \(trainingManager.trainingData.count)"
+                        "\(trainingManager.trainingData.count) entrenamientos en la rutina"
                     )
                     .font(.caption)
                     .foregroundColor(.secondary)
                 }
-
-                Spacer()
-
-                if trainingManager.trainingData.count > 1 {
-                    Button(action: navigateToNextDay) {
-                        Image(systemName: "chevron.right.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.blue, .blue.opacity(0.7)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
-                    .disabled(
-                        currentDayIndex == trainingManager.trainingData.count
-                            - 1
-                    )
-                }
-            }
-
-            if trainingManager.trainingData.count > 1 {
-                HStack(spacing: 4) {
-                    ForEach(0..<trainingManager.trainingData.count, id: \.self)
-                    { index in
-                        Capsule()
-                            .fill(
-                                index == currentDayIndex
-                                    ? Color.blue : Color.blue.opacity(0.3)
-                            )
-                            .frame(
-                                width: index == currentDayIndex ? 16 : 6,
-                                height: 3
-                            )
-                            .animation(
-                                .spring(response: 0.3),
-                                value: currentDayIndex
-                            )
-                    }
-                }
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-        )
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
         .padding(.horizontal)
     }
 
@@ -447,11 +636,6 @@ struct TrainingView: View {
             }
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-        )
         .padding(.horizontal)
     }
 
@@ -567,7 +751,8 @@ struct TrainingView: View {
                         ExerciseCardView(
                             exercise: exercise,
                             exerciseIndex: exerciseIndex,
-                            dayName: day.day
+                            dayName: day.day,
+                            currentDate: currentDate
                         )
                         .environmentObject(trainingManager)
                         .environmentObject(authManager)
@@ -586,9 +771,12 @@ struct TrainingView: View {
 
     @ViewBuilder
     private var dayView: some View {
-        if let selectedDayData = trainingManager.trainingData.first(where: {
-            $0.day == selectedDay
-        }) {
+        if let trainingDay = currentTrainingDay,
+            let selectedDayData = trainingManager.trainingData.first(where: {
+                $0.day == trainingDay
+            })
+        {
+
             let sortedExercises = selectedDayData.exercises.sorted(by: {
                 $0.orderIndex < $1.orderIndex
             })
@@ -599,20 +787,33 @@ struct TrainingView: View {
                 ExerciseCardView(
                     exercise: exercise,
                     exerciseIndex: index,
-                    dayName: selectedDay
+                    dayName: trainingDay,
+                    currentDate: currentDate
                 )
                 .environmentObject(trainingManager)
                 .environmentObject(authManager)
             }
         } else {
             VStack(spacing: 16) {
-                Image(systemName: "calendar.badge.exclamationmark")
-                    .font(.system(size: 60))
-                    .foregroundColor(.secondary)
+                Image(
+                    systemName: currentTrainingDay == nil
+                        ? "bed.double.fill" : "calendar.badge.exclamationmark"
+                )
+                .font(.system(size: 60))
+                .foregroundColor(.secondary)
 
-                Text("No hay ejercicios para este día")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
+                Text(
+                    currentTrainingDay == nil
+                        ? "Día de descanso" : "No hay ejercicios para este día"
+                )
+                .font(.headline)
+                .foregroundColor(.secondary)
+
+                if currentTrainingDay == nil {
+                    Text("Disfruta tu día libre")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.top, 100)
@@ -620,33 +821,6 @@ struct TrainingView: View {
     }
 
     // MARK: - Funciones auxiliares
-    private func navigateToPreviousDay() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-            guard
-                let currentIndex = trainingManager.trainingData.firstIndex(
-                    where: { $0.day == selectedDay })
-            else { return }
-            let newIndex = max(0, currentIndex - 1)
-            selectedDay = trainingManager.trainingData[newIndex].day
-            currentDayIndex = newIndex
-        }
-    }
-
-    private func navigateToNextDay() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-            guard
-                let currentIndex = trainingManager.trainingData.firstIndex(
-                    where: { $0.day == selectedDay })
-            else { return }
-            let newIndex = min(
-                trainingManager.trainingData.count - 1,
-                currentIndex + 1
-            )
-            selectedDay = trainingManager.trainingData[newIndex].day
-            currentDayIndex = newIndex
-        }
-    }
-
     private func formatDayName(_ day: String) -> String {
         return day.capitalized
             .replacingOccurrences(of: "_", with: " ")
@@ -664,5 +838,14 @@ struct TrainingView: View {
 
         return
             "\(formatter.string(from: start)) - \(formatter.string(from: end))"
+    }
+}
+
+
+
+// Extension helper para clamp (si no la tienes ya)
+extension Comparable {
+    func clamped(to limits: ClosedRange<Self>) -> Self {
+        return min(max(self, limits.lowerBound), limits.upperBound)
     }
 }
