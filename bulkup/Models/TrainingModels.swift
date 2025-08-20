@@ -90,3 +90,22 @@ class WeightSet {
         self.reps = reps
     }
 }
+
+struct RMExerciseFull: Identifiable, Codable {
+    let id: String
+    let name: String
+    let force: String?
+    let level: String?
+    let mechanic: String?
+    let equipment: String?
+    let primaryMuscles: [String]?
+    let secondaryMuscles: [String]?
+    let instructions: [String]?
+    let category: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case name, force, level, mechanic, equipment
+        case primaryMuscles, secondaryMuscles, instructions, category
+    }
+}

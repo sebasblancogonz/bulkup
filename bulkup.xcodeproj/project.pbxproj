@@ -10,9 +10,22 @@
 		1636179D2E51E66800B05DFA /* bulkup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bulkup.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		160B35082E5548A600978545 /* Exceptions for "bulkup" folder in "bulkup" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Views/Untitled.swift,
+			);
+			target = 1636179C2E51E66800B05DFA /* bulkup */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1636179F2E51E66800B05DFA /* bulkup */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				160B35082E5548A600978545 /* Exceptions for "bulkup" folder in "bulkup" target */,
+			);
 			path = bulkup;
 			sourceTree = "<group>";
 		};
