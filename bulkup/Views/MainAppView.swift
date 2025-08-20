@@ -189,12 +189,11 @@ struct MainAppView: View {
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
                         )
-                    VStack(spacing: 4) {
-                        Text(
-                            "¡Hola \(authManager.user?.name.split(separator: " ").first.map(String.init) ?? "")!"
-                        )
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                    VStack(alignment: .leading, spacing: 0) {  // Cambiar alignment a .leading
+                        Text("¡Hola \(authManager.user?.name.split(separator: " ").first.map(String.init) ?? "")!")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                        
                         Text("Lightweight baby!!! 💪")
                             .font(.subheadline)
                             .foregroundColor(.secondary)

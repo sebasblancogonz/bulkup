@@ -9,8 +9,68 @@ import Combine
 import Foundation
 
 struct APIConfig {
-    static let baseURL = "http://localhost:8080"  // Cambia por tu URL
     static let timeout: TimeInterval = 30.0
+    
+    // MARK: - Production-Ready Configuration
+    
+    static var baseURL: String {
+        // First try to get from Info.plist (build configuration)
+        if let urlString = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String,
+           !urlString.isEmpty {
+            return urlString
+        }
+        
+        // Fallback based on build configuration
+        #if DEBUG
+        return "http://localhost:8080"
+        #else
+        return "https://weight-tracker-backend.tme3al.easypanel.host/" 
+        #endif
+    }
+    
+    static var environment: Environment {
+        if let envString = Bundle.main.object(forInfoDictionaryKey: "ENVIRONMENT") as? String {
+            return Environment(rawValue: envString) ?? .development
+        }
+        
+        #if DEBUG
+        return .development
+        #else
+        return .production
+        #endif
+    }
+    
+    enum Environment: String {
+        case development = "development"
+        case staging = "staging"
+        case production = "production"
+        
+        var enablesLogging: Bool {
+            switch self {
+            case .development, .staging: return true
+            case .production: return false
+            }
+        }
+        
+        var allowsInsecureHTTP: Bool {
+            return self == .development
+        }
+    }
+    
+    // MARK: - Configuration Validation
+    
+    static func validateConfiguration() {
+        assert(!baseURL.isEmpty, "API Base URL cannot be empty")
+        
+        if environment == .production {
+            assert(baseURL.hasPrefix("https://"), "Production must use HTTPS")
+        }
+        
+        print("🔧 API Configuration:")
+        print("   Environment: \(environment.rawValue)")
+        print("   Base URL: \(baseURL)")
+        print("   Logging: \(environment.enablesLogging ? "Enabled" : "Disabled")")
+    }
 }
 
 struct AuthResponse: Codable {

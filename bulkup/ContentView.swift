@@ -23,7 +23,7 @@ struct ContentView: View {
                 MainAppView(modelContext: modelContext)
                     .environmentObject(authManager)
             } else {
-                LoginView()
+                LoginContentView()
                     .environmentObject(authManager)
             }
         }

@@ -50,7 +50,7 @@ struct ExerciseExplorerView: View {
                     
                     TextField("Buscar ejercicio...", text: $exerciseExplorerManager.searchTerm)
                         .textFieldStyle(PlainTextFieldStyle())
-                        .onChange(of: exerciseExplorerManager.searchTerm) { _ in
+                        .onChange(of: exerciseExplorerManager.searchTerm) {
                             exerciseExplorerManager.resetPage()
                         }
                     
@@ -125,7 +125,7 @@ struct ExerciseExplorerView: View {
                     // Paginación
                     if exerciseExplorerManager.totalPages > 1 {
                         paginationView
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 80)
                     }
                 }
             }

@@ -9,11 +9,16 @@ import SwiftData
 
 @main
 struct BulkUp: App {
-        var body: some Scene {
-            WindowGroup {
-                ContentView()
-                    .modelContainer(ModelContainer.bulkUpContainer)
-            }
+    
+    init() {
+        // La validación va en el inicializador
+        APIConfig.validateConfiguration()
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .modelContainer(ModelContainer.bulkUpContainer)
         }
+    }
 }
-
