@@ -105,7 +105,7 @@ struct TrainingView: View {
             } else if !trainingManager.isFullyLoaded {
                 dataLoadedButWeightsLoadingView
             } else {
-                mainContentView
+                mainContentViewWithNavigation
             }
         }
         .onAppear {
@@ -284,11 +284,131 @@ struct TrainingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    private var mainContentViewWithNavigation: some View {
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(spacing: 20) {
+                
+                // Contenido según el modo de vista
+                if viewMode == .week {
+                    weekView
+                } else {
+                    dayView
+                }
+
+                // Espacio inferior
+                Color.clear
+                    .frame(height: 50)
+            }
+            .padding(.top, 20)
+        }
+        .navigationBarTitleDisplayMode(.inline)  // Cambiado a inline para usar vista personalizada
+        .toolbar {
+            // Título personalizado en el centro
+            ToolbarItem(placement: .principal) {
+                navigationTitleView
+            }
+
+            // Selector de vista
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Picker("Vista", selection: $viewMode) {
+                    ForEach(ViewMode.allCases, id: \.self) { mode in
+                        Label(mode.displayName, systemImage: mode.icon)
+                            .tag(mode)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
+            // Navegación de fechas en el toolbar para vista diaria
+            if viewMode == .day {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        withAnimation {
+                            currentDate =
+                                calendar.date(
+                                    byAdding: .day,
+                                    value: -1,
+                                    to: currentDate
+                                ) ?? currentDate
+                        }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                    .disabled(
+                        calendar.isDate(
+                            currentDate,
+                            inSameDayAs: calendar.date(
+                                byAdding: .year,
+                                value: -1,
+                                to: Date()
+                            ) ?? Date()
+                        )
+                    )
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        withAnimation {
+                            currentDate =
+                                calendar.date(
+                                    byAdding: .day,
+                                    value: 1,
+                                    to: currentDate
+                                ) ?? currentDate
+                        }
+                    } label: {
+                        Image(systemName: "chevron.right")
+                    }
+                    .disabled(
+                        calendar.isDate(
+                            currentDate,
+                            inSameDayAs: calendar.date(
+                                byAdding: .month,
+                                value: 1,
+                                to: Date()
+                            ) ?? Date()
+                        )
+                    )
+                }
+            }
+
+            // Navegación de semanas en el toolbar para vista semanal
+            if viewMode == .week {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        Task {
+                            await trainingManager.changeWeek(
+                                direction: .previous
+                            )
+                        }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        Task {
+                            await trainingManager.changeWeek(direction: .next)
+                        }
+                    } label: {
+                        Image(systemName: "chevron.right")
+                    }
+                }
+            }
+        }
+        .refreshable {
+            if let user = authManager.user {
+                await trainingManager.loadActiveTrainingPlan(userId: user.id)
+            }
+        }
+    }
+
     private var mainContentView: some View {
         VStack(spacing: 0) {
             // Header fijo (selector de vista)
             viewModeHeader
-            
+
             // Contenido principal con ScrollView
             ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 20) {
@@ -296,23 +416,26 @@ struct TrainingView: View {
                     Color.clear
                         .frame(height: 1)
                         .scrollOffset($scrollOffset)
-                    
+
                     // Espacio dinámico para el header basado en el scroll
                     Color.clear
                         .frame(height: calculateHeaderSpacing())
-                        .animation(.interactiveSpring(
-                            response: 0.35,
-                            dampingFraction: 0.86,
-                            blendDuration: 0.25
-                        ), value: scrollOffset)
-                    
+                        .animation(
+                            .interactiveSpring(
+                                response: 0.35,
+                                dampingFraction: 0.86,
+                                blendDuration: 0.25
+                            ),
+                            value: scrollOffset
+                        )
+
                     // Contenido según el modo de vista
                     if viewMode == .week {
                         weekView
                     } else {
                         dayView
                     }
-                    
+
                     // Espacio inferior
                     Color.clear
                         .frame(height: 50)
@@ -335,7 +458,7 @@ struct TrainingView: View {
                                     x: 0,
                                     y: 3
                                 )
-                            
+
                             // Contenido del header de día
                             enhancedDayNavigationViewWithDate
                                 .opacity(calculateHeaderOpacity())
@@ -353,7 +476,7 @@ struct TrainingView: View {
                                     x: 0,
                                     y: 2
                                 )
-                            
+
                             // Contenido del header de semana
                             weekNavigationView
                                 .opacity(calculateHeaderOpacity())
@@ -362,11 +485,14 @@ struct TrainingView: View {
                         .clipped()
                     }
                 }
-                .animation(.interactiveSpring(
-                    response: 0.35,
-                    dampingFraction: 0.86,
-                    blendDuration: 0.25
-                ), value: scrollOffset)
+                .animation(
+                    .interactiveSpring(
+                        response: 0.35,
+                        dampingFraction: 0.86,
+                        blendDuration: 0.25
+                    ),
+                    value: scrollOffset
+                )
             }
         }
     }
@@ -375,7 +501,7 @@ struct TrainingView: View {
     private func calculateHeaderHeight() -> CGFloat {
         // El header empieza a colapsarse cuando scrollOffset pasa de 0
         // y se colapsa completamente cuando llega a -headerHeight
-        
+
         if scrollOffset >= 10 {
             // Completamente visible cuando está en la parte superior
             return headerHeight
@@ -409,7 +535,6 @@ struct TrainingView: View {
         // El espacio debe coincidir con la altura del header
         return calculateHeaderHeight()
     }
-
 
     private var viewModeHeader: some View {
         HStack {
@@ -768,7 +893,37 @@ struct TrainingView: View {
             .padding()
         }
     }
+    @ViewBuilder
+    private var navigationTitleView: some View {
+        if viewMode == .day {
+            VStack(spacing: 2) {
+                Text(dayFormatter.string(from: currentDate).capitalized)
+                    .font(.headline)
+                    .foregroundColor(.primary)
 
+                if let trainingDay = currentTrainingDay,
+                    let dayData = trainingManager.trainingData.first(where: {
+                        $0.day == trainingDay
+                    }),
+                    let workoutName = dayData.workoutName
+                {
+                    Text(workoutName)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        } else {
+            VStack(spacing: 2) {
+                Text("Semana")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Text(formatWeekRange(trainingManager.selectedWeek))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
     @ViewBuilder
     private var dayView: some View {
         if let trainingDay = currentTrainingDay,
@@ -840,8 +995,6 @@ struct TrainingView: View {
             "\(formatter.string(from: start)) - \(formatter.string(from: end))"
     }
 }
-
-
 
 // Extension helper para clamp (si no la tienes ya)
 extension Comparable {

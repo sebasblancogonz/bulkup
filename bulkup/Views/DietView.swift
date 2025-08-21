@@ -13,17 +13,8 @@ struct DietView: View {
     @EnvironmentObject var dietManager: DietManager
     @State private var viewMode: ViewMode = .day
     @State private var selectedDay = ""
-    @State private var expandedDay = 0
+    @State private var expandedDay = -1
     @State private var currentDayIndex = 0
-
-    // ✅ Estados mejorados para el scroll
-    @State private var scrollOffset: CGFloat = 0
-    @State private var lastScrollOffset: CGFloat = 0
-    @State private var headerOffset: CGFloat = 0
-
-    // Constantes para el comportamiento del header
-    private let headerHeight: CGFloat = 100
-    private let scrollThreshold: CGFloat = 5
 
     enum ViewMode: String, CaseIterable {
         case week = "week"
@@ -53,9 +44,9 @@ struct DietView: View {
             } else if dietManager.dietData.count == 1
                 && dietManager.dietData[0].day == "Dieta Semanal"
             {
-                weeklyPlanView
+                weeklyPlanViewWithNavigation
             } else {
-                multiDayPlanView
+                multiDayPlanViewWithNavigation
             }
         }
         .onAppear {
@@ -67,49 +58,9 @@ struct DietView: View {
                 }
             }
         }
-        .refreshable {
-            if let user = authManager.user {
-                await dietManager.loadActiveDietPlan(userId: user.id)
-            }
-        }
     }
 
-    // ✅ Función mejorada para actualizar el header basado en el scroll
-    private func updateHeaderOffset() {
-        let scrollDelta = scrollOffset - lastScrollOffset
-
-        // Solo actualizar si el cambio es significativo
-        guard abs(scrollDelta) > scrollThreshold else { return }
-
-        withAnimation(
-            .interactiveSpring(
-                response: 0.25,
-                dampingFraction: 0.86,
-                blendDuration: 0.25
-            )
-        ) {
-            if scrollDelta < 0 {
-                // Scrolling down (content going up) - hide header
-                headerOffset = max(
-                    headerOffset + (scrollDelta * 1.5),
-                    -headerHeight
-                )
-            } else {
-                // Scrolling up (content going down) - show header
-                headerOffset = min(headerOffset + (scrollDelta * 1.5), 0)
-            }
-
-            // Asegurar que el header esté visible cuando estamos en el top
-            if scrollOffset >= -10 {
-                headerOffset = 0
-            }
-        }
-
-        lastScrollOffset = scrollOffset
-    }
-
-    // MARK: - Subvistas
-
+    // MARK: - Loading View
     private var loadingView: some View {
         VStack(spacing: 24) {
             ProgressView()
@@ -129,6 +80,7 @@ struct DietView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    // MARK: - Empty State View
     private var emptyStateView: some View {
         VStack(spacing: 32) {
             VStack(spacing: 16) {
@@ -137,7 +89,8 @@ struct DietView: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    .green.opacity(0.2), .green.opacity(0.05),
+                                    .green.opacity(0.2),
+                                    .green.opacity(0.05),
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -201,135 +154,276 @@ struct DietView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // ✅ Vista semanal con scroll mejorado
-    private var weeklyPlanView: some View {
-        VStack(spacing: 0) {
-            // Header fijo que no se mueve
-            if dietManager.dietData.count > 1 {
-                viewModeHeader
+    // MARK: - Navigation Title View
+    @ViewBuilder
+    private var navigationTitleView: some View {
+        if dietManager.dietData.count == 1
+            && dietManager.dietData[0].day == "Dieta Semanal"
+        {
+            VStack(spacing: 2) {
+                Text("Plan Semanal")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Text("\(dietManager.dietData[0].meals.count) comidas")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
+        } else if viewMode == .day && !selectedDay.isEmpty {
+            VStack(spacing: 2) {
+                Text(formatDayName(selectedDay))
+                    .font(.headline)
+                    .foregroundColor(.primary)
 
-            // Header colapsable con altura dinámica
-            weeklyStatsHeader
-                .frame(height: max(0, headerHeight + headerOffset))
-                .clipped()
-                .opacity(headerOffset < -headerHeight * 0.8 ? 0 : 1)
+                Text(
+                    "Día \(currentDayIndex + 1) de \(dietManager.dietData.count)"
+                )
+                .font(.caption)
+                .foregroundColor(.secondary)
+            }
+        } else {
+            VStack(spacing: 2) {
+                Text("Semana")
+                    .font(.headline)
+                    .foregroundColor(.primary)
 
-            // Contenido principal con mejor detección de scroll
-            ScrollView {
+                Text("\(dietManager.dietData.count) días")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    // MARK: - Weekly Plan View with Navigation
+    private var weeklyPlanViewWithNavigation: some View {
+        GeometryReader { geometry in
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 20) {
-                    // Detector de scroll al inicio del contenido
-                    Color.clear
-                        .frame(height: 1)
-                        .scrollOffset($scrollOffset)
+                    // Header grande personalizado
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
 
+                            Text("Tu rutina nutricional completa")
+                                .font(.title3)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom)
+
+                    // Stats card
+                    HStack {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Label(
+                                "\(dietManager.dietData[0].meals.count) comidas",
+                                systemImage: "fork.knife"
+                            )
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                            if !dietManager.dietData[0].supplements.isEmpty {
+                                Label(
+                                    "\(dietManager.dietData[0].supplements.count) suplementos",
+                                    systemImage: "pills.fill"
+                                )
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color.green.opacity(0.1))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+
+                    // Comidas
                     let sortedMeals = dietManager.dietData[0].meals.sorted(by: {
                         $0.orderIndex < $1.orderIndex
                     })
                     ForEach(sortedMeals.indices, id: \.self) { index in
                         MealCardView(meal: sortedMeals[index])
-                            .transition(
-                                .asymmetric(
-                                    insertion: .move(edge: .trailing).combined(
-                                        with: .opacity
-                                    ),
-                                    removal: .move(edge: .leading).combined(
-                                        with: .opacity
-                                    )
-                                )
-                            )
+                            .padding(.horizontal)
                     }
 
+                    // Suplementos
                     if !dietManager.dietData[0].supplements.isEmpty {
                         SupplementsView(
                             supplements: dietManager.dietData[0].supplements
                         )
-                        .transition(
-                            .move(edge: .bottom).combined(with: .opacity)
-                        )
+                        .padding(.horizontal)
                     }
+
+                    Color.clear
+                        .frame(height: 50)
                 }
-                .padding()
+                .padding(.top, 20)
             }
-            .coordinateSpace(name: "scroll")
-            .onChange(of: scrollOffset) { _, _ in
-                updateHeaderOffset()
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    navigationTitleView
+                }
+            }
+            .refreshable {
+                if let user = authManager.user {
+                    await dietManager.loadActiveDietPlan(userId: user.id)
+                }
             }
         }
     }
 
-    // ✅ Vista multi-día con scroll mejorado
-    private var multiDayPlanView: some View {
-        VStack(spacing: 0) {
-            // Header fijo que no se mueve
-            viewModeHeader
+    // MARK: - Multi-Day Plan View with Navigation
+    private var multiDayPlanViewWithNavigation: some View {
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(spacing: 20) {
+                // Header grande personalizado según el modo
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        if viewMode == .day {
+                            if dietManager.dietData.count > 1 {
+                                HStack(spacing: 12) {
+                                    Text(
+                                        "Día \(currentDayIndex + 1) de \(dietManager.dietData.count)"
+                                    )
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
 
-            // Header colapsable con altura dinámica (solo en vista diaria)
-            if viewMode == .day {
-                enhancedDayNavigationView
-                    .frame(height: max(0, headerHeight + headerOffset))
-                    .clipped()
-                    .opacity(headerOffset < -headerHeight * 0.8 ? 0 : 1)
-            }
-
-            // Contenido principal
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Detector de scroll al inicio del contenido
-                    Color.clear
-                        .frame(height: 1)
-                        .scrollOffset($scrollOffset)
-
-                    if viewMode == .week {
-                        ForEach(0..<dietManager.dietData.count, id: \.self) {
-                            dayIndex in
-                            DayCardView(
-                                day: dietManager.dietData[dayIndex],
-                                dayIndex: dayIndex,
-                                isExpanded: expandedDay == dayIndex,
-                                onToggleExpand: {
-                                    expandedDay =
-                                        expandedDay == dayIndex ? -1 : dayIndex
+                                    // Indicador de progreso
+                                    HStack(spacing: 2) {
+                                        ForEach(
+                                            0..<min(
+                                                dietManager.dietData.count,
+                                                7
+                                            ),
+                                            id: \.self
+                                        ) { index in
+                                            Circle()
+                                                .fill(
+                                                    index == currentDayIndex
+                                                        ? Color.green
+                                                        : Color.green.opacity(
+                                                            0.3
+                                                        )
+                                                )
+                                                .frame(width: 6, height: 6)
+                                        }
+                                    }
                                 }
-                            )
-                        }
-                    } else {
-                        if let selectedDayData = dietManager.dietData.first(
-                            where: { $0.day == selectedDay })
-                        {
-                            let sortedMeals = selectedDayData.meals.sorted(by: {
-                                $0.orderIndex < $1.orderIndex
-                            })
-                            ForEach(sortedMeals, id: \.id) { meal in
-                                MealCardView(meal: meal)
-                                    .transition(
-                                        .asymmetric(
-                                            insertion: .move(edge: .trailing)
-                                                .combined(with: .opacity),
-                                            removal: .move(edge: .leading)
-                                                .combined(with: .opacity)
-                                        )
-                                    )
                             }
+                        } else {
+                            Text("Plan Semanal")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
 
-                            if !selectedDayData.supplements.isEmpty {
-                                SupplementsView(
-                                    supplements: selectedDayData.supplements
-                                )
-                                .transition(
-                                    .move(edge: .bottom).combined(
-                                        with: .opacity
+                            Text(
+                                "\(dietManager.dietData.count) días programados"
+                            )
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                        }
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.bottom)
+
+                // Contenido según el modo de vista
+                if viewMode == .week {
+                    ForEach(0..<dietManager.dietData.count, id: \.self) {
+                        dayIndex in
+                        DayCardView(
+                            day: dietManager.dietData[dayIndex],
+                            dayIndex: dayIndex,
+                            isExpanded: expandedDay == dayIndex,
+                            onToggleExpand: {
+                                withAnimation(
+                                    .spring(
+                                        response: 0.3,
+                                        dampingFraction: 0.8
                                     )
-                                )
+                                ) {
+                                    expandedDay =
+                                        expandedDay == dayIndex
+                                        ? -1 : dayIndex
+                                }
                             }
+                        )
+                        .padding(.horizontal)
+                    }
+                } else {
+                    if let selectedDayData = dietManager.dietData.first(
+                        where: { $0.day == selectedDay })
+                    {
+                        let sortedMeals = selectedDayData.meals.sorted(by: {
+                            $0.orderIndex < $1.orderIndex
+                        })
+
+                        ForEach(sortedMeals, id: \.id) { meal in
+                            MealCardView(meal: meal)
+                                .padding(.horizontal)
+                        }
+
+                        if !selectedDayData.supplements.isEmpty {
+                            SupplementsView(
+                                supplements: selectedDayData.supplements
+                            )
+                            .padding(.horizontal)
                         }
                     }
                 }
-                .padding()
+
+                Color.clear
+                    .frame(height: 50)
             }
-            .coordinateSpace(name: "scroll")
-            .onChange(of: scrollOffset) { _, _ in
-                updateHeaderOffset()
+            .padding(.top, 20)
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                navigationTitleView
+            }
+
+            // Selector de vista (solo si hay múltiples días)
+            if dietManager.dietData.count > 1 {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Picker("Vista", selection: $viewMode) {
+                        ForEach(ViewMode.allCases, id: \.self) { mode in
+                            Label(mode.displayName, systemImage: mode.icon)
+                                .tag(mode)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+            }
+
+            // Navegación de días (solo en vista diaria)
+            if viewMode == .day && dietManager.dietData.count > 1 {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        navigateToPreviousDay()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                    .disabled(currentDayIndex == 0)
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        navigateToNextDay()
+                    } label: {
+                        Image(systemName: "chevron.right")
+                    }
+                    .disabled(
+                        currentDayIndex == dietManager.dietData.count - 1
+                    )
+                }
+            }
+        }
+        .refreshable {
+            if let user = authManager.user {
+                await dietManager.loadActiveDietPlan(userId: user.id)
             }
         }
         .onAppear {
@@ -343,170 +437,7 @@ struct DietView: View {
         }
     }
 
-    // ✅ Header compacto para controles de vista
-    private var viewModeHeader: some View {
-        HStack {
-            Text("Vista:")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
-
-            Picker("Vista", selection: $viewMode) {
-                ForEach(ViewMode.allCases, id: \.self) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
-            .frame(width: 180)
-
-            Spacer()
-        }
-        .padding()
-        .background(Color(.systemGray6).opacity(0.5))
-    }
-
-    private var weeklyStatsHeader: some View {
-        VStack(spacing: 16) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Plan Semanal")
-                        .font(.title2)
-                        .fontWeight(.bold)
-
-                    Text("Tu rutina nutricional completa")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                VStack(spacing: 4) {
-                    Text("\(dietManager.dietData[0].meals.count)")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.green)
-
-                    Text("comidas")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-
-            // Barra de progreso del día (simulada)
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Progreso de hoy")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-
-                    Spacer()
-
-                    Text("2 de 5 comidas")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                ProgressView(value: 0.4)
-                    .tint(.green)
-                    .background(Color.green.opacity(0.2))
-                    .scaleEffect(x: 1, y: 1.5, anchor: .center)
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-        )
-    }
-
-    private var enhancedDayNavigationView: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 16) {
-                if dietManager.dietData.count > 1 {
-                    Button(action: navigateToPreviousDay) {
-                        Image(systemName: "chevron.left.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.green, .green.opacity(0.7)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
-                    .disabled(currentDayIndex == 0)
-                }
-
-                Spacer()
-
-                VStack(spacing: 4) {
-                    Text(formatDayName(selectedDay))
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-
-                    Text(
-                        "Día \(currentDayIndex + 1) de \(dietManager.dietData.count)"
-                    )
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(Color.green.opacity(0.1))
-                    .cornerRadius(8)
-                }
-
-                Spacer()
-
-                if dietManager.dietData.count > 1 {
-                    Button(action: navigateToNextDay) {
-                        Image(systemName: "chevron.right.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.green, .green.opacity(0.7)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
-                    .disabled(currentDayIndex == dietManager.dietData.count - 1)
-                }
-            }
-
-            // Indicador de progreso más compacto
-            if dietManager.dietData.count > 1 {
-                HStack(spacing: 4) {
-                    ForEach(0..<dietManager.dietData.count, id: \.self) {
-                        index in
-                        Capsule()
-                            .fill(
-                                index == currentDayIndex
-                                    ? Color.green : Color.green.opacity(0.3)
-                            )
-                            .frame(
-                                width: index == currentDayIndex ? 16 : 6,
-                                height: 3
-                            )
-                            .animation(
-                                .spring(response: 0.3),
-                                value: currentDayIndex
-                            )
-                    }
-                }
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-        )
-        .padding(.horizontal)
-    }
-
-    // MARK: - Funciones auxiliares
+    // MARK: - Helper Functions
     private func navigateToPreviousDay() {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             guard

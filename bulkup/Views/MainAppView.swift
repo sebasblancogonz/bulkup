@@ -50,7 +50,7 @@ struct MainAppView: View {
         var iconName: String {
             switch self {
             case .upload: return "plus.circle.fill"
-            case .diet: return "leaf.fill"
+            case .diet: return "fork.knife"
             case .training: return "dumbbell.fill"
             case .rm: return "chart.bar.fill"
             case .exercises: return "list.bullet"
@@ -209,7 +209,7 @@ struct MainAppView: View {
             HStack(spacing: 12) {
                 // Indicador de dieta cargada
                 if !dietManager.dietData.isEmpty {
-                    Image(systemName: "leaf.fill")
+                    Image(systemName: "fork.knife")
                         .foregroundColor(.green)
                         .font(.title3)
                 }
@@ -334,9 +334,11 @@ struct MainAppView: View {
                     selectedTab = .upload
                 }
             } else {
-                DietView()
-                    .environmentObject(authManager)
-                    .environmentObject(dietManager)
+                NavigationStack {
+                    DietView()
+                        .environmentObject(authManager)
+                        .environmentObject(dietManager)
+                }
             }
         case .training:
             if trainingManager.trainingData.isEmpty {
@@ -351,9 +353,12 @@ struct MainAppView: View {
                     selectedTab = .upload
                 }
             } else {
+                NavigationStack {  // <-- Importante
+                    
                 TrainingView()
                     .environmentObject(authManager)
                     .environmentObject(trainingManager)
+                    }
             }
         case .rm:
             RMTrackerView()
