@@ -118,6 +118,8 @@ class User {
     @Attribute(.unique) var id: String
     var email: String
     var name: String
+    var hasActiveSubscription: Bool = false
+    var subscriptionExpiryDate: Date?
     var createdAt: Date
     var token: String?
     

@@ -13,7 +13,9 @@ struct MainAppView: View {
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var dietManager = DietManager.shared
     @StateObject private var trainingManager = TrainingManager.shared
-
+    
+    @State private var showingSubscriptionAlert = false
+    @State private var showingSubscriptionView = false
     @State private var selectedTab: AppTab = .upload
     @State private var showingProfile = false
     @State private var showingNotifications = false
@@ -162,6 +164,17 @@ struct MainAppView: View {
                 }
                 .sheet(isPresented: $showingNotifications) {
                     NotificationView()
+                }.alert("Suscripción Requerida", isPresented: $showingSubscriptionAlert) {
+                    Button("Ver Planes", role: nil) {
+                        showingSubscriptionView = true
+                    }
+                    Button("Cancelar", role: .cancel) {}
+                } message: {
+                    Text("Necesitas una suscripción activa para subir y gestionar tus planes de entrenamiento y dieta.")
+                }
+                .sheet(isPresented: $showingSubscriptionView) {
+                    SubscriptionView()
+                        .environmentObject(authManager)
                 }
             }
         }
@@ -234,10 +247,8 @@ struct MainAppView: View {
         .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 
-    // ✅ Tab bar móvil arreglado (sin cortes)
     private var fixedMobileTabBar: some View {
         VStack(spacing: 0) {
-            // Línea separadora
             Rectangle()
                 .fill(Color(.systemGray4))
                 .frame(height: 0.5)
@@ -245,31 +256,55 @@ struct MainAppView: View {
             HStack(spacing: 0) {
                 ForEach(AppTab.allCases) { tab in
                     Button(action: {
-                        if !isTabDisabled(tab) {
+                        if tab == .upload && !(authManager.user?.hasActiveSubscription ?? false) {
+                            showingSubscriptionAlert = true
+                        } else if !isTabDisabled(tab) {
                             selectedTab = tab
                         }
                     }) {
                         VStack(spacing: 4) {
-                            Image(
-                                systemName: selectedTab == tab
-                                    ? tab.iconName
-                                    : tab.iconName.replacingOccurrences(
-                                        of: ".fill",
-                                        with: ""
-                                    )
-                            )
-                            .font(
-                                .system(
-                                    size: 20,
-                                    weight: selectedTab == tab
-                                        ? .semibold : .medium
+                            ZStack(alignment: .topTrailing) {
+                                Image(
+                                    systemName: selectedTab == tab
+                                        ? tab.iconName
+                                        : tab.iconName.replacingOccurrences(
+                                            of: ".fill",
+                                            with: ""
+                                        )
                                 )
-                            )
-                            .foregroundColor(
-                                isTabDisabled(tab)
-                                    ? .gray.opacity(0.4)
-                                    : selectedTab == tab ? .blue : .gray
-                            )
+                                .font(
+                                    .system(
+                                        size: 20,
+                                        weight: selectedTab == tab
+                                            ? .semibold : .medium
+                                    )
+                                )
+                                .foregroundColor(
+                                    isTabDisabled(tab)
+                                        ? .gray.opacity(0.4)
+                                        : selectedTab == tab ? .blue : .gray
+                                )
+                                
+                                // Badge PRO para el tab de subir
+                                if tab == .upload && !(authManager.user?.hasActiveSubscription ?? false) {
+                                    Text("PRO")
+                                        .font(.system(size: 8, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 3)
+                                        .padding(.vertical, 1)
+                                        .background(
+                                            Capsule()
+                                                .fill(
+                                                    LinearGradient(
+                                                        colors: [.purple, .purple.opacity(0.8)],
+                                                        startPoint: .leading,
+                                                        endPoint: .trailing
+                                                    )
+                                                )
+                                        )
+                                        .offset(x: 8, y: -5)
+                                }
+                            }
 
                             Text(tab.shortName)
                                 .font(.caption2)
@@ -285,7 +320,7 @@ struct MainAppView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                     }
-                    .disabled(isTabDisabled(tab))
+                    .disabled(tab != .upload && isTabDisabled(tab))
                     .buttonStyle(PlainButtonStyle())
                 }
             }
@@ -293,6 +328,7 @@ struct MainAppView: View {
         }
         .background(Color(.systemBackground))
     }
+
 
     private var tabNavigationView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -317,10 +353,18 @@ struct MainAppView: View {
     private var contentView: some View {
         switch selectedTab {
         case .upload:
-            FileUploadView()
-                .environmentObject(dietManager)
-                .environmentObject(trainingManager)
-                .environmentObject(authManager)
+            if authManager.user?.hasActiveSubscription ?? false {
+                FileUploadView()
+                    .environmentObject(dietManager)
+                    .environmentObject(trainingManager)
+                    .environmentObject(authManager)
+            } else {
+                SubscriptionRequiredView(
+                    onSubscribe: {
+                        showingSubscriptionView = true
+                    }
+                )
+            }
         case .diet:
             if dietManager.dietData.isEmpty {
                 EmptyStateView(
@@ -331,7 +375,11 @@ struct MainAppView: View {
                     actionIcon: "plus.circle.fill",
                     color: .green
                 ) {
-                    selectedTab = .upload
+                    if authManager.user?.hasActiveSubscription ?? false {
+                        selectedTab = .upload
+                    } else {
+                        showingSubscriptionAlert = true
+                    }
                 }
             } else {
                 NavigationStack {
@@ -350,15 +398,18 @@ struct MainAppView: View {
                     actionIcon: "plus.circle.fill",
                     color: .blue
                 ) {
-                    selectedTab = .upload
+                    if authManager.user?.hasActiveSubscription ?? false {
+                        selectedTab = .upload
+                    } else {
+                        showingSubscriptionAlert = true
+                    }
                 }
             } else {
-                NavigationStack {  // <-- Importante
-                    
-                TrainingView()
-                    .environmentObject(authManager)
-                    .environmentObject(trainingManager)
-                    }
+                NavigationStack {
+                    TrainingView()
+                        .environmentObject(authManager)
+                        .environmentObject(trainingManager)
+                }
             }
         case .rm:
             RMTrackerView()
@@ -409,10 +460,16 @@ struct MainAppView: View {
 
     private func isTabDisabled(_ tab: AppTab) -> Bool {
         switch tab {
-        case .diet: return dietManager.dietData.isEmpty
-        case .training: return trainingManager.trainingData.isEmpty
-        case .upload, .rm, .exercises: return false
-        }
+            case .upload:
+                // Verificar si el usuario tiene suscripción activa
+                return !(authManager.user?.hasActiveSubscription ?? false)
+            case .diet:
+                return dietManager.dietData.isEmpty
+            case .training:
+                return trainingManager.trainingData.isEmpty
+            case .rm, .exercises:
+                return false
+            }
     }
 
 }

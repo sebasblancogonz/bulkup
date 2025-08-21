@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		16C54BF92E571CA2006FEF86 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16C54BF82E571CA2006FEF86 /* StoreKit.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		1636179D2E51E66800B05DFA /* bulkup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bulkup.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		16C54BF82E571CA2006FEF86 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -36,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				16C54BF92E571CA2006FEF86 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,6 +52,7 @@
 			isa = PBXGroup;
 			children = (
 				1636179F2E51E66800B05DFA /* bulkup */,
+				16C54BF72E571CA2006FEF86 /* Frameworks */,
 				1636179E2E51E66800B05DFA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -56,6 +63,14 @@
 				1636179D2E51E66800B05DFA /* bulkup.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		16C54BF72E571CA2006FEF86 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				16C54BF82E571CA2006FEF86 /* StoreKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
