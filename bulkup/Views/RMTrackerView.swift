@@ -61,21 +61,16 @@ struct RMTrackerView: View {
                 .zIndex(1)
             }
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Tus RM")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 2) {
-
-                        Text("Tus RM")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-
-                        Spacer()
-
-                        Button(action: { showAddRecord() }) {
-                            Image(systemName: "plus")
-                                .font(.title2)
-                        }
+                    Button(action: { showAddRecord() }) {
+                        Image(systemName: "plus")
+                            .font(.title2)
                     }
-
                 }
             }
             .sheet(isPresented: $showAddForm) {

@@ -13,6 +13,7 @@ struct WeightSetView: View {
     let exercise: Exercise
     let exerciseIndex: Int
     let dayName: String
+    var onSubmit: (() -> Void)? = nil
     
     @EnvironmentObject var trainingManager: TrainingManager
     @State private var weightText: String = ""
@@ -76,6 +77,10 @@ struct WeightSetView: View {
                     TextField("0", text: $weightText)
                         .keyboardType(.decimalPad)
                         .focused($isFocused)
+                        .onSubmit {
+                                onSubmit?()
+                            }
+                        .submitLabel(.done)
                         .textFieldStyle(.roundedBorder)
                         .frame(height: 36)
                         .background(
@@ -94,13 +99,6 @@ struct WeightSetView: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
-            }
-            
-            // Show reps info if available
-            if !exercise.reps.isEmpty {
-                Text("\(exercise.reps) reps")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
             }
         }
         .padding(12)

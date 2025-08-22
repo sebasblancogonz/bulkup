@@ -54,7 +54,6 @@ struct SupplementsView: View {
             
             // Grid de suplementos con más espaciado
             LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 16),
                 GridItem(.flexible(), spacing: 16)
             ], spacing: 16) {
                 ForEach(supplements.indices, id: \.self) { index in

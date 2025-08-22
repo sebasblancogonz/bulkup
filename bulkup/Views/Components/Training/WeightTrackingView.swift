@@ -41,8 +41,8 @@ struct WeightTrackingView: View {
                             setIndex: setIndex,
                             exercise: exercise,
                             exerciseIndex: exerciseIndex,
-                            dayName: dayFormatter.string(from: currentDate)
-                                .capitalized  // ✅ Convertimos currentDate a día
+                            dayName: dayFormatter.string(from: currentDate).capitalized,
+                            onSubmit: saveWeights
                         )
                         .frame(width: UIScreen.main.bounds.width * 0.40)
                         .shadow(
@@ -94,7 +94,7 @@ struct WeightTrackingView: View {
                     .background(Color(.secondarySystemBackground))
                     .cornerRadius(8)
             }
-
+            
             // Botón guardar
             Button(action: saveWeights) {
                 HStack {
@@ -112,17 +112,32 @@ struct WeightTrackingView: View {
                 .background(isSaved ? Color.green.opacity(0.2) : Color.blue)
                 .foregroundColor(isSaved ? .green : .white)
                 .cornerRadius(10)
-            }
+            }.keyboardShortcut(.defaultAction)
         }
         .padding()
     }
 
     private func saveWeights() {
         guard let user = authManager.user else { return }
+        // Buscar el día de entrenamiento actual usando el id del ejercicio
+        let trainingDay = trainingManager.trainingData.first { day in
+            day.exercises.contains(where: { $0.id == exercise.id })
+        }
+        guard let dayModel = trainingDay else {
+            trainingManager.errorMessage = "No se encontró el día de entrenamiento."
+            return
+        }
+        // Buscar el ejercicio real por id
+        guard let realExercise = dayModel.exercises.first(where: { $0.id == exercise.id }) else {
+            trainingManager.errorMessage = "No se encontró el ejercicio."
+            return
+        }
+        let orderIndex = realExercise.orderIndex
+
         Task {
             await trainingManager.saveWeightsToDatabase(
-                day: dayFormatter.string(from: currentDate).capitalized,
-                exerciseIndex: exerciseIndex,
+                day: dayModel.day, // Usa el valor exacto del modelo
+                exerciseIndex: orderIndex,
                 exerciseName: exercise.name,
                 note: localNote,
                 userId: user.id

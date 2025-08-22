@@ -6,9 +6,9 @@ struct TrainingView: View {
     @StateObject var trainingManager = TrainingManager.shared
     @State private var viewMode: ViewMode = .day
     @State private var selectedDay = ""
-    @State private var expandedDay = -1
+    @State private var expandedDay: Int? = nil
     @State private var currentDayIndex = 0
-
+    
     // Estado para navegación de fechas
     @State private var currentDate: Date = Date()
 
@@ -137,7 +137,7 @@ struct TrainingView: View {
             }
         }
         .onChange(of: trainingManager.trainingData) { _, _ in
-            expandedDay = -1
+            expandedDay = nil
         }
     }
 
@@ -287,7 +287,7 @@ struct TrainingView: View {
     private var mainContentViewWithNavigation: some View {
         ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: 20) {
-                
+
                 // Contenido según el modo de vista
                 if viewMode == .week {
                     weekView
@@ -301,7 +301,7 @@ struct TrainingView: View {
             }
             .padding(.top, 20)
         }
-        .navigationBarTitleDisplayMode(.inline)  // Cambiado a inline para usar vista personalizada
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             // Título personalizado en el centro
             ToolbarItem(placement: .principal) {
@@ -404,398 +404,34 @@ struct TrainingView: View {
         }
     }
 
-    private var mainContentView: some View {
-        VStack(spacing: 0) {
-            // Header fijo (selector de vista)
-            viewModeHeader
-
-            // Contenido principal con ScrollView
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(spacing: 20) {
-                    // Detector de scroll - DEBE IR PRIMERO
-                    Color.clear
-                        .frame(height: 1)
-                        .scrollOffset($scrollOffset)
-
-                    // Espacio dinámico para el header basado en el scroll
-                    Color.clear
-                        .frame(height: calculateHeaderSpacing())
-                        .animation(
-                            .interactiveSpring(
-                                response: 0.35,
-                                dampingFraction: 0.86,
-                                blendDuration: 0.25
-                            ),
-                            value: scrollOffset
-                        )
-
-                    // Contenido según el modo de vista
-                    if viewMode == .week {
-                        weekView
-                    } else {
-                        dayView
-                    }
-
-                    // Espacio inferior
-                    Color.clear
-                        .frame(height: 50)
-                }
-                .padding(.top, 20)
-                .padding(.horizontal)
-            }
-            .coordinateSpace(name: "scroll")
-            .overlay(alignment: .top) {
-                // Header colapsable con altura dinámica basada en el scroll
-                VStack(spacing: 0) {
-                    if viewMode == .day {
-                        ZStack {
-                            // Fondo
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.systemBackground))
-                                .shadow(
-                                    color: .black.opacity(0.05),
-                                    radius: 6,
-                                    x: 0,
-                                    y: 3
-                                )
-
-                            // Contenido del header de día
-                            enhancedDayNavigationViewWithDate
-                                .opacity(calculateHeaderOpacity())
-                        }
-                        .frame(height: calculateHeaderHeight())
-                        .clipped()
-                    } else {
-                        ZStack {
-                            // Fondo
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(.systemBackground))
-                                .shadow(
-                                    color: .black.opacity(0.05),
-                                    radius: 4,
-                                    x: 0,
-                                    y: 2
-                                )
-
-                            // Contenido del header de semana
-                            weekNavigationView
-                                .opacity(calculateHeaderOpacity())
-                        }
-                        .frame(height: calculateHeaderHeight())
-                        .clipped()
-                    }
-                }
-                .animation(
-                    .interactiveSpring(
-                        response: 0.35,
-                        dampingFraction: 0.86,
-                        blendDuration: 0.25
-                    ),
-                    value: scrollOffset
-                )
-            }
-        }
-    }
-
-    // FUNCIONES AUXILIARES PARA CALCULAR LA ALTURA Y OPACIDAD DEL HEADER
-    private func calculateHeaderHeight() -> CGFloat {
-        // El header empieza a colapsarse cuando scrollOffset pasa de 0
-        // y se colapsa completamente cuando llega a -headerHeight
-
-        if scrollOffset >= 10 {
-            // Completamente visible cuando está en la parte superior
-            return headerHeight
-        } else if scrollOffset <= -headerHeight {
-            // Completamente colapsado
-            return 0
-        } else {
-            // Altura proporcional basada en el scroll
-            // scrollOffset va de 0 a -headerHeight
-            // queremos que la altura vaya de headerHeight a 0
-            let progress = -scrollOffset / (headerHeight * 0.5)
-            return headerHeight * (1 - progress)
-        }
-    }
-
-    private func calculateHeaderOpacity() -> Double {
-        // Calculamos la opacidad basada en el progreso del colapso
-        if scrollOffset >= 0 {
-            return 1.0
-        } else if scrollOffset <= -headerHeight {
-            return 0.0
-        } else {
-            // Opacidad proporcional, pero empieza a desvanecerse más rápido
-            let progress = -scrollOffset / headerHeight
-            // Usamos una curva para que se desvanezca más suavemente
-            return Double(1 - (progress * 1.2)).clamped(to: 0...1)
-        }
-    }
-
-    private func calculateHeaderSpacing() -> CGFloat {
-        // El espacio debe coincidir con la altura del header
-        return calculateHeaderHeight()
-    }
-
-    private var viewModeHeader: some View {
-        HStack {
-            Text("Vista:")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
-
-            Picker("Vista", selection: $viewMode) {
-                ForEach(ViewMode.allCases, id: \.self) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
-            .frame(width: 180)
-
-            Spacer()
-        }
-        .padding()
-        .background(Color(.systemGray6).opacity(0.5))
-    }
-
-    // Vista de navegación de día con fechas - Restaurada con más información
-    private var enhancedDayNavigationViewWithDate: some View {
-        VStack(spacing: 16) {
-            // Navegación de fechas
-            HStack {
-                Button {
-                    withAnimation {
-                        currentDate =
-                            calendar.date(
-                                byAdding: .day,
-                                value: -1,
-                                to: currentDate
-                            ) ?? currentDate
-                    }
-                } label: {
-                    Image(systemName: "chevron.left.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.blue, .blue.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                }
-                .disabled(
-                    calendar.isDate(
-                        currentDate,
-                        inSameDayAs: calendar.date(
-                            byAdding: .year,
-                            value: -1,
-                            to: Date()
-                        ) ?? Date()
-                    )
-                )
-
-                Spacer()
-
-                VStack(spacing: 6) {
-                    Text(dayFormatter.string(from: currentDate).capitalized)
-                        .font(.headline)  // Smaller than title2
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-
-                    Text(dateFormatter.string(from: currentDate))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    // Mostrar el entrenamiento correspondiente al día
-                    if currentTrainingDay == nil {
-                        Text("Día de descanso")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(12)
-                    }
-
-                    // Indicador de día actual
-                    if calendar.isDateInToday(currentDate) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "calendar.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.caption2)
-                            Text("Hoy")
-                                .font(.caption2)
-                                .foregroundColor(.green)
-                                .fontWeight(.medium)
-                        }
-                    } else if calendar.isDateInYesterday(currentDate) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "calendar.circle")
-                                .foregroundColor(.orange)
-                                .font(.caption2)
-                            Text("Ayer")
-                                .font(.caption2)
-                                .foregroundColor(.orange)
-                                .fontWeight(.medium)
-                        }
-                    } else if calendar.isDateInTomorrow(currentDate) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "calendar.circle")
-                                .foregroundColor(.blue)
-                                .font(.caption2)
-                            Text("Mañana")
-                                .font(.caption2)
-                                .foregroundColor(.blue)
-                                .fontWeight(.medium)
-                        }
-                    }
-                }
-
-                Spacer()
-
-                Button {
-                    withAnimation {
-                        currentDate =
-                            calendar.date(
-                                byAdding: .day,
-                                value: 1,
-                                to: currentDate
-                            ) ?? currentDate
-                    }
-                } label: {
-                    Image(systemName: "chevron.right.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.blue, .blue.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                }
-                .disabled(
-                    calendar.isDate(
-                        currentDate,
-                        inSameDayAs: calendar.date(
-                            byAdding: .month,
-                            value: 1,
-                            to: Date()
-                        ) ?? Date()
-                    )
-                )
-            }
-
-            // Información adicional
-            if trainingManager.trainingData.count > 1 {
-                VStack(spacing: 6) {
-                    if let trainingDay = currentTrainingDay,
-                        let workout = trainingManager.trainingData.first(
-                            where: { $0.day == trainingDay })?.workoutName
-                    {
-                        Text(workout)
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.blue.opacity(0.15))
-                            .cornerRadius(12)
-                    }
-
-                    Text(
-                        "\(trainingManager.trainingData.count) entrenamientos en la rutina"
-                    )
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                }
-            }
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
-        .padding(.horizontal)
-    }
-
-    private var weekNavigationView: some View {
-        HStack {
-            Button(action: {
-                Task { await trainingManager.changeWeek(direction: .previous) }
-            }) {
-                Image(systemName: "chevron.left.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.blue, .blue.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-
-            Spacer()
-
-            VStack(spacing: 4) {
-                Text(formatWeekRange(trainingManager.selectedWeek))
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-
-                Text("\(trainingManager.weights.count) registros esta semana")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            Button(action: {
-                Task { await trainingManager.changeWeek(direction: .next) }
-            }) {
-                Image(systemName: "chevron.right.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.blue, .blue.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-        }
-        .padding()
-        .padding(.horizontal)
-    }
-
     @ViewBuilder
     private var weekView: some View {
-        ForEach(Array(trainingManager.trainingData.enumerated()), id: \.offset)
-        { index, day in
+        ForEach(Array(trainingManager.trainingData.enumerated()), id: \.offset) { index, day in
             weekDayCard(for: day, at: index)
-                .transition(
-                    .asymmetric(
-                        insertion: .move(edge: .trailing).combined(
-                            with: .opacity
-                        ),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    )
-                )
         }
     }
 
     @ViewBuilder
     private func weekDayCard(for day: TrainingDay, at index: Int) -> some View {
         VStack(spacing: 0) {
+            // Header siempre visible
             weekDayHeader(for: day, at: index)
-
-            if expandedDay == index {
-                weekDayExpandedContent(for: day)
-                    .transition(
-                        .asymmetric(
-                            insertion: .opacity.combined(
-                                with: .move(edge: .top)
-                            ),
-                            removal: .opacity.combined(with: .move(edge: .top))
-                        )
-                    )
+            
+            // Contenedor del contenido expandible
+            VStack(spacing: 0) {
+                if expandedDay == index {
+                    Divider()
+                        .padding(.horizontal)
+                    
+                    weekDayExpandedContent(for: day, at: index)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .move(edge: .top).combined(with: .opacity)
+                        ))
+                }
             }
+            .clipped()
+            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: expandedDay)
         }
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -803,18 +439,17 @@ struct TrainingView: View {
                 .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         )
         .padding(.horizontal)
-        .animation(
-            .spring(response: 0.3, dampingFraction: 0.8),
-            value: expandedDay
-        )
     }
 
     @ViewBuilder
-    private func weekDayHeader(for day: TrainingDay, at index: Int) -> some View
-    {
+    private func weekDayHeader(for day: TrainingDay, at index: Int) -> some View {
         Button(action: {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                expandedDay = expandedDay == index ? -1 : index
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                if expandedDay == index {
+                    expandedDay = nil
+                } else {
+                    expandedDay = index
+                }
             }
         }) {
             HStack {
@@ -851,6 +486,7 @@ struct TrainingView: View {
                     .frame(width: 24, height: 24)
                     .background(Color.blue.opacity(0.1))
                     .clipShape(Circle())
+                    .animation(.spring(response: 0.3, dampingFraction: 0.8), value: expandedDay)
                 }
             }
             .padding()
@@ -860,39 +496,62 @@ struct TrainingView: View {
     }
 
     @ViewBuilder
-    private func weekDayExpandedContent(for day: TrainingDay) -> some View {
-        VStack(spacing: 0) {
-            Divider()
-                .padding(.horizontal)
+    private func weekDayExpandedContent(for day: TrainingDay, at index: Int) -> some View {
+        VStack(spacing: 12) {
+            let sortedExercises = day.exercises.sorted(by: {
+                $0.orderIndex < $1.orderIndex
+            })
 
-            VStack(spacing: 12) {
-                let sortedExercises = day.exercises.sorted(by: {
-                    $0.orderIndex < $1.orderIndex
-                })
-                ForEach(Array(sortedExercises.enumerated()), id: \.offset) {
-                    exerciseIndex,
-                    exercise in
-                    VStack(spacing: 12) {
-                        ExerciseCardView(
-                            exercise: exercise,
-                            exerciseIndex: exerciseIndex,
-                            dayName: day.day,
-                            currentDate: currentDate
-                        )
-                        .environmentObject(trainingManager)
-                        .environmentObject(authManager)
-                        .fixedSize(horizontal: false, vertical: true)
+            let dateForThisDay = getDateForTrainingDay(day.day)
 
-                        if exerciseIndex < sortedExercises.count - 1 {
-                            Divider()
-                                .padding(.horizontal)
-                        }
+            ForEach(sortedExercises, id: \.id) { exercise in
+                let exerciseIndex = exercise.orderIndex
+                VStack(spacing: 12) {
+                    ExerciseCardView(
+                        exercise: exercise,
+                        exerciseIndex: exerciseIndex,
+                        dayName: day.day,
+                        currentDate: dateForThisDay
+                    )
+                    .environmentObject(trainingManager)
+                    .environmentObject(authManager)
+
+                    if exerciseIndex < sortedExercises.count - 1 {
+                        Divider()
+                            .padding(.horizontal)
                     }
                 }
             }
-            .padding()
         }
+        .padding()
     }
+
+    // Función helper para obtener la fecha de un día específico
+    private func getDateForTrainingDay(_ dayName: String) -> Date {
+        let dayMapping: [String: Int] = [
+            "lunes": 1,
+            "martes": 2,
+            "miercoles": 3,
+            "jueves": 4,
+            "viernes": 5,
+            "sábado": 6,
+            "domingo": 7,
+        ]
+
+        let today = Date()
+        let calendar = Calendar.current
+
+        guard let targetWeekday = dayMapping[dayName.lowercased()] else {
+            return today
+        }
+
+        let weekStart = trainingManager.getWeekStart(trainingManager.selectedWeek)
+        let daysFromMonday = (targetWeekday == 1) ? 6 : targetWeekday - 2
+        let targetDate = calendar.date(byAdding: .day, value: daysFromMonday, to: weekStart) ?? today
+
+        return targetDate
+    }
+
     @ViewBuilder
     private var navigationTitleView: some View {
         if viewMode == .day {
@@ -924,6 +583,7 @@ struct TrainingView: View {
             }
         }
     }
+
     @ViewBuilder
     private var dayView: some View {
         if let trainingDay = currentTrainingDay,
@@ -931,14 +591,12 @@ struct TrainingView: View {
                 $0.day == trainingDay
             })
         {
-
             let sortedExercises = selectedDayData.exercises.sorted(by: {
                 $0.orderIndex < $1.orderIndex
             })
 
             ForEach(Array(sortedExercises.enumerated()), id: \.element.id) {
-                index,
-                exercise in
+                index, exercise in
                 ExerciseCardView(
                     exercise: exercise,
                     exerciseIndex: index,
@@ -984,19 +642,17 @@ struct TrainingView: View {
 
     private func formatWeekRange(_ date: Date) -> String {
         let start = trainingManager.getWeekStart(date)
-        let end =
-            Calendar.current.date(byAdding: .day, value: 6, to: start) ?? start
+        let end = Calendar.current.date(byAdding: .day, value: 6, to: start) ?? start
 
         let formatter = DateFormatter()
         formatter.dateFormat = "dd MMM"
         formatter.locale = Locale(identifier: "es_ES")
 
-        return
-            "\(formatter.string(from: start)) - \(formatter.string(from: end))"
+        return "\(formatter.string(from: start)) - \(formatter.string(from: end))"
     }
 }
 
-// Extension helper para clamp (si no la tienes ya)
+// Extension helper para clamp
 extension Comparable {
     func clamped(to limits: ClosedRange<Self>) -> Self {
         return min(max(self, limits.lowerBound), limits.upperBound)

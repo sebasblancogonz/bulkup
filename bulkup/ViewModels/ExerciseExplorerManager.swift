@@ -94,8 +94,46 @@ class ExerciseExplorerManager: ObservableObject {
     }
     
     init() {
+        setupAuthObserver()
+        setupLogoutObserver()
+        
+        // Solo cargar si ya hay un usuario autenticado
+        if AuthManager.shared.isAuthenticated {
+            Task {
+                await fetchExercises()
+            }
+        }
+    }
+    
+    private func setupAuthObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleUserLogin),
+            name: .userDidLogin,
+            object: nil
+        )
+    }
+    
+    private func setupLogoutObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleUserLogout),
+            name: .userDidLogout,
+            object: nil
+        )
+    }
+    
+    @objc private func handleUserLogin(_ notification: Notification) {
         Task {
             await fetchExercises()
+        }
+    }
+    
+    @objc private func handleUserLogout(_ notification: Notification) {
+        Task {
+            await MainActor.run {
+                clearData()
+            }
         }
     }
     
@@ -144,5 +182,10 @@ class ExerciseExplorerManager: ObservableObject {
         searchTerm = ""
         resetFilters()
         errorMessage = nil
+        loading = false
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }

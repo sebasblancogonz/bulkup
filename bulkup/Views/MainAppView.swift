@@ -148,7 +148,7 @@ struct MainAppView: View {
                     .overlay(
                         Group {
                             if geometry.size.width <= 600 {
-                                fixedMobileTabBar.ignoresSafeArea(.keyboard) 
+                                fixedMobileTabBar.ignoresSafeArea(.keyboard, edges: .bottom) 
                             }
                         },
                         alignment: .bottom

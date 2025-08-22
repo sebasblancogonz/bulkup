@@ -411,11 +411,10 @@ class TrainingManager: ObservableObject {
                 let weight = weights[weightKey] ?? 0
                 var reps: Int = 0
                 if exercise.reps.contains("-") {
-                    // take the right side of the string
-                    let lastPart = exercise.reps.split(separator: "-").last!
-                    reps = Int(lastPart)!
+                    let lastPart = exercise.reps.split(separator: "-").last
+                    reps = lastPart.flatMap { Int($0) } ?? 0
                 } else if !exercise.reps.isEmpty {
-                    reps = Int(exercise.reps)!
+                    reps = Int(exercise.reps) ?? 0
                 }
                 weightSets.append(WeightSet(weight: weight, reps: reps))
             }
