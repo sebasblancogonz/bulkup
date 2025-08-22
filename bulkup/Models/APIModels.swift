@@ -255,28 +255,31 @@ struct APIResponse<T: Codable>: Codable {
     let error: String?
 }
 
-enum APIError: Error, LocalizedError {
+enum APIError: Error {
     case invalidURL
     case noData
     case decodingError
     case networkError(String)
-    case serverError(Int)
     case unauthorized
-
-    var errorDescription: String? {
+    case invalidRequest
+    case serverError(Int)
+    
+    var localizedDescription: String {
         switch self {
         case .invalidURL:
-            return "URL inválida"
+            return "Invalid URL"
         case .noData:
-            return "No se recibieron datos"
+            return "No data received"
         case .decodingError:
-            return "Error al procesar los datos"
+            return "Failed to decode response"
         case .networkError(let message):
-            return "Error de red: \(message)"
-        case .serverError(let code):
-            return "Error del servidor: \(code)"
+            return message
         case .unauthorized:
-            return "No autorizado"
+            return "Unauthorized access"
+        case .invalidRequest:
+            return "Invalid request parameters"
+        case .serverError(let message):
+            return "Server error: \(message)"
         }
     }
 }

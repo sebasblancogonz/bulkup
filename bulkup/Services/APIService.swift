@@ -26,7 +26,7 @@ class APIService: ObservableObject {
     }
     
     // MARK: - Método genérico para requests
-    private func request<T: Codable>(
+     func request<T: Codable>(
         endpoint: String,
         method: HTTPMethod = .GET,
         body: Data? = nil,

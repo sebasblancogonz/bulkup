@@ -287,7 +287,7 @@ struct SubscriptionView: View {
         isPurchasing = true
         
         do {
-            if let transaction = try await storeManager.purchase(product) {
+            if (try await storeManager.purchase(product)) != nil {
                 isPurchasing = false
                 dismiss()
             } else {
@@ -449,15 +449,14 @@ struct SubscriptionPlanCard: View {
             return nil
         }
         
-        let yearlyCost = product.price
-        let monthlyCostPerYear = monthlyProduct.price * 12
+        let yearlyCost = NSDecimalNumber(decimal: product.price).doubleValue
+        let monthlyCost = NSDecimalNumber(decimal: monthlyProduct.price).doubleValue
+        let monthlyCostPerYear = monthlyCost * 12.0
         let savings = monthlyCostPerYear - yearlyCost
         
-        if savings > 0 {
-            let percentage = Int((savings / monthlyCostPerYear) * 100)
-            return "Ahorra \(percentage)%"
-        }
+        guard savings > 0 else { return nil }
         
-        return nil
+        let percentage = Int((savings / monthlyCostPerYear) * 100.0)
+        return "Ahorra \(percentage)%"
     }
 }

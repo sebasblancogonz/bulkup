@@ -2,8 +2,9 @@
 //  WeightSetView.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 18/8/25.
+//  Fixed version with proper date handling
 //
+
 import SwiftUI
 import SwiftData
 
@@ -17,9 +18,26 @@ struct WeightSetView: View {
     @State private var weightText: String = ""
     @FocusState private var isFocused: Bool
     
+    // Computed property to normalize the day name
+    private var normalizedDayName: String {
+        // Normalize the day name to match what's stored in the database
+        let dayMapping: [String: String] = [
+            "lunes": "lunes",
+            "martes": "martes",
+            "miércoles": "miercoles",
+            "jueves": "jueves",
+            "viernes": "viernes",
+            "sábado": "sabado",
+            "domingo": "domingo"
+        ]
+        
+        let lowercased = dayName.lowercased()
+        return dayMapping[lowercased] ?? dayName.lowercased()
+    }
+    
     var body: some View {
         let weightKey = trainingManager.generateWeightKey(
-            day: dayName,
+            day: normalizedDayName, // Use normalized day name
             exerciseIndex: exerciseIndex,
             setIndex: setIndex
         )
@@ -39,6 +57,13 @@ struct WeightSetView: View {
                     .foregroundColor(.primary)
                 
                 Spacer()
+                
+                // Debug info (remove in production)
+                if hasWeight {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                }
             }
             
             // Input de peso
@@ -70,30 +95,64 @@ struct WeightSetView: View {
                         .foregroundColor(.secondary)
                 }
             }
+            
+            // Show reps info if available
+            if !exercise.reps.isEmpty {
+                Text("\(exercise.reps) reps")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
         }
-        .padding(8)
-        .background(Color(.systemBackground))
+        .padding(12)
+        .background(Color(.secondarySystemBackground))
         .cornerRadius(8)
         .onAppear {
-            if let weight = trainingManager.weights[weightKey], weight > 0 {
-                weightText = String(format: "%.1f", weight).replacingOccurrences(of: ".0", with: "")
-            }
+            loadWeight()
+        }
+        .onChange(of: dayName) { _, _ in
+            loadWeight()
         }
         .onChange(of: weightText) { _, newValue in
             if let weight = Double(newValue) {
                 trainingManager.updateWeight(
-                    day: dayName,
+                    day: normalizedDayName, // Use normalized day name
                     exerciseIndex: exerciseIndex,
                     setIndex: setIndex,
                     weight: weight
                 )
             } else if newValue.isEmpty {
                 trainingManager.updateWeight(
-                    day: dayName,
+                    day: normalizedDayName, // Use normalized day name
                     exerciseIndex: exerciseIndex,
                     setIndex: setIndex,
                     weight: 0
                 )
+            }
+        }
+    }
+    
+    private func loadWeight() {
+        let weightKey = trainingManager.generateWeightKey(
+            day: normalizedDayName,
+            exerciseIndex: exerciseIndex,
+            setIndex: setIndex
+        )
+        
+        if let weight = trainingManager.weights[weightKey], weight > 0 {
+            weightText = String(format: "%.1f", weight).replacingOccurrences(of: ".0", with: "")
+        } else {
+            // Try alternative key formats (for backwards compatibility)
+            let alternativeKeys = [
+                "\(dayName.lowercased())_\(exerciseIndex)_\(setIndex)",
+                "\(dayName)_\(exerciseIndex)_\(setIndex)",
+                "\(normalizedDayName)_\(exerciseIndex)_\(setIndex)"
+            ]
+            
+            for key in alternativeKeys {
+                if let weight = trainingManager.weights[key], weight > 0 {
+                    weightText = String(format: "%.1f", weight).replacingOccurrences(of: ".0", with: "")
+                    break
+                }
             }
         }
     }

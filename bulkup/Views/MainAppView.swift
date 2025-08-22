@@ -13,12 +13,17 @@ struct MainAppView: View {
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var dietManager = DietManager.shared
     @StateObject private var trainingManager = TrainingManager.shared
+    @StateObject private var storeKitManager = StoreKitManager.shared
     
     @State private var showingSubscriptionAlert = false
     @State private var showingSubscriptionView = false
     @State private var selectedTab: AppTab = .upload
     @State private var showingProfile = false
     @State private var showingNotifications = false
+    
+    private var userHasActiveSubscription: Bool {
+        return storeKitManager.hasActiveSubscription
+    }
 
     enum AppTab: String, CaseIterable, Identifiable {
         case upload = "upload"
@@ -256,7 +261,7 @@ struct MainAppView: View {
             HStack(spacing: 0) {
                 ForEach(AppTab.allCases) { tab in
                     Button(action: {
-                        if tab == .upload && !(authManager.user?.hasActiveSubscription ?? false) {
+                        if tab == .upload && !userHasActiveSubscription {
                             showingSubscriptionAlert = true
                         } else if !isTabDisabled(tab) {
                             selectedTab = tab
@@ -286,7 +291,7 @@ struct MainAppView: View {
                                 )
                                 
                                 // Badge PRO para el tab de subir
-                                if tab == .upload && !(authManager.user?.hasActiveSubscription ?? false) {
+                                if tab == .upload && !userHasActiveSubscription {
                                     Text("PRO")
                                         .font(.system(size: 8, weight: .bold))
                                         .foregroundColor(.white)
@@ -353,7 +358,7 @@ struct MainAppView: View {
     private var contentView: some View {
         switch selectedTab {
         case .upload:
-            if authManager.user?.hasActiveSubscription ?? false {
+            if userHasActiveSubscription {
                 FileUploadView()
                     .environmentObject(dietManager)
                     .environmentObject(trainingManager)
@@ -375,7 +380,7 @@ struct MainAppView: View {
                     actionIcon: "plus.circle.fill",
                     color: .green
                 ) {
-                    if authManager.user?.hasActiveSubscription ?? false {
+                    if userHasActiveSubscription {
                         selectedTab = .upload
                     } else {
                         showingSubscriptionAlert = true
@@ -398,7 +403,7 @@ struct MainAppView: View {
                     actionIcon: "plus.circle.fill",
                     color: .blue
                 ) {
-                    if authManager.user?.hasActiveSubscription ?? false {
+                    if userHasActiveSubscription {
                         selectedTab = .upload
                     } else {
                         showingSubscriptionAlert = true
@@ -460,16 +465,15 @@ struct MainAppView: View {
 
     private func isTabDisabled(_ tab: AppTab) -> Bool {
         switch tab {
-            case .upload:
-                // Verificar si el usuario tiene suscripción activa
-                return !(authManager.user?.hasActiveSubscription ?? false)
-            case .diet:
-                return dietManager.dietData.isEmpty
-            case .training:
-                return trainingManager.trainingData.isEmpty
-            case .rm, .exercises:
-                return false
-            }
+        case .upload:
+            return !userHasActiveSubscription
+        case .diet:
+            return dietManager.dietData.isEmpty
+        case .training:
+            return trainingManager.trainingData.isEmpty
+        case .rm, .exercises:
+            return false
+        }
     }
 
 }

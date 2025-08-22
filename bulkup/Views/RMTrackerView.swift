@@ -25,6 +25,7 @@ struct RMFormData {
 }
 
 // MARK: - Main RM Tracker View
+// MARK: - Main RM Tracker View
 struct RMTrackerView: View {
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var rmManager = RMManager.shared
@@ -59,14 +60,22 @@ struct RMTrackerView: View {
                 }
                 .zIndex(1)
             }
-            .navigationTitle("RM Tracker")
-            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showAddRecord() }) {
-                        Image(systemName: "plus")
-                            .font(.title2)
+                    HStack(spacing: 2) {
+
+                        Text("Tus RM")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
+                        Spacer()
+
+                        Button(action: { showAddRecord() }) {
+                            Image(systemName: "plus")
+                                .font(.title2)
+                        }
                     }
+
                 }
             }
             .sheet(isPresented: $showAddForm) {
@@ -113,6 +122,10 @@ struct RMTrackerView: View {
 
                 // Exercise Cards
                 exerciseCardsGrid
+
+                // IMPORTANTE: Añadir espacio extra al final para el tab bar
+                Color.clear
+                    .frame(height: 90)
             }
             .padding(.vertical)
         }
@@ -147,7 +160,7 @@ struct RMTrackerView: View {
         ]
     }
 
-    // MARK: - Actions
+    // MARK: - Actions (sin cambios)
 
     private func showAddRecord() {
         formData = RMFormData()
@@ -236,10 +249,6 @@ struct RMTrackerView: View {
         formData = RMFormData()
         editingRecordId = nil
         showAddForm = false
-    }
-
-    private func showExerciseDetail(_ exercise: RMExercise) {
-        // This will be handled by NavigationLink in the card
     }
 }
 

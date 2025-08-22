@@ -1,15 +1,17 @@
 //
-//  ExerciseExplorerViewModel.swift
+//  ExerciseExplorerManager.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 20/8/25.
+//  Refactored to use APIService
 //
+
 import SwiftData
 import SwiftUI
 
 @MainActor
 class ExerciseExplorerManager: ObservableObject {
     static let shared = ExerciseExplorerManager()
+    
     @Published var exercises: [RMExerciseFull] = []
     @Published var loading = true
     @Published var searchTerm = ""
@@ -18,9 +20,10 @@ class ExerciseExplorerManager: ObservableObject {
     @Published var forceFilter: Set<String> = []
     @Published var levelFilter: Set<String> = []
     @Published var currentPage = 1
+    @Published var errorMessage: String?
     
     private let pageSize = 18
-    private let apiBaseURL = "http://localhost:8080" // Cambiar según tu configuración
+    private let apiService = APIService.shared
     
     var categories: [String] {
         Array(Set(exercises.compactMap { $0.category })).sorted()
@@ -98,33 +101,24 @@ class ExerciseExplorerManager: ObservableObject {
     
     func fetchExercises() async {
         loading = true
+        errorMessage = nil
         
-        // Intentar cargar desde caché primero
+        // Try to load from cache first
         if let cached = ExerciseCacheManager.shared.getCachedExercises() {
             exercises = cached
             loading = false
             return
         }
         
-        // Si no hay caché, cargar desde API
-        guard let url = URL(string: "\(apiBaseURL)/exercises") else {
-            loading = false
-            return
-        }
-        
+        // If no cache, load from API using APIService
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            
-            // Intentar decodificar diferentes formatos de respuesta
-            if let exercisesList = try? JSONDecoder().decode([RMExerciseFull].self, from: data) {
-                exercises = exercisesList
-                ExerciseCacheManager.shared.setCachedExercises(exercisesList)
-            } else if let response = try? JSONDecoder().decode(APIResponse.self, from: data) {
-                exercises = response.data ?? []
-                ExerciseCacheManager.shared.setCachedExercises(exercises)
-            }
+            // Note: We'll need to add this method to APIService
+            let exercisesList = try await apiService.fetchFullExercises()
+            exercises = exercisesList
+            ExerciseCacheManager.shared.setCachedExercises(exercisesList)
         } catch {
             print("Error fetching exercises: \(error)")
+            errorMessage = "Error loading exercises"
             exercises = []
         }
         
@@ -144,9 +138,11 @@ class ExerciseExplorerManager: ObservableObject {
         currentPage = 1
     }
     
-    // Helper struct para decodificar respuesta de API
-    private struct APIResponse: Codable {
-        let success: Bool?
-        let data: [RMExerciseFull]?
+    // Clear data on logout
+    func clearData() {
+        exercises = []
+        searchTerm = ""
+        resetFilters()
+        errorMessage = nil
     }
 }

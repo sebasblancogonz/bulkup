@@ -44,7 +44,7 @@ struct WeightTrackingView: View {
                             dayName: dayFormatter.string(from: currentDate)
                                 .capitalized  // ✅ Convertimos currentDate a día
                         )
-                        .frame(width: UIScreen.main.bounds.width * 0.75)
+                        .frame(width: UIScreen.main.bounds.width * 0.40)
                         .shadow(
                             color: .black.opacity(0.05),
                             radius: 3,

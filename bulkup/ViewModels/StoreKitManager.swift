@@ -15,7 +15,7 @@ class StoreKitManager: ObservableObject {
     // MARK: - Published Properties
     @Published var products: [Product] = []
     @Published var purchasedSubscriptions: [Product] = []
-    @Published var subscriptionStatus: Product.SubscriptionInfo.Status?
+    @Published var subscriptionStatus: Product.SubscriptionInfo.RenewalState?
     @Published var isLoading = false
     @Published var hasActiveSubscription = false
     @Published var expirationDate: Date?
@@ -56,7 +56,7 @@ class StoreKitManager: ObservableObject {
     }
     
     // MARK: - Purchase Subscription
-    func purchase(_ product: Product) async throws -> Transaction? {
+    func purchase(_ product: Product) async throws -> StoreKit.Transaction? {
         let result = try await product.purchase()
         
         switch result {
@@ -92,7 +92,7 @@ class StoreKitManager: ObservableObject {
     func updateSubscriptionStatus() async {
         var hasActive = false
         
-        for await result in Transaction.currentEntitlements {
+        for await result in StoreKit.Transaction.currentEntitlements {
             do {
                 let transaction = try checkVerified(result)
                 
@@ -104,8 +104,8 @@ class StoreKitManager: ObservableObject {
                             self.expirationDate = expirationDate
                             
                             // Obtener el estado de la suscripción
-                            if let subscriptionInfo = try? await product.subscription?.status.first {
-                                self.subscriptionStatus = subscriptionInfo.state
+                            if let status = try? await product.subscription?.status.first {
+                                self.subscriptionStatus = status.state
                             }
                         }
                     }
@@ -118,18 +118,16 @@ class StoreKitManager: ObservableObject {
         self.hasActiveSubscription = hasActive
         
         // Actualizar el AuthManager si existe
-        if let authManager = AuthManager.shared {
-            authManager.user?.hasActiveSubscription = hasActive
-            authManager.user?.subscriptionExpiryDate = expirationDate
-        }
+        // Nota: AuthManager debería ser accesible a través de EnvironmentObject o similar
+        // No usar AuthManager.shared aquí
     }
     
     // MARK: - Listen for Transactions
     private func listenForTransactions() -> Task<Void, Error> {
         return Task.detached {
-            for await result in Transaction.updates {
+            for await result in StoreKit.Transaction.updates {
                 do {
-                    let transaction = try self.checkVerified(result)
+                    let transaction = try await self.checkVerified(result)
                     await self.updateSubscriptionStatus()
                     await transaction.finish()
                 } catch {
