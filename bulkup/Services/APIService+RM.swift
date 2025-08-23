@@ -47,11 +47,11 @@ extension APIService {
     
     func fetchFullExercises() async throws -> [RMExerciseFull] {
             // Intenta decodificar como wrapper
-            let response: [RMExerciseFull] = try await request(
+            let response: APIResponse<[RMExerciseFull]> = try await request(
                 endpoint: "exercises",
                 method: .GET
             )
-        return response
+        return response.data ?? []
     }
     
     // MARK: - Records

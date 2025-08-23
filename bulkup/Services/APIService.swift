@@ -120,6 +120,11 @@ class APIService: ObservableObject {
             let encoder = JSONEncoder()
             request.httpBody = try encoder.encode(body)
             
+            // Token de autenticación si existe
+            if let token = await getAuthToken() {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            
             do {
                 let (data, response) = try await session.data(for: request)
                 

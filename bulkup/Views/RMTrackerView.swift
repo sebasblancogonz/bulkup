@@ -122,7 +122,6 @@ struct RMTrackerView: View {
                 Color.clear
                     .frame(height: 90)
             }
-            .padding(.vertical)
         }
         .refreshable {
             if let token = authManager.user?.token {
