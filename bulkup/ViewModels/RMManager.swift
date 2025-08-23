@@ -272,18 +272,30 @@ class RMManager: ObservableObject {
             // Convert dictionary to typed request
             guard let exerciseId = recordData["exerciseId"] as? String,
                 let weight = recordData["weight"] as? Double,
-                let reps = recordData["reps"] as? Int,
-                let date = recordData["date"] as? String
+                let reps = recordData["reps"] as? Int
             else {
                 throw APIError.invalidRequest
             }
 
             let notes = recordData["notes"] as? String ?? ""
+            var formattedDate: String = ""
+            if let dateString = recordData["date"] as? String {
+                let isoFormatter = ISO8601DateFormatter()
+                if let dateObj = isoFormatter.date(from: dateString) {
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd"
+                    dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+                    formattedDate = dateFormatter.string(from: dateObj)
+                } else {
+                    // Si ya está en formato yyyy-MM-dd, úsalo directo
+                    formattedDate = dateString
+                }
+            }
             let request = CreateRecordRequest(
                 exerciseId: exerciseId,
                 weight: weight,
                 reps: reps,
-                date: date,
+                date: formattedDate,
                 notes: notes
             )
 

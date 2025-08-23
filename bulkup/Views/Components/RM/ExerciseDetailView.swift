@@ -55,6 +55,10 @@ struct ExerciseDetailView: View {
             }
             .padding()
         }
+
+    .safeAreaInset(edge: .bottom) {
+        Color.clear.frame(height: 48)
+    }
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -111,7 +115,7 @@ struct ExerciseDetailView: View {
     private var statsCards: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
             StatCard(
-                title: "Mejor RM",
+                title: "Mejor PR",
                 value: bestRecord?.weight.formatted() ?? "0",
                 subtitle: "kg",
                 color: .yellow

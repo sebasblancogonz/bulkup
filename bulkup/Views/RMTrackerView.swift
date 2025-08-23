@@ -62,7 +62,7 @@ struct RMTrackerView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("Tus RM")
+                    Text("Tus PR")
                         .font(.headline)
                         .foregroundColor(.primary)
                 }
@@ -353,7 +353,7 @@ struct RMExerciseCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             // Best RM Display
             VStack(alignment: .leading, spacing: 4) {
-                Text("Mejor RM")
+                Text("Mejor PR")
                     .font(.caption)
                     .foregroundColor(.secondary)
 
