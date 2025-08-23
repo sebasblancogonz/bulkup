@@ -106,7 +106,7 @@ class TrainingManager: ObservableObject {
                 let localTrainingDays = convertServerDataToLocal(
                     serverTrainingData
                 )
-                setTrainingData(localTrainingDays, planId: response.planId)
+                setTrainingData(localTrainingDays, planId: response.id)
 
                 print("🏋️ Cargando pesos para la semana...")
                 await loadWeightsForWeek(selectedWeek)
@@ -155,7 +155,7 @@ class TrainingManager: ObservableObject {
                 workoutName: serverDay.workoutName
             )
 
-            localDay.exercises = serverDay.output.enumerated().map {
+            localDay.exercises = serverDay.output?.enumerated().map {
                 (index, serverExercise) in
                 Exercise(
                     name: serverExercise.name,
@@ -167,7 +167,7 @@ class TrainingManager: ObservableObject {
                     weightTracking: serverExercise.weightTracking,
                     orderIndex: index
                 )
-            }
+            } ?? [] // Usar array vacío cuando output es nil
 
             return localDay
         }

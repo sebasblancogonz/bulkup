@@ -130,9 +130,9 @@ extension TrainingDay {
             day: serverDay.day,
             workoutName: serverDay.workoutName
         )
-        self.exercises = serverDay.output.enumerated().map { index, exercise in
+        self.exercises = serverDay.output?.enumerated().map { index, exercise in
             Exercise(from: exercise, orderIndex: index)
-        }
+        } ?? []
     }
 }
 

@@ -152,22 +152,13 @@ struct ServerSupplement: Codable {
 
 struct LoadTrainingPlanOuterResponse: Codable {
     let success: Bool
-    let data: LoadTrainingPlanResponse
-}
-
-struct LoadTrainingPlanResponse: Codable {
-    let success: Bool
-    let trainingData: [ServerTrainingDay]?
-    let planId: String?
-    let filename: String?
-    let createdAt: String?
-    let updatedAt: String?
+    let data: ServerWorkout
 }
 
 struct ServerTrainingDay: Codable {
     let day: String
     let workoutName: String?
-    let output: [ServerExercise]
+    let output: [ServerExercise]?
 
     enum CodingKeys: String, CodingKey {
         case day
@@ -308,4 +299,70 @@ struct ServerWeightRecord: Codable {
 struct LoadWeightsOuterResponse: Codable {
     let success: Bool
     let data: LoadWeightsResponse
+}
+
+struct CreateTrainingPlanRequest: Codable {
+    let userId: String
+    let filename: String
+    let trainingData: [ServerTrainingDay]
+    let planStartDate: Date?
+    let planEndDate: Date?
+}
+
+struct CreateTrainingPlanResponse: Codable {
+    let success: Bool
+    let message: String?
+    let planId: String
+}
+
+struct ActivateTrainingPlanRequest: Codable {
+    let userId: String
+}
+
+struct DeleteTrainingPlanRequest: Codable {
+    let userId: String
+}
+
+// Add this new model to your API.swift file
+struct ServerWorkout: Codable, Identifiable {
+    let id: String?
+    let userId: String
+    let filename: String
+    let trainingData: [ServerTrainingDay]?
+    let active: Bool
+    let planStartDate: Date?  // This will be nil until you update your backend
+    let planEndDate: Date?    // This will be nil until you update your backend
+    let createdAt: Date
+    let updatedAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case userId, filename, trainingData, active
+        case planStartDate, planEndDate, createdAt, updatedAt
+    }
+    
+    // Custom decoder to handle the actual response format
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Handle _id field (MongoDB ObjectID)
+        id = try container.decodeIfPresent(String.self, forKey: .id)
+        userId = try container.decode(String.self, forKey: .userId)
+        filename = try container.decode(String.self, forKey: .filename)
+        trainingData = try container.decodeIfPresent([ServerTrainingDay].self, forKey: .trainingData)
+        active = try container.decode(Bool.self, forKey: .active)
+        
+        // These fields don't exist in your current backend response, so they'll be nil for now
+        planStartDate = try container.decodeIfPresent(Date.self, forKey: .planStartDate)
+        planEndDate = try container.decodeIfPresent(Date.self, forKey: .planEndDate)
+        
+        // Handle date parsing - your backend returns ISO dates
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+    }
+}
+
+// Also add this request model for loading plans
+struct LoadPlanRequest: Codable {
+    let userId: String
 }

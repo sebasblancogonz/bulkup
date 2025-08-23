@@ -14,13 +14,13 @@ struct MainAppView: View {
     @StateObject private var dietManager = DietManager.shared
     @StateObject private var trainingManager = TrainingManager.shared
     @StateObject private var storeKitManager = StoreKitManager.shared
-    
+
     @State private var showingSubscriptionAlert = false
     @State private var showingSubscriptionView = false
     @State private var selectedTab: AppTab = .upload
     @State private var showingProfile = false
     @State private var showingNotifications = false
-    
+
     private var userHasActiveSubscription: Bool {
         return storeKitManager.hasActiveSubscription
     }
@@ -148,7 +148,10 @@ struct MainAppView: View {
                     .overlay(
                         Group {
                             if geometry.size.width <= 600 {
-                                fixedMobileTabBar.ignoresSafeArea(.keyboard, edges: .bottom) 
+                                fixedMobileTabBar.ignoresSafeArea(
+                                    .keyboard,
+                                    edges: .bottom
+                                )
                             }
                         },
                         alignment: .bottom
@@ -169,13 +172,18 @@ struct MainAppView: View {
                 }
                 .sheet(isPresented: $showingNotifications) {
                     NotificationView()
-                }.alert("Suscripción Requerida", isPresented: $showingSubscriptionAlert) {
+                }.alert(
+                    "Suscripción Requerida",
+                    isPresented: $showingSubscriptionAlert
+                ) {
                     Button("Ver Planes", role: nil) {
                         showingSubscriptionView = true
                     }
                     Button("Cancelar", role: .cancel) {}
                 } message: {
-                    Text("Necesitas una suscripción activa para subir y gestionar tus planes de entrenamiento y dieta.")
+                    Text(
+                        "Necesitas una suscripción activa para subir y gestionar tus planes de entrenamiento y dieta."
+                    )
                 }
                 .sheet(isPresented: $showingSubscriptionView) {
                     SubscriptionView()
@@ -209,10 +217,12 @@ struct MainAppView: View {
                             .foregroundColor(.white)
                         )
                     VStack(alignment: .leading, spacing: 0) {  // Cambiar alignment a .leading
-                        Text("¡Hola \(authManager.user?.name.split(separator: " ").first.map(String.init) ?? "")!")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                        
+                        Text(
+                            "¡Hola \(authManager.user?.name.split(separator: " ").first.map(String.init) ?? "")!"
+                        )
+                        .font(.headline)
+                        .fontWeight(.semibold)
+
                         Text("Lightweight baby!!! 💪")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -289,9 +299,10 @@ struct MainAppView: View {
                                         ? .gray.opacity(0.4)
                                         : selectedTab == tab ? .blue : .gray
                                 )
-                                
+
                                 // Badge PRO para el tab de subir
-                                if tab == .upload && !userHasActiveSubscription {
+                                if tab == .upload && !userHasActiveSubscription
+                                {
                                     Text("PRO")
                                         .font(.system(size: 8, weight: .bold))
                                         .foregroundColor(.white)
@@ -301,7 +312,12 @@ struct MainAppView: View {
                                             Capsule()
                                                 .fill(
                                                     LinearGradient(
-                                                        colors: [.purple, .purple.opacity(0.8)],
+                                                        colors: [
+                                                            .purple,
+                                                            .purple.opacity(
+                                                                0.8
+                                                            ),
+                                                        ],
                                                         startPoint: .leading,
                                                         endPoint: .trailing
                                                     )
@@ -334,7 +350,6 @@ struct MainAppView: View {
         .background(Color(.systemBackground))
     }
 
-
     private var tabNavigationView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
@@ -353,7 +368,6 @@ struct MainAppView: View {
         .background(Color(.systemGray6).opacity(0.5))
     }
 
-    // ✅ Contenido sin wrapper innecesario
     @ViewBuilder
     private var contentView: some View {
         switch selectedTab {
@@ -394,27 +408,11 @@ struct MainAppView: View {
                 }
             }
         case .training:
-            if trainingManager.trainingData.isEmpty {
-                EmptyStateView(
-                    icon: "dumbbell",
-                    title: "Sin plan de entrenamiento",
-                    subtitle: "Sube tu rutina para empezar a entrenar",
-                    actionTitle: "Subir Plan",
-                    actionIcon: "plus.circle.fill",
-                    color: .blue
-                ) {
-                    if userHasActiveSubscription {
-                        selectedTab = .upload
-                    } else {
-                        showingSubscriptionAlert = true
-                    }
-                }
-            } else {
-                NavigationStack {
-                    TrainingView()
-                        .environmentObject(authManager)
-                        .environmentObject(trainingManager)
-                }
+            // UPDATED: Use the new TrainingHubView instead of checking for empty data
+            NavigationStack {
+                TrainingHubView()
+                    .environmentObject(authManager)
+                    .environmentObject(trainingManager)
             }
         case .rm:
             RMTrackerView()
@@ -469,10 +467,8 @@ struct MainAppView: View {
             return !userHasActiveSubscription
         case .diet:
             return dietManager.dietData.isEmpty
-        case .training:
-            return trainingManager.trainingData.isEmpty
-        case .rm, .exercises:
-            return false
+        case .training, .rm, .exercises:
+            return false  // Training tab is never disabled now
         }
     }
 

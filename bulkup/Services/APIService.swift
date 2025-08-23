@@ -81,7 +81,35 @@ class APIService: ObservableObject {
             }
             
             let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
+            decoder.dateDecodingStrategy = .custom { decoder in
+                let container = try decoder.singleValueContainer()
+                let dateString = try container.decode(String.self)
+                
+                // Crear un formatter personalizado
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                
+                if let date = formatter.date(from: dateString) {
+                    return date
+                }
+                
+                // Backup formatter sin milisegundos
+                let backupFormatter = DateFormatter()
+                backupFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+                backupFormatter.locale = Locale(identifier: "en_US_POSIX")
+                backupFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+                
+                if let date = backupFormatter.date(from: dateString) {
+                    return date
+                }
+                
+                throw DecodingError.dataCorruptedError(
+                    in: container,
+                    debugDescription: "Cannot decode date string \(dateString)"
+                )
+            }
             
             return try decoder.decode(T.self, from: data)
             
@@ -100,67 +128,97 @@ class APIService: ObservableObject {
     
     // MARK: - Método para requests con cuerpo JSON
     func requestWithBody<T: Codable, U: Codable>(
-            endpoint: String,
-            method: HTTPMethod,
-            body: U
-        ) async throws -> T {
+        endpoint: String,
+        method: HTTPMethod,
+        body: U
+    ) async throws -> T {
+        
+        guard let url = URL(string: "\(APIConfig.baseURL)/\(endpoint)") else {
+            throw APIError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = method.rawValue
+        
+        // Headers
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        // Encode body
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601  // Añadir esta línea
+        request.httpBody = try encoder.encode(body)
+        
+        // Token de autenticación si existe
+        if let token = await getAuthToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        do {
+            let (data, response) = try await session.data(for: request)
             
-            guard let url = URL(string: "\(APIConfig.baseURL)/\(endpoint)") else {
-                throw APIError.invalidURL
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw APIError.networkError("Respuesta inválida")
             }
             
-            var request = URLRequest(url: url)
-            request.httpMethod = method.rawValue
-            
-            // Headers
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue("application/json", forHTTPHeaderField: "Accept")
-            
-            // Encode body
-            let encoder = JSONEncoder()
-            request.httpBody = try encoder.encode(body)
-            
-            // Token de autenticación si existe
-            if let token = await getAuthToken() {
-                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            switch httpResponse.statusCode {
+            case 200...299:
+                break
+            case 401:
+                throw APIError.unauthorized
+            default:
+                throw APIError.serverError(httpResponse.statusCode)
             }
             
-            do {
-                let (data, response) = try await session.data(for: request)
+            // Debug: Imprimir respuesta
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("API Response: \(jsonString)")
+            }
+            
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .custom { decoder in
+                let container = try decoder.singleValueContainer()
+                let dateString = try container.decode(String.self)
                 
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    throw APIError.networkError("Respuesta inválida")
+                // Crear un formatter personalizado
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                
+                if let date = formatter.date(from: dateString) {
+                    return date
                 }
                 
-                switch httpResponse.statusCode {
-                case 200...299:
-                    break
-                case 401:
-                    throw APIError.unauthorized
-                default:
-                    throw APIError.serverError(httpResponse.statusCode)
+                // Backup formatter sin milisegundos
+                let backupFormatter = DateFormatter()
+                backupFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+                backupFormatter.locale = Locale(identifier: "en_US_POSIX")
+                backupFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+                
+                if let date = backupFormatter.date(from: dateString) {
+                    return date
                 }
                 
-                // Debug: Imprimir respuesta
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("API Response: \(jsonString)")
-                }
-                
-                let decoder = JSONDecoder()
-                return try decoder.decode(T.self, from: data)
-                
-            } catch {
-                if error is APIError {
-                    throw error
-                } else if error is DecodingError {
-                    print("Decoding error: \(error)")
-                    throw APIError.decodingError
-                } else {
-                    print("Network error: \(error)")
-                    throw APIError.networkError(error.localizedDescription)
-                }
+                throw DecodingError.dataCorruptedError(
+                    in: container,
+                    debugDescription: "Cannot decode date string \(dateString)"
+                )
+            }  // Añadir esta línea
+            return try decoder.decode(T.self, from: data)
+            
+        } catch {
+            if error is APIError {
+                throw error
+            } else if error is DecodingError {
+                print("Decoding error: \(error)")
+                throw APIError.decodingError
+            } else {
+                print("Network error: \(error)")
+                throw APIError.networkError(error.localizedDescription)
             }
         }
+    }
     
     // MARK: - Obtener token de autenticación (implementar según tu sistema)
     private func getAuthToken() async -> String? {
