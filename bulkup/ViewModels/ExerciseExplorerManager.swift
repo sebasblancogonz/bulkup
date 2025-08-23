@@ -142,7 +142,7 @@ class ExerciseExplorerManager: ObservableObject {
         errorMessage = nil
         
         // Try to load from cache first
-        if let cached = ExerciseCacheManager.shared.getCachedExercises() {
+        if let cached = ExerciseCacheManager.shared.getCachedExercises(), !cached.isEmpty {
             exercises = cached
             loading = false
             return

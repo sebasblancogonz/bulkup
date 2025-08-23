@@ -176,42 +176,63 @@ class TrainingManager: ObservableObject {
     // MARK: - Manejo de pesos
 
     func generateWeightKey(
-        planId: String? = nil,  // Añadir planId como parámetro opcional
+        planId: String? = nil,
         day: String,
         exerciseIndex: Int,
+        exerciseName: String,  // 🔧 ADD: Exercise name to ensure uniqueness
         setIndex: Int? = nil
     ) -> String {
-        // Usar el planId pasado como parámetro, o el trainingPlanId actual
+        // Use the planId passed as parameter, or the trainingPlanId actual
         let actualPlanId = planId ?? trainingPlanId
+
+        // Create a normalized exercise name (remove spaces, convert to lowercase)
+        let normalizedExerciseName =
+            exerciseName
+            .lowercased()
+            .replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: "ñ", with: "n")
+            .replacingOccurrences(of: "á", with: "a")
+            .replacingOccurrences(of: "é", with: "e")
+            .replacingOccurrences(of: "í", with: "i")
+            .replacingOccurrences(of: "ó", with: "o")
+            .replacingOccurrences(of: "ú", with: "u")
+
         let baseKey =
             actualPlanId != nil
-            ? "\(actualPlanId!)-\(day)-\(exerciseIndex)"
-            : "\(day)-\(exerciseIndex)"
+            ? "\(actualPlanId!)-\(day)-\(exerciseIndex)-\(normalizedExerciseName)"
+            : "\(day)-\(exerciseIndex)-\(normalizedExerciseName)"
+
         return setIndex != nil ? "\(baseKey)-\(setIndex!)" : baseKey
     }
 
     func updateWeight(
         day: String,
         exerciseIndex: Int,
+        exerciseName: String,  // 🔧 ADD: Exercise name parameter
         setIndex: Int,
         weight: Double
     ) {
         let key = generateWeightKey(
             day: day,
             exerciseIndex: exerciseIndex,
+            exerciseName: exerciseName,  // 🔧 ADD: Pass exercise name
             setIndex: setIndex
         )
         weights[key] = weight
     }
 
-    func getCompletedSets(day: String, exerciseIndex: Int, totalSets: Int)
-        -> Int
-    {
+    func getCompletedSets(
+        day: String,
+        exerciseIndex: Int,
+        exerciseName: String,  // 🔧 ADD: Exercise name parameter
+        totalSets: Int
+    ) -> Int {
         var completed = 0
         for i in 0..<totalSets {
             let weightKey = generateWeightKey(
                 day: day,
                 exerciseIndex: exerciseIndex,
+                exerciseName: exerciseName,  // 🔧 ADD: Pass exercise name
                 setIndex: i
             )
             if let weight = weights[weightKey], weight > 0 {
@@ -225,6 +246,9 @@ class TrainingManager: ObservableObject {
         -> Bool
     {
         guard let dayData = trainingData.first(where: { $0.day == day }),
+            let exercise = dayData.exercises.first(where: {
+                $0.name == exerciseName
+            }),
             let exerciseIndex = dayData.exercises.firstIndex(where: {
                 $0.name == exerciseName
             })
@@ -232,10 +256,10 @@ class TrainingManager: ObservableObject {
             return false
         }
 
-        let exercise = dayData.exercises[exerciseIndex]
         return getCompletedSets(
             day: day,
             exerciseIndex: exerciseIndex,
+            exerciseName: exerciseName,  // 🔧 ADD: Pass exercise name
             totalSets: exercise.sets
         ) > 0
     }
@@ -252,7 +276,6 @@ class TrainingManager: ObservableObject {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let weekStartString = dateFormatter.string(from: weekStartDate)
 
-            // Llamar al servidor para cargar pesos
             let response = try await apiService.loadWeights(
                 userId: userId,
                 weekStart: weekStartString
@@ -260,38 +283,40 @@ class TrainingManager: ObservableObject {
 
             print("📊 Pesos cargados del servidor:", response)
 
-            // Limpiar pesos y notas actuales
+            // Clear current weights and notes
             await MainActor.run {
                 self.weights.removeAll()
                 self.backendExerciseNotes.removeAll()
             }
 
-            // Procesar respuesta del servidor
+            // Process server response
             if let serverWeights = response.weights, !serverWeights.isEmpty {
                 var newWeights: [String: Double] = [:]
                 var newNotes: [String: String] = [:]
 
                 for record in serverWeights {
-                    // Cargar pesos por cada set
+                    // Load weights for each set
                     if let sets = record.sets {
                         for (setIndex, weightSet) in sets.enumerated() {
-                            // IMPORTANTE: Incluir el planId del registro o el actual
+                            // 🔧 IMPORTANT: Include exercise name in key generation
                             let key = generateWeightKey(
-                                planId: record.planId ?? trainingPlanId,  // Usar el planId del registro
+                                planId: record.planId ?? trainingPlanId,
                                 day: record.day,
                                 exerciseIndex: record.exerciseIndex,
+                                exerciseName: record.exerciseName,  // 🔧 ADD: Use exercise name from record
                                 setIndex: setIndex
                             )
                             newWeights[key] = weightSet.weight
                         }
                     }
 
-                    // Cargar nota del ejercicio
+                    // Load exercise note
                     if let note = record.note, !note.isEmpty {
                         let noteKey = generateWeightKey(
-                            planId: record.planId ?? trainingPlanId,  // Usar el planId del registro
+                            planId: record.planId ?? trainingPlanId,
                             day: record.day,
-                            exerciseIndex: record.exerciseIndex
+                            exerciseIndex: record.exerciseIndex,
+                            exerciseName: record.exerciseName  // 🔧 ADD: Use exercise name from record
                         )
                         newNotes[noteKey] = note
                     }
@@ -305,12 +330,11 @@ class TrainingManager: ObservableObject {
                 print("✅ Pesos cargados: \(newWeights.count) registros")
             }
 
-            // También intentar cargar desde la base de datos local
+            // Also try loading from local database
             loadWeightsFromLocalDatabase(weekStartString)
 
         } catch {
             print("❌ Error cargando pesos del servidor:", error)
-            // Intentar cargar desde la base de datos local como fallback
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let weekStartString = dateFormatter.string(
@@ -336,28 +360,29 @@ class TrainingManager: ObservableObject {
         do {
             let records = try modelContext.fetch(descriptor)
 
-            // Procesar registros locales
             for record in records {
                 for (setIndex, weightSet) in record.sets.enumerated() {
-                    // IMPORTANTE: Usar el planId del registro
+                    // 🔧 IMPORTANT: Use exercise name from record
                     let key = generateWeightKey(
-                        planId: record.planId,  // Usar el planId del registro
+                        planId: record.planId,
                         day: record.day,
                         exerciseIndex: record.exerciseIndex,
+                        exerciseName: record.exerciseName,  // 🔧 ADD: Use exercise name from record
                         setIndex: setIndex
                     )
 
-                    // Solo actualizar si no existe en el servidor
+                    // Only update if doesn't exist from server
                     if weights[key] == nil {
                         weights[key] = weightSet.weight
                     }
                 }
 
-                // Cargar nota del ejercicio si no existe
+                // Load exercise note if doesn't exist
                 let noteKey = generateWeightKey(
-                    planId: record.planId,  // Usar el planId del registro
+                    planId: record.planId,
                     day: record.day,
-                    exerciseIndex: record.exerciseIndex
+                    exerciseIndex: record.exerciseIndex,
+                    exerciseName: record.exerciseName  // 🔧 ADD: Use exercise name from record
                 )
                 if backendExerciseNotes[noteKey] == nil && !record.note.isEmpty
                 {
@@ -382,7 +407,8 @@ class TrainingManager: ObservableObject {
     ) async {
         let key = generateWeightKey(
             day: day,
-            exerciseIndex: exerciseIndex
+            exerciseIndex: exerciseIndex,
+            exerciseName: exerciseName  // 🔧 ADD: Pass exercise name
         )
 
         savingWeights[key] = true
@@ -392,7 +418,7 @@ class TrainingManager: ObservableObject {
                 throw TrainingError.noPlanId
             }
 
-            // Obtener el ejercicio para saber cuántas series tiene
+            // Get exercise to know how many sets it has
             guard
                 let exercise = trainingData.first(where: { $0.day == day })?
                     .exercises.first(where: { $0.orderIndex == exerciseIndex })
@@ -400,12 +426,13 @@ class TrainingManager: ObservableObject {
                 throw TrainingError.exerciseNotFound
             }
 
-            // Crear sets con los pesos actuales
+            // Create sets with current weights
             var weightSets: [WeightSet] = []
             for i in 0..<exercise.sets {
                 let weightKey = generateWeightKey(
                     day: day,
                     exerciseIndex: exerciseIndex,
+                    exerciseName: exerciseName,  // 🔧 ADD: Pass exercise name
                     setIndex: i
                 )
                 let weight = weights[weightKey] ?? 0
@@ -423,11 +450,12 @@ class TrainingManager: ObservableObject {
                 $0.dateFormat = "yyyy-MM-dd"
             }.string(from: getWeekStart(selectedWeek))
 
-            // Buscar registro existente o crear uno nuevo
+            // Find existing record or create new one
             let predicate = #Predicate<WeightRecord> { record in
                 record.userId == userId && record.planId == planId
                     && record.day == day
                     && record.exerciseIndex == exerciseIndex
+                    && record.exerciseName == exerciseName  // 🔧 ADD: Include exercise name in predicate
                     && record.weekStart == weekStartString
             }
 
@@ -455,20 +483,21 @@ class TrainingManager: ObservableObject {
 
             try modelContext.save()
 
-            // Actualizar notas en memoria
+            // Update notes in memory
             let noteKey = generateWeightKey(
                 day: day,
-                exerciseIndex: exerciseIndex
+                exerciseIndex: exerciseIndex,
+                exerciseName: exerciseName  // 🔧 ADD: Pass exercise name
             )
             backendExerciseNotes[noteKey] = note
 
-            // Sincronizar con el servidor
+            // Sync with server
             try await syncWeightRecord(record)
 
-            // Actualizar UI
+            // Update UI
             savedWeights[key] = true
 
-            // Quitar el indicador después de 2 segundos
+            // Remove indicator after 2 seconds
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 self.savedWeights[key] = false
             }

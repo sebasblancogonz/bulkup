@@ -2,7 +2,7 @@
 //  WeightTrackingView.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 18/8/25.
+//  Fixed version with exercise name included in weight operations
 //
 
 import SwiftData
@@ -11,29 +11,29 @@ import SwiftUI
 struct WeightTrackingView: View {
     let exercise: Exercise
     let exerciseIndex: Int
-    let currentDate: Date  // ✅ Fecha del calendario para guardar
+    let currentDate: Date  // Date from calendar for saving
     @Binding var localNote: String
     let isSaving: Bool
     let isSaved: Bool
 
-    @EnvironmentObject var trainingManager: TrainingManager
-    @EnvironmentObject var authManager: AuthManager
+    @StateObject var trainingManager = TrainingManager.shared
+    @StateObject var authManager = AuthManager.shared
 
-    // ✅ Formateador para convertir currentDate a día de la semana
+    // Formatter to convert currentDate to day of the week
     private var dayFormatter: DateFormatter {
         let f = DateFormatter()
         f.locale = Locale(identifier: "es_ES")
         f.dateFormat = "EEEE"
         f.calendar = Calendar(identifier: .gregorian)
-        f.calendar?.firstWeekday = 2  // Lunes como primer día
+        f.calendar?.firstWeekday = 2  // Monday as first day
         return f
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // ✅ Sin navegación de fechas - solo el contenido
+            // No date navigation - just the content
 
-            // Scroll horizontal de sets
+            // Horizontal scroll of sets
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(0..<exercise.sets, id: \.self) { setIndex in
@@ -82,7 +82,7 @@ struct WeightTrackingView: View {
             )
             .frame(height: 160)
 
-            // Nota del ejercicio
+            // Exercise note
             VStack(alignment: .leading, spacing: 8) {
                 Text("Notas")
                     .font(.caption)
@@ -95,7 +95,7 @@ struct WeightTrackingView: View {
                     .cornerRadius(8)
             }
             
-            // Botón guardar
+            // Save button
             Button(action: saveWeights) {
                 HStack {
                     if isSaving {
@@ -115,11 +115,39 @@ struct WeightTrackingView: View {
             }.keyboardShortcut(.defaultAction)
         }
         .padding()
+        .onAppear {
+            // Load the exercise note when view appears
+            loadExerciseNote()
+        }
+    }
+
+    // 🔧 ADD: Function to load exercise note from TrainingManager
+    private func loadExerciseNote() {
+        // Find the training day using exercise id
+        guard let trainingDay = trainingManager.trainingData.first(where: { day in
+            day.exercises.contains(where: { $0.id == exercise.id })
+        }) else { return }
+        
+        // Find the real exercise by id to get the correct order index
+        guard let realExercise = trainingDay.exercises.first(where: { $0.id == exercise.id }) else { return }
+        
+        // Generate note key with exercise name
+        let noteKey = trainingManager.generateWeightKey(
+            day: trainingDay.day,
+            exerciseIndex: realExercise.orderIndex,
+            exerciseName: exercise.name // 🔧 ADD: Include exercise name
+        )
+        
+        // Load note from backend if available
+        if let backendNote = trainingManager.backendExerciseNotes[noteKey] {
+            localNote = backendNote
+        }
     }
 
     private func saveWeights() {
         guard let user = authManager.user else { return }
-        // Buscar el día de entrenamiento actual usando el id del ejercicio
+        
+        // Find the current training day using exercise id
         let trainingDay = trainingManager.trainingData.first { day in
             day.exercises.contains(where: { $0.id == exercise.id })
         }
@@ -127,7 +155,8 @@ struct WeightTrackingView: View {
             trainingManager.errorMessage = "No se encontró el día de entrenamiento."
             return
         }
-        // Buscar el ejercicio real por id
+        
+        // Find the real exercise by id to get the correct order index
         guard let realExercise = dayModel.exercises.first(where: { $0.id == exercise.id }) else {
             trainingManager.errorMessage = "No se encontró el ejercicio."
             return
@@ -135,10 +164,12 @@ struct WeightTrackingView: View {
         let orderIndex = realExercise.orderIndex
 
         Task {
+            // 🔧 UPDATE: The saveWeightsToDatabase method already expects exerciseName parameter
+            // which was added in the TrainingManager fix
             await trainingManager.saveWeightsToDatabase(
-                day: dayModel.day, // Usa el valor exacto del modelo
+                day: dayModel.day, // Use the exact value from the model
                 exerciseIndex: orderIndex,
-                exerciseName: exercise.name,
+                exerciseName: exercise.name, // 🔧 ADD: Pass exercise name
                 note: localNote,
                 userId: user.id
             )

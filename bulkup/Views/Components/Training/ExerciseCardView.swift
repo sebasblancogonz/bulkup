@@ -19,10 +19,12 @@ struct ExerciseCardView: View {
 
     var body: some View {
         let completedSets = trainingManager.getCompletedSets(
-            day: dayName,  // ✅ Usamos dayName para obtener sets completados
+            day: dayName,
             exerciseIndex: exerciseIndex,
+            exerciseName: exercise.name, // 🔧 ADD: Pass exercise name
             totalSets: exercise.sets
         )
+        
         let isCompleted =
             exercise.weightTracking && completedSets == exercise.sets
         let progressPercentage =
@@ -31,7 +33,8 @@ struct ExerciseCardView: View {
 
         let key = trainingManager.generateWeightKey(
             day: dayName,  // ✅ Usamos dayName para la clave
-            exerciseIndex: exerciseIndex
+            exerciseIndex: exerciseIndex,
+            exerciseName: exercise.name
         )
 
         let isSaving = trainingManager.savingWeights[key] ?? false
@@ -122,7 +125,8 @@ struct ExerciseCardView: View {
         .onAppear {
             let noteKey = trainingManager.generateWeightKey(
                 day: dayName,  // ✅ Usamos dayName para la clave de notas
-                exerciseIndex: exerciseIndex
+                exerciseIndex: exerciseIndex,
+                exerciseName: exercise.name
             )
             localNote = trainingManager.exerciseNotes[noteKey] ?? ""
         }
