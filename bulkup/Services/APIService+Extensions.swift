@@ -2,7 +2,7 @@
 //  APIService+Extensions.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 17/8/25.
+//  Created by sebastianblancogonz on 17/8/25.
 //
 
 import Foundation
@@ -25,13 +25,13 @@ extension APIService {
         return authData
     }
 
-    func register(email: String, password: String, name: String) async throws
-        -> AuthResponse
-    {
+    // Función register actualizada para incluir dateOfBirth
+    func register(email: String, password: String, name: String, dateOfBirth: Date? = nil) async throws -> AuthResponse {
         let request = RegisterRequest(
             email: email,
             password: password,
-            name: name
+            name: name,
+            dateOfBirth: dateOfBirth
         )
 
         let response: APIResponse<AuthResponse> = try await requestWithBody(
@@ -58,12 +58,11 @@ extension APIService {
         return activePlan
     }
 
-    // ✅ Diet - TAMBIÉN estructura anidada (ARREGLO)
-    func loadActiveDietPlan(userId: String) async throws -> LoadDietPlanResponse
-    {
+    // Diet - TAMBIÉN estructura anidada (ARREGLO)
+    func loadActiveDietPlan(userId: String) async throws -> LoadDietPlanResponse {
         let requestBody = ["userId": userId]
 
-        // ✅ Usar estructura exterior para diet también
+        // Usar estructura exterior para diet también
         let outerResponse: LoadDietPlanOuterResponse =
             try await requestWithBody(
                 endpoint: "load-diet-plan",
@@ -74,9 +73,7 @@ extension APIService {
         return outerResponse.data
     }
 
-    func saveWeights(_ request: SaveWeightsRequest) async throws -> APIResponse<
-        EmptyResponse
-    > {
+    func saveWeights(_ request: SaveWeightsRequest) async throws -> APIResponse<EmptyResponse> {
         let response: APIResponse<EmptyResponse> = try await requestWithBody(
             endpoint: "save-weights",
             method: .POST,
@@ -86,9 +83,7 @@ extension APIService {
         return response
     }
 
-    func loadWeights(userId: String, weekStart: String) async throws
-        -> LoadWeightsResponse
-    {
+    func loadWeights(userId: String, weekStart: String) async throws -> LoadWeightsResponse {
         let requestBody = ["userId": userId, "weekStart": weekStart]
 
         let outerResponse: LoadWeightsOuterResponse = try await requestWithBody(
@@ -99,91 +94,177 @@ extension APIService {
 
         return outerResponse.data
     }
+    
     func listTrainingPlans(userId: String) async throws -> [ServerWorkout] {
-            let request = LoadPlanRequest(userId: userId)
-            
-            // Debug: Print the request
-            print("📤 Sending request to /list-training-plans: \(request)")
-            
-            let response: APIResponse<[ServerWorkout]> = try await requestWithBody(
-                endpoint: "list-training-plans",
-                method: .POST,
-                body: request
-            )
-            
-            print("📥 Response: \(response)")
-            
-            return response.data ?? []
+        let request = LoadPlanRequest(userId: userId)
+        
+        // Debug: Print the request
+        print("📤 Sending request to /list-training-plans: \(request)")
+        
+        let response: APIResponse<[ServerWorkout]> = try await requestWithBody(
+            endpoint: "list-training-plans",
+            method: .POST,
+            body: request
+        )
+        
+        print("📥 Response: \(response)")
+        
+        return response.data ?? []
+    }
+    
+    func createTrainingPlan(
+        userId: String,
+        filename: String,
+        trainingData: [ServerTrainingDay],
+        planStartDate: Date?,
+        planEndDate: Date?
+    ) async throws -> CreateTrainingPlanResponse {
+        let request = CreateTrainingPlanRequest(
+            userId: userId,
+            filename: filename,
+            trainingData: trainingData,
+            planStartDate: planStartDate,
+            planEndDate: planEndDate
+        )
+        
+        let response: APIResponse<CreateTrainingPlanResponse> = try await requestWithBody(
+            endpoint: "training-plans",
+            method: .POST,
+            body: request
+        )
+        
+        guard let data = response.data else {
+            throw APIError.noData
         }
         
-        func createTrainingPlan(
-            userId: String,
-            filename: String,
-            trainingData: [ServerTrainingDay],
-            planStartDate: Date?,
-            planEndDate: Date?
-        ) async throws -> CreateTrainingPlanResponse {
-            let request = CreateTrainingPlanRequest(
-                userId: userId,
-                filename: filename,
-                trainingData: trainingData,
-                planStartDate: planStartDate,
-                planEndDate: planEndDate
-            )
-            
-            let response: APIResponse<CreateTrainingPlanResponse> = try await requestWithBody(
-                endpoint: "training-plans",
-                method: .POST,
-                body: request
-            )
-            
-            guard let data = response.data else {
-                throw APIError.noData
-            }
-            
-            return data
+        return data
+    }
+    
+    func updateTrainingPlan(
+        planId: String,
+        userId: String,
+        filename: String,
+        trainingData: [ServerTrainingDay],
+        planStartDate: Date?,
+        planEndDate: Date?
+    ) async throws {
+        let request = CreateTrainingPlanRequest(
+            userId: userId,
+            filename: filename,
+            trainingData: trainingData,
+            planStartDate: planStartDate,
+            planEndDate: planEndDate
+        )
+        
+        let _: APIResponse<EmptyResponse> = try await requestWithBody(
+            endpoint: "training-plans/\(planId)",
+            method: .PUT,
+            body: request
+        )
+    }
+    
+    func activateTrainingPlan(userId: String, planId: String) async throws {
+        let request = ActivateTrainingPlanRequest(userId: userId)
+        
+        let _: APIResponse<EmptyResponse> = try await requestWithBody(
+            endpoint: "training-plans/\(planId)/activate",
+            method: .POST,
+            body: request
+        )
+    }
+    
+    func deleteTrainingPlan(userId: String, planId: String) async throws {
+        let request = DeleteTrainingPlanRequest(userId: userId)
+        
+        let _: APIResponse<EmptyResponse> = try await requestWithBody(
+            endpoint: "training-plans/\(planId)",
+            method: .DELETE,
+            body: request
+        )
+    }
+    
+    // MARK: - Profile Management
+    func getProfile() async throws -> ProfileResponse {
+        let response: APIResponse<ProfileResponse> = try await request(
+            endpoint: "profile",
+            method: .GET
+        )
+        
+        guard let profile = response.data else {
+            throw APIError.noData
         }
         
-        func updateTrainingPlan(
-            planId: String,
-            userId: String,
-            filename: String,
-            trainingData: [ServerTrainingDay],
-            planStartDate: Date?,
-            planEndDate: Date?
-        ) async throws {
-            let request = CreateTrainingPlanRequest(
-                userId: userId,
-                filename: filename,
-                trainingData: trainingData,
-                planStartDate: planStartDate,
-                planEndDate: planEndDate
-            )
-            
-            let _: APIResponse<EmptyResponse> = try await requestWithBody(
-                endpoint: "training-plans/\(planId)",
-                method: .PUT,
-                body: request
-            )
+        return profile
+    }
+    
+    func updateProfile(request: UpdateProfileRequest) async throws -> ProfileResponse {
+        let response: APIResponse<ProfileResponse> = try await requestWithBody(
+            endpoint: "profile",
+            method: .PUT,
+            body: request
+        )
+        
+        guard let profile = response.data else {
+            throw APIError.noData
         }
         
-        func activateTrainingPlan(userId: String, planId: String) async throws {
-            let request = ActivateTrainingPlanRequest(userId: userId)
-            
-            let _: APIResponse<EmptyResponse> = try await requestWithBody(
-                endpoint: "training-plans/\(planId)/activate",
-                method: .POST,
-                body: request
-            )
+        return profile
+    }
+    
+    func uploadProfileImage(imageUrl: String) async throws -> Bool {
+        let request = UploadImageRequest(imageUrl: imageUrl)
+        
+        let _: APIResponse<EmptyResponse> = try await requestWithBody(
+            endpoint: "profile/image",
+            method: .POST,
+            body: request
+        )
+        
+        return true
+    }
+    
+    func deleteProfileImage() async throws -> Bool {
+        let _: APIResponse<EmptyResponse> = try await request(
+            endpoint: "profile/image",
+            method: .DELETE
+        )
+        
+        return true
+    }
+    
+    // MARK: - Zipline Integration
+    func uploadImageToZipline(imageData: Data, ziplineURL: String, token: String) async throws -> String {
+        guard let url = URL(string: "\(ziplineURL)/api/upload") else {
+            throw APIError.invalidURL
         }
         
-        func deleteTrainingPlan(userId: String, planId: String) async throws {
-            let request = DeleteTrainingPlanRequest(userId: userId)
-            
-            let _: APIResponse<EmptyResponse> = try await requestWithBody(
-                endpoint: "training-plans/\(planId)",
-                method: .DELETE,
-                body: request
-            )
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        // Create multipart form data
+        let boundary = UUID().uuidString
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var body = Data()
+        
+        // Add image data
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"profile.jpg\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        body.append(imageData)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        request.httpBody = body
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw APIError.requestFailed
         }
+        
+        let uploadResponse = try JSONDecoder().decode(ZiplineUploadResponse.self, from: data)
+        return uploadResponse.url
+    }
 }

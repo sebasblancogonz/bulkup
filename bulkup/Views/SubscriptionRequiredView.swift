@@ -2,7 +2,7 @@
 //  SubscriptionRequiredView.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 21/8/25.
+//  Created by sebastianblancogonz on 21/8/25.
 //
 import SwiftUI
 

@@ -2,7 +2,7 @@
 //  APIService.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 17/8/25.
+//  Created by sebastianblancogonz on 17/8/25.
 //
 import Foundation
 
@@ -32,7 +32,8 @@ class APIService: ObservableObject {
         body: Data? = nil,
         headers: [String: String] = [:]
     ) async throws -> T {
-        
+        print("URL:", "\(APIConfig.baseURL)/\(endpoint)")
+
         guard let url = URL(string: "\(APIConfig.baseURL)/\(endpoint)") else {
             throw APIError.invalidURL
         }

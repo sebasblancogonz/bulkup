@@ -2,7 +2,7 @@
 //  API.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 17/8/25.
+//  Created by sebastianblancogonz on 17/8/25.
 //
 
 import Combine
@@ -80,12 +80,15 @@ struct APIConfig {
     }
 }
 
+
 struct AuthResponse: Codable {
     let userId: String
     let email: String
     let name: String
+    let dateOfBirth: Date?
+    let profileImageURL: String?
     let token: String
-    let createdAt: String?
+    let createdAt: Date
 }
 
 struct LoginRequest: Codable {
@@ -97,7 +100,48 @@ struct RegisterRequest: Codable {
     let email: String
     let password: String
     let name: String
+    let dateOfBirth: Date?
+    
+    init(email: String, password: String, name: String, dateOfBirth: Date? = nil) {
+        self.email = email
+        self.password = password
+        self.name = name
+        self.dateOfBirth = dateOfBirth
+    }
 }
+
+struct UpdateProfileRequest: Codable {
+    let name: String?
+    let dateOfBirth: Date?
+    let profileImageURL: String?
+    
+    init(name: String? = nil, dateOfBirth: Date? = nil, profileImageURL: String? = nil) {
+        self.name = name
+        self.dateOfBirth = dateOfBirth
+        self.profileImageURL = profileImageURL
+    }
+}
+
+struct UploadImageRequest: Codable {
+    let imageUrl: String
+}
+
+struct ZiplineUploadResponse: Codable {
+    let url: String
+    let id: String
+    let filename: String
+}
+
+struct ProfileResponse: Codable {
+    let userId: String
+    let email: String
+    let name: String
+    let dateOfBirth: Date?
+    let profileImageURL: String?
+    let createdAt: Date
+    let updatedAt: Date
+}
+
 
 struct LoadDietPlanResponse: Codable {
     let success: Bool
@@ -281,6 +325,7 @@ enum APIError: Error {
     case unauthorized
     case invalidRequest
     case serverError(Int)
+    case requestFailed
 
     var localizedDescription: String {
         switch self {
@@ -298,6 +343,8 @@ enum APIError: Error {
             return "Invalid request parameters"
         case .serverError(let message):
             return "Server error: \(message)"
+        case .requestFailed:
+            return "Request failed"
         }
     }
 }

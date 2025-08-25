@@ -2,7 +2,7 @@
 //  DietModels.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 17/8/25.
+//  Created by sebastianblancogonz on 17/8/25.
 //
 
 import SwiftUI
@@ -115,19 +115,49 @@ class Supplement {
 
 @Model
 class User {
-    @Attribute(.unique) var id: String
+    @Attribute(.unique) var id: String // Esto mapea a "userId" del backend
     var email: String
     var name: String
+    var dateOfBirth: Date?
+    var profileImageURL: String?
     var hasActiveSubscription: Bool = false
     var subscriptionExpiryDate: Date?
     var createdAt: Date
+    var updatedAt: Date
     var token: String?
     
-    init(id: String, email: String, name: String, token: String? = nil) {
+    init(
+        id: String,
+        email: String,
+        name: String,
+        dateOfBirth: Date? = nil,
+        profileImageURL: String? = nil,
+        token: String? = nil
+    ) {
         self.id = id
         self.email = email
         self.name = name
+        self.dateOfBirth = dateOfBirth
+        self.profileImageURL = profileImageURL
         self.createdAt = Date()
+        self.updatedAt = Date()
         self.token = token
+    }
+    
+    // Método helper para actualizar desde ProfileResponse
+    func updateFromProfile(_ profile: ProfileResponse) {
+        self.name = profile.name
+        self.dateOfBirth = profile.dateOfBirth
+        self.profileImageURL = profile.profileImageURL
+        self.updatedAt = profile.updatedAt
+    }
+    
+    // Método helper para actualizar desde AuthResponse (login/register)
+    func updateFromAuthResponse(_ auth: AuthResponse) {
+        self.name = auth.name
+        self.dateOfBirth = auth.dateOfBirth
+        self.profileImageURL = auth.profileImageURL
+        self.token = auth.token
+        self.updatedAt = Date()
     }
 }

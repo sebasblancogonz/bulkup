@@ -2,7 +2,7 @@
 //  TrainingHubView.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 23/8/25.
+//  Created by sebastianblancogonz on 23/8/25.
 //
 
 import SwiftData

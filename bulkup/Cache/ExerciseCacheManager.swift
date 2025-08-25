@@ -2,7 +2,7 @@
 //  ExerciseCacheManager.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 20/8/25.
+//  Created by sebastianblancogonz on 20/8/25.
 //
 import Foundation
 

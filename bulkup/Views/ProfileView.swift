@@ -4,13 +4,16 @@
 //
 //  Created by sebastian.blanco on 18/8/25.
 //
+
 import SwiftData
 import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) private var dismiss
-    
+    @State private var showingBodyMeasurements = false
+    @State private var showingEditProfile = false
+
     var body: some View {
         NavigationView {
             VStack(spacing: 24) {
@@ -45,9 +48,34 @@ struct ProfileView: View {
                 
                 // Opciones
                 VStack(spacing: 12) {
-                    ProfileMenuItem(icon: "person.crop.circle", title: "Editar Perfil", action: {})
-                    ProfileMenuItem(icon: "bell", title: "Notificaciones", action: {})
-                    ProfileMenuItem(icon: "gear", title: "Configuración", action: {})
+                    ProfileMenuItem(
+                        icon: "person.crop.circle",
+                        title: "Editar Perfil",
+                        action: {
+                            showingEditProfile = true
+                        }
+                    )
+                    
+                    ProfileMenuItem(
+                        icon: "figure.arms.open",
+                        title: "Medidas Corporales",
+                        subtitle: "Seguimiento y composición",
+                        action: {
+                            showingBodyMeasurements = true
+                        }
+                    )
+                    
+                    ProfileMenuItem(
+                        icon: "bell",
+                        title: "Notificaciones",
+                        action: {}
+                    )
+                    
+                    ProfileMenuItem(
+                        icon: "gear",
+                        title: "Configuración",
+                        action: {}
+                    )
                 }
                 .padding()
                 
@@ -78,5 +106,18 @@ struct ProfileView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingBodyMeasurements) {
+            NavigationView {
+                BodyMeasurementsView()
+                    .environmentObject(authManager)
+            }
+        }
+        .sheet(isPresented: $showingEditProfile) {
+            NavigationView {
+                EditProfileView()
+                    .environmentObject(authManager)
+            }
+        }
     }
 }
+

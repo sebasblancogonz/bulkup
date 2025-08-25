@@ -2,7 +2,7 @@
 //  TrainingManager.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 18/8/25.
+//  Created by sebastianblancogonz on 18/8/25.
 //
 import Foundation
 import SwiftData
@@ -266,7 +266,7 @@ class TrainingManager: ObservableObject {
             let exercise = dayData.exercises.first(where: {
                 $0.name == exerciseName
             }),
-            let exerciseIndex = dayData.exercises.firstIndex(where: {
+              let _ = dayData.exercises.firstIndex(where: {
                 $0.name == exerciseName
             })
         else {

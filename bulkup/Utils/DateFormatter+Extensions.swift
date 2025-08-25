@@ -2,7 +2,7 @@
 //  DateFormatter+Extensions.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 18/8/25.
+//  Created by sebastianblancogonz on 18/8/25.
 //
 import Foundation
 

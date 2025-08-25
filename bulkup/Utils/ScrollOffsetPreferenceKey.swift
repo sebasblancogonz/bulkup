@@ -2,7 +2,7 @@
 //  ScrollOffsetPreferenceKey.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 19/8/25.
+//  Created by sebastianblancogonz on 19/8/25.
 //
 
 import SwiftUI

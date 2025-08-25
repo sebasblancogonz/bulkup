@@ -2,7 +2,7 @@
 //  ConditionCardView.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 17/8/25.
+//  Created by sebastianblancogonz on 17/8/25.
 //
 
 import SwiftUI
