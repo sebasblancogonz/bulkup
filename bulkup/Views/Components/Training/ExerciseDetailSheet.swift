@@ -21,7 +21,7 @@ struct ExerciseDetailSheet: View {
         NavigationView {
             ExerciseCardView(
                 exercise: exercise,
-                exerciseIndex: exerciseIndex,
+                exerciseIndex: exercise.orderIndex,
                 dayName: dayName,
                 currentDate: currentDate  // ✅ Pasamos la fecha actual
             )

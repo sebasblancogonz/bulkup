@@ -10,66 +10,73 @@ import Foundation
 
 struct APIConfig {
     static let timeout: TimeInterval = 30.0
-    
+
     // MARK: - Production-Ready Configuration
-    
+
     static var baseURL: String {
         // First try to get from Info.plist (build configuration)
-        if let urlString = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String,
-           !urlString.isEmpty {
+        if let urlString = Bundle.main.object(
+            forInfoDictionaryKey: "API_BASE_URL"
+        ) as? String,
+            !urlString.isEmpty
+        {
             return urlString
         }
-        
+
         // Fallback based on build configuration
         #if DEBUG
-        return "http://localhost:8080"
+            return "http://localhost:8080"
         #else
-        return "https://weight-tracker-backend.tme3al.easypanel.host/" 
+            return "https://weight-tracker-backend.tme3al.easypanel.host/"
         #endif
     }
-    
+
     static var environment: Environment {
-        if let envString = Bundle.main.object(forInfoDictionaryKey: "ENVIRONMENT") as? String {
+        if let envString = Bundle.main.object(
+            forInfoDictionaryKey: "ENVIRONMENT"
+        ) as? String {
             return Environment(rawValue: envString) ?? .development
         }
-        
+
         #if DEBUG
-        return .development
+            return .development
         #else
-        return .production
+            return .production
         #endif
     }
-    
+
     enum Environment: String {
         case development = "development"
         case staging = "staging"
         case production = "production"
-        
+
         var enablesLogging: Bool {
             switch self {
             case .development, .staging: return true
             case .production: return false
             }
         }
-        
+
         var allowsInsecureHTTP: Bool {
             return self == .development
         }
     }
-    
+
     // MARK: - Configuration Validation
-    
+
     static func validateConfiguration() {
         assert(!baseURL.isEmpty, "API Base URL cannot be empty")
-        
+
         if environment == .production {
             assert(baseURL.hasPrefix("https://"), "Production must use HTTPS")
         }
-        
+
         print("🔧 API Configuration:")
         print("   Environment: \(environment.rawValue)")
         print("   Base URL: \(baseURL)")
-        print("   Logging: \(environment.enablesLogging ? "Enabled" : "Disabled")")
+        print(
+            "   Logging: \(environment.enablesLogging ? "Enabled" : "Disabled")"
+        )
     }
 }
 
@@ -170,7 +177,7 @@ struct ServerTrainingDay: Codable {
 struct ServerExercise: Codable {
     let name: String
     let sets: Int
-    let reps: String  // Mantener como String
+    let reps: String
     let restSeconds: Int
     let notes: String?
     let tempo: String?
@@ -183,7 +190,26 @@ struct ServerExercise: Codable {
         case reps
     }
 
-    // ✅ ARREGLO: Custom decoding para manejar reps como Int o String
+    // ✅ AÑADIR: Inicializador público
+    init(
+        name: String,
+        sets: Int,
+        reps: String,
+        restSeconds: Int,
+        notes: String? = nil,
+        tempo: String? = nil,
+        weightTracking: Bool
+    ) {
+        self.name = name
+        self.sets = sets
+        self.reps = reps
+        self.restSeconds = restSeconds
+        self.notes = notes
+        self.tempo = tempo
+        self.weightTracking = weightTracking
+    }
+
+    // Custom decoding para manejar reps como Int o String
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -197,7 +223,7 @@ struct ServerExercise: Codable {
             forKey: .weightTracking
         )
 
-        // ✅ Manejar reps como Int o String
+        // Manejar reps como Int o String
         if let repsInt = try? container.decode(Int.self, forKey: .reps) {
             reps = String(repsInt)
         } else {
@@ -205,7 +231,7 @@ struct ServerExercise: Codable {
         }
     }
 
-    // ✅ Custom encoding (en caso de que necesites enviar datos de vuelta)
+    // Custom encoding
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -234,7 +260,8 @@ struct WeightRecordRequest: Codable {
     let note: String
 }
 
-struct ServerWeightSet: Codable {
+struct ServerWeightSet: Codable {    
+    let setNumber: Int?
     let weight: Double
     let reps: Int
 }
@@ -254,7 +281,7 @@ enum APIError: Error {
     case unauthorized
     case invalidRequest
     case serverError(Int)
-    
+
     var localizedDescription: String {
         switch self {
         case .invalidURL:
@@ -331,31 +358,40 @@ struct ServerWorkout: Codable, Identifiable {
     let trainingData: [ServerTrainingDay]?
     let active: Bool
     let planStartDate: Date?  // This will be nil until you update your backend
-    let planEndDate: Date?    // This will be nil until you update your backend
+    let planEndDate: Date?  // This will be nil until you update your backend
     let createdAt: Date
     let updatedAt: Date
-    
+
     enum CodingKeys: String, CodingKey {
         case id = "_id"
         case userId, filename, trainingData, active
         case planStartDate, planEndDate, createdAt, updatedAt
     }
-    
+
     // Custom decoder to handle the actual response format
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         // Handle _id field (MongoDB ObjectID)
         id = try container.decodeIfPresent(String.self, forKey: .id)
         userId = try container.decode(String.self, forKey: .userId)
         filename = try container.decode(String.self, forKey: .filename)
-        trainingData = try container.decodeIfPresent([ServerTrainingDay].self, forKey: .trainingData)
+        trainingData = try container.decodeIfPresent(
+            [ServerTrainingDay].self,
+            forKey: .trainingData
+        )
         active = try container.decode(Bool.self, forKey: .active)
-        
+
         // These fields don't exist in your current backend response, so they'll be nil for now
-        planStartDate = try container.decodeIfPresent(Date.self, forKey: .planStartDate)
-        planEndDate = try container.decodeIfPresent(Date.self, forKey: .planEndDate)
-        
+        planStartDate = try container.decodeIfPresent(
+            Date.self,
+            forKey: .planStartDate
+        )
+        planEndDate = try container.decodeIfPresent(
+            Date.self,
+            forKey: .planEndDate
+        )
+
         // Handle date parsing - your backend returns ISO dates
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)

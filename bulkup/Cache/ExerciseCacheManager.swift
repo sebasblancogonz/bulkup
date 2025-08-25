@@ -32,7 +32,7 @@ class ExerciseCacheManager {
         }
         
         guard let data = UserDefaults.standard.data(forKey: rmExercisesCacheKey) else { return nil }
-        let exercisesFull = try! JSONDecoder().decode([RMExercise].self, from: data)
+        _ = try! JSONDecoder().decode([RMExercise].self, from: data)
         return try? JSONDecoder().decode([RMExercise].self, from: data)
     }
     

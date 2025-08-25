@@ -47,19 +47,15 @@ extension APIService {
         return authData
     }
 
-    func loadActiveTrainingPlan(userId: String) async throws
-        -> ServerWorkout
-    {
-        let requestBody = ["userId": userId]
-
-        let outerResponse: LoadTrainingPlanOuterResponse =
-            try await requestWithBody(
-                endpoint: "load-training-plan",
-                method: .POST,
-                body: requestBody
-            )
-
-        return outerResponse.data
+    func loadActiveTrainingPlan(userId: String) async throws -> ServerWorkout {
+        let plans = try await listTrainingPlans(userId: userId)
+        
+        guard let activePlan = plans.first(where: { $0.active }) else {
+            // Si no hay plan activo, lanzar un error específico
+            throw APIError.noData
+        }
+        
+        return activePlan
     }
 
     // ✅ Diet - TAMBIÉN estructura anidada (ARREGLO)

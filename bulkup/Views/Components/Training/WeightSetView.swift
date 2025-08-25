@@ -40,7 +40,7 @@ struct WeightSetView: View {
         // 🔧 UPDATE: Include exercise name in weight key generation
         let weightKey = trainingManager.generateWeightKey(
             day: normalizedDayName,
-            exerciseIndex: exerciseIndex,
+            exerciseIndex: exercise.orderIndex,
             exerciseName: exercise.name,  // 🔧 ADD: Pass exercise name
             setIndex: setIndex
         )
@@ -119,7 +119,7 @@ struct WeightSetView: View {
                 // 🔧 UPDATE: Pass exercise name to updateWeight
                 trainingManager.updateWeight(
                     day: normalizedDayName,
-                    exerciseIndex: exerciseIndex,
+                    exerciseIndex: exercise.orderIndex,
                     exerciseName: exercise.name,  // 🔧 ADD: Pass exercise name
                     setIndex: setIndex,
                     weight: weight
@@ -128,7 +128,7 @@ struct WeightSetView: View {
                 // 🔧 UPDATE: Pass exercise name to updateWeight
                 trainingManager.updateWeight(
                     day: normalizedDayName,
-                    exerciseIndex: exerciseIndex,
+                    exerciseIndex: exercise.orderIndex,
                     exerciseName: exercise.name,  // 🔧 ADD: Pass exercise name
                     setIndex: setIndex,
                     weight: 0
@@ -141,17 +141,19 @@ struct WeightSetView: View {
         // 🔧 UPDATE: Include exercise name in weight key generation
         let weightKey = trainingManager.generateWeightKey(
             day: normalizedDayName,
-            exerciseIndex: exerciseIndex,
+            exerciseIndex: exercise.orderIndex,
             exerciseName: exercise.name,  // 🔧 ADD: Pass exercise name
             setIndex: setIndex
         )
 
         if let weight = trainingManager.weights[weightKey], weight > 0 {
+            print("  - Found weight: \(weight)")
             weightText = String(format: "%.1f", weight).replacingOccurrences(
                 of: ".0",
                 with: ""
             )
         } else {
+            print("  - No weight found for key: \(weightKey)")
             // 🔧 UPDATE: Try alternative key formats for backwards compatibility
             // Include exercise name in alternative keys too
             let normalizedExerciseName = exercise.name
@@ -166,12 +168,12 @@ struct WeightSetView: View {
 
             let alternativeKeys = [
                 // Legacy formats without exercise name (for backwards compatibility)
-                "\(dayName.lowercased())_\(exerciseIndex)_\(setIndex)",
-                "\(dayName)_\(exerciseIndex)_\(setIndex)",
-                "\(normalizedDayName)_\(exerciseIndex)_\(setIndex)",
+                "\(dayName.lowercased())_\(exercise.orderIndex)_\(setIndex)",
+                "\(dayName)_\(exercise.orderIndex)_\(setIndex)",
+                "\(normalizedDayName)_\(exercise.orderIndex)_\(setIndex)",
                 // New formats with exercise name
-                "\(normalizedDayName)-\(exerciseIndex)-\(normalizedExerciseName)-\(setIndex)",
-                "\(dayName.lowercased())-\(exerciseIndex)-\(normalizedExerciseName)-\(setIndex)",
+                "\(normalizedDayName)-\(exercise.orderIndex)-\(normalizedExerciseName)-\(setIndex)",
+                "\(dayName.lowercased())-\(exercise.orderIndex)-\(normalizedExerciseName)-\(setIndex)",
             ]
 
             for key in alternativeKeys {
@@ -182,7 +184,7 @@ struct WeightSetView: View {
                     // 🔧 ADD: Migrate old format to new format
                     trainingManager.updateWeight(
                         day: normalizedDayName,
-                        exerciseIndex: exerciseIndex,
+                        exerciseIndex: exercise.orderIndex,
                         exerciseName: exercise.name,
                         setIndex: setIndex,
                         weight: weight

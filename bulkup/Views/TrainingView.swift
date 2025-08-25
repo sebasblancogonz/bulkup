@@ -506,6 +506,7 @@ struct TrainingView: View {
 
             ForEach(sortedExercises, id: \.id) { exercise in
                 let exerciseIndex = exercise.orderIndex
+
                 VStack(spacing: 12) {
                     ExerciseCardView(
                         exercise: exercise,
@@ -599,7 +600,7 @@ struct TrainingView: View {
                 index, exercise in
                 ExerciseCardView(
                     exercise: exercise,
-                    exerciseIndex: index,
+                    exerciseIndex: exercise.orderIndex,
                     dayName: trainingDay,
                     currentDate: currentDate
                 )

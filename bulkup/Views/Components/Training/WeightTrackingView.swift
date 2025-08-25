@@ -40,7 +40,7 @@ struct WeightTrackingView: View {
                         WeightSetView(
                             setIndex: setIndex,
                             exercise: exercise,
-                            exerciseIndex: exerciseIndex,
+                            exerciseIndex: exercise.orderIndex,
                             dayName: dayFormatter.string(from: currentDate).capitalized,
                             onSubmit: saveWeights
                         )

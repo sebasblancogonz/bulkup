@@ -364,7 +364,6 @@ struct MainAppView: View {
             }
             .padding(.horizontal)
         }
-        .padding(.vertical, 8)
         .background(Color(.systemGray6).opacity(0.5))
     }
 

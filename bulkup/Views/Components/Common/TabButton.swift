@@ -12,18 +12,22 @@ struct TabButton: View {
     let isSelected: Bool
     let isDisabled: Bool
     let action: () -> Void
-    
+
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            action()
+            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+            impactFeedback.impactOccurred()
+        }) {
             HStack(spacing: 12) {
                 Image(systemName: tab.iconName)
                     .font(.title3)
                     .fontWeight(.semibold)
-                
+
                 Text(tab.displayName)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                
+
                 if isDisabled {
                     Text("Sin datos")
                         .font(.caption2)
@@ -33,13 +37,22 @@ struct TabButton: View {
                         .cornerRadius(4)
                         .foregroundColor(.secondary)
                 }
+
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .background(
-                isSelected ? tab.gradient : LinearGradient(colors: [Color(.systemGray6)], startPoint: .leading, endPoint: .trailing)
+                isSelected
+                    ? tab.gradient
+                    : LinearGradient(
+                        colors: [Color(.systemGray6)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
             )
-            .foregroundColor(isSelected ? .white : (isDisabled ? .secondary : .primary))
+            .foregroundColor(
+                isSelected ? .white : (isDisabled ? .secondary : .primary)
+            )
             .cornerRadius(12)
             .shadow(
                 color: isSelected ? tab.primaryColor.opacity(0.3) : .clear,
@@ -48,7 +61,10 @@ struct TabButton: View {
                 y: isSelected ? 4 : 0
             )
             .scaleEffect(isSelected ? 1.02 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+            .animation(
+                .spring(response: 0.3, dampingFraction: 0.7),
+                value: isSelected
+            )
         }
         .disabled(isDisabled)
         .buttonStyle(PlainButtonStyle())

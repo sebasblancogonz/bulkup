@@ -65,6 +65,7 @@ class WeightRecord {
     var note: String = ""
     var weekStart: String // Formato "2025-01-15"
     var createdAt: Date = Date()
+    var updatedAt: Date = Date()
     var needsSync: Bool = false
     
     init(userId: String, planId: String, day: String, exerciseName: String, exerciseIndex: Int, sets: [WeightSet] = [], note: String = "", weekStart: String) {
@@ -82,10 +83,12 @@ class WeightRecord {
 
 @Model
 class WeightSet {
+    var setNumber: Int
     var weight: Double
     var reps: Int
     
-    init(weight: Double, reps: Int) {
+    init(setNumber: Int = 0, weight: Double, reps: Int) {
+        self.setNumber = setNumber
         self.weight = weight
         self.reps = reps
     }
