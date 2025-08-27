@@ -41,60 +41,7 @@ struct EditProfileView: View {
                         Button {
                             showingImageOptions = true
                         } label: {
-                            ZStack {
-                                // Background Circle
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [.blue, .blue.opacity(0.7)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 120, height: 120)
-                                
-                                // Profile Image or Initials
-                                Group {
-                                    if let profileImage = profileImage {
-                                        Image(uiImage: profileImage)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(width: 120, height: 120)
-                                            .clipShape(Circle())
-                                    } else if let imageURL = profileManager.profile?.profileImageURL,
-                                             let url = URL(string: imageURL) {
-                                        CachedAsyncImage(url: url) { image in
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: 120, height: 120)
-                                                .clipShape(Circle())
-                                        } placeholder: {
-                                            Text(name.prefix(2).uppercased())
-                                                .font(.system(size: 48, weight: .bold))
-                                                .foregroundColor(.white)
-                                        }
-                                    } else {
-                                        Text(name.prefix(2).uppercased())
-                                            .font(.system(size: 48, weight: .bold))
-                                            .foregroundColor(.white)
-                                    }
-                                }
-                                
-                                // Upload indicator
-                                if profileManager.isUploadingImage {
-                                    Color.black.opacity(0.5)
-                                        .clipShape(Circle())
-                                    
-                                    ProgressView()
-                                        .tint(.white)
-                                }
-                                
-                                // Overlay to indicate it's clickable (subtle)
-                                Circle()
-                                    .fill(Color.black.opacity(0.0001)) // Nearly invisible but makes it tappable
-                                    .frame(width: 120, height: 120)
-                            }
+                            profileAvatar
                         }
                         .disabled(profileManager.isUploadingImage)
                         .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
@@ -286,6 +233,76 @@ struct EditProfileView: View {
             if success {
                 profileImage = nil
             }
+        }
+    }
+    
+    private var profileAvatar: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [.blue, .blue.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 120, height: 120)
+
+            avatarContent
+
+            if profileManager.isUploadingImage {
+                Color.black.opacity(0.5)
+                    .clipShape(Circle())
+                ProgressView()
+                    .tint(.white)
+            }
+
+            Circle()
+                .fill(Color.black.opacity(0.0001))
+                .frame(width: 120, height: 120)
+        }
+    }
+
+    @ViewBuilder
+    private var avatarContent: some View {
+        if let profileImage = profileImage {
+            Image(uiImage: profileImage)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 120, height: 120)
+                .clipShape(Circle())
+        } else if let imageURL = profileManager.profile?.profileImageURL,
+                  let url = URL(string: imageURL) {
+            CachedAsyncImage(
+                url: url,
+                content: { image, colors in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 40, height: 40)
+                        .clipShape(Circle())
+                },
+                placeholder: {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.blue, .blue.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                        )
+                }
+            )
+        } else {
+            Text(name.prefix(2).uppercased())
+                .font(.system(size: 48, weight: .bold))
+                .foregroundColor(.white)
         }
     }
 }

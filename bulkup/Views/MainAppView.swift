@@ -202,16 +202,16 @@ struct MainAppView: View {
                     if let urlString = authManager.user?.profileImageURL,
                        let url = URL(string: urlString) {
                         // Imagen de perfil desde URL
-                        CachedAsyncImage(url: url) { phase in
-                            switch phase {
-                            case .success(let image):
+                        CachedAsyncImage(
+                            url: url,
+                            content: { image, colors in
                                 image
                                     .resizable()
                                     .scaledToFill()
                                     .frame(width: 40, height: 40)
                                     .clipShape(Circle())
-                            case .failure(_):
-                                // Fallback a la inicial si falla la carga
+                            },
+                            placeholder: {
                                 Circle()
                                     .fill(
                                         LinearGradient(
@@ -226,13 +226,8 @@ struct MainAppView: View {
                                             .font(.system(size: 16, weight: .bold))
                                             .foregroundColor(.white)
                                     )
-                            case .empty:
-                                ProgressView()
-                                    .frame(width: 40, height: 40)
-                            @unknown default:
-                                EmptyView()
                             }
-                        }
+                        )
                     } else {
                         // Sin imagen → inicial
                         Circle()

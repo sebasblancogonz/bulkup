@@ -97,7 +97,17 @@ struct WeightSetView: View {
                                         ? Color.green : Color.gray.opacity(0.3),
                                     lineWidth: 1
                                 )
-                        )
+                        ).toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("Listo") {
+                                    isFocused = false
+                                }
+                            }
+                        }.contentShape(Rectangle())
+                        .onTapGesture {
+                            isFocused = false
+                        }
 
                     Text("kg")
                         .font(.caption2)
