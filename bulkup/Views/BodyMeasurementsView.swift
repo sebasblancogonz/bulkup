@@ -6,29 +6,35 @@
 //
 
 import SwiftUI
+import Charts
 
 struct BodyMeasurementsView: View {
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var measurementsManager = BodyMeasurementsManager.shared
-    @State private var selectedTab = 0
     @State private var showingAddMeasurements = false
+    @State private var selectedMeasurement: BodyMeasurements?
     @State private var hasAppeared = false
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Tab 1: Medidas Actuales y Composición
-            currentMeasurementsTab
-                .tabItem {
-                    Label("Actual", systemImage: "person.crop.rectangle")
+        ScrollView {
+            VStack(spacing: 20) {
+                if measurementsManager.isLoading && measurementsManager.measurementsHistory.isEmpty {
+                    ProgressView("Cargando medidas...")
+                        .frame(maxWidth: .infinity, minHeight: 200)
+                } else if measurementsManager.measurementsHistory.isEmpty {
+                    // Estado vacío
+                    emptyStateView
+                } else {
+                    // Vista de resumen con gráfico
+                    if let latest = measurementsManager.measurementsHistory.first {
+                        summaryCard(for: latest)
+                    }
+                    
+                    // Lista de registros
+                    measurementsListView
                 }
-                .tag(0)
-            
-            // Tab 2: Historial
-            historyTab
-                .tabItem {
-                    Label("Historial", systemImage: "chart.line.uptrend.xyaxis")
-                }
-                .tag(1)
+            }
+            .padding()
         }
         .navigationTitle("Medidas Corporales")
         .navigationBarTitleDisplayMode(.inline)
@@ -48,373 +54,289 @@ struct BodyMeasurementsView: View {
                 .environmentObject(measurementsManager)
                 .environmentObject(authManager)
         }
+        .sheet(item: $selectedMeasurement) { measurement in
+            MeasurementDetailView(
+                measurement: measurement,
+                previousMeasurement: getPreviousMeasurement(for: measurement)
+            )
+            .environmentObject(measurementsManager)
+            .environmentObject(authManager)
+        }
         .onAppear {
             if !hasAppeared {
                 hasAppeared = true
-                loadInitialData()
-            }
-        }
-        .alert("Error", isPresented: .constant(measurementsManager.errorMessage != nil && !measurementsManager.errorMessage!.contains("no encontrado"))) {
-            Button("OK") {
-                measurementsManager.errorMessage = nil
-            }
-        } message: {
-            Text(measurementsManager.errorMessage ?? "")
-        }
-    }
-    
-    private func loadInitialData() {
-        guard let userId = authManager.user?.id else { return }
-        
-        Task {
-            // Load measurements first
-            await measurementsManager.loadLatestMeasurements(userId: userId)
-            
-            // Only calculate composition if we have measurements and no error occurred
-            if measurementsManager.currentMeasurements != nil && measurementsManager.errorMessage == nil {
-                await measurementsManager.calculateBodyComposition(userId: userId)
-            }
-        }
-    }
-    
-    // MARK: - Current Measurements Tab
-    private var currentMeasurementsTab: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                if measurementsManager.isLoading {
-                    ProgressView("Cargando medidas...")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let measurements = measurementsManager.currentMeasurements {
-                    // Medidas básicas
-                    MeasurementsCardView(measurements: measurements)
-                        .environmentObject(authManager)
-                        .environmentObject(measurementsManager)
-                    
-                    // Composición corporal
-                    if let composition = measurementsManager.bodyComposition {
-                        BodyCompositionCardView(composition: composition)
-                    } else {
-                        Button("Calcular Composición Corporal") {
-                            Task {
-                                if let userId = authManager.user?.id {
-                                    measurementsManager.errorMessage = nil
-                                    await measurementsManager.calculateBodyComposition(userId: userId)
-                                }
-                            }
-                        }
-                        .buttonStyle(SecondaryButtonStyle())
-                        .disabled(measurementsManager.isLoading)
-                    }
-                } else {
-                    // Estado vacío
-                    VStack(spacing: 20) {
-                        Image(systemName: "figure.arms.open")
-                            .font(.system(size: 60))
-                            .foregroundColor(.secondary)
-                        
-                        Text("No hay medidas registradas")
-                            .font(.title2)
-                            .fontWeight(.medium)
-                        
-                        Text("Agrega tus primeras medidas para comenzar a hacer seguimiento de tu progreso")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                        
-                        Button("Agregar Medidas") {
-                            showingAddMeasurements = true
-                        }
-                        .buttonStyle(PrimaryButtonStyle())
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-            }
-            .padding()
-        }
-        .refreshable {
-            guard let userId = authManager.user?.id else { return }
-            
-            // Reset error state
-            measurementsManager.errorMessage = nil
-            
-            // Load measurements first
-            await measurementsManager.loadLatestMeasurements(userId: userId)
-            
-            // Only calculate composition if we have measurements and no error occurred
-            if measurementsManager.currentMeasurements != nil && measurementsManager.errorMessage == nil {
-                await measurementsManager.calculateBodyComposition(userId: userId)
-            }
-        }
-    }
-    
-    // MARK: - History Tab
-    private var historyTab: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                if measurementsManager.measurementsHistory.isEmpty {
-                    VStack(spacing: 20) {
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                            .font(.system(size: 60))
-                            .foregroundColor(.secondary)
-                        
-                        Text("Sin historial")
-                            .font(.title2)
-                            .fontWeight(.medium)
-                        
-                        Text("Agrega más medidas para ver tu progreso a lo largo del tiempo")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    ForEach(measurementsManager.measurementsHistory, id: \.id) { measurement in
-                        HistoryMeasurementCardView(measurements: measurement)
-                    }
-                }
-            }
-            .padding()
-        }
-        .onAppear {
-            Task {
-                if let userId = authManager.user?.id, measurementsManager.measurementsHistory.isEmpty {
-                    await measurementsManager.loadMeasurementsHistory(userId: userId)
+                Task {
+                    await loadInitialData()
                 }
             }
         }
         .refreshable {
-            guard let userId = authManager.user?.id else { return }
-            await measurementsManager.loadMeasurementsHistory(userId: userId)
+            await loadInitialData()
         }
     }
-}
-
-// MARK: - Supporting Views
-struct MeasurementsCardView: View {
-    let measurements: BodyMeasurements
-    @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var measurementsManager: BodyMeasurementsManager
-    @State private var showingDeleteConfirmation = false
     
-    var body: some View {
+    // MARK: - Empty State
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "figure.arms.open")
+                .font(.system(size: 60))
+                .foregroundColor(.secondary)
+            
+            Text("No hay medidas registradas")
+                .font(.title2)
+                .fontWeight(.medium)
+            
+            Text("Agrega tus primeras medidas para comenzar a hacer seguimiento de tu progreso")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            Button("Agregar Primera Medida") {
+                showingAddMeasurements = true
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .padding(.horizontal, 40)
+        }
+        .frame(maxWidth: .infinity, minHeight: 300)
+    }
+    
+    // MARK: - Summary Card
+    private func summaryCard(for measurement: BodyMeasurements) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Medidas Actuales")
-                    .font(.headline)
-                    .fontWeight(.bold)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Última Medición")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(measurement.fecha.formatted(date: .abbreviated, time: .omitted))
+                        .font(.headline)
+                }
                 
                 Spacer()
                 
-                HStack(spacing: 8) {
-                    Text(measurements.fecha.formatted(date: .abbreviated, time: .omitted))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Button {
-                        showingDeleteConfirmation = true
-                    } label: {
-                        Image(systemName: "trash")
+                // Indicador de cambio si hay medición previa
+                if let previous = getPreviousMeasurement(for: measurement) {
+                    let weightDiff = measurement.peso - previous.peso
+                    HStack(spacing: 4) {
+                        Image(systemName: weightDiff > 0 ? "arrow.up.circle.fill" : weightDiff < 0 ? "arrow.down.circle.fill" : "equal.circle.fill")
+                            .foregroundColor(weightDiff > 0 ? .red : weightDiff < 0 ? .green : .secondary)
+                        Text(String(format: "%.1f kg", abs(weightDiff)))
                             .font(.caption)
-                            .foregroundColor(.red)
+                            .fontWeight(.medium)
                     }
-                    .buttonStyle(.plain)
                 }
             }
             
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 12) {
-                MeasurementItemView(title: "Peso", value: String(format: "%.1f kg", measurements.peso), icon: "scalemass")
-                MeasurementItemView(title: "Altura", value: String(format: "%.0f cm", measurements.altura), icon: "ruler")
-                MeasurementItemView(title: "Cintura", value: String(format: "%.1f cm", measurements.cintura), icon: "circle.dashed")
-                MeasurementItemView(title: "Cuello", value: String(format: "%.1f cm", measurements.cuello), icon: "circle")
-                
-                if let cadera = measurements.cadera {
-                    MeasurementItemView(title: "Cadera", value: String(format: "%.1f cm", cadera), icon: "circle.dotted")
+            // Métricas principales
+            HStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Peso")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(String(format: "%.1f kg", measurement.peso))
+                        .font(.title3)
+                        .fontWeight(.bold)
                 }
                 
-                if let brazo = measurements.brazo {
-                    MeasurementItemView(title: "Brazo", value: String(format: "%.1f cm", brazo), icon: "arm.wave")
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("IMC")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    let imc = measurement.peso / pow(measurement.altura / 100, 2)
+                    Text(String(format: "%.1f", imc))
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(imcColor(imc))
                 }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Cintura")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(String(format: "%.0f cm", measurement.cintura))
+                        .font(.title3)
+                        .fontWeight(.bold)
+                }
+                
+                Spacer()
+            }
+            
+            // Mini gráfico de progreso
+            if measurementsManager.measurementsHistory.count > 1 {
+                progressChart
             }
         }
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
-        .alert("Eliminar Medida Actual", isPresented: $showingDeleteConfirmation) {
-            Button("Cancelar", role: .cancel) { }
-            Button("Eliminar", role: .destructive) {
-                deleteMeasurement()
-            }
-        } message: {
-            Text("Esta acción no se puede deshacer. Se eliminará esta medida y se mostrará la siguiente más reciente.")
+        .onTapGesture {
+            selectedMeasurement = measurement
         }
     }
     
-    private func deleteMeasurement() {
-        guard let measurementId = measurements.id,
-              let userId = authManager.user?.id else { return }
+    // MARK: - Progress Chart
+    private var progressChart: some View {
+        let recentMeasurements = Array(measurementsManager.measurementsHistory.prefix(7).reversed())
         
-        Task {
-            await measurementsManager.deleteMeasurement(measurementId: measurementId, userId: userId)
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("Progreso de Peso")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Chart(recentMeasurements, id: \.id) { measurement in
+                LineMark(
+                    x: .value("Fecha", measurement.fecha),
+                    y: .value("Peso", measurement.peso)
+                )
+                .foregroundStyle(.green)
+                
+                PointMark(
+                    x: .value("Fecha", measurement.fecha),
+                    y: .value("Peso", measurement.peso)
+                )
+                .foregroundStyle(.green)
+                .symbolSize(30)
+            }
+            .frame(height: 80)
+            .chartXAxis {
+                AxisMarks(values: .automatic(desiredCount: 3)) { _ in
+                    AxisGridLine()
+                    AxisValueLabel(format: .dateTime.day().month(.abbreviated))
+                }
+            }
+            .chartYAxis {
+                AxisMarks(position: .leading) { _ in
+                    AxisGridLine()
+                    AxisValueLabel()
+                }
+            }
         }
     }
-}
-
-struct BodyCompositionCardView: View {
-    let composition: BodyComposition
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Composición Corporal")
+    // MARK: - Measurements List
+    private var measurementsListView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Historial de Mediciones")
                 .font(.headline)
                 .fontWeight(.bold)
             
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 12) {
-                CompositionItemView(
-                    title: "% Grasa",
-                    value: String(format: "%.1f%%", composition.porcentajeGrasa),
-                    color: .orange
+            ForEach(measurementsManager.measurementsHistory, id: \.id) { measurement in
+                MeasurementRowView(
+                    measurement: measurement,
+                    previousMeasurement: getPreviousMeasurement(for: measurement)
                 )
-                CompositionItemView(
-                    title: "Masa Muscular",
-                    value: String(format: "%.1f kg", composition.masaMuscular),
-                    color: .green
-                )
-                CompositionItemView(
-                    title: "Masa Magra",
-                    value: String(format: "%.1f kg", composition.masaMagra),
-                    color: .blue
-                )
-                CompositionItemView(
-                    title: "Agua Corporal",
-                    value: String(format: "%.1f kg", composition.aguaCorporal),
-                    color: .cyan
-                )
+                .onTapGesture {
+                    selectedMeasurement = measurement
+                }
             }
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
     }
-}
-
-struct MeasurementItemView: View {
-    let title: String
-    let value: String
-    let icon: String
     
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .frame(width: 16)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Text(value)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            
-            Spacer()
+    // MARK: - Helper Functions
+    private func loadInitialData() async {
+        guard let userId = authManager.user?.id else { return }
+        await measurementsManager.loadMeasurementsHistory(userId: userId)
+    }
+    
+    private func getPreviousMeasurement(for measurement: BodyMeasurements) -> BodyMeasurements? {
+        guard let index = measurementsManager.measurementsHistory.firstIndex(where: { $0.id == measurement.id }),
+              index + 1 < measurementsManager.measurementsHistory.count else {
+            return nil
+        }
+        return measurementsManager.measurementsHistory[index + 1]
+    }
+    
+    private func imcColor(_ imc: Double) -> Color {
+        switch imc {
+        case ..<18.5: return .blue
+        case 18.5..<25: return .green
+        case 25..<30: return .orange
+        default: return .red
         }
     }
 }
 
-struct CompositionItemView: View {
-    let title: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(color)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(color.opacity(0.1))
-        .cornerRadius(8)
-    }
-}
-
-struct HistoryMeasurementCardView: View {
-    let measurements: BodyMeasurements
-    @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var measurementsManager: BodyMeasurementsManager
-    @State private var showingDeleteConfirmation = false
+// MARK: - Measurement Row View
+struct MeasurementRowView: View {
+    let measurement: BodyMeasurements
+    let previousMeasurement: BodyMeasurements?
     
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(measurements.fecha.formatted(date: .abbreviated, time: .omitted))
+            // Fecha
+            VStack(alignment: .leading, spacing: 2) {
+                Text(measurement.fecha.formatted(.dateTime.day().month(.abbreviated)))
                     .font(.subheadline)
                     .fontWeight(.medium)
+                Text(measurement.fecha.formatted(.dateTime.year()))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(width: 60, alignment: .leading)
+            
+            // Métricas principales
+            HStack(spacing: 20) {
+                MetricChange(
+                    value: measurement.peso,
+                    previous: previousMeasurement?.peso,
+                    format: "%.1f kg",
+                    label: "Peso"
+                )
                 
-                HStack(spacing: 16) {
-                    Text(String(format: "%.1f kg", measurements.peso))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text("C: \(String(format: "%.1f", measurements.cintura))cm")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                MetricChange(
+                    value: measurement.cintura,
+                    previous: previousMeasurement?.cintura,
+                    format: "%.0f cm",
+                    label: "Cintura"
+                )
             }
             
             Spacer()
             
-            // Botón de eliminar
-            Button {
-                showingDeleteConfirmation = true
-            } label: {
-                Image(systemName: "trash")
-                    .font(.caption)
-                    .foregroundColor(.red)
-                    .padding(8)
-            }
-            .buttonStyle(.plain)
+            // Indicador de más detalles
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
         .padding()
         .background(Color(.systemGray6))
-        .cornerRadius(8)
-        .alert("Eliminar Medida", isPresented: $showingDeleteConfirmation) {
-            Button("Cancelar", role: .cancel) { }
-            Button("Eliminar", role: .destructive) {
-                deleteMeasurement()
-            }
-        } message: {
-            Text("Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar esta medida?")
-        }
+        .cornerRadius(10)
     }
+}
+
+// MARK: - Metric Change View
+struct MetricChange: View {
+    let value: Double
+    let previous: Double?
+    let format: String
+    let label: String
     
-    private func deleteMeasurement() {
-        guard let measurementId = measurements.id,
-              let userId = authManager.user?.id else { return }
-        
-        Task {
-            await measurementsManager.deleteMeasurement(measurementId: measurementId, userId: userId)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            
+            HStack(spacing: 4) {
+                Text(String(format: format, value))
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                if let prev = previous {
+                    let diff = value - prev
+                    if abs(diff) > 0.01 {
+                        Text(String(format: diff > 0 ? "+%.1f" : "%.1f", diff))
+                            .font(.caption2)
+                            .foregroundColor(diff > 0 ? .red : .green)
+                            .fontWeight(.medium)
+                    }
+                }
+            }
         }
     }
 }
 
-// MARK: - Button Styles
+// MARK: - Button Styles (mantener los existentes)
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -424,19 +346,6 @@ struct PrimaryButtonStyle: ButtonStyle {
             .foregroundColor(.white)
             .cornerRadius(12)
             .fontWeight(.semibold)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-    }
-}
-
-struct SecondaryButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .background(Color.green.opacity(0.1))
-            .foregroundColor(.green)
-            .cornerRadius(12)
-            .fontWeight(.medium)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
     }
 }

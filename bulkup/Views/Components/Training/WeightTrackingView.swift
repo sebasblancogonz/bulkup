@@ -145,6 +145,7 @@ struct WeightTrackingView: View {
     }
 
     private func saveWeights() {
+        
         guard let user = authManager.user else { return }
         
         // Find the current training day using exercise id
@@ -155,6 +156,7 @@ struct WeightTrackingView: View {
             trainingManager.errorMessage = "No se encontró el día de entrenamiento."
             return
         }
+        
         
         // Find the real exercise by id to get the correct order index
         guard let realExercise = dayModel.exercises.first(where: { $0.id == exercise.id }) else {

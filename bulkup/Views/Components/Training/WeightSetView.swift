@@ -147,13 +147,11 @@ struct WeightSetView: View {
         )
 
         if let weight = trainingManager.weights[weightKey], weight > 0 {
-            print("  - Found weight: \(weight)")
             weightText = String(format: "%.1f", weight).replacingOccurrences(
                 of: ".0",
                 with: ""
             )
         } else {
-            print("  - No weight found for key: \(weightKey)")
             // 🔧 UPDATE: Try alternative key formats for backwards compatibility
             // Include exercise name in alternative keys too
             let normalizedExerciseName = exercise.name

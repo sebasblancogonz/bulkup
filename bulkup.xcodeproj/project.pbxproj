@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		167FEDEA2E5E32F00013A22A /* products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 167FEDE92E5E32F00013A22A /* products.storekit */; };
 		16C54BF92E571CA2006FEF86 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16C54BF82E571CA2006FEF86 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1636179D2E51E66800B05DFA /* bulkup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bulkup.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		167FEDE92E5E32F00013A22A /* products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = products.storekit; sourceTree = "<group>"; };
 		16C54BF82E571CA2006FEF86 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -51,6 +53,7 @@
 		163617942E51E66800B05DFA = {
 			isa = PBXGroup;
 			children = (
+				167FEDE92E5E32F00013A22A /* products.storekit */,
 				1636179F2E51E66800B05DFA /* bulkup */,
 				16C54BF72E571CA2006FEF86 /* Frameworks */,
 				1636179E2E51E66800B05DFA /* Products */,
@@ -138,6 +141,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				167FEDEA2E5E32F00013A22A /* products.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,7 +216,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GOTIFY_CLIENT_TOKEN = "";
 				"GOTIFY_CLIENT_TOKEN[arch=*]" = "CNH8_-V_B7NeF6U";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -275,7 +279,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GOTIFY_CLIENT_TOKEN = "";
 				"GOTIFY_CLIENT_TOKEN[arch=*]" = CPmmK0_.yjTDdbJ;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -313,6 +317,10 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				ZIPLINE_TOKEN = "";
+				"ZIPLINE_TOKEN[arch=*]" = "MTc1NjEzMzcxNTMyOA==.YTI4ZTUyMDIyMzUwNTE4MDRlMjg1ZmVkZDkxZjQ0OWUuNzY0NDRmMTNiNTVhOWIzOTMwMWYzYTM2OTRjNmQ4NWFkY2Y2ODBlZmNlYTk1ZThkN2JhNjZjN2I4Nzg5MjA2OTc5YTg5ZWI0NjI2ZGM4NDA3Njg0YzhlNWQ5NjBlMjU3NWIxZTAyZmJkMmJjYTVmNGY2MjhkNDEyZjkwOTc3YTY1ZTQzMGZjMjY2YzYwODJlODE3MzM3NWViZTJiNTZmMg==";
+				ZIPLINE_URL = "";
+				"ZIPLINE_URL[arch=*]" = "https://weight-tracker-zipline.tme3al.easypanel.host";
 			};
 			name = Development;
 		};
@@ -344,6 +352,10 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				ZIPLINE_TOKEN = "";
+				"ZIPLINE_TOKEN[arch=*]" = "MTc1NjEzMzcxNTMyOA==.YTI4ZTUyMDIyMzUwNTE4MDRlMjg1ZmVkZDkxZjQ0OWUuNzY0NDRmMTNiNTVhOWIzOTMwMWYzYTM2OTRjNmQ4NWFkY2Y2ODBlZmNlYTk1ZThkN2JhNjZjN2I4Nzg5MjA2OTc5YTg5ZWI0NjI2ZGM4NDA3Njg0YzhlNWQ5NjBlMjU3NWIxZTAyZmJkMmJjYTVmNGY2MjhkNDEyZjkwOTc3YTY1ZTQzMGZjMjY2YzYwODJlODE3MzM3NWViZTJiNTZmMg==";
+				ZIPLINE_URL = "";
+				"ZIPLINE_URL[arch=*]" = "https://weight-tracker-zipline.tme3al.easypanel.host";
 			};
 			name = Production;
 		};

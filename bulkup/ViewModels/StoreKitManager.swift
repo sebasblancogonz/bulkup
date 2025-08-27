@@ -23,8 +23,7 @@ class StoreKitManager: ObservableObject {
     // MARK: - Product IDs
     // Estos deben coincidir con los configurados en App Store Connect
     private let productIds = [
-        "com.tuapp.bulkup.monthly",
-        "com.tuapp.bulkup.yearly"
+        "bulkuppro"
     ]
     
     // MARK: - Update Listener Task

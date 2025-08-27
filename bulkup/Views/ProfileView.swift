@@ -19,21 +19,99 @@ struct ProfileView: View {
             VStack(spacing: 24) {
                 // Avatar grande
                 VStack(spacing: 16) {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [.blue, .blue.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 100, height: 100)
-                        .overlay(
-                            Text(authManager.user?.name.prefix(2).uppercased() ?? "US")
-                                .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(.white)
-                        )
-                        .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
+                    if let urlString = authManager.user?.profileImageURL,
+                       let url = URL(string: urlString) {
+                        
+                        CachedAsyncImage(url: url) { image, colors in
+                            ZStack {
+                                // Sombra/blur con colores de la imagen
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 120, height: 120)
+                                    .clipShape(Circle())
+                                    .blur(radius: 25)
+                                    .opacity(0.4)
+                                    .offset(y: 8)
+                                
+                                // Imagen principal
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 100, height: 100)
+                                    .clipShape(Circle())
+                            }
+                        } placeholder: {
+                            // Fallback con iniciales
+                            ZStack {
+                                // Sombra para el fallback
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.blue.opacity(0.6), .blue.opacity(0.3)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 120, height: 120)
+                                    .blur(radius: 25)
+                                    .opacity(0.4)
+                                    .offset(y: 8)
+                                
+                                // Círculo principal con iniciales
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.blue, .blue.opacity(0.7)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 100, height: 100)
+                                    .overlay(
+                                        Text(
+                                            authManager.user?.name.prefix(2).uppercased() ?? "US"
+                                        )
+                                        .font(.system(size: 36, weight: .bold))
+                                        .foregroundColor(.white)
+                                    )
+                            }
+                        }
+                        
+                    } else {
+                        // Sin imagen → iniciales (mismo código que el placeholder)
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.blue.opacity(0.6), .blue.opacity(0.3)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 120, height: 120)
+                                .blur(radius: 25)
+                                .opacity(0.4)
+                                .offset(y: 8)
+                            
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.blue, .blue.opacity(0.7)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 100, height: 100)
+                                .overlay(
+                                    Text(
+                                        authManager.user?.name.prefix(2).uppercased() ?? "US"
+                                    )
+                                    .font(.system(size: 36, weight: .bold))
+                                    .foregroundColor(.white)
+                                )
+                        }
+                    }
                     
                     VStack(spacing: 4) {
                         Text(authManager.user?.name ?? "Usuario")
@@ -45,7 +123,7 @@ struct ProfileView: View {
                             .foregroundColor(.secondary)
                     }
                 }
-                
+
                 // Opciones
                 VStack(spacing: 12) {
                     ProfileMenuItem(
@@ -55,7 +133,7 @@ struct ProfileView: View {
                             showingEditProfile = true
                         }
                     )
-                    
+
                     ProfileMenuItem(
                         icon: "figure.arms.open",
                         title: "Medidas Corporales",
@@ -64,13 +142,13 @@ struct ProfileView: View {
                             showingBodyMeasurements = true
                         }
                     )
-                    
+
                     ProfileMenuItem(
                         icon: "bell",
                         title: "Notificaciones",
                         action: {}
                     )
-                    
+
                     ProfileMenuItem(
                         icon: "gear",
                         title: "Configuración",
@@ -78,9 +156,9 @@ struct ProfileView: View {
                     )
                 }
                 .padding()
-                
+
                 Spacer()
-                
+
                 // Cerrar sesión
                 Button(action: {
                     authManager.logout()
@@ -120,4 +198,3 @@ struct ProfileView: View {
         }
     }
 }
-

@@ -37,77 +37,66 @@ struct EditProfileView: View {
                 VStack(spacing: 24) {
                     // Profile Image Section
                     VStack(spacing: 16) {
-                        ZStack {
-                            // Background Circle
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [.blue, .blue.opacity(0.7)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
+                        // Clickable Profile Image
+                        Button {
+                            showingImageOptions = true
+                        } label: {
+                            ZStack {
+                                // Background Circle
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.blue, .blue.opacity(0.7)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
                                     )
-                                )
-                                .frame(width: 120, height: 120)
-                            
-                            // Profile Image or Initials
-                            Group {
-                                if let profileImage = profileImage {
-                                    Image(uiImage: profileImage)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 120, height: 120)
-                                        .clipShape(Circle())
-                                } else if let imageURL = profileManager.profile?.profileImageURL,
-                                         let url = URL(string: imageURL) {
-                                    AsyncImage(url: url) { image in
-                                        image
+                                    .frame(width: 120, height: 120)
+                                
+                                // Profile Image or Initials
+                                Group {
+                                    if let profileImage = profileImage {
+                                        Image(uiImage: profileImage)
                                             .resizable()
                                             .aspectRatio(contentMode: .fill)
                                             .frame(width: 120, height: 120)
                                             .clipShape(Circle())
-                                    } placeholder: {
+                                    } else if let imageURL = profileManager.profile?.profileImageURL,
+                                             let url = URL(string: imageURL) {
+                                        CachedAsyncImage(url: url) { image in
+                                            image
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(width: 120, height: 120)
+                                                .clipShape(Circle())
+                                        } placeholder: {
+                                            Text(name.prefix(2).uppercased())
+                                                .font(.system(size: 48, weight: .bold))
+                                                .foregroundColor(.white)
+                                        }
+                                    } else {
                                         Text(name.prefix(2).uppercased())
                                             .font(.system(size: 48, weight: .bold))
                                             .foregroundColor(.white)
                                     }
-                                } else {
-                                    Text(name.prefix(2).uppercased())
-                                        .font(.system(size: 48, weight: .bold))
-                                        .foregroundColor(.white)
                                 }
-                            }
-                            
-                            // Upload indicator
-                            if profileManager.isUploadingImage {
-                                Color.black.opacity(0.5)
-                                    .clipShape(Circle())
                                 
-                                ProgressView()
-                                    .tint(.white)
-                            }
-                            
-                            // Edit button
-                            VStack {
-                                Spacer()
-                                HStack {
-                                    Spacer()
-                                    Button {
-                                        showingImageOptions = true
-                                    } label: {
-                                        ZStack {
-                                            Circle()
-                                                .fill(.blue)
-                                                .frame(width: 36, height: 36)
-                                            
-                                            Image(systemName: "camera.fill")
-                                                .font(.system(size: 16))
-                                                .foregroundColor(.white)
-                                        }
-                                    }
-                                    .disabled(profileManager.isUploadingImage)
+                                // Upload indicator
+                                if profileManager.isUploadingImage {
+                                    Color.black.opacity(0.5)
+                                        .clipShape(Circle())
+                                    
+                                    ProgressView()
+                                        .tint(.white)
                                 }
+                                
+                                // Overlay to indicate it's clickable (subtle)
+                                Circle()
+                                    .fill(Color.black.opacity(0.0001)) // Nearly invisible but makes it tappable
+                                    .frame(width: 120, height: 120)
                             }
                         }
+                        .disabled(profileManager.isUploadingImage)
                         .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
                         
                         Text("Toca para cambiar foto")
@@ -210,20 +199,22 @@ struct EditProfileView: View {
                     }
                 }
             }
+            // PhotosPicker as an overlay (invisible but functional)
+            .overlay(alignment: .top) {
+                if showingImageOptions {
+                    Color.clear
+                        .frame(width: 0, height: 0)
+                        .photosPicker(
+                            isPresented: $showingImageOptions,
+                            selection: $selectedPhoto,
+                            matching: .images,
+                            photoLibrary: .shared()
+                        )
+                }
+            }
         }
         .sheet(isPresented: $showingDatePicker) {
             DatePickerView(selectedDate: $dateOfBirth)
-        }
-        .confirmationDialog("Foto de Perfil", isPresented: $showingImageOptions) {
-            PhotosPicker("Seleccionar Foto", selection: $selectedPhoto, matching: .images)
-            
-            if profileManager.profile?.profileImageURL != nil {
-                Button("Eliminar Foto Actual", role: .destructive) {
-                    showingDeleteConfirmation = true
-                }
-            }
-            
-            Button("Cancelar", role: .cancel) { }
         }
         .alert("Eliminar Foto", isPresented: $showingDeleteConfirmation) {
             Button("Cancelar", role: .cancel) { }
@@ -238,6 +229,7 @@ struct EditProfileView: View {
                 if let data = try? await newValue?.loadTransferable(type: Data.self),
                    let uiImage = UIImage(data: data) {
                     profileImage = uiImage
+                    showingImageOptions = false
                 }
             }
         }

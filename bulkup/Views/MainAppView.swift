@@ -199,29 +199,62 @@ struct MainAppView: View {
             // ✅ Solo avatar + nombre
             Button(action: { showingProfile = true }) {
                 HStack(spacing: 12) {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [.blue, .blue.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+                    if let urlString = authManager.user?.profileImageURL,
+                       let url = URL(string: urlString) {
+                        // Imagen de perfil desde URL
+                        CachedAsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                            case .failure(_):
+                                // Fallback a la inicial si falla la carga
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.blue, .blue.opacity(0.7)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 40, height: 40)
+                                    .overlay(
+                                        Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
+                                            .font(.system(size: 16, weight: .bold))
+                                            .foregroundColor(.white)
+                                    )
+                            case .empty:
+                                ProgressView()
+                                    .frame(width: 40, height: 40)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    } else {
+                        // Sin imagen → inicial
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.blue, .blue.opacity(0.7)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
                             )
-                        )
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Text(
-                                authManager.user?.name.prefix(1).uppercased()
-                                    ?? "U"
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(.white)
                             )
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                        )
-                    VStack(alignment: .leading, spacing: 0) {  // Cambiar alignment a .leading
-                        Text(
-                            "¡Hola \(authManager.user?.name.split(separator: " ").first.map(String.init) ?? "")!"
-                        )
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("¡Hola \(authManager.user?.name.split(separator: " ").first.map(String.init) ?? "")!")
+                            .font(.headline)
+                            .fontWeight(.semibold)
 
                         Text("Lightweight baby!!! 💪")
                             .font(.subheadline)

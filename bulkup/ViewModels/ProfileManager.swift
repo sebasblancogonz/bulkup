@@ -21,8 +21,15 @@ class ProfileManager: ObservableObject {
     private let apiService = APIService.shared
     
     // Zipline configuration - ajusta según tu configuración
-    private let ziplineURL = "https://weight-tracker-zipline.tme3al.easypanel.host" // Cambia por tu URL de Zipline
-    private let ziplineToken = "MTc1NjEzMzcxNTMyOA==.YTI4ZTUyMDIyMzUwNTE4MDRlMjg1ZmVkZDkxZjQ0OWUuNzY0NDRmMTNiNTVhOWIzOTMwMWYzYTM2OTRjNmQ4NWFkY2Y2ODBlZmNlYTk1ZThkN2JhNjZjN2I4Nzg5MjA2OTc5YTg5ZWI0NjI2ZGM4NDA3Njg0YzhlNWQ5NjBlMjU3NWIxZTAyZmJkMmJjYTVmNGY2MjhkNDEyZjkwOTc3YTY1ZTQzMGZjMjY2YzYwODJlODE3MzM3NWViZTJiNTZmMg==" // Cambia por tu token de Zipline
+    private var ziplineURL: String {
+        // You'll need to configure this token in your app
+        return Bundle.main.object(forInfoDictionaryKey: "ZIPLINE_URL") as? String ?? ""
+    }
+    
+    private var ziplineToken: String {
+        // You'll need to configure this token in your app
+        return Bundle.main.object(forInfoDictionaryKey: "ZIPLINE_TOKEN") as? String ?? ""
+    }
     
     init() {}
     
@@ -35,6 +42,7 @@ class ProfileManager: ObservableObject {
             profile = try await apiService.getProfile()
         } catch {
             errorMessage = "Error al cargar perfil: \(error.localizedDescription)"
+            print("Error loading profile: \(error)")
         }
         
         isLoading = false
@@ -45,27 +53,52 @@ class ProfileManager: ObservableObject {
         isLoading = true
         errorMessage = nil
         
+        // Log inicio de actualización
+        AppLogger.shared.info("Iniciando actualización de perfil")
+        
+        // Usar valores actuales si no se proporcionan nuevos
+        let currentProfile = profile
+        
         let request = UpdateProfileRequest(
-            name: name,
-            dateOfBirth: dateOfBirth,
-            profileImageURL: profileImageURL
+            name: name ?? currentProfile?.name,
+            dateOfBirth: dateOfBirth ?? currentProfile?.dateOfBirth,
+            profileImageURL: profileImageURL ?? currentProfile?.profileImageURL
         )
         
         do {
+            // Log request details
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+            
+            let dateString = request.dateOfBirth != nil ? dateFormatter.string(from: request.dateOfBirth!) : "nil"
+            AppLogger.shared.info("UpdateProfile request - name: \(request.name ?? "nil"), dateOfBirth: \(dateString)")
+            
             profile = try await apiService.updateProfile(request: request)
+            
+            AppLogger.shared.info("Perfil actualizado correctamente")
             
             // Notificar a AuthManager que actualice el usuario local
             if let profile = profile {
                 AuthManager.shared.updateUserFromProfile(profile)
             }
             
+            isLoading = false
             return true
         } catch {
-            errorMessage = "Error al actualizar perfil: \(error.localizedDescription)"
+            let errorMsg = "Error al actualizar perfil: \(error.localizedDescription)"
+            errorMessage = errorMsg
+            AppLogger.shared.error(errorMsg)
+            
+            // Log detalles adicionales del error
+            if let apiError = error as? APIError {
+                AppLogger.shared.error("APIError type: \(apiError)")
+            }
+            
             isLoading = false
             return false
         }
-        
     }
     
     // MARK: - Upload Profile Image
@@ -74,17 +107,20 @@ class ProfileManager: ObservableObject {
         errorMessage = nil
         
         do {
+            
             // 1. Subir imagen a Zipline
             let imageUrl = try await apiService.uploadImageToZipline(
                 imageData: imageData,
                 ziplineURL: ziplineURL,
-                token: ziplineToken
+                token: ziplineToken,
+                userId: profile?.userId
             )
             
             // 2. Actualizar perfil con la URL de la imagen
             let success = try await apiService.uploadProfileImage(imageUrl: imageUrl)
             
             if success {
+                print("Profile image URL updated successfully")
                 // Recargar perfil para obtener datos actualizados
                 await loadProfile()
                 
@@ -93,6 +129,7 @@ class ProfileManager: ObservableObject {
                     AuthManager.shared.updateUserFromProfile(profile)
                 }
                 
+                isUploadingImage = false
                 return true
             }
             
@@ -100,10 +137,10 @@ class ProfileManager: ObservableObject {
             return false
         } catch {
             errorMessage = "Error al subir imagen: \(error.localizedDescription)"
+            print("Error uploading image: \(error)")
             isUploadingImage = false
             return false
         }
-        
     }
     
     // MARK: - Delete Profile Image
@@ -128,10 +165,10 @@ class ProfileManager: ObservableObject {
             return success
         } catch {
             errorMessage = "Error al eliminar imagen: \(error.localizedDescription)"
+            print("Error deleting profile image: \(error)")
             isLoading = false
             return false
         }
-        
     }
     
     // MARK: - Calculate Age

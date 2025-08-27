@@ -127,9 +127,13 @@ struct UploadImageRequest: Codable {
 }
 
 struct ZiplineUploadResponse: Codable {
-    let url: String
+    let files: [ZiplineFile]
+}
+
+struct ZiplineFile: Codable {
     let id: String
-    let filename: String
+    let type: String
+    let url: String
 }
 
 struct ProfileResponse: Codable {
@@ -322,10 +326,12 @@ enum APIError: Error {
     case noData
     case decodingError
     case networkError(String)
+    case invalidClientRequest
     case unauthorized
-    case invalidRequest
+    case invalidRequest(HTTPURLResponse)
     case serverError(Int)
     case requestFailed
+    case notFound
 
     var localizedDescription: String {
         switch self {
@@ -339,12 +345,16 @@ enum APIError: Error {
             return message
         case .unauthorized:
             return "Unauthorized access"
-        case .invalidRequest:
-            return "Invalid request parameters"
+        case .invalidClientRequest:
+            return "Invalid client request"
+        case .invalidRequest(let httpResponse):
+            return "Invalid request parameters (HTTP response: \(httpResponse))"
         case .serverError(let message):
             return "Server error: \(message)"
         case .requestFailed:
             return "Request failed"
+        case .notFound:
+            return "Not Found"
         }
     }
 }

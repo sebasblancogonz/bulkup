@@ -217,7 +217,7 @@ class RMManager: ObservableObject {
                 let weight = recordData["weight"] as? Double,
                 let reps = recordData["reps"] as? Int
             else {
-                throw APIError.invalidRequest
+                throw APIError.invalidClientRequest
             }
             // Formatear la fecha al formato correcto
             var formattedDate: String = ""
@@ -274,7 +274,7 @@ class RMManager: ObservableObject {
                 let weight = recordData["weight"] as? Double,
                 let reps = recordData["reps"] as? Int
             else {
-                throw APIError.invalidRequest
+                throw APIError.invalidClientRequest
             }
 
             let notes = recordData["notes"] as? String ?? ""

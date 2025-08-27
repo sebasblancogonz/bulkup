@@ -87,19 +87,17 @@ struct BodyMeasurements: Codable, Identifiable {
 }
 
 struct BodyComposition: Codable {
-    let porcentajeGrasa: Double
-    let masaGrasa: Double
-    let masaMagra: Double
-    let aguaCorporal: Double
-    let masaMuscular: Double
-
-    enum CodingKeys: String, CodingKey {
-        case porcentajeGrasa = "porcentaje_grasa"
-        case masaGrasa = "masa_grasa"
-        case masaMagra = "masa_magra"
-        case aguaCorporal = "agua_corporal"
-        case masaMuscular = "masa_muscular"
-    }
+    let bodyFatPercentage: Double
+    let fatMass: Double
+    let leanMass: Double
+    let bodyWater: Double
+    let skeletalMuscle: Double
+    
+    // Computed properties para mantener compatibilidad con el frontend existente
+    var porcentajeGrasa: Double { bodyFatPercentage }
+    var masaMuscular: Double { skeletalMuscle }
+    var masaMagra: Double { leanMass }
+    var aguaCorporal: Double { bodyWater }
 }
 
 extension APIService {
@@ -137,24 +135,8 @@ extension APIService {
         return response.data ?? []
     }
 
-    func calculateBodyComposition(request: CalculateCompositionRequest)
-        async throws -> BodyComposition
-    {
-        let response: APIResponse<BodyComposition> = try await requestWithBody(
-            endpoint: "body/composition",
-            method: .POST,
-            body: request
-        )
-
-        guard let composition = response.data else {
-            throw APIError.noData
-        }
-
-        return composition
-    }
 
     func deleteMeasurement(measurementId: String) async throws -> Bool {
-        print("Deleting measure", measurementId)
         let _: APIResponse<EmptyResponse> = try await request(
             endpoint: "body/measurements/\(measurementId)",
             method: .DELETE
@@ -162,5 +144,20 @@ extension APIService {
 
         return true
     }
+    
+    // MARK: - Body Composition
+        func calculateBodyComposition(measurementId: String) async throws -> BodyComposition {
+            print("Calculating by measurementId", measurementId)
+            let response: APIResponse<BodyComposition> = try await request(
+                endpoint: "body/measurements/\(measurementId)/composition",
+                method: .POST
+            )
+            
+            guard let composition = response.data else {
+                throw APIError.noData
+            }
+            
+            return composition
+        }
 
 }
