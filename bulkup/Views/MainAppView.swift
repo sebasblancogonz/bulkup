@@ -9,8 +9,11 @@ import SwiftUI
 
 struct MainAppView: View {
     let modelContext: ModelContext
+    
+    @AppStorage("hapticFeedback") private var hapticFeedback = true
 
     @EnvironmentObject var authManager: AuthManager
+    @StateObject private var hapticManager = HapticManager.shared
     @StateObject private var dietManager = DietManager.shared
     @StateObject private var trainingManager = TrainingManager.shared
     @StateObject private var storeKitManager = StoreKitManager.shared
@@ -299,6 +302,7 @@ struct MainAppView: View {
             HStack(spacing: 0) {
                 ForEach(AppTab.allCases) { tab in
                     Button(action: {
+                        HapticManager.shared.trigger(.medium, enabled: hapticFeedback)
                         if tab == .upload && !userHasActiveSubscription {
                             showingSubscriptionAlert = true
                         } else if !isTabDisabled(tab) {

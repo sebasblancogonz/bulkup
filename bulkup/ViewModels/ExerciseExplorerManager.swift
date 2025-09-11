@@ -46,7 +46,8 @@ class ExerciseExplorerManager: ObservableObject {
         
         if !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             result = result.filter { exercise in
-                exercise.name.localizedCaseInsensitiveContains(searchTerm)
+                exercise.name.localizedCaseInsensitiveContains(searchTerm) ||
+                exercise.nameEs.localizedCaseInsensitiveContains(searchTerm)
             }
         }
         

@@ -17,10 +17,12 @@ struct RecordStats: Codable {
 struct RMExercise: Codable, Identifiable {
     let id: String
     let name: String
+    let nameEs: String
     let category: String
 
     enum CodingKeys: String, CodingKey {
         case id = "_id"
+        case nameEs
         case name
         case category
     }
@@ -364,7 +366,8 @@ class RMManager: ObservableObject {
 
         if !searchTerm.isEmpty {
             filtered = filtered.filter { exercise in
-                exercise.name.lowercased().contains(searchTerm.lowercased())
+                exercise.name.lowercased().contains(searchTerm.lowercased()) ||
+                exercise.nameEs.lowercased().contains(searchTerm.lowercased())
             }
         } else {
             // Show only exercises with records when no search term

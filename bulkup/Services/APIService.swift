@@ -166,11 +166,6 @@ class APIService: ObservableObject {
 
         do {
             let (data, response) = try await session.data(for: request)
-            
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("📥 RAW Response from /profile PUT:")
-                print(responseString)
-            }
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw APIError.networkError("Respuesta inválida")

@@ -288,7 +288,7 @@ struct RMExerciseCardView: View {
             // Header
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(exercise.name)
+                    Text(exercise.nameEs)
                         .font(.headline)
                         .lineLimit(2)
                         .frame(minHeight: 44)  // Altura mínima para mantener consistencia
@@ -642,7 +642,7 @@ struct ExercisePickerView: View {
                     }) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(exercise.name)
+                                Text(exercise.nameEs)
                                     .foregroundColor(.primary)
 
                                 Text(exercise.category.capitalized)

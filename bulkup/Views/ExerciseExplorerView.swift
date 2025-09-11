@@ -2,8 +2,9 @@
 //  ExerciseExplorerView.swift
 //  bulkup
 //
-//  Created by sebastianblancogonz on 18/8/25.
+//  Vista con buscador y filtros en el toolbar
 //
+
 import SwiftData
 import SwiftUI
 
@@ -14,16 +15,57 @@ struct ExerciseExplorerView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(.systemBackground)
-                    .ignoresSafeArea()
-                
                 if exerciseExplorerManager.loading {
                     loadingView
                 } else {
                     contentView
                 }
             }
+            .navigationTitle("Ejercicios")
             .navigationBarTitleDisplayMode(.large)
+            .searchable(
+                text: $exerciseExplorerManager.searchTerm,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: "Buscar ejercicio..."
+            )
+            .onChange(of: exerciseExplorerManager.searchTerm) { _, _ in
+                exerciseExplorerManager.resetPage()
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showFilters.toggle()
+                    }) {
+                        ZStack(alignment: .topTrailing) {
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .font(.title3)
+                            
+                            let activeFilters = exerciseExplorerManager.categoryFilter.count +
+                                              exerciseExplorerManager.equipmentFilter.count +
+                                              exerciseExplorerManager.forceFilter.count +
+                                              exerciseExplorerManager.levelFilter.count
+                            
+                            if activeFilters > 0 {
+                                Circle()
+                                    .fill(Color.red)
+                                    .frame(width: 18, height: 18)
+                                    .overlay(
+                                        Text("\(activeFilters)")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(.white)
+                                    )
+                                    .offset(x: 8, y: -8)
+                            }
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showFilters) {
+                FilterSheet(
+                    exerciseExplorerManager: exerciseExplorerManager,
+                    isPresented: $showFilters
+                )
+            }
         }
     }
     
@@ -40,87 +82,31 @@ struct ExerciseExplorerView: View {
     }
     
     private var contentView: some View {
-        VStack(spacing: 0) {
-            // Header con búsqueda y filtros
-            VStack(spacing: 12) {
-                // Búsqueda
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    
-                    TextField("Buscar ejercicio...", text: $exerciseExplorerManager.searchTerm)
-                        .textFieldStyle(PlainTextFieldStyle())
-                        .onChange(of: exerciseExplorerManager.searchTerm) {
-                            exerciseExplorerManager.resetPage()
-                        }
-                    
-                    if !exerciseExplorerManager.searchTerm.isEmpty {
-                        Button(action: { exerciseExplorerManager.searchTerm = "" }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                .padding(12)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                
-                // Botón de filtros
-                Button(action: { showFilters.toggle() }) {
-                    HStack {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                        Text("Filtros")
-                        
-                        let activeFilters = exerciseExplorerManager.categoryFilter.count +
-                                          exerciseExplorerManager.equipmentFilter.count +
-                                          exerciseExplorerManager.forceFilter.count +
-                                          exerciseExplorerManager.levelFilter.count
-                        
-                        if activeFilters > 0 {
-                            Text("(\(activeFilters))")
-                                .font(.caption)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                .foregroundColor(.primary)
-                
-                // Panel de filtros expandible
-                if showFilters {
-                    filtersPanel
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .top).combined(with: .opacity),
-                            removal: .move(edge: .top).combined(with: .opacity)
-                        ))
-                }
-            }
-            .padding()
-            .background(Color(.systemBackground))
-            
-            Divider()
-            
-            // Lista de ejercicios o estado vacío
+        Group {
             if exerciseExplorerManager.filteredExercises.isEmpty {
                 emptyStateView
             } else {
                 ScrollView {
-                    LazyVGrid(columns: [
-                        GridItem(.flexible(), spacing: 16),
-                        GridItem(.flexible(), spacing: 16)
-                    ], spacing: 16) {
+                    // Grid de tarjetas compactas
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible(), spacing: 12),
+                            GridItem(.flexible(), spacing: 12)
+                        ],
+                        spacing: 12
+                    ) {
                         ForEach(exerciseExplorerManager.paginatedExercises) { exercise in
-                            ExerciseExplorerCardView(exercise: exercise)
+                            CompactExerciseCard(exercise: exercise)
                         }
                     }
                     .padding()
+                    
+                    // Información de resultados
+                    if exerciseExplorerManager.filteredExercises.count > 0 {
+                        resultsInfoView
+                            .padding(.horizontal)
+                            .padding(.bottom, 8)
+                    }
                     
                     // Paginación
                     if exerciseExplorerManager.totalPages > 1 {
@@ -130,73 +116,6 @@ struct ExerciseExplorerView: View {
                 }
             }
         }
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showFilters)
-    }
-    
-    private var filtersPanel: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Categoría
-            FilterSection(
-                title: "Categoría",
-                options: exerciseExplorerManager.categories,
-                selected: exerciseExplorerManager.categoryFilter,
-                onSelectionChange: { newSelection in
-                    exerciseExplorerManager.categoryFilter = newSelection
-                    exerciseExplorerManager.resetPage()
-                }
-            )
-            
-            // Equipo
-            FilterSection(
-                title: "Equipo",
-                options: exerciseExplorerManager.equipments,
-                selected: exerciseExplorerManager.equipmentFilter,
-                onSelectionChange: { newSelection in
-                    exerciseExplorerManager.equipmentFilter = newSelection
-                    exerciseExplorerManager.resetPage()
-                }
-            )
-            
-            // Fuerza
-            FilterSection(
-                title: "Fuerza",
-                options: exerciseExplorerManager.forces,
-                selected: exerciseExplorerManager.forceFilter,
-                onSelectionChange: { newSelection in
-                    exerciseExplorerManager.forceFilter = newSelection
-                    exerciseExplorerManager.resetPage()
-                }
-            )
-            
-            // Nivel
-            FilterSection(
-                title: "Nivel",
-                options: exerciseExplorerManager.levels,
-                selected: exerciseExplorerManager.levelFilter,
-                onSelectionChange: { newSelection in
-                    exerciseExplorerManager.levelFilter = newSelection
-                    exerciseExplorerManager.resetPage()
-                }
-            )
-            
-            // Botón limpiar filtros
-            if !exerciseExplorerManager.categoryFilter.isEmpty ||
-               !exerciseExplorerManager.equipmentFilter.isEmpty ||
-               !exerciseExplorerManager.forceFilter.isEmpty ||
-               !exerciseExplorerManager.levelFilter.isEmpty {
-                Button(action: exerciseExplorerManager.resetFilters) {
-                    HStack {
-                        Image(systemName: "trash")
-                        Text("Limpiar todos los filtros")
-                    }
-                    .foregroundColor(.red)
-                    .font(.footnote)
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
     }
     
     private var emptyStateView: some View {
@@ -208,12 +127,39 @@ struct ExerciseExplorerView: View {
             Text("No se encontraron ejercicios")
                 .font(.headline)
             
-            Text("Prueba con otros términos de búsqueda")
+            Text("Prueba con otros términos de búsqueda o ajusta los filtros")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            if !exerciseExplorerManager.categoryFilter.isEmpty ||
+               !exerciseExplorerManager.equipmentFilter.isEmpty ||
+               !exerciseExplorerManager.forceFilter.isEmpty ||
+               !exerciseExplorerManager.levelFilter.isEmpty {
+                Button(action: exerciseExplorerManager.resetFilters) {
+                    Text("Limpiar filtros")
+                        .font(.callout)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
+    }
+    
+    private var resultsInfoView: some View {
+        HStack {
+            Text("Mostrando \(exerciseExplorerManager.paginatedExercises.count) de \(exerciseExplorerManager.filteredExercises.count) ejercicios")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Spacer()
+        }
     }
     
     private var paginationView: some View {
@@ -221,13 +167,23 @@ struct ExerciseExplorerView: View {
             Button(action: {
                 exerciseExplorerManager.currentPage = max(1, exerciseExplorerManager.currentPage - 1)
             }) {
-                HStack {
+                HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
                     Text("Anterior")
                 }
+                .font(.callout)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color(.systemGray5))
+                .background(
+                    exerciseExplorerManager.currentPage == 1
+                        ? Color(.systemGray5)
+                        : Color.blue
+                )
+                .foregroundColor(
+                    exerciseExplorerManager.currentPage == 1
+                        ? .secondary
+                        : .white
+                )
                 .cornerRadius(8)
             }
             .disabled(exerciseExplorerManager.currentPage == 1)
@@ -237,19 +193,182 @@ struct ExerciseExplorerView: View {
                 .fontWeight(.medium)
             
             Button(action: {
-                exerciseExplorerManager.currentPage = min(exerciseExplorerManager.totalPages, exerciseExplorerManager.currentPage + 1)
+                exerciseExplorerManager.currentPage = min(
+                    exerciseExplorerManager.totalPages,
+                    exerciseExplorerManager.currentPage + 1
+                )
             }) {
-                HStack {
+                HStack(spacing: 4) {
                     Text("Siguiente")
                     Image(systemName: "chevron.right")
                 }
+                .font(.callout)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color(.systemGray5))
+                .background(
+                    exerciseExplorerManager.currentPage == exerciseExplorerManager.totalPages
+                        ? Color(.systemGray5)
+                        : Color.blue
+                )
+                .foregroundColor(
+                    exerciseExplorerManager.currentPage == exerciseExplorerManager.totalPages
+                        ? .secondary
+                        : .white
+                )
                 .cornerRadius(8)
             }
             .disabled(exerciseExplorerManager.currentPage == exerciseExplorerManager.totalPages)
         }
-        .foregroundColor(.primary)
     }
 }
+
+// MARK: - Filter Sheet
+
+struct FilterSheet: View {
+    @ObservedObject var exerciseExplorerManager: ExerciseExplorerManager
+    @Binding var isPresented: Bool
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Categoría
+                    FilterSection(
+                        title: "Categoría",
+                        options: exerciseExplorerManager.categories,
+                        selected: exerciseExplorerManager.categoryFilter,
+                        onSelectionChange: { newSelection in
+                            exerciseExplorerManager.categoryFilter = newSelection
+                            exerciseExplorerManager.resetPage()
+                        },
+                    )
+                    
+                    Divider()
+                    
+                    // Equipo
+                    FilterSection(
+                        title: "Equipo",
+                        options: exerciseExplorerManager.equipments,
+                        selected: exerciseExplorerManager.equipmentFilter,
+                        onSelectionChange: { newSelection in
+                            exerciseExplorerManager.equipmentFilter = newSelection
+                            exerciseExplorerManager.resetPage()
+                        },
+                    )
+                    
+                    Divider()
+                    
+                    // Fuerza
+                    FilterSection(
+                        title: "Fuerza",
+                        options: exerciseExplorerManager.forces,
+                        selected: exerciseExplorerManager.forceFilter,
+                        onSelectionChange: { newSelection in
+                            exerciseExplorerManager.forceFilter = newSelection
+                            exerciseExplorerManager.resetPage()
+                        },
+                    )
+                    
+                    Divider()
+                    
+                    // Nivel
+                    FilterSection(
+                        title: "Nivel",
+                        options: exerciseExplorerManager.levels,
+                        selected: exerciseExplorerManager.levelFilter,
+                        onSelectionChange: { newSelection in
+                            exerciseExplorerManager.levelFilter = newSelection
+                            exerciseExplorerManager.resetPage()
+                        },
+                    )
+                    
+                    // Botón limpiar filtros (si hay filtros activos)
+                    if hasActiveFilters {
+                        Divider()
+                        
+                        Button(action: {
+                            exerciseExplorerManager.resetFilters()
+                        }) {
+                            HStack {
+                                Image(systemName: "trash")
+                                Text("Limpiar todos los filtros")
+                                Spacer()
+                            }
+                            .foregroundColor(.red)
+                        }
+                        .padding(.top, 8)
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("Filtros")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Listo") {
+                        isPresented = false
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+    }
+    
+    private var hasActiveFilters: Bool {
+        !exerciseExplorerManager.categoryFilter.isEmpty ||
+        !exerciseExplorerManager.equipmentFilter.isEmpty ||
+        !exerciseExplorerManager.forceFilter.isEmpty ||
+        !exerciseExplorerManager.levelFilter.isEmpty
+    }
+    
+    // Translation functions
+    private func translateCategory(_ category: String) -> String {
+        let translations: [String: String] = [
+            "strength": "Fuerza",
+            "stretching": "Estiramiento",
+            "plyometrics": "Pliometría",
+            "strongman": "Strongman",
+            "powerlifting": "Powerlifting",
+            "cardio": "Cardio",
+            "olympic weightlifting": "Halterofilia"
+        ]
+        return translations[category.lowercased()] ?? category.capitalized
+    }
+    
+    private func translateLevel(_ level: String) -> String {
+        let translations: [String: String] = [
+            "beginner": "Principiante",
+            "intermediate": "Intermedio",
+            "expert": "Experto"
+        ]
+        return translations[level.lowercased()] ?? level.capitalized
+    }
+    
+    private func translateForce(_ force: String) -> String {
+        let translations: [String: String] = [
+            "push": "Empuje",
+            "pull": "Jalón",
+            "static": "Estático"
+        ]
+        return translations[force.lowercased()] ?? force.capitalized
+    }
+    
+    private func translateEquipment(_ equipment: String) -> String {
+        let translations: [String: String] = [
+            "barbell": "Barra",
+            "dumbbell": "Mancuerna",
+            "body only": "Peso corporal",
+            "machine": "Máquina",
+            "cable": "Cable",
+            "kettlebells": "Pesas rusas",
+            "bands": "Bandas",
+            "medicine ball": "Balón medicinal",
+            "exercise ball": "Pelota de ejercicio",
+            "e-z curl bar": "Barra Z",
+            "foam roll": "Rodillo de espuma",
+            "other": "Otro"
+        ]
+        return translations[equipment.lowercased()] ?? equipment.capitalized
+    }
+}
+

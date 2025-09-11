@@ -12,7 +12,7 @@ struct ExerciseExplorerCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Nombre del ejercicio
-            Text(exercise.name)
+            Text(exercise.nameEs)
                 .font(.headline)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)

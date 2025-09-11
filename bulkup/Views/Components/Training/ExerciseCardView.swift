@@ -2,7 +2,7 @@
 //  ExerciseCardView.swift
 //  bulkup
 //
-//  Fixed version with correct weight display order
+//  Fixed version with proper week-specific weight handling
 //
 
 import SwiftUI
@@ -14,8 +14,8 @@ struct ExerciseCardView: View {
     let dayName: String
     let currentDate: Date
     
-    @StateObject var trainingManager = TrainingManager.shared
-    @StateObject var authManager = AuthManager.shared
+    @EnvironmentObject var trainingManager: TrainingManager
+    @EnvironmentObject var authManager: AuthManager
     
     @State private var isExpanded = false
     @State private var localNote: String = ""
@@ -23,10 +23,15 @@ struct ExerciseCardView: View {
     
     // Computed properties for UI state
     private var exerciseKey: String {
-        trainingManager.generateWeightKey(
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let weekString = dateFormatter.string(from: trainingManager.getWeekStart(trainingManager.selectedWeek))
+        
+        return trainingManager.generateWeightKey(
             day: normalizedDayName,
             exerciseIndex: exercise.orderIndex,
-            exerciseName: exercise.name
+            exerciseName: exercise.name,
+            weekStart: weekString
         )
     }
     
@@ -198,10 +203,9 @@ struct ExerciseCardView: View {
                                         .cornerRadius(12)
                                 }
                                 
-                                // Weight sets - FIXED ORDER
+                                // Weight sets with previous week reference
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 12) {
-                                        // Sort sets in correct order (0, 1, 2, etc.)
                                         ForEach(0..<exercise.sets, id: \.self) { setIndex in
                                             CompactWeightSetView(
                                                 setIndex: setIndex,
@@ -209,12 +213,13 @@ struct ExerciseCardView: View {
                                                 exerciseIndex: exercise.orderIndex,
                                                 dayName: dayName
                                             )
-                                            .frame(width: 100)
+                                            .environmentObject(trainingManager)
+                                            .frame(width: 120)
                                         }
                                     }
                                     .padding(.horizontal, 4)
                                 }
-                                .frame(height: 100)
+                                .frame(height: 120)
                                 
                                 // Exercise note input
                                 VStack(alignment: .leading, spacing: 8) {
@@ -276,10 +281,15 @@ struct ExerciseCardView: View {
     }
     
     private func loadExerciseNote() {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let weekString = dateFormatter.string(from: trainingManager.getWeekStart(trainingManager.selectedWeek))
+        
         let noteKey = trainingManager.generateWeightKey(
             day: normalizedDayName,
             exerciseIndex: exercise.orderIndex,
-            exerciseName: exercise.name
+            exerciseName: exercise.name,
+            weekStart: weekString
         )
         
         if let backendNote = trainingManager.backendExerciseNotes[noteKey] {
@@ -304,7 +314,7 @@ struct ExerciseCardView: View {
     }
 }
 
-// Compact weight set view for the horizontal scroll
+// Compact weight set view with proper week handling
 struct CompactWeightSetView: View {
     let setIndex: Int
     let exercise: Exercise
@@ -313,6 +323,7 @@ struct CompactWeightSetView: View {
     
     @EnvironmentObject var trainingManager: TrainingManager
     @State private var weightText: String = ""
+    @State private var previousWeekWeight: Double? = nil
     @FocusState private var isFocused: Bool
     
     private var normalizedDayName: String {
@@ -330,16 +341,29 @@ struct CompactWeightSetView: View {
         return dayMapping[lowercased] ?? dayName.lowercased()
     }
     
-    var body: some View {
-        let weightKey = trainingManager.generateWeightKey(
+    private var currentWeekString: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        return dateFormatter.string(from: trainingManager.getWeekStart(trainingManager.selectedWeek))
+    }
+    
+    private var currentWeight: Double {
+        let key = trainingManager.generateWeightKey(
             day: normalizedDayName,
             exerciseIndex: exercise.orderIndex,
             exerciseName: exercise.name,
-            setIndex: setIndex
+            setIndex: setIndex,
+            weekStart: currentWeekString
         )
         
-        let hasWeight = (trainingManager.weights[weightKey] ?? 0) > 0
-        
+        return trainingManager.weights[key] ?? 0
+    }
+    
+    private var hasWeight: Bool {
+        currentWeight > 0
+    }
+    
+    var body: some View {
         VStack(spacing: 6) {
             // Serie header with completion indicator
             HStack(spacing: 4) {
@@ -351,10 +375,32 @@ struct CompactWeightSetView: View {
                     .font(.caption2)
                     .fontWeight(.medium)
                 
+                Spacer()
+                
                 if hasWeight {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 10))
                         .foregroundColor(.green)
+                }
+            }
+            
+            // Previous weight reference
+            if let prevWeight = previousWeekWeight, prevWeight > 0 {
+                HStack(spacing: 4) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.system(size: 9))
+                        .foregroundColor(.blue)
+                    
+                    Text("\(formatWeight(prevWeight)) kg")
+                        .font(.system(size: 10))
+                        .foregroundColor(.blue)
+                    
+                    if hasWeight {
+                        let diff = currentWeight - prevWeight
+                        Image(systemName: diff > 0 ? "arrow.up" : diff < 0 ? "arrow.down" : "minus")
+                            .font(.system(size: 9))
+                            .foregroundColor(diff > 0 ? .green : diff < 0 ? .orange : .gray)
+                    }
                 }
             }
             
@@ -382,12 +428,56 @@ struct CompactWeightSetView: View {
                             )
                     )
             }
+            
+            // Button to use previous weight
+            if let prevWeight = previousWeekWeight, !hasWeight {
+                Button(action: {
+                    weightText = formatWeight(prevWeight)
+                    // Also update the weight in the manager
+                    trainingManager.updateWeight(
+                        day: normalizedDayName,
+                        exerciseIndex: exercise.orderIndex,
+                        exerciseName: exercise.name,
+                        setIndex: setIndex,
+                        weight: prevWeight
+                    )
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 9))
+                        Text("Usar")
+                            .font(.system(size: 10))
+                    }
+                    .foregroundColor(.blue)
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 8)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(4)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
         }
         .padding(8)
         .background(Color(.secondarySystemBackground))
         .cornerRadius(8)
         .onAppear {
             loadWeight()
+            if trainingManager.isFullyLoaded {
+                loadPreviousWeekWeight()
+            }
+        }
+        .onChange(of: trainingManager.isFullyLoaded) { _, isLoaded in
+            if isLoaded {
+                loadWeight()
+                loadPreviousWeekWeight()
+            }
+        }
+        .onChange(of: trainingManager.weights) { _, _ in
+            loadWeight()
+        }
+        .onChange(of: trainingManager.selectedWeek) { _, _ in
+            loadWeight()
+            loadPreviousWeekWeight()
         }
         .onChange(of: weightText) { _, newValue in
             if let weight = Double(newValue) {
@@ -411,17 +501,68 @@ struct CompactWeightSetView: View {
     }
     
     private func loadWeight() {
-        let weightKey = trainingManager.generateWeightKey(
-            day: normalizedDayName,
-            exerciseIndex: exercise.orderIndex,
-            exerciseName: exercise.name,
-            setIndex: setIndex
-        )
-        
-        if let weight = trainingManager.weights[weightKey], weight > 0 {
-            weightText = String(format: "%.1f", weight).replacingOccurrences(of: ".0", with: "")
+        let weight = currentWeight
+        if weight > 0 {
+            weightText = formatWeight(weight)
         } else {
             weightText = ""
         }
+    }
+    
+    private func loadPreviousWeekWeight() {
+        // Calculate previous week date
+        let previousWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: trainingManager.selectedWeek) ?? trainingManager.selectedWeek
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let previousWeekString = dateFormatter.string(from: trainingManager.getWeekStart(previousWeek))
+        
+        // Generate key for previous week
+        let prevWeekKey = trainingManager.generateWeightKey(
+            day: normalizedDayName,
+            exerciseIndex: exercise.orderIndex,
+            exerciseName: exercise.name,
+            setIndex: setIndex,
+            weekStart: previousWeekString
+        )
+        
+        // IMPORTANTE: Verificar que la key realmente corresponde a la semana anterior
+        // y que existe un peso real (no es un falso positivo)
+        if let weight = trainingManager.weights[prevWeekKey],
+           weight > 0,
+           prevWeekKey.contains(previousWeekString) {
+            previousWeekWeight = weight
+        } else {
+            // Buscar en semanas más antiguas si no hay peso en la semana inmediatamente anterior
+            var weeksToCheck = 4 // Buscar hasta 4 semanas atrás
+            var currentCheckWeek = previousWeek
+            
+            while weeksToCheck > 0 {
+                currentCheckWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: currentCheckWeek) ?? currentCheckWeek
+                let checkWeekString = dateFormatter.string(from: trainingManager.getWeekStart(currentCheckWeek))
+                
+                let checkKey = trainingManager.generateWeightKey(
+                    day: normalizedDayName,
+                    exerciseIndex: exercise.orderIndex,
+                    exerciseName: exercise.name,
+                    setIndex: setIndex,
+                    weekStart: checkWeekString
+                )
+                
+                if let weight = trainingManager.weights[checkKey],
+                   weight > 0,
+                   checkKey.contains(checkWeekString) {
+                    previousWeekWeight = weight
+                    return
+                }
+                
+                weeksToCheck -= 1
+            }
+            
+            previousWeekWeight = nil
+        }
+    }
+    
+    private func formatWeight(_ weight: Double) -> String {
+        return String(format: "%.1f", weight).replacingOccurrences(of: ".0", with: "")
     }
 }

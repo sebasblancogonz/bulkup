@@ -5,9 +5,9 @@
 //  Created by sebastianblancogonz on 18/8/25.
 //
 
-import SwiftUI
-import SwiftData
 import Foundation
+import SwiftData
+import SwiftUI
 
 // MARK: - Modelos de entrenamiento
 @Model
@@ -16,12 +16,12 @@ class TrainingDay {
     var day: String
     var workoutName: String?
     var exercises: [Exercise] = []
-    
+
     // Para sincronización
     var planId: String?
     var needsSync: Bool = false
     var lastSynced: Date?
-    
+
     init(day: String, workoutName: String? = nil, exercises: [Exercise] = []) {
         self.day = day
         self.workoutName = workoutName
@@ -34,14 +34,23 @@ class TrainingDay {
 class Exercise {
     var name: String
     var sets: Int
-    var reps: String // Puede ser "12" o "8-12"
+    var reps: String  // Puede ser "12" o "8-12"
     var restSeconds: Int
     var notes: String?
     var tempo: String?
     var weightTracking: Bool
-    var orderIndex: Int = 0 // Para mantener orden
-    
-    init(name: String, sets: Int, reps: String, restSeconds: Int, notes: String? = nil, tempo: String? = nil, weightTracking: Bool = false, orderIndex: Int = 0) {
+    var orderIndex: Int = 0  // Para mantener orden
+
+    init(
+        name: String,
+        sets: Int,
+        reps: String,
+        restSeconds: Int,
+        notes: String? = nil,
+        tempo: String? = nil,
+        weightTracking: Bool = false,
+        orderIndex: Int = 0
+    ) {
         self.name = name
         self.sets = sets
         self.reps = reps
@@ -63,12 +72,21 @@ class WeightRecord {
     var exerciseIndex: Int
     var sets: [WeightSet] = []
     var note: String = ""
-    var weekStart: String // Formato "2025-01-15"
+    var weekStart: String  // Formato "2025-01-15"
     var createdAt: Date = Date()
     var updatedAt: Date = Date()
     var needsSync: Bool = false
-    
-    init(userId: String, planId: String, day: String, exerciseName: String, exerciseIndex: Int, sets: [WeightSet] = [], note: String = "", weekStart: String) {
+
+    init(
+        userId: String,
+        planId: String,
+        day: String,
+        exerciseName: String,
+        exerciseIndex: Int,
+        sets: [WeightSet] = [],
+        note: String = "",
+        weekStart: String
+    ) {
         self.userId = userId
         self.planId = planId
         self.day = day
@@ -86,7 +104,7 @@ class WeightSet {
     var setNumber: Int
     var weight: Double
     var reps: Int
-    
+
     init(setNumber: Int = 0, weight: Double, reps: Int) {
         self.setNumber = setNumber
         self.weight = weight
@@ -97,17 +115,30 @@ class WeightSet {
 struct RMExerciseFull: Identifiable, Codable {
     let id: String
     let name: String
+    let nameEs: String
     let force: String?
+    let forceEs: String?
     let level: String?
+    let levelEs: String?
     let mechanic: String?
+    let mechanicEs: String?
     let equipment: String?
+    let equipmentEs: String?
     let primaryMuscles: [String]?
+    let primaryMusclesEs: [String]?
     let secondaryMuscles: [String]?
+    let secondaryMusclesEs: [String]?
     let instructions: [String]?
+    let instructionsEs: [String]?
     let category: String?
-    
+    let categoryEs: String?
+    let images: [String]?
+
     enum CodingKeys: String, CodingKey {
         case id = "_id"
+        case nameEs, forceEs, levelEs, mechanicEs, equipmentEs,
+            primaryMusclesEs, secondaryMusclesEs, instructionsEs, categoryEs
+        case images
         case name, force, level, mechanic, equipment
         case primaryMuscles, secondaryMuscles, instructions, category
     }

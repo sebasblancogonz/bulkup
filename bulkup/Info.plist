@@ -12,5 +12,20 @@
 	<string>$(ENVIRONMENT)</string>
 	<key>GOTIFY_CLIENT_TOKEN</key>
 	<string>$(GOTIFY_CLIENT_TOKEN)</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+      <key>NSExceptionDomains</key>
+      <dict>
+        <key>weight-tracker-zipline.tme3al.easypanel.host</key>
+        <dict>
+          <key>NSIncludesSubdomains</key>
+          <true/>
+          <key>NSExceptionAllowsInsecureHTTPLoads</key>
+          <true/>
+          <key>NSExceptionRequiresForwardSecrecy</key>
+          <false/>
+        </dict>
+      </dict>
+    </dict>
 </dict>
 </plist>

@@ -13,6 +13,7 @@ struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingBodyMeasurements = false
     @State private var showingEditProfile = false
+    @State private var showSettings = false
 
     var body: some View {
         NavigationView {
@@ -152,7 +153,9 @@ struct ProfileView: View {
                     ProfileMenuItem(
                         icon: "gear",
                         title: "Configuración",
-                        action: {}
+                        action: {
+                            showSettings = true
+                        }
                     )
                 }
                 .padding()
@@ -193,6 +196,12 @@ struct ProfileView: View {
         .sheet(isPresented: $showingEditProfile) {
             NavigationView {
                 EditProfileView()
+                    .environmentObject(authManager)
+            }
+        }
+        .sheet(isPresented: $showSettings) {
+            NavigationView {
+                SettingsView()
                     .environmentObject(authManager)
             }
         }

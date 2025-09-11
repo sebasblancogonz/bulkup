@@ -2,8 +2,9 @@
 //  TrainingManager.swift
 //  bulkup
 //
-//  Created by sebastianblancogonz on 18/8/25.
+//  Fixed version with proper week-specific weight tracking
 //
+
 import Foundation
 import SwiftData
 
@@ -19,7 +20,7 @@ class TrainingManager: ObservableObject {
     @Published var errorMessage: String?
     @Published var isFullyLoaded = false
 
-    // Estado para pesos
+    // Estado para pesos - SIEMPRE incluir la fecha de la semana
     @Published var weights: [String: Double] = [:]
     @Published var selectedWeek: Date = Date()
     @Published var exerciseNotes: [String: String] = [:]
@@ -42,10 +43,28 @@ class TrainingManager: ObservableObject {
         )
 
         do {
-            trainingData = try modelContext.fetch(descriptor)
+            let fetchedData = try modelContext.fetch(descriptor)
+            
+            let dayOrder: [String: Int] = [
+                "lunes": 1,
+                "martes": 2,
+                "miercoles": 3,
+                "miércoles": 3,
+                "jueves": 4,
+                "viernes": 5,
+                "sabado": 6,
+                "sábado": 6,
+                "domingo": 7
+            ]
+            
+            trainingData = fetchedData.sorted { day1, day2 in
+                let order1 = dayOrder[day1.day.lowercased()] ?? 8
+                let order2 = dayOrder[day2.day.lowercased()] ?? 8
+                return order1 < order2
+            }
+            
             trainingPlanId = trainingData.first?.planId
 
-            // Cargar pesos después de cargar los datos de entrenamiento
             if trainingPlanId != nil {
                 Task {
                     await loadWeightsForWeek(selectedWeek)
@@ -58,7 +77,6 @@ class TrainingManager: ObservableObject {
     }
 
     func setTrainingData(_ newData: [TrainingDay], planId: String? = nil) {
-        // Limpiar datos anteriores
         let descriptor = FetchDescriptor<TrainingDay>()
         do {
             let existingDays = try modelContext.fetch(descriptor)
@@ -69,7 +87,6 @@ class TrainingManager: ObservableObject {
             print("Error clearing existing training data: \(error)")
         }
 
-        // Insertar nuevos datos
         for day in newData {
             day.planId = planId
             modelContext.insert(day)
@@ -136,7 +153,6 @@ class TrainingManager: ObservableObject {
             "📱 loadTrainingDataForTab - trainingData.count: \(trainingData.count), isFullyLoaded: \(isFullyLoaded)"
         )
 
-        // Si ya hay datos y están completamente cargados, no recargar
         if !trainingData.isEmpty && isFullyLoaded {
             print("✅ Datos ya cargados, no es necesario recargar")
             return
@@ -149,7 +165,19 @@ class TrainingManager: ObservableObject {
     private func convertServerDataToLocal(_ serverData: [ServerTrainingDay])
         -> [TrainingDay]
     {
-        return serverData.map { serverDay in
+        let dayOrder: [String: Int] = [
+            "lunes": 1,
+            "martes": 2,
+            "miercoles": 3,
+            "miércoles": 3,
+            "jueves": 4,
+            "viernes": 5,
+            "sabado": 6,
+            "sábado": 6,
+            "domingo": 7
+        ]
+        
+        let convertedDays = serverData.map { serverDay in
             let localDay = TrainingDay(
                 day: serverDay.day,
                 workoutName: serverDay.workoutName
@@ -168,9 +196,15 @@ class TrainingManager: ObservableObject {
                         weightTracking: serverExercise.weightTracking,
                         orderIndex: index
                     )
-                } ?? []  // Usar array vacío cuando output es nil
+                } ?? []
 
             return localDay
+        }
+        
+        return convertedDays.sorted { day1, day2 in
+            let order1 = dayOrder[day1.day.lowercased()] ?? 8
+            let order2 = dayOrder[day2.day.lowercased()] ?? 8
+            return order1 < order2
         }
     }
 
@@ -181,12 +215,11 @@ class TrainingManager: ObservableObject {
         day: String,
         exerciseIndex: Int,
         exerciseName: String,
-        setIndex: Int? = nil
+        setIndex: Int? = nil,
+        weekStart: String? = nil
     ) -> String {
-        // Use the planId passed as parameter, or the trainingPlanId actual
         let actualPlanId = planId ?? trainingPlanId
 
-        // Create a normalized exercise name (remove spaces, convert to lowercase)
         let normalizedExerciseName =
             exerciseName
             .lowercased()
@@ -198,12 +231,30 @@ class TrainingManager: ObservableObject {
             .replacingOccurrences(of: "ó", with: "o")
             .replacingOccurrences(of: "ú", with: "u")
 
-        let baseKey =
-            actualPlanId != nil
-            ? "\(actualPlanId!)-\(day)-\(exerciseIndex)-\(normalizedExerciseName)"
-            : "\(day)-\(exerciseIndex)-\(normalizedExerciseName)"
+        var baseKey = ""
+        
+        if let actualPlanId = actualPlanId {
+            baseKey = "\(actualPlanId)-\(day)-\(exerciseIndex)-\(normalizedExerciseName)"
+        } else {
+            baseKey = "\(day)-\(exerciseIndex)-\(normalizedExerciseName)"
+        }
+        
+        if let setIndex = setIndex {
+            baseKey = "\(baseKey)-\(setIndex)"
+        }
+        
+        // SIEMPRE incluir la fecha de la semana
+        let actualWeekStart = weekStart ?? getCurrentWeekString()
+        baseKey = "\(baseKey)-\(actualWeekStart)"
 
-        return setIndex != nil ? "\(baseKey)-\(setIndex!)" : baseKey
+        return baseKey
+    }
+    
+    // Helper para obtener la fecha de la semana actual como string
+    private func getCurrentWeekString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        return dateFormatter.string(from: getWeekStart(selectedWeek))
     }
 
     func updateWeight(
@@ -213,13 +264,20 @@ class TrainingManager: ObservableObject {
         setIndex: Int,
         weight: Double
     ) {
+        // SIEMPRE usar la key con fecha de la semana actual
         let key = generateWeightKey(
             day: day,
             exerciseIndex: exerciseIndex,
             exerciseName: exerciseName,
-            setIndex: setIndex
+            setIndex: setIndex,
+            weekStart: getCurrentWeekString()
         )
-        weights[key] = weight
+        
+        if weight > 0 {
+            weights[key] = weight
+        } else {
+            weights.removeValue(forKey: key)
+        }
     }
 
     func getCompletedSets(
@@ -229,12 +287,15 @@ class TrainingManager: ObservableObject {
         totalSets: Int
     ) -> Int {
         var completed = 0
+        let currentWeekString = getCurrentWeekString()
+        
         for i in 0..<totalSets {
             let weightKey = generateWeightKey(
                 day: day,
                 exerciseIndex: exerciseIndex,
                 exerciseName: exerciseName,
-                setIndex: i
+                setIndex: i,
+                weekStart: currentWeekString
             )
             if let weight = weights[weightKey], weight > 0 {
                 completed += 1
@@ -276,94 +337,158 @@ class TrainingManager: ObservableObject {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let weekStartString = dateFormatter.string(from: weekStartDate)
+            
+            // También cargar la semana anterior para referencias
+            let previousWeekDate = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: weekStartDate) ?? weekStartDate
+            let previousWeekString = dateFormatter.string(from: getWeekStart(previousWeekDate))
 
-            let response = try await apiService.loadWeights(
-                userId: userId,
-                weekStart: weekStartString
-            )
-
-            print("📊 Pesos cargados del servidor:", response)
-
-            // Clear current weights and notes
-            await MainActor.run {
-                self.weights.removeAll()
-                self.backendExerciseNotes.removeAll()
+            // Cargar hasta 4 semanas anteriores para tener suficiente historial
+            var weeksToLoad = [weekStartString]
+            var checkWeek = weekStartDate
+            for _ in 0..<4 {
+                checkWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: checkWeek) ?? checkWeek
+                let weekString = dateFormatter.string(from: getWeekStart(checkWeek))
+                weeksToLoad.append(weekString)
             }
+            
+            print("📊 Cargando pesos para semanas: \(weeksToLoad)")
+            print("📊 PlanId actual: \(trainingPlanId ?? "nil")")
+            
+            // Limpiar SOLO los pesos de la semana actual antes de recargar
+            await MainActor.run {
+                // Eliminar solo las keys que contienen la fecha de la semana actual
+                let keysToRemove = self.weights.keys.filter { key in
+                    key.contains(weekStartString)
+                }
+                for key in keysToRemove {
+                    self.weights.removeValue(forKey: key)
+                }
+                
+                // Limpiar notas solo de la semana actual
+                let noteKeysToRemove = self.backendExerciseNotes.keys.filter { key in
+                    key.contains(weekStartString)
+                }
+                for key in noteKeysToRemove {
+                    self.backendExerciseNotes.removeValue(forKey: key)
+                }
+                
+                print("🧹 Limpiadas \(keysToRemove.count) keys de pesos y \(noteKeysToRemove.count) keys de notas de la semana actual")
+            }
+            
+            // Cargar pesos de todas las semanas necesarias
+            for week in weeksToLoad {
+                // Solo cargar si no tenemos ya datos para esa semana (excepto la actual que acabamos de limpiar)
+                if week != weekStartString {
+                    let existingKeys = weights.keys.filter { $0.contains(week) }
+                    if !existingKeys.isEmpty {
+                        print("⏭️ Saltando semana \(week) - ya tenemos \(existingKeys.count) registros")
+                        continue
+                    }
+                }
+                
+                let response = try await apiService.loadWeights(
+                    userId: userId,
+                    weekStart: week
+                )
 
-            // Process server response
-            if let serverWeights = response.weights, !serverWeights.isEmpty {
-                var newWeights: [String: Double] = [:]
-                var newNotes: [String: String] = [:]
+                print("📊 Respuesta del servidor para \(week):")
+                print("   - Registros recibidos: \(response.weights?.count ?? 0)")
+                
+                if let serverWeights = response.weights, !serverWeights.isEmpty {
+                    var newWeights: [String: Double] = [:]
+                    var newNotes: [String: String] = [:]
 
-                for record in serverWeights {
-                    // Load weights for each set
-                    if let sets = record.sets {
-                        // Sort sets by setNumber if available, otherwise by index
-                        let sortedSets = sets.enumerated().sorted { (a, b) in
-                            // If setNumber exists, use it; otherwise use enumerated index
-                            let aNumber = a.element.setNumber ?? a.offset
-                            let bNumber = b.element.setNumber ?? b.offset
-                            return aNumber < bNumber
+                    for record in serverWeights {
+                        if let sets = record.sets {
+                            let sortedSets = sets.enumerated().sorted { (a, b) in
+                                let aNumber = a.element.setNumber ?? a.offset
+                                let bNumber = b.element.setNumber ?? b.offset
+                                return aNumber < bNumber
+                            }
+
+                            for (index, weightSet) in sortedSets {
+                                let actualSetIndex = weightSet.setNumber ?? index
+
+                                // SIEMPRE generar key con la fecha específica
+                                let key = generateWeightKey(
+                                    planId: record.planId ?? trainingPlanId,
+                                    day: record.day,
+                                    exerciseIndex: record.exerciseIndex,
+                                    exerciseName: record.exerciseName,
+                                    setIndex: actualSetIndex,
+                                    weekStart: week
+                                )
+                                
+                                // Solo agregar si el peso es válido
+                                if weightSet.weight > 0 {
+                                    newWeights[key] = weightSet.weight
+                                }
+                            }
                         }
 
-                        for (index, weightSet) in sortedSets {
-                            // Use the actual setNumber if available, otherwise use index
-                            let actualSetIndex = weightSet.setNumber ?? index
-
-                            // Include exercise name in key generation
-                            let key = generateWeightKey(
+                        // Cargar nota solo para la semana actual
+                        if week == weekStartString, let note = record.note, !note.isEmpty {
+                            let noteKey = generateWeightKey(
                                 planId: record.planId ?? trainingPlanId,
                                 day: record.day,
                                 exerciseIndex: record.exerciseIndex,
                                 exerciseName: record.exerciseName,
-                                setIndex: actualSetIndex
+                                weekStart: week
                             )
-                            newWeights[key] = weightSet.weight
+                            newNotes[noteKey] = note
                         }
                     }
 
-                    // Load exercise note
-                    if let note = record.note, !note.isEmpty {
-                        let noteKey = generateWeightKey(
-                            planId: record.planId ?? trainingPlanId,
-                            day: record.day,
-                            exerciseIndex: record.exerciseIndex,
-                            exerciseName: record.exerciseName
-                        )
-                        newNotes[noteKey] = note
+                    await MainActor.run {
+                        for (key, weight) in newWeights {
+                            self.weights[key] = weight
+                        }
+                        for (key, note) in newNotes {
+                            self.backendExerciseNotes[key] = note
+                        }
                     }
+
+                    print("✅ Pesos cargados para \(week): \(newWeights.count) registros")
                 }
 
-                await MainActor.run {
-                    self.weights = newWeights
-                    self.backendExerciseNotes = newNotes
-                }
-
-                print("✅ Pesos cargados: \(newWeights.count) registros")
+                // También cargar de la base de datos local
+                loadWeightsFromLocalDatabase(week)
             }
-
-            // Also try loading from local database
-            loadWeightsFromLocalDatabase(weekStartString)
 
         } catch {
             print("❌ Error cargando pesos del servidor:", error)
+            // Intentar cargar de la base de datos local
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
-            let weekStartString = dateFormatter.string(
-                from: getWeekStart(weekStart)
-            )
+            let weekStartString = dateFormatter.string(from: getWeekStart(weekStart))
+            
             loadWeightsFromLocalDatabase(weekStartString)
+            
+            // También cargar semanas anteriores de la base de datos local
+            var checkWeek = weekStart
+            for _ in 0..<4 {
+                checkWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: checkWeek) ?? checkWeek
+                let weekString = dateFormatter.string(from: getWeekStart(checkWeek))
+                loadWeightsFromLocalDatabase(weekString)
+            }
         }
 
         await MainActor.run {
             self.isFullyLoaded = true
             print("🎉 isFullyLoaded configurado a true")
+            print("📊 Total final de pesos en memoria: \(self.weights.count)")
+            
+            // Debug: mostrar cuántos pesos hay por semana
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let currentWeek = dateFormatter.string(from: getWeekStart(weekStart))
+            let currentWeekCount = self.weights.keys.filter { $0.contains(currentWeek) }.count
+            print("📊 Pesos para la semana actual (\(currentWeek)): \(currentWeekCount)")
         }
     }
 
     private func loadWeightsFromLocalDatabase(_ weekStartString: String) {
         do {
-            // Fetch all records and filter in memory
             let allRecords = try modelContext.fetch(
                 FetchDescriptor<WeightRecord>()
             )
@@ -372,45 +497,47 @@ class TrainingManager: ObservableObject {
             }
 
             for record in records {
-                // Sort sets by setNumber
                 let sortedSets = record.sets.sorted {
                     $0.setNumber < $1.setNumber
                 }
 
                 for (index, weightSet) in sortedSets.enumerated() {
-                    // Use setNumber if available, otherwise use index
                     let setIndex =
                         weightSet.setNumber > 0 ? weightSet.setNumber : index
 
+                    // SIEMPRE usar key con fecha
                     let key = generateWeightKey(
                         planId: record.planId,
                         day: record.day,
                         exerciseIndex: record.exerciseIndex,
                         exerciseName: record.exerciseName,
-                        setIndex: setIndex
+                        setIndex: setIndex,
+                        weekStart: weekStartString
                     )
 
-                    // Only update if doesn't exist from server
                     if weights[key] == nil {
                         weights[key] = weightSet.weight
                     }
                 }
 
-                // Load exercise note if doesn't exist
-                let noteKey = generateWeightKey(
-                    planId: record.planId,
-                    day: record.day,
-                    exerciseIndex: record.exerciseIndex,
-                    exerciseName: record.exerciseName
-                )
-                if backendExerciseNotes[noteKey] == nil && !record.note.isEmpty
-                {
-                    backendExerciseNotes[noteKey] = record.note
+                // Load note for current week
+                let currentWeekString = getCurrentWeekString()
+                if weekStartString == currentWeekString {
+                    let noteKey = generateWeightKey(
+                        planId: record.planId,
+                        day: record.day,
+                        exerciseIndex: record.exerciseIndex,
+                        exerciseName: record.exerciseName,
+                        weekStart: weekStartString
+                    )
+                    if backendExerciseNotes[noteKey] == nil && !record.note.isEmpty {
+                        backendExerciseNotes[noteKey] = record.note
+                    }
                 }
             }
 
             print(
-                "📱 Pesos cargados desde base de datos local: \(records.count) registros"
+                "📱 Pesos cargados desde base de datos local para \(weekStartString): \(records.count) registros"
             )
         } catch {
             print("Error loading weights from local database: \(error)")
@@ -424,10 +551,12 @@ class TrainingManager: ObservableObject {
         note: String,
         userId: String
     ) async {
+        let currentWeekString = getCurrentWeekString()
         let key = generateWeightKey(
             day: day,
             exerciseIndex: exerciseIndex,
-            exerciseName: exerciseName
+            exerciseName: exerciseName,
+            weekStart: currentWeekString
         )
 
         savingWeights[key] = true
@@ -437,7 +566,6 @@ class TrainingManager: ObservableObject {
                 throw TrainingError.noPlanId
             }
 
-            // Get exercise to know how many sets it has
             guard
                 let dayData = trainingData.first(where: {
                     $0.day.lowercased() == day.lowercased()
@@ -453,7 +581,6 @@ class TrainingManager: ObservableObject {
                 throw TrainingError.exerciseNotFound
             }
 
-            // Use the actual orderIndex from the found exercise
             let actualExerciseIndex = exercise.orderIndex
 
             // Create sets with current weights
@@ -463,7 +590,8 @@ class TrainingManager: ObservableObject {
                     day: day,
                     exerciseIndex: actualExerciseIndex,
                     exerciseName: exerciseName,
-                    setIndex: setIndex
+                    setIndex: setIndex,
+                    weekStart: currentWeekString
                 )
 
                 let weight = weights[weightKey] ?? 0
@@ -481,11 +609,7 @@ class TrainingManager: ObservableObject {
                 )
             }
 
-            let weekStartString = DateFormatter().apply {
-                $0.dateFormat = "yyyy-MM-dd"
-            }.string(from: getWeekStart(selectedWeek))
-
-            // Buscar registro existente usando fetch simple en lugar de predicado complejo
+            // Find or create record
             let allRecords = try modelContext.fetch(
                 FetchDescriptor<WeightRecord>()
             )
@@ -495,7 +619,7 @@ class TrainingManager: ObservableObject {
                     && record.day == day
                     && record.exerciseIndex == actualExerciseIndex
                     && record.exerciseName == exerciseName
-                    && record.weekStart == weekStartString
+                    && record.weekStart == currentWeekString
             }
 
             let record: WeightRecord
@@ -513,18 +637,19 @@ class TrainingManager: ObservableObject {
                     exerciseIndex: actualExerciseIndex,
                     sets: weightSets,
                     note: note,
-                    weekStart: weekStartString
+                    weekStart: currentWeekString
                 )
                 modelContext.insert(record)
             }
 
             try modelContext.save()
 
-            // Update notes in memory
+            // Update notes in memory with week date
             let noteKey = generateWeightKey(
                 day: day,
                 exerciseIndex: actualExerciseIndex,
-                exerciseName: exerciseName
+                exerciseName: exerciseName,
+                weekStart: currentWeekString
             )
             backendExerciseNotes[noteKey] = note
 
@@ -548,7 +673,6 @@ class TrainingManager: ObservableObject {
     }
 
     private func syncWeightRecord(_ record: WeightRecord) async throws {
-        // Sort sets by setNumber before sending to ensure correct order
         let sortedSets = record.sets.sorted { $0.setNumber < $1.setNumber }
 
         let request = SaveWeightsRequest(
@@ -574,7 +698,6 @@ class TrainingManager: ObservableObject {
             request
         )
 
-        // Marcar como sincronizado
         record.needsSync = false
         try modelContext.save()
     }
@@ -614,12 +737,9 @@ class TrainingManager: ObservableObject {
 
         selectedWeek = newWeek
 
-        // Limpiar pesos antes de cargar los nuevos
         await MainActor.run {
             self.isFullyLoaded = false
         }
-        weights.removeAll()
-        backendExerciseNotes.removeAll()
 
         await loadWeightsForWeek(newWeek)
     }
@@ -640,5 +760,13 @@ enum TrainingError: Error, LocalizedError {
         case .exerciseNotFound:
             return "Ejercicio no encontrado"
         }
+    }
+}
+
+// Extension helper
+extension DateFormatter {
+    func apply(closure: (DateFormatter) -> Void) -> DateFormatter {
+        closure(self)
+        return self
     }
 }
