@@ -340,7 +340,6 @@ class TrainingManager: ObservableObject {
             
             // También cargar la semana anterior para referencias
             let previousWeekDate = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: weekStartDate) ?? weekStartDate
-            let previousWeekString = dateFormatter.string(from: getWeekStart(previousWeekDate))
 
             // Cargar hasta 4 semanas anteriores para tener suficiente historial
             var weeksToLoad = [weekStartString]
@@ -703,13 +702,13 @@ class TrainingManager: ObservableObject {
     }
 
     func getWeekStart(_ date: Date) -> Date {
-        let calendar = Calendar.current
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.locale = Locale.current
         let components = calendar.dateComponents(
             [.yearForWeekOfYear, .weekOfYear],
             from: date
         )
-        let monday = calendar.date(from: components) ?? date
-        return calendar.date(byAdding: .day, value: 1, to: monday) ?? monday
+        return calendar.date(from: components) ?? date
     }
 
     func changeWeek(direction: WeekDirection) async {
@@ -742,6 +741,41 @@ class TrainingManager: ObservableObject {
         }
 
         await loadWeightsForWeek(newWeek)
+    }
+    
+    func clearAllData() {
+        // Limpiar datos de memoria
+        trainingData = []
+        trainingPlanId = nil
+        weights.removeAll()
+        exerciseNotes.removeAll()
+        backendExerciseNotes.removeAll()
+        savedWeights.removeAll()
+        savingWeights.removeAll()
+        isFullyLoaded = false
+        
+        // Limpiar datos persistidos en SwiftData
+        let descriptor = FetchDescriptor<TrainingDay>()
+        do {
+            let existingDays = try modelContext.fetch(descriptor)
+            for day in existingDays {
+                modelContext.delete(day)
+            }
+            try modelContext.save()
+        } catch {
+            print("Error clearing local training data: \(error)")
+        }
+        
+        // Limpiar registros de pesos locales
+        do {
+            let allRecords = try modelContext.fetch(FetchDescriptor<WeightRecord>())
+            for record in allRecords {
+                modelContext.delete(record)
+            }
+            try modelContext.save()
+        } catch {
+            print("Error clearing weight records: \(error)")
+        }
     }
 }
 

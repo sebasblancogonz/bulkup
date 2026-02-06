@@ -11,9 +11,9 @@ import Charts
 
 struct ExerciseDetailView: View {
     let exercise: RMExercise
-    @StateObject var rmManager = RMManager.shared
+    @ObservedObject var rmManager = RMManager.shared
     @EnvironmentObject var authManager: AuthManager
-    @StateObject var notificationManager = RMNotificationManager.shared
+    @ObservedObject var notificationManager = RMNotificationManager.shared
     
     @State private var showAddForm = false
     @State private var formData = RMFormData()
@@ -59,7 +59,7 @@ struct ExerciseDetailView: View {
     .safeAreaInset(edge: .bottom) {
         Color.clear.frame(height: 48)
     }
-        .navigationTitle(exercise.name)
+        .navigationTitle(exercise.nameEs)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -86,11 +86,11 @@ struct ExerciseDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(exercise.name)
+                    Text(exercise.nameEs)
                         .font(.title2)
                         .fontWeight(.bold)
                     
-                    Text(exercise.category.capitalized)
+                    Text(exercise.categoryEs.capitalized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 12)
@@ -190,7 +190,7 @@ struct ExerciseDetailView: View {
                 .font(.headline)
                 .padding(.horizontal)
             
-            let chartData = exerciseRecords.reversed().enumerated().map { index, record in
+            let chartData = exerciseRecords.enumerated().map { index, record in
                 ChartDataPoint(
                     index: index,
                     date: record.dateValue,

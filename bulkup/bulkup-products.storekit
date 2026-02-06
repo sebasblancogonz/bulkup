@@ -95,7 +95,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.whitesolutions.bulkup",
+          "productID" : "bulkupmonthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "BulkUp PRO Monthly",
           "subscriptionGroupID" : "A30F7F13",

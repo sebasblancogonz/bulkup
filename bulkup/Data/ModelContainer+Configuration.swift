@@ -22,6 +22,7 @@ extension ModelContainer {
             TrainingDay.self,
             Exercise.self,
             WeightRecord.self,
+            WeightSet.self,
         ])
 
         let modelConfiguration = ModelConfiguration(

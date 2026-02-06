@@ -10,7 +10,7 @@ import SwiftUI
 struct AddMeasurementsView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var measurementsManager: BodyMeasurementsManager
-    @StateObject private var profileManager = ProfileManager.shared
+    @ObservedObject private var profileManager = ProfileManager.shared
     @Environment(\.dismiss) private var dismiss
     
     // Campos requeridos

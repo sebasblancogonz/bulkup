@@ -10,14 +10,15 @@ class ExerciseCacheManager {
     static let shared = ExerciseCacheManager()
     private let cacheKey = "cached_exercises"
     private let rmExercisesCacheKey = "cached_rm_exercises"
-    private let cacheExpirationKey = "cache_expiration"
+    private let cacheExpirationKey = "cache_expiration_exercises"
+    private let rmCacheExpirationKey = "cache_expiration_rm_exercises"
     private let cacheExpirationTime: TimeInterval = 3600 // 1 hora
     
     private init() {}
     
     func getCachedExercises() -> [RMExerciseFull]? {
         guard let expirationDate = UserDefaults.standard.object(forKey: cacheExpirationKey) as? Date,
-              Date() < expirationDate else {
+              expirationDate > Date() else {
             return nil
         }
         
@@ -26,13 +27,12 @@ class ExerciseCacheManager {
     }
     
     func getCachedRMExercises() -> [RMExercise]? {
-        guard let expirationDate = UserDefaults.standard.object(forKey: cacheExpirationKey) as? Date,
-              Date() < expirationDate else {
+        guard let expirationDate = UserDefaults.standard.object(forKey: rmCacheExpirationKey) as? Date,
+              expirationDate > Date() else {
             return nil
         }
-        
+
         guard let data = UserDefaults.standard.data(forKey: rmExercisesCacheKey) else { return nil }
-        _ = try! JSONDecoder().decode([RMExercise].self, from: data)
         return try? JSONDecoder().decode([RMExercise].self, from: data)
     }
     
@@ -45,6 +45,6 @@ class ExerciseCacheManager {
     func setCachedRMExercises(_ exercises: [RMExercise]) {
         guard let data = try? JSONEncoder().encode(exercises) else { return }
         UserDefaults.standard.set(data, forKey: rmExercisesCacheKey)
-        UserDefaults.standard.set(Date().addingTimeInterval(cacheExpirationTime), forKey: cacheExpirationKey)
+        UserDefaults.standard.set(Date().addingTimeInterval(cacheExpirationTime), forKey: rmCacheExpirationKey)
     }
 }

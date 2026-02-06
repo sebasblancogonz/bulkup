@@ -10,7 +10,7 @@ import Charts
 
 struct BodyMeasurementsView: View {
     @EnvironmentObject var authManager: AuthManager
-    @StateObject private var measurementsManager = BodyMeasurementsManager.shared
+    @ObservedObject private var measurementsManager = BodyMeasurementsManager.shared
     @State private var showingAddMeasurements = false
     @State private var selectedMeasurement: BodyMeasurements?
     @State private var hasAppeared = false

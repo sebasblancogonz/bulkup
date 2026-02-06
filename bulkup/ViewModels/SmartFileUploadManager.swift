@@ -9,6 +9,7 @@ struct FileProcessingResponse: Codable {
 }
 
 // MARK: - Smart File Upload Manager
+@MainActor
 class SmartFileUploadManager: ObservableObject {
     static let shared = SmartFileUploadManager()
 
@@ -25,6 +26,8 @@ class SmartFileUploadManager: ObservableObject {
     @Published var isWebSocketConnected = false
     private var cancellables = Set<AnyCancellable>()
     private var currentProcessId: String?
+    private var processingTimeoutTask: Task<Void, Never>?
+    private let processingTimeout: TimeInterval = 120 // 2 minutes
 
     private init() {
         setupWebSocketObserver()
@@ -33,7 +36,10 @@ class SmartFileUploadManager: ObservableObject {
     private func setupWebSocketObserver() {
         // Observe WebSocket connection state
         GotifyWebSocketManager.shared.$isConnected
-            .assign(to: \.isWebSocketConnected, on: self)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] connected in
+                self?.isWebSocketConnected = connected
+            }
             .store(in: &cancellables)
 
         // Listen for Gotify notifications
@@ -55,23 +61,34 @@ class SmartFileUploadManager: ObservableObject {
             return
         }
 
-        DispatchQueue.main.async {
-            switch extras.status {
-            case "processing":
-                self.processingProgress = "Procesando archivo..."
+        switch extras.status {
+        case "processing":
+            processingProgress = "Procesando archivo..."
 
-            case "analyzing":
-                self.processingProgress = "Analizando contenido..."
+        case "analyzing":
+            processingProgress = "Analizando contenido..."
 
-            case "completed":
-                self.handleProcessingCompleted(extras: extras)
+        case "completed":
+            processingTimeoutTask?.cancel()
+            handleProcessingCompleted(extras: extras)
 
-            case "failed":
-                self.handleProcessingFailed(error: extras.error)
+        case "failed":
+            processingTimeoutTask?.cancel()
+            handleProcessingFailed(error: extras.error)
 
-            default:
-                break
-            }
+        default:
+            break
+        }
+    }
+
+    private func startProcessingTimeout() {
+        processingTimeoutTask?.cancel()
+        processingTimeoutTask = Task {
+            try? await Task.sleep(nanoseconds: UInt64(processingTimeout * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            isLoading = false
+            currentProcessId = nil
+            error = "El procesamiento tardó demasiado. Intenta de nuevo."
         }
     }
 
@@ -137,19 +154,14 @@ class SmartFileUploadManager: ObservableObject {
                 userId: userId
             )
 
-            await MainActor.run {
-                self.currentProcessId = processId
-                self.processingProgress =
-                    "Archivo subido, iniciando procesamiento..."
-            }
-
-            // The rest will be handled by WebSocket notifications
+            self.currentProcessId = processId
+            self.processingProgress =
+                "Archivo subido, iniciando procesamiento..."
+            startProcessingTimeout()
 
         } catch {
-            await MainActor.run {
-                self.isLoading = false
-                self.error = error.localizedDescription
-            }
+            self.isLoading = false
+            self.error = error.localizedDescription
         }
     }
 
@@ -159,7 +171,7 @@ class SmartFileUploadManager: ObservableObject {
         userId: String
     ) async throws -> String {
 
-        guard let url = URL(string: "\(APIConfig.baseURL)/upload-file") else {
+        guard let url = URL(string: "\(APIConfig.baseURL)/process-file-smart") else {
             throw FileUploadError.invalidURL
         }
 

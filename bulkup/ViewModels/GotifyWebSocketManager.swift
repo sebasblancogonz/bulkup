@@ -30,21 +30,27 @@ struct GotifyExtras: Codable {
 }
 
 // MARK: - WebSocket Manager
+@MainActor
 class GotifyWebSocketManager: ObservableObject {
     static let shared = GotifyWebSocketManager()
-    
+
     @Published var isConnected = false
     @Published var lastNotification: GotifyNotification?
-    
+
     private var webSocketTask: URLSessionWebSocketTask?
     private var urlSession: URLSession
     private let maxReconnectAttempts = 5
     private var reconnectAttempts = 0
     private var reconnectTimer: Timer?
-    
+    private var currentUserId: String = ""
+
     // Configuration
     private var gotifyURL: String {
-        return APIConfig.baseURL.replacingOccurrences(of: "http", with: "ws")
+        let base = APIConfig.baseURL
+        if base.hasPrefix("https") {
+            return base.replacingOccurrences(of: "https", with: "wss")
+        }
+        return base.replacingOccurrences(of: "http", with: "ws")
     }
     
     private var gotifyToken: String {
@@ -57,6 +63,8 @@ class GotifyWebSocketManager: ObservableObject {
     }
     
     func connect(userId: String) {
+        currentUserId = userId
+
         guard !gotifyToken.isEmpty else {
             print("Gotify token not configured")
             return
@@ -161,8 +169,10 @@ class GotifyWebSocketManager: ObservableObject {
         print("Attempting to reconnect in \(delay) seconds... (attempt \(reconnectAttempts))")
         
         reconnectTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
-            // Note: You'll need to pass the userId somehow, perhaps store it as a property
-            self?.connect(userId: "") // You'll need to manage userId properly
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.connect(userId: self.currentUserId)
+            }
         }
     }
 }

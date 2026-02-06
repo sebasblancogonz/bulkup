@@ -64,8 +64,8 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
             return
         } else {
             URLSession.shared.dataTask(with: url) { data, response, error in
-                AppLogger.shared.error("Error loading image with url: \(url). Failed with error: \((error as NSError?)?.localizedDescription ?? "No error description")")
                 if let error = error {
+                    AppLogger.shared.error("Error loading image with url: \(url). Failed with error: \(error.localizedDescription)")
                     print("❌ Error descargando imagen: \(error.localizedDescription)")
                     DispatchQueue.main.async {
                         self.isLoading = false

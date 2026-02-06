@@ -36,42 +36,46 @@ struct TrainingHubView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                // Section Picker
-                sectionPicker
+        VStack(spacing: 0) {
+            // Section Picker
+            sectionPicker
 
-                // Content based on selection
-                Group {
-                    switch selectedView {
-                    case .active:
-                        if trainingManager.trainingData.isEmpty {
-                            activePlanEmptyState
-                        } else {
-                            ActiveTrainingView()
-                                .environmentObject(trainingManager)
-                                .environmentObject(authManager)
-                        }
-                    case .library:
-                        TrainingPlanLibraryView()
+            // Content based on selection
+            Group {
+                switch selectedView {
+                case .active:
+                    if trainingManager.trainingData.isEmpty {
+                        activePlanEmptyState
+                    } else {
+                        ActiveTrainingView()
                             .environmentObject(trainingManager)
                             .environmentObject(authManager)
                     }
+                case .library:
+                    TrainingPlanLibraryView()
+                        .environmentObject(trainingManager)
+                        .environmentObject(authManager)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .onChange(of: selectedView) { oldValue, newValue in
-                    // Recargar plan activo cuando se cambia a esa tab
-                    if newValue == .active, let userId = authManager.user?.id {
-                        Task {
-                            await trainingManager.loadActiveTrainingPlan(userId: userId)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onChange(of: selectedView) { oldValue, newValue in
+                if newValue == .active, let userId = authManager.user?.id {
+                    Task {
+                        await trainingManager.loadActiveTrainingPlan(userId: userId)
+
+                        if trainingManager.trainingPlanId == nil {
+                            await MainActor.run {
+                                trainingManager.clearAllData()
+                            }
                         }
                     }
                 }
             }
-            .navigationTitle("Entrenamiento")
-            .navigationBarTitleDisplayMode(.inline)
 
-        }.toolbar {
+        }
+        .navigationTitle("Entrenamiento")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
             if selectedView != .active {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Menu {
@@ -476,16 +480,30 @@ struct TrainingPlanLibraryView: View {
 
     private func deletePlan(_ plan: TrainingPlan) {
         guard let userId = authManager.user?.id else { return }
-
+        
         Task {
             do {
+                // Eliminar del servidor
                 try await APIService.shared.deleteTrainingPlan(
                     userId: userId,
                     planId: plan.id
                 )
-                loadTrainingPlans()  // Refresh the list
+                
+                // Si era el plan activo, limpiar todo localmente
+                if plan.isActive {
+                    await MainActor.run {
+                        trainingManager.clearAllData()
+                    }
+                }
+                
+                // Recargar la lista y verificar si hay un plan activo
+                loadTrainingPlans()
+                
+                // Verificar si todavía hay un plan activo después de eliminar
+                await trainingManager.loadActiveTrainingPlan(userId: userId)
+                
             } catch {
-                // Handle error
+                print("Error deleting plan: \(error)")
             }
         }
     }

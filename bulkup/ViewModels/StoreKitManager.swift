@@ -16,7 +16,7 @@ class StoreKitManager: ObservableObject {
     
     // MARK: - Product IDs
     private let productIds = [
-        "bulkuppro" // Debe coincidir EXACTAMENTE con App Store Connect
+        "bulkupmonthly" // Debe coincidir EXACTAMENTE con App Store Connect
     ]
     
     // MARK: - Environment Detection

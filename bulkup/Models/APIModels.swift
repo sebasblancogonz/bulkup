@@ -27,7 +27,7 @@ struct APIConfig {
         #if DEBUG
             return "http://localhost:8080"
         #else
-            return "https://weight-tracker-backend.tme3al.easypanel.host/"
+            return "https://weight-tracker-backend.tme3al.easypanel.host"
         #endif
     }
 
@@ -321,7 +321,7 @@ struct APIResponse<T: Codable>: Codable {
     let error: String?
 }
 
-enum APIError: Error {
+enum APIError: LocalizedError {
     case invalidURL
     case noData
     case decodingError
@@ -333,7 +333,7 @@ enum APIError: Error {
     case requestFailed
     case notFound
 
-    var localizedDescription: String {
+    var errorDescription: String? {
         switch self {
         case .invalidURL:
             return "Invalid URL"
@@ -349,8 +349,8 @@ enum APIError: Error {
             return "Invalid client request"
         case .invalidRequest(let httpResponse):
             return "Invalid request parameters (HTTP response: \(httpResponse))"
-        case .serverError(let message):
-            return "Server error: \(message)"
+        case .serverError(let code):
+            return "Server error: \(code)"
         case .requestFailed:
             return "Request failed"
         case .notFound:

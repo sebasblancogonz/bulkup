@@ -6,30 +6,30 @@
 //
 import SwiftUI
 
+@MainActor
 class RMNotificationManager: ObservableObject {
     static let shared = RMNotificationManager()
     @Published var currentNotification: NotificationData?
-    private var notificationTimer: Timer?
-    
+    private var hideTask: Task<Void, Never>?
+
     func showNotification(_ type: NotificationData.NotificationType, message: String) {
-        // Cancel previous timer if exists
-        notificationTimer?.invalidate()
-        
-        // Show new notification
+        hideTask?.cancel()
+
         withAnimation {
             currentNotification = NotificationData(type: type, message: message)
         }
-        
-        // Auto-hide after 5 seconds
-        notificationTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
+
+        hideTask = Task {
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            guard !Task.isCancelled else { return }
             withAnimation {
-                self.currentNotification = nil
+                currentNotification = nil
             }
         }
     }
-    
+
     func hideNotification() {
-        notificationTimer?.invalidate()
+        hideTask?.cancel()
         withAnimation {
             currentNotification = nil
         }

@@ -8,7 +8,7 @@
 	<string>$(ZIPLINE_TOKEN)</string>
 	<key>API_BASE_URL</key>
 	<string>$(API_BASE_URL)</string>
-	<key>ENVINROMENT</key>
+	<key>ENVIRONMENT</key>
 	<string>$(ENVIRONMENT)</string>
 	<key>GOTIFY_CLIENT_TOKEN</key>
 	<string>$(GOTIFY_CLIENT_TOKEN)</string>

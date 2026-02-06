@@ -25,11 +25,10 @@ struct RMFormData {
 }
 
 // MARK: - Main RM Tracker View
-// MARK: - Main RM Tracker View
 struct RMTrackerView: View {
     @EnvironmentObject var authManager: AuthManager
-    @StateObject private var rmManager = RMManager.shared
-    @StateObject private var notificationManager = RMNotificationManager.shared
+    @ObservedObject private var rmManager = RMManager.shared
+    @ObservedObject private var notificationManager = RMNotificationManager.shared
 
     @State private var searchTerm = ""
     @State private var showAddForm = false
@@ -43,16 +42,15 @@ struct RMTrackerView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                if rmManager.isLoading {
+                if rmManager.isLoading && rmManager.records.isEmpty {
+                    // Solo mostrar loading si no hay datos en caché
                     loadingView
                 } else {
-                    mainContent
+                    mainContentWithRefresh
                 }
 
                 VStack {
-                    if let notification = notificationManager
-                        .currentNotification
-                    {
+                    if let notification = notificationManager.currentNotification {
                         RMNotificationView(notification: notification)
                             .padding(.horizontal)
                     }
@@ -61,11 +59,6 @@ struct RMTrackerView: View {
                 .zIndex(1)
             }
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Tus PR")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showAddRecord() }) {
                         Image(systemName: "plus")
@@ -73,24 +66,127 @@ struct RMTrackerView: View {
                     }
                 }
             }
+            .navigationTitle("Tus PR")
+            .navigationBarTitleDisplayMode(.large)
             .sheet(isPresented: $showAddForm) {
                 AddRecordFormView(
                     formData: $formData,
                     exercises: rmManager.exercises,
                     isEditing: editingRecordId != nil,
                     isSubmitting: rmManager.isSubmitting,
-                    onSubmit: handleSubmit,
+                    onSubmit: handleSubmitWithCache,
                     onCancel: resetForm
                 )
             }
         }
         .task {
             if let token = authManager.user?.token {
-                await rmManager.loadInitialData(token: token)
+                // Cargar con caché al inicio
+                await rmManager.loadInitialDataWithCache(token: token)
             }
         }
         .environmentObject(notificationManager)
     }
+    
+    private var mainContentWithRefresh: some View {
+            ScrollView {
+                LazyVStack(spacing: 20) {
+                    // Stats Cards
+                    StatsCardsView(stats: rmManager.stats)
+                        .padding(.horizontal)
+
+                    // Search Bar
+                    SearchBar(text: $searchTerm)
+                        .padding(.horizontal)
+
+                    // Exercise Cards
+                    exerciseCardsGrid
+
+                    // Espacio extra para el tab bar
+                    Color.clear
+                        .frame(height: 90)
+                }
+            }
+            .refreshable {
+                // Pull-to-refresh fuerza recarga desde API
+                if let token = authManager.user?.token {
+                    await rmManager.refreshData(token: token, forceRefresh: true)
+                }
+            }
+            .overlay(
+                Group {
+                    if rmManager.isLoading && !rmManager.records.isEmpty {
+                        // Mostrar indicador sutil cuando se está refrescando con datos en caché
+                        VStack {
+                            HStack {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                                Text("Actualizando...")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(8)
+                            .background(Color(.systemBackground))
+                            .cornerRadius(20)
+                            .shadow(radius: 2)
+                            
+                            Spacer()
+                        }
+                        .padding(.top, 8)
+                    }
+                }
+            )
+        }
+        
+        private func handleSubmitWithCache() {
+            guard let token = authManager.user?.token else { return }
+
+            Task {
+                let success: Bool
+
+                if let recordId = editingRecordId {
+                    success = await rmManager.updateRecordWithCache(
+                        recordId: recordId,
+                        recordData: formData.asDictionary,
+                        token: token
+                    )
+                } else {
+                    success = await rmManager.createRecordWithCache(
+                        formData.asDictionary,
+                        token: token
+                    )
+                }
+
+                await MainActor.run {
+                    if success {
+                        resetForm()
+                        let message = editingRecordId != nil ? "Récord actualizado" : "Récord creado"
+                        notificationManager.showNotification(.success, message: message)
+                    } else {
+                        notificationManager.showNotification(.error, message: "Error al guardar el récord")
+                    }
+                }
+            }
+        }
+        
+        private func deleteRecordWithCache(_ record: PersonalRecord) {
+            guard let token = authManager.user?.token else { return }
+
+            Task {
+                let success = await rmManager.deleteRecordWithCache(
+                    recordId: record.id,
+                    token: token
+                )
+
+                await MainActor.run {
+                    if success {
+                        notificationManager.showNotification(.success, message: "Récord eliminado")
+                    } else {
+                        notificationManager.showNotification(.error, message: "Error al eliminar el récord")
+                    }
+                }
+            }
+        }
 
     // MARK: - Subviews
 
@@ -101,32 +197,6 @@ struct RMTrackerView: View {
             Text("Cargando datos...")
                 .font(.headline)
                 .padding(.top)
-        }
-    }
-
-    private var mainContent: some View {
-        ScrollView {
-            LazyVStack(spacing: 20) {
-                // Stats Cards
-                StatsCardsView(stats: rmManager.stats)
-                    .padding(.horizontal)
-
-                // Search Bar
-                SearchBar(text: $searchTerm)
-                    .padding(.horizontal)
-
-                // Exercise Cards
-                exerciseCardsGrid
-
-                // IMPORTANTE: Añadir espacio extra al final para el tab bar
-                Color.clear
-                    .frame(height: 90)
-            }
-        }
-        .refreshable {
-            if let token = authManager.user?.token {
-                await rmManager.loadInitialData(token: token)
-            }
         }
     }
 
@@ -194,45 +264,6 @@ struct RMTrackerView: View {
                     notificationManager.showNotification(
                         .error,
                         message: "Error al eliminar el récord"
-                    )
-                }
-            }
-        }
-    }
-
-    private func handleSubmit() {
-        guard let token = authManager.user?.token else { return }
-
-        Task {
-            let success: Bool
-
-            if let recordId = editingRecordId {
-                success = await rmManager.updateRecord(
-                    recordId: recordId,
-                    recordData: formData.asDictionary,
-                    token: token
-                )
-            } else {
-                success = await rmManager.createRecord(
-                    formData.asDictionary,
-                    token: token
-                )
-            }
-
-            await MainActor.run {
-                if success {
-                    resetForm()
-                    let message =
-                        editingRecordId != nil
-                        ? "Récord actualizado" : "Récord creado"
-                    notificationManager.showNotification(
-                        .success,
-                        message: message
-                    )
-                } else {
-                    notificationManager.showNotification(
-                        .error,
-                        message: "Error al guardar el récord"
                     )
                 }
             }

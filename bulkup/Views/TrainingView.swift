@@ -3,7 +3,7 @@ import SwiftUI
 
 struct TrainingView: View {
     @EnvironmentObject var authManager: AuthManager
-    @StateObject var trainingManager = TrainingManager.shared
+    @EnvironmentObject var trainingManager: TrainingManager
     @State private var viewMode: ViewMode = .day
     @State private var selectedDay = ""
     @State private var expandedDay: Int? = nil
@@ -12,15 +12,6 @@ struct TrainingView: View {
     // Estado para navegación de fechas
     @State private var currentDate: Date = Date()
 
-    // Estados para el scroll
-    @State private var scrollOffset: CGFloat = 0
-    @State private var lastScrollOffset: CGFloat = 0
-    @State private var headerOffset: CGFloat = 0
-    @State private var isDragging: Bool = false
-
-    // Constantes para el comportamiento del header
-    private let headerHeight: CGFloat = 180
-    private let scrollThreshold: CGFloat = 20
 
     enum ViewMode: String, CaseIterable {
         case week = "week"
@@ -139,37 +130,7 @@ struct TrainingView: View {
         .onChange(of: trainingManager.trainingData) { _, _ in
             expandedDay = nil
         }
-    }
-
-    // Función para actualizar el header basado en el scroll
-    private func updateHeaderOffset() {
-        guard !isDragging else { return }
-        let scrollDelta = scrollOffset - lastScrollOffset
-        guard abs(scrollDelta) > scrollThreshold else { return }
-        let clampedDelta = min(max(scrollDelta, -20), 20)
-
-        withAnimation(
-            .interactiveSpring(
-                response: 0.35,
-                dampingFraction: 0.86,
-                blendDuration: 0.25
-            )
-        ) {
-            if clampedDelta < 0 {
-                headerOffset = max(
-                    headerOffset + (clampedDelta * 1.2),
-                    -headerHeight
-                )
-            } else {
-                headerOffset = min(headerOffset + (clampedDelta * 1.2), 0)
-            }
-
-            if scrollOffset >= -10 {
-                headerOffset = 0
-            }
-        }
-
-        lastScrollOffset = scrollOffset
+        .numbersOnlyKeyboardWithDone()
     }
 
     // MARK: - Subvistas

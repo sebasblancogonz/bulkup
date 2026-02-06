@@ -9,18 +9,18 @@ import SwiftUI
 
 struct MainAppView: View {
     let modelContext: ModelContext
-    
+
     @AppStorage("hapticFeedback") private var hapticFeedback = true
 
     @EnvironmentObject var authManager: AuthManager
-    @StateObject private var hapticManager = HapticManager.shared
-    @StateObject private var dietManager = DietManager.shared
-    @StateObject private var trainingManager = TrainingManager.shared
-    @StateObject private var storeKitManager = StoreKitManager.shared
+    @ObservedObject private var hapticManager = HapticManager.shared
+    @ObservedObject private var dietManager = DietManager.shared
+    @ObservedObject private var trainingManager = TrainingManager.shared
+    @ObservedObject private var storeKitManager = StoreKitManager.shared
 
     @State private var showingSubscriptionAlert = false
     @State private var showingSubscriptionView = false
-    @State private var selectedTab: AppTab = .upload
+    @State private var selectedTab: AppTab = .training
     @State private var showingProfile = false
     @State private var showingNotifications = false
 
@@ -29,17 +29,17 @@ struct MainAppView: View {
     }
 
     enum AppTab: String, CaseIterable, Identifiable {
-        case upload = "upload"
         case diet = "diet"
         case training = "training"
         case rm = "rm"
         case exercises = "exercises"
+        case profile = "perfil"
 
         var id: String { rawValue }
 
         var displayName: String {
             switch self {
-            case .upload: return "Subir"
+            case .profile: return "Perfil"
             case .diet: return "Dieta"
             case .training: return "Entrenamiento"
             case .rm: return "Mis RM"
@@ -49,7 +49,7 @@ struct MainAppView: View {
 
         var shortName: String {
             switch self {
-            case .upload: return "Subir"
+            case .profile: return "Perfil"
             case .diet: return "Dieta"
             case .training: return "Entreno"
             case .rm: return "RM"
@@ -59,22 +59,17 @@ struct MainAppView: View {
 
         var iconName: String {
             switch self {
-            case .upload: return "plus.circle.fill"
             case .diet: return "fork.knife"
             case .training: return "dumbbell.fill"
             case .rm: return "chart.bar.fill"
             case .exercises: return "list.bullet"
+            case .profile: return "person.circle.fill"
             }
         }
 
         var gradient: LinearGradient {
             switch self {
-            case .upload:
-                return LinearGradient(
-                    colors: [.purple, .purple.opacity(0.8)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
+            
             case .diet:
                 return LinearGradient(
                     colors: [.green, .green.opacity(0.8)],
@@ -99,22 +94,28 @@ struct MainAppView: View {
                     startPoint: .leading,
                     endPoint: .trailing
                 )
+            case .profile:
+                return LinearGradient(
+                    colors: [.pink, .pink.opacity(0.8)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
             }
         }
 
         var primaryColor: Color {
             switch self {
-            case .upload: return .purple
             case .diet: return .green
             case .training: return .blue
             case .rm: return .orange
             case .exercises: return .pink
+            case .profile: return .teal
             }
         }
 
         var isDisabled: Bool {
             switch self {
-            case .upload, .rm, .exercises:
+            case .rm, .exercises, .profile:
                 return false
             case .diet, .training:
                 return false  // Se evaluará dinámicamente en la vista
@@ -137,28 +138,21 @@ struct MainAppView: View {
                 }
             } else {
                 GeometryReader { geometry in
-                    VStack(spacing: 0) {
-                        simplifiedHeaderView
+                    ZStack(alignment: .bottom) {
+                        VStack(spacing: 0) {
+                            if geometry.size.width > 600 {
+                                tabNavigationView
+                            }
 
-                        if geometry.size.width > 600 {
-                            tabNavigationView
+                            contentView
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
 
-                        contentView
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .ignoresSafeArea(.keyboard)
+                        if geometry.size.width <= 600 {
+                            fixedMobileTabBar
+                                .ignoresSafeArea(.keyboard, edges: .bottom) // fijo abajo
+                        }
                     }
-                    .overlay(
-                        Group {
-                            if geometry.size.width <= 600 {
-                                fixedMobileTabBar.ignoresSafeArea(
-                                    .keyboard,
-                                    edges: .bottom
-                                )
-                            }
-                        },
-                        alignment: .bottom
-                    )
                 }
                 .environmentObject(dietManager)
                 .environmentObject(trainingManager)
@@ -167,7 +161,7 @@ struct MainAppView: View {
                 ) { _ in
                     showingProfile = false
                     showingNotifications = false
-                    selectedTab = .upload
+                    selectedTab = .training
                 }
                 .sheet(isPresented: $showingProfile) {
                     ProfileView()
@@ -196,103 +190,6 @@ struct MainAppView: View {
         }
     }
 
-    // MARK: - Header simplificado
-    private var simplifiedHeaderView: some View {
-        HStack {
-            // ✅ Solo avatar + nombre
-            Button(action: { showingProfile = true }) {
-                HStack(spacing: 12) {
-                    if let urlString = authManager.user?.profileImageURL,
-                       let url = URL(string: urlString) {
-                        // Imagen de perfil desde URL
-                        CachedAsyncImage(
-                            url: url,
-                            content: { image, colors in
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                            },
-                            placeholder: {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [.blue, .blue.opacity(0.7)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 40, height: 40)
-                                    .overlay(
-                                        Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
-                                            .font(.system(size: 16, weight: .bold))
-                                            .foregroundColor(.white)
-                                    )
-                            }
-                        )
-                    } else {
-                        // Sin imagen → inicial
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [.blue, .blue.opacity(0.7)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 40, height: 40)
-                            .overlay(
-                                Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
-                                    .font(.system(size: 16, weight: .bold))
-                                    .foregroundColor(.white)
-                            )
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("¡Hola \(authManager.user?.name.split(separator: " ").first.map(String.init) ?? "")!")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-
-                        Text("Lightweight baby!!! 💪")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-            .buttonStyle(PlainButtonStyle())
-
-            Spacer()
-
-            // ✅ Indicadores compactos de estado + acciones
-            HStack(spacing: 12) {
-                // Indicador de dieta cargada
-                if !dietManager.dietData.isEmpty {
-                    Image(systemName: "fork.knife")
-                        .foregroundColor(.green)
-                        .font(.title3)
-                }
-
-                // Indicador de entrenamiento cargado
-                if !trainingManager.trainingData.isEmpty {
-                    Image(systemName: "dumbbell.fill")
-                        .foregroundColor(.blue)
-                        .font(.title3)
-                }
-
-                // Notificaciones
-                Button(action: { showingNotifications = true }) {
-                    Image(systemName: "bell")
-                        .font(.title3)
-                        .foregroundColor(.primary)
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemBackground))
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-    }
-
     private var fixedMobileTabBar: some View {
         VStack(spacing: 0) {
             Rectangle()
@@ -300,12 +197,13 @@ struct MainAppView: View {
                 .frame(height: 0.5)
 
             HStack(spacing: 0) {
-                ForEach(AppTab.allCases) { tab in
+                ForEach(AppTab.allCases.filter { $0 != .profile }) { tab in
                     Button(action: {
-                        HapticManager.shared.trigger(.medium, enabled: hapticFeedback)
-                        if tab == .upload && !userHasActiveSubscription {
-                            showingSubscriptionAlert = true
-                        } else if !isTabDisabled(tab) {
+                        HapticManager.shared.trigger(
+                            .medium,
+                            enabled: hapticFeedback
+                        )
+                        if !isTabDisabled(tab) {
                             selectedTab = tab
                         }
                     }) {
@@ -331,32 +229,6 @@ struct MainAppView: View {
                                         ? .gray.opacity(0.4)
                                         : selectedTab == tab ? .blue : .gray
                                 )
-
-                                // Badge PRO para el tab de subir
-                                if tab == .upload && !userHasActiveSubscription
-                                {
-                                    Text("PRO")
-                                        .font(.system(size: 8, weight: .bold))
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 3)
-                                        .padding(.vertical, 1)
-                                        .background(
-                                            Capsule()
-                                                .fill(
-                                                    LinearGradient(
-                                                        colors: [
-                                                            .purple,
-                                                            .purple.opacity(
-                                                                0.8
-                                                            ),
-                                                        ],
-                                                        startPoint: .leading,
-                                                        endPoint: .trailing
-                                                    )
-                                                )
-                                        )
-                                        .offset(x: 8, y: -5)
-                                }
                             }
 
                             Text(tab.shortName)
@@ -373,13 +245,81 @@ struct MainAppView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                     }
-                    .disabled(tab != .upload && isTabDisabled(tab))
+                    .disabled(isTabDisabled(tab))
                     .buttonStyle(PlainButtonStyle())
                 }
+
+                Button(action: {
+                    HapticManager.shared.trigger(
+                        .medium,
+                        enabled: hapticFeedback
+                    )
+                    selectedTab = .profile
+                }) {
+                    VStack(spacing: 4) {
+
+                        // Avatar or person icon
+                        if let urlString = authManager.user?.profileImageURL,
+                            let url = URL(string: urlString)
+                        {
+                            CachedAsyncImage(
+                                url: url,
+                                content: { image, colors in
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 24, height: 24)
+                                        .clipShape(Circle())
+                                        .overlay(
+                                            Circle()
+                                                .stroke(
+                                                    selectedTab == .profile
+                                                        ? Color.teal
+                                                        : Color.clear,
+                                                    lineWidth: 2
+                                                )
+                                        )
+                                },
+                                placeholder: {
+                                    profileIconPlaceholder
+                                }
+                            )
+                        } else {
+                            profileIconPlaceholder
+                        }
+
+                        Text("Perfil")
+                            .font(.caption2)
+                            .fontWeight(
+                                selectedTab == .profile ? .semibold : .medium
+                            )
+                            .foregroundColor(
+                                selectedTab == .profile ? .teal : .gray
+                            )
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
             .background(Color(.systemBackground))
         }
         .background(Color(.systemBackground))
+    }
+
+    private var profileIconPlaceholder: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    selectedTab == .profile
+                        ? Color.teal : Color.gray.opacity(0.3)
+                )
+                .frame(width: 24, height: 24)
+
+            Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.white)
+        }
     }
 
     private var tabNavigationView: some View {
@@ -402,19 +342,6 @@ struct MainAppView: View {
     @ViewBuilder
     private var contentView: some View {
         switch selectedTab {
-        case .upload:
-            if userHasActiveSubscription {
-                FileUploadView()
-                    .environmentObject(dietManager)
-                    .environmentObject(trainingManager)
-                    .environmentObject(authManager)
-            } else {
-                SubscriptionRequiredView(
-                    onSubscribe: {
-                        showingSubscriptionView = true
-                    }
-                )
-            }
         case .diet:
             if dietManager.dietData.isEmpty {
                 EmptyStateView(
@@ -426,7 +353,7 @@ struct MainAppView: View {
                     color: .green
                 ) {
                     if userHasActiveSubscription {
-                        selectedTab = .upload
+                        selectedTab = .training
                     } else {
                         showingSubscriptionAlert = true
                     }
@@ -445,6 +372,11 @@ struct MainAppView: View {
                     .environmentObject(authManager)
                     .environmentObject(trainingManager)
             }
+        case .profile:
+            NavigationStack {
+                UserProfileView()
+                    .environmentObject(authManager)
+            }
         case .rm:
             RMTrackerView()
                 .environmentObject(authManager)
@@ -454,51 +386,11 @@ struct MainAppView: View {
         }
     }
 
-    // MARK: - Funciones auxiliares
-
-    private func getSectionTitle() -> String {
-        switch selectedTab {
-        case .upload: return "Mi Plan Inteligente"
-        case .diet: return "Mi Nutrición"
-        case .training: return "Mi Entrenamiento"
-        case .rm: return "Mis Récords"
-        case .exercises: return "Explorar Ejercicios"
-        }
-    }
-
-    private func getSectionSubtitle() -> String {
-        switch selectedTab {
-        case .upload: return "Sube y gestiona tus planes"
-        case .diet: return "Plan alimentario personalizado"
-        case .training: return "Rutina de ejercicios"
-        case .rm: return "Seguimiento de máximos"
-        case .exercises: return "Base de datos de ejercicios"
-        }
-    }
-
-    private var hasData: Bool {
-        switch selectedTab {
-        case .upload:
-            return !dietManager.dietData.isEmpty
-                || !trainingManager.trainingData.isEmpty
-        case .diet: return !dietManager.dietData.isEmpty
-        case .training: return !trainingManager.trainingData.isEmpty
-        case .rm, .exercises: return true
-        }
-    }
-
-    private var shouldShowProgress: Bool {
-        return !dietManager.dietData.isEmpty
-            || !trainingManager.trainingData.isEmpty
-    }
-
     private func isTabDisabled(_ tab: AppTab) -> Bool {
         switch tab {
-        case .upload:
-            return !userHasActiveSubscription
         case .diet:
             return dietManager.dietData.isEmpty
-        case .training, .rm, .exercises:
+        case .training, .rm, .exercises, .profile:
             return false  // Training tab is never disabled now
         }
     }

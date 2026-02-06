@@ -9,7 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct ExerciseExplorerView: View {
-    @StateObject private var exerciseExplorerManager = ExerciseExplorerManager.shared
+    @ObservedObject private var exerciseExplorerManager = ExerciseExplorerManager.shared
     @State private var showFilters = false
     
     var body: some View {

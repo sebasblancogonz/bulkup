@@ -265,7 +265,8 @@ struct DietView: View {
                 ToolbarItem(placement: .principal) {
                     navigationTitleView
                 }
-            }
+            }.navigationTitle("Dieta")
+                .navigationBarTitleDisplayMode(.large)
             .refreshable {
                 if let user = authManager.user {
                     await dietManager.loadActiveDietPlan(userId: user.id)
@@ -379,7 +380,6 @@ struct DietView: View {
             }
             .padding(.top, 20)
         }
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 navigationTitleView
@@ -420,7 +420,8 @@ struct DietView: View {
                     )
                 }
             }
-        }
+        }.navigationTitle("Dieta")
+            .navigationBarTitleDisplayMode(.large)
         .refreshable {
             if let user = authManager.user {
                 await dietManager.loadActiveDietPlan(userId: user.id)

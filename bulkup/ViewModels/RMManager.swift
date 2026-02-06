@@ -19,12 +19,14 @@ struct RMExercise: Codable, Identifiable {
     let name: String
     let nameEs: String
     let category: String
+    let categoryEs: String
 
     enum CodingKeys: String, CodingKey {
         case id = "_id"
         case nameEs
         case name
         case category
+        case categoryEs
     }
 }
 
@@ -204,15 +206,9 @@ class RMManager: ObservableObject {
 
     func createRecord(_ recordData: [String: Any], token: String) async -> Bool
     {
-        await MainActor.run {
-            isSubmitting = true
-            errorMessage = nil
-        }
-        defer {
-            Task {
-                await MainActor.run { isSubmitting = false }
-            }
-        }
+        isSubmitting = true
+        errorMessage = nil
+        defer { isSubmitting = false }
 
         do {
             guard let exerciseId = recordData["exerciseId"] as? String,
@@ -260,15 +256,9 @@ class RMManager: ObservableObject {
         recordData: [String: Any],
         token: String
     ) async -> Bool {
-        await MainActor.run {
-            isSubmitting = true
-            errorMessage = nil
-        }
-        defer {
-            Task {
-                await MainActor.run { isSubmitting = false }
-            }
-        }
+        isSubmitting = true
+        errorMessage = nil
+        defer { isSubmitting = false }
 
         do {
             // Convert dictionary to typed request
@@ -393,5 +383,146 @@ class RMManager: ObservableObject {
         bestRecords = []
         stats = .empty
         errorMessage = nil
+    }
+    
+    func loadInitialDataWithCache(token: String) async {
+        await MainActor.run {
+            isLoading = true
+            errorMessage = nil
+        }
+        
+        let cacheManager = RMCacheManager.shared
+        
+        // Cargar ejercicios desde caché o API
+        if let cachedExercises = cacheManager.getCachedExercises() {
+            exercises = cachedExercises
+        } else {
+            await fetchExercises()
+        }
+        
+        // Cargar datos de records desde caché
+        if let cachedData = cacheManager.getCachedData() {
+            await MainActor.run {
+                self.records = cachedData.records
+                self.bestRecords = cachedData.bestRecords
+                self.stats = cachedData.stats
+                self.isLoading = false
+            }
+            return
+        }
+        
+        // Si no hay caché, cargar desde API
+        await loadFromAPI(token: token)
+    }
+    
+    func refreshData(token: String, forceRefresh: Bool = false) async {
+        if !forceRefresh {
+            // Si no es forzado, intentar usar caché
+            await loadInitialDataWithCache(token: token)
+            return
+        }
+        
+        // Si es forzado (pull-to-refresh), invalidar caché y recargar
+        RMCacheManager.shared.invalidateCache()
+        
+        await MainActor.run {
+            isLoading = true
+            errorMessage = nil
+        }
+        
+        await loadFromAPI(token: token)
+    }
+    
+    private func loadFromAPI(token: String) async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.fetchExercises() }
+            group.addTask { await self.fetchRecordsAndCache() }
+            group.addTask { await self.fetchBestRecordsAndCache() }
+            group.addTask { await self.fetchStatsAndCache() }
+        }
+        
+        // Guardar en caché después de cargar
+        await MainActor.run {
+            RMCacheManager.shared.setCachedData(
+                records: self.records,
+                bestRecords: self.bestRecords,
+                stats: self.stats
+            )
+            self.isLoading = false
+        }
+    }
+    
+    private func fetchRecordsAndCache() async {
+        guard let userId = authManager.user?.id else { return }
+        
+        do {
+            let records = try await apiService.fetchRecords(userId: userId)
+            await MainActor.run {
+                self.records = records
+            }
+        } catch {
+            print("Error fetching records: \(error)")
+            await MainActor.run {
+                self.errorMessage = "Error loading records"
+            }
+        }
+    }
+    
+    private func fetchBestRecordsAndCache() async {
+        guard let userId = authManager.user?.id else { return }
+        
+        do {
+            let bestRecords = try await apiService.fetchBestRecords(userId: userId)
+            await MainActor.run {
+                self.bestRecords = bestRecords
+            }
+        } catch {
+            print("Error fetching best records: \(error)")
+            await MainActor.run {
+                self.errorMessage = "Error loading best records"
+            }
+        }
+    }
+    
+    private func fetchStatsAndCache() async {
+        guard let userId = authManager.user?.id else { return }
+        
+        do {
+            let stats = try await apiService.fetchRecordStats(userId: userId)
+            await MainActor.run {
+                self.stats = stats
+            }
+        } catch {
+            print("Error fetching stats: \(error)")
+            await MainActor.run {
+                self.stats = RecordStats.empty
+            }
+        }
+    }
+    
+    // Actualizar métodos CRUD para invalidar caché
+    
+    func createRecordWithCache(_ recordData: [String: Any], token: String) async -> Bool {
+        let result = await createRecord(recordData, token: token)
+        if result {
+            RMCacheManager.shared.invalidateCache()
+        }
+        return result
+    }
+
+    func updateRecordWithCache(recordId: String, recordData: [String: Any], token: String) async -> Bool {
+        let result = await updateRecord(recordId: recordId, recordData: recordData, token: token)
+        if result {
+            RMCacheManager.shared.invalidateCache()
+        }
+        return result
+    }
+
+    func deleteRecordWithCache(recordId: String, token: String) async -> Bool {
+        let result = await deleteRecord(recordId: recordId, token: token)
+        if result {
+            RMCacheManager.shared.invalidateCache()
+        }
+        return result
     }
 }

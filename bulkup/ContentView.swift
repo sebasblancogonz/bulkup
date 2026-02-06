@@ -9,10 +9,6 @@ import SwiftData
 import SwiftUI
 
 // MARK: - Vista de Contenido Principal
-import SwiftData
-import SwiftUI
-
-// MARK: - Vista de Contenido Principal
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var authManager = AuthManager.shared

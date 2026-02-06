@@ -156,7 +156,7 @@ struct SmartFileUploadView: View {
     @EnvironmentObject var dietManager: DietManager
     @EnvironmentObject var trainingManager: TrainingManager
     @EnvironmentObject var authManager: AuthManager
-    @StateObject private var viewModel = SmartFileUploadManager.shared
+    @ObservedObject private var viewModel = SmartFileUploadManager.shared
     @State private var showingFilePicker = false
     @State private var selectedFileURL: URL?
     
@@ -170,7 +170,7 @@ struct SmartFileUploadView: View {
                 uploadCard
                 
                 // Status card (if processing or detected)
-                if viewModel.detectedType != .unknown && !viewModel.error.isNilOrEmpty {
+                if viewModel.detectedType != .unknown && viewModel.error.isNilOrEmpty {
                     statusCard
                 }
                 

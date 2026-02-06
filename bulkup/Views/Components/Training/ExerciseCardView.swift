@@ -472,9 +472,6 @@ struct CompactWeightSetView: View {
                 loadPreviousWeekWeight()
             }
         }
-        .onChange(of: trainingManager.weights) { _, _ in
-            loadWeight()
-        }
         .onChange(of: trainingManager.selectedWeek) { _, _ in
             loadWeight()
             loadPreviousWeekWeight()

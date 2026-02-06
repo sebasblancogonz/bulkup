@@ -10,7 +10,7 @@ import SwiftUI
 
 struct SubscriptionView: View {
     @EnvironmentObject var authManager: AuthManager
-    @StateObject private var storeManager = StoreKitManager.shared
+    @ObservedObject private var storeManager = StoreKitManager.shared
     @Environment(\.dismiss) var dismiss
     
     @State private var selectedProduct: Product?
@@ -350,7 +350,7 @@ struct SubscriptionPlanCard: View {
     let isPopular: Bool
     let onSelect: () -> Void
     
-    @StateObject private var storeManager = StoreKitManager.shared
+    @ObservedObject private var storeManager = StoreKitManager.shared
     
     var body: some View {
         Button(action: onSelect) {

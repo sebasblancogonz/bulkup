@@ -10,7 +10,7 @@ import PhotosUI
 
 struct EditProfileView: View {
     @EnvironmentObject var authManager: AuthManager
-    @StateObject private var profileManager = ProfileManager.shared
+    @ObservedObject private var profileManager = ProfileManager.shared
     @Environment(\.dismiss) private var dismiss
     
     @State private var name: String = ""
@@ -279,7 +279,7 @@ struct EditProfileView: View {
                     image
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 40, height: 40)
+                        .frame(width: 120, height: 120)
                         .clipShape(Circle())
                 },
                 placeholder: {
@@ -291,10 +291,10 @@ struct EditProfileView: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(width: 40, height: 40)
+                        .frame(width: 120, height: 120)
                         .overlay(
                             Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
-                                .font(.system(size: 16, weight: .bold))
+                                .font(.system(size: 40, weight: .bold))
                                 .foregroundColor(.white)
                         )
                 }

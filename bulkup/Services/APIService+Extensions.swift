@@ -287,6 +287,16 @@ extension APIService {
 
         var body = Data()
 
+        // Add dir field
+        let dir = userId != nil ? "profile-images/\(userId!)" : "profile-images"
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append(
+            "Content-Disposition: form-data; name=\"dir\"\r\n\r\n".data(
+                using: .utf8
+            )!
+        )
+        body.append("\(dir)\r\n".data(using: .utf8)!)
+
         // Add image data
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append(
@@ -296,15 +306,6 @@ extension APIService {
         body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
         body.append(imageData)
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-
-        let dir = userId != nil ? "profile-images/\(userId!)" : "profile-images"
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append(
-            "Content-Disposition: form-data; name=\"dir\"\r\n\r\n".data(
-                using: .utf8
-            )!
-        )
-        body.append("\(dir)\r\n".data(using: .utf8)!)
 
         request.httpBody = body
 
