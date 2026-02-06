@@ -9,7 +9,7 @@
       }
     ]
   },
-  "identifier" : "CFA76E7D",
+  "identifier" : "AF4FF29B",
   "nonRenewingSubscriptions" : [
 
   ],
@@ -18,8 +18,8 @@
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,
-    "_locale" : "en_US",
-    "_storefront" : "USA",
+    "_locale" : "es_ES",
+    "_storefront" : "ESP",
     "_storeKitErrors" : [
       {
         "current" : null,
@@ -70,7 +70,7 @@
   },
   "subscriptionGroups" : [
     {
-      "id" : "E43ADBF1",
+      "id" : "A30F7F13",
       "localizations" : [
 
       ],
@@ -86,7 +86,7 @@
           "displayPrice" : "1.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "AB114A84",
+          "internalID" : "67BCF823",
           "introductoryOffer" : null,
           "localizations" : [
             {
@@ -95,10 +95,10 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "bulkuppro",
+          "productID" : "com.whitesolutions.bulkup",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "bulkup-pro",
-          "subscriptionGroupID" : "E43ADBF1",
+          "referenceName" : "BulkUp PRO Monthly",
+          "subscriptionGroupID" : "A30F7F13",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
 
