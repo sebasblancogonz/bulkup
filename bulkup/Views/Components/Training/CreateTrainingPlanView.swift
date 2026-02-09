@@ -21,6 +21,7 @@ struct CreateTrainingPlanView: View {
     @State private var isCreating = false
     @State private var errorMessage: String?
     @State private var showingFilePicker = false
+    @State private var showingTemplateSelection = false
 
     @ObservedObject private var uploadManager = SmartFileUploadManager.shared
     @State private var isProcessingFile = false
@@ -168,6 +169,11 @@ struct CreateTrainingPlanView: View {
         ) { result in
             handleFileSelection(result)
         }
+        .sheet(isPresented: $showingTemplateSelection) {
+            TemplateSelectionView { template in
+                createPlanFromTemplate(template)
+            }
+        }
         .onAppear {
             setupNotificationObserver()
         }
@@ -234,8 +240,7 @@ struct CreateTrainingPlanView: View {
         case .upload:
             showingFilePicker = true
         case .template:
-            // For now, just create an empty plan - you'd implement template selection
-            createEmptyPlan()
+            showingTemplateSelection = true
         }
     }
 
@@ -268,6 +273,35 @@ struct CreateTrainingPlanView: View {
                     userId: userId,
                     filename: planName,
                     trainingData: emptyTrainingData,
+                    planStartDate: useCustomDates ? startDate : nil,
+                    planEndDate: useCustomDates ? endDate : nil
+                )
+
+                await MainActor.run {
+                    isCreating = false
+                    dismiss()
+                }
+
+            } catch {
+                await MainActor.run {
+                    isCreating = false
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func createPlanFromTemplate(_ template: WorkoutTemplate) {
+        guard let userId = authManager.user?.id else { return }
+
+        isCreating = true
+
+        Task {
+            do {
+                let _ = try await APIService.shared.createTrainingPlan(
+                    userId: userId,
+                    filename: planName,
+                    trainingData: template.trainingDays,
                     planStartDate: useCustomDates ? startDate : nil,
                     planEndDate: useCustomDates ? endDate : nil
                 )

@@ -42,10 +42,14 @@ struct SubscriptionView: View {
                         benefitsSection
                         
                         // Planes
-                        if storeManager.isLoading {
+                        if storeManager.hasActiveSubscription {
+                            activeSubscriptionSection
+                        } else if storeManager.isLoading {
                             ProgressView()
                                 .scaleEffect(1.2)
                                 .padding()
+                        } else if storeManager.products.isEmpty {
+                            emptyProductsSection
                         } else {
                             plansSection
                         }
@@ -171,6 +175,91 @@ struct SubscriptionView: View {
         }
     }
     
+    // MARK: - Active Subscription Section
+    private var activeSubscriptionSection: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 50))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.green, .green.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            Text("¡Ya eres Premium!")
+                .font(.title3)
+                .fontWeight(.bold)
+
+            Text("Tienes acceso a todas las funciones premium.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+
+            if let expirationDate = storeManager.expirationDate {
+                Text("Tu suscripción se renueva el \(expirationDate.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Button(action: {
+                Task {
+                    await storeManager.openSubscriptionManagement()
+                }
+            }) {
+                Text("Gestionar Suscripción")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Color.purple)
+                    .cornerRadius(12)
+            }
+        }
+        .padding(24)
+        .background(Color.green.opacity(0.08))
+        .cornerRadius(16)
+    }
+
+    // MARK: - Empty Products Section
+    private var emptyProductsSection: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 40))
+                .foregroundColor(.orange)
+
+            Text("No se pudieron cargar los planes")
+                .font(.headline)
+
+            if let error = storeManager.errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            Button(action: {
+                Task {
+                    await storeManager.loadProducts()
+                }
+            }) {
+                Label("Reintentar", systemImage: "arrow.clockwise")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Color.purple)
+                    .cornerRadius(12)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(16)
+    }
+
     // MARK: - Plans Section
     private var plansSection: some View {
         VStack(spacing: 16) {
@@ -253,32 +342,6 @@ struct SubscriptionView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
-            // Si ya tiene suscripción
-            if storeManager.hasActiveSubscription {
-                VStack(spacing: 8) {
-                    Label("Suscripción Activa", systemImage: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    if let expirationDate = storeManager.expirationDate {
-                        Text("Expira: \(expirationDate.formatted(date: .abbreviated, time: .omitted))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Button("Gestionar Suscripción") {
-                        Task {
-                            await storeManager.openSubscriptionManagement()
-                        }
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
-                }
-                .padding()
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(12)
-            }
         }
     }
     

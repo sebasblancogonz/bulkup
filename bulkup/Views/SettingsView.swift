@@ -28,6 +28,7 @@ struct SettingsView: View {
     @State private var showingAbout = false
     @State private var showingDataExport = false
     @State private var showingDeleteAccount = false
+    @State private var exportFileURL: URL?
 
     var body: some View {
         NavigationView {
@@ -167,7 +168,7 @@ struct SettingsView: View {
                         title: "Exportar Datos",
                         subtitle: "Descargar tu información"
                     ) {
-                        showingDataExport = true
+                        exportData()
                     }
 
                     SettingsRow(
@@ -268,8 +269,12 @@ struct SettingsView: View {
             }
         }
         .sheet(isPresented: $showingAbout) {
+            AboutView()
         }
         .sheet(isPresented: $showingDataExport) {
+            if let url = exportFileURL {
+                ShareSheet(activityItems: [url])
+            }
         }
         .alert("Eliminar Cuenta", isPresented: $showingDeleteAccount) {
             Button("Cancelar", role: .cancel) {}
@@ -283,6 +288,76 @@ struct SettingsView: View {
         }
         .onChange(of: theme) { _, newValue in
             applyTheme(newValue)
+        }
+        .onChange(of: keepScreenOn) { _, newValue in
+            UIApplication.shared.isIdleTimerDisabled = newValue
+        }
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = keepScreenOn
+        }
+    }
+
+    private func exportData() {
+        let dietManager = DietManager.shared
+        let trainingManager = TrainingManager.shared
+        let measurementsManager = BodyMeasurementsManager.shared
+        var exportData: [String: Any] = [:]
+        let dateFormatter = ISO8601DateFormatter()
+
+        if let user = authManager.user {
+            exportData["perfil"] = [
+                "nombre": user.name,
+                "email": user.email,
+            ]
+        }
+
+        if !dietManager.dietData.isEmpty {
+            exportData["dieta"] = dietManager.dietData.map { day -> [String: Any] in
+                var d: [String: Any] = ["dia": day.day]
+                d["comidas"] = day.meals.map { meal -> [String: Any] in
+                    var m: [String: Any] = ["tipo": meal.type, "hora": meal.time]
+                    m["opciones"] = meal.options.map {
+                        ["descripcion": $0.optionDescription, "ingredientes": $0.ingredients]
+                    }
+                    return m
+                }
+                return d
+            }
+        }
+
+        if !trainingManager.trainingData.isEmpty {
+            exportData["entrenamiento"] = trainingManager.trainingData.map { day -> [String: Any] in
+                var d: [String: Any] = ["dia": day.day]
+                if let name = day.workoutName { d["nombreEntrenamiento"] = name }
+                d["ejercicios"] = day.exercises.map {
+                    [
+                        "nombre": $0.name, "series": $0.sets,
+                        "repeticiones": $0.reps, "descanso": $0.restSeconds,
+                    ] as [String: Any]
+                }
+                return d
+            }
+        }
+
+        if let m = measurementsManager.currentMeasurements {
+            exportData["medidas"] = [
+                "peso": m.peso, "altura": m.altura,
+                "cintura": m.cintura, "cuello": m.cuello,
+            ]
+        }
+
+        exportData["fechaExportacion"] = dateFormatter.string(from: Date())
+
+        do {
+            let jsonData = try JSONSerialization.data(
+                withJSONObject: exportData, options: [.prettyPrinted, .sortedKeys])
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
+                "BulkUp_Export.json")
+            try jsonData.write(to: tempURL)
+            exportFileURL = tempURL
+            showingDataExport = true
+        } catch {
+            print("Error exporting data: \(error)")
         }
     }
 
@@ -428,6 +503,52 @@ struct SettingsRow: View {
                 Image(systemName: "chevron.right")
                     .foregroundColor(.secondary)
                     .font(.caption)
+            }
+        }
+    }
+}
+
+// MARK: - About View
+
+struct AboutView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 24) {
+                Spacer()
+
+                Image(systemName: "dumbbell.fill")
+                    .font(.system(size: 60))
+                    .foregroundColor(.blue)
+
+                Text("BulkUp")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                Text("Versión \(Bundle.main.appVersion)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Text("Tu compañero de entrenamiento y nutrición.")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+
+                Spacer()
+
+                Text("© 2025 BulkUp")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.bottom)
+            }
+            .navigationTitle("Acerca de")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Cerrar") { dismiss() }
+                }
             }
         }
     }

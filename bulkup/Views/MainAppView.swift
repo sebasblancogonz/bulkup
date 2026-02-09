@@ -304,7 +304,10 @@ struct MainAppView: View {
             }
             .background(Color(.systemBackground))
         }
-        .background(Color(.systemBackground))
+        .background(
+            Color(.systemBackground)
+                .ignoresSafeArea(edges: .bottom)
+        )
     }
 
     private var profileIconPlaceholder: some View {

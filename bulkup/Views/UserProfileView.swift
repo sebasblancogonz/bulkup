@@ -7,10 +7,14 @@
 
 import PhotosUI
 import SwiftUI
+import UserNotifications
 
 struct UserProfileView: View {
     @EnvironmentObject var authManager: AuthManager
     @ObservedObject private var storeKitManager = StoreKitManager.shared
+    @ObservedObject private var dietManager = DietManager.shared
+    @ObservedObject private var trainingManager = TrainingManager.shared
+    @ObservedObject private var measurementsManager = BodyMeasurementsManager.shared
 
     @State private var showingEditProfile = false
     @State private var showingSettings = false
@@ -18,11 +22,13 @@ struct UserProfileView: View {
     @State private var showingLogoutAlert = false
     @State private var showingDeleteAccountAlert = false
     @State private var showingImagePicker = false
+    @State private var showingExportShare = false
+    @State private var exportFileURL: URL?
     @State private var selectedImage: PhotosPickerItem?
 
     @AppStorage("hapticFeedback") private var hapticFeedback = true
     @AppStorage("notifications") private var notificationsEnabled = true
-    @AppStorage("darkMode") private var darkModeEnabled = false
+    @AppStorage("theme") private var theme = "system"
 
     var body: some View {
         ScrollView {
@@ -85,6 +91,11 @@ struct UserProfileView: View {
             }
         } message: {
             Text("¿Estás seguro de que quieres cerrar sesión?")
+        }
+        .sheet(isPresented: $showingExportShare) {
+            if let url = exportFileURL {
+                ShareSheet(activityItems: [url])
+            }
         }
         .alert("Eliminar Cuenta", isPresented: $showingDeleteAccountAlert) {
             Button("Cancelar", role: .cancel) {}
@@ -250,14 +261,18 @@ struct UserProfileView: View {
                 title: "Historial de Pagos",
                 icon: "creditcard",
                 color: .green,
-                action: { /* Navigate to payment history */  }
+                action: {
+                    Task {
+                        await storeKitManager.openSubscriptionManagement()
+                    }
+                }
             )
 
             MenuRow(
                 title: "Exportar Datos",
                 icon: "square.and.arrow.up",
                 color: .orange,
-                action: { /* Export data */  }
+                action: { exportUserData() }
             )
         }
         .padding(.vertical, 8)
@@ -281,13 +296,27 @@ struct UserProfileView: View {
                 SettingRow(
                     title: "Notificaciones",
                     icon: "bell",
-                    isOn: $notificationsEnabled
+                    isOn: Binding(
+                        get: { notificationsEnabled },
+                        set: { newValue in
+                            notificationsEnabled = newValue
+                            if newValue {
+                                requestNotificationPermission()
+                            }
+                        }
+                    )
                 )
 
                 SettingRow(
                     title: "Modo oscuro",
                     icon: "moon",
-                    isOn: $darkModeEnabled
+                    isOn: Binding(
+                        get: { theme == "dark" },
+                        set: { newValue in
+                            theme = newValue ? "dark" : "system"
+                            applyTheme(theme)
+                        }
+                    )
                 )
             }
         }
@@ -378,6 +407,158 @@ struct UserProfileView: View {
     private func calculateStreak() -> Int {
         // Return current streak
         return 0  // Implement based on your data
+    }
+
+    // MARK: - Notifications
+
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) {
+            granted, _ in
+            DispatchQueue.main.async {
+                if !granted {
+                    notificationsEnabled = false
+                }
+            }
+        }
+    }
+
+    // MARK: - Theme
+
+    private func applyTheme(_ theme: String) {
+        guard
+            let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+            let window = windowScene.windows.first
+        else { return }
+
+        switch theme {
+        case "light":
+            window.overrideUserInterfaceStyle = .light
+        case "dark":
+            window.overrideUserInterfaceStyle = .dark
+        default:
+            window.overrideUserInterfaceStyle = .unspecified
+        }
+    }
+
+    // MARK: - Export Data
+
+    private func exportUserData() {
+        var exportData: [String: Any] = [:]
+        let dateFormatter = ISO8601DateFormatter()
+
+        // User profile
+        if let user = authManager.user {
+            var userData: [String: Any] = [
+                "nombre": user.name,
+                "email": user.email,
+                "creadoEn": dateFormatter.string(from: user.createdAt),
+            ]
+            if let dob = user.dateOfBirth {
+                userData["fechaDeNacimiento"] = dateFormatter.string(from: dob)
+            }
+            exportData["perfil"] = userData
+        }
+
+        // Diet data
+        if !dietManager.dietData.isEmpty {
+            let dietDays = dietManager.dietData.map { day -> [String: Any] in
+                var dayData: [String: Any] = ["dia": day.day]
+                dayData["comidas"] = day.meals.map { meal -> [String: Any] in
+                    var mealData: [String: Any] = [
+                        "tipo": meal.type,
+                        "hora": meal.time,
+                        "orden": meal.order,
+                    ]
+                    if let notes = meal.notes { mealData["notas"] = notes }
+                    mealData["opciones"] = meal.options.map { option -> [String: Any] in
+                        [
+                            "descripcion": option.optionDescription,
+                            "ingredientes": option.ingredients,
+                            "instrucciones": option.instructions,
+                        ]
+                    }
+                    return mealData
+                }
+                dayData["suplementos"] = day.supplements.map { supp -> [String: Any] in
+                    var suppData: [String: Any] = [
+                        "nombre": supp.name,
+                        "dosis": supp.dosage,
+                        "momento": supp.timing,
+                        "frecuencia": supp.frequency,
+                    ]
+                    if let notes = supp.notes { suppData["notas"] = notes }
+                    return suppData
+                }
+                return dayData
+            }
+            exportData["dieta"] = dietDays
+        }
+
+        // Training data
+        if !trainingManager.trainingData.isEmpty {
+            let trainingDays = trainingManager.trainingData.map { day -> [String: Any] in
+                var dayData: [String: Any] = ["dia": day.day]
+                if let name = day.workoutName { dayData["nombreEntrenamiento"] = name }
+                dayData["ejercicios"] = day.exercises.map { ex -> [String: Any] in
+                    var exData: [String: Any] = [
+                        "nombre": ex.name,
+                        "series": ex.sets,
+                        "repeticiones": ex.reps,
+                        "descansoSegundos": ex.restSeconds,
+                    ]
+                    if let notes = ex.notes { exData["notas"] = notes }
+                    if let tempo = ex.tempo { exData["tempo"] = tempo }
+                    return exData
+                }
+                return dayData
+            }
+            exportData["entrenamiento"] = trainingDays
+        }
+
+        // Body measurements
+        if let measurements = measurementsManager.currentMeasurements {
+            var measData: [String: Any] = [
+                "peso": measurements.peso,
+                "altura": measurements.altura,
+                "edad": measurements.edad,
+                "sexo": measurements.sexo,
+                "cintura": measurements.cintura,
+                "cuello": measurements.cuello,
+            ]
+            if let cadera = measurements.cadera { measData["cadera"] = cadera }
+            if let brazo = measurements.brazo { measData["brazo"] = brazo }
+            if let muslo = measurements.muslo { measData["muslo"] = muslo }
+            if let pantorrilla = measurements.pantorrilla { measData["pantorrilla"] = pantorrilla }
+            exportData["medidas"] = measData
+        }
+
+        if !measurementsManager.measurementsHistory.isEmpty {
+            exportData["historialMedidas"] = measurementsManager.measurementsHistory.map {
+                m -> [String: Any] in
+                var d: [String: Any] = [
+                    "peso": m.peso, "altura": m.altura,
+                    "fecha": dateFormatter.string(from: m.fecha),
+                ]
+                if let cadera = m.cadera { d["cadera"] = cadera }
+                if let brazo = m.brazo { d["brazo"] = brazo }
+                return d
+            }
+        }
+
+        exportData["fechaExportacion"] = dateFormatter.string(from: Date())
+
+        // Write JSON file and present share sheet
+        do {
+            let jsonData = try JSONSerialization.data(
+                withJSONObject: exportData, options: [.prettyPrinted, .sortedKeys])
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
+                "BulkUp_Export.json")
+            try jsonData.write(to: tempURL)
+            exportFileURL = tempURL
+            showingExportShare = true
+        } catch {
+            print("Error exporting data: \(error)")
+        }
     }
 }
 
@@ -478,6 +659,18 @@ struct SettingRow: View {
         .background(Color(.systemGray6))
         .cornerRadius(12)
     }
+}
+
+// MARK: - Share Sheet
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Bundle Extension
