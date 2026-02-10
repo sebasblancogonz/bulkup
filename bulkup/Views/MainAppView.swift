@@ -346,27 +346,10 @@ struct MainAppView: View {
     private var contentView: some View {
         switch selectedTab {
         case .diet:
-            if dietManager.dietData.isEmpty {
-                EmptyStateView(
-                    icon: "leaf.circle",
-                    title: "Sin plan de dieta",
-                    subtitle: "Sube tu plan de alimentación para comenzar",
-                    actionTitle: "Subir Plan",
-                    actionIcon: "plus.circle.fill",
-                    color: .green
-                ) {
-                    if userHasActiveSubscription {
-                        selectedTab = .training
-                    } else {
-                        showingSubscriptionAlert = true
-                    }
-                }
-            } else {
-                NavigationStack {
-                    DietView()
-                        .environmentObject(authManager)
-                        .environmentObject(dietManager)
-                }
+            NavigationStack {
+                DietHubView()
+                    .environmentObject(authManager)
+                    .environmentObject(dietManager)
             }
         case .training:
             // UPDATED: Use the new TrainingHubView instead of checking for empty data
@@ -390,12 +373,7 @@ struct MainAppView: View {
     }
 
     private func isTabDisabled(_ tab: AppTab) -> Bool {
-        switch tab {
-        case .diet:
-            return dietManager.dietData.isEmpty
-        case .training, .rm, .exercises, .profile:
-            return false  // Training tab is never disabled now
-        }
+        return false
     }
 
 }

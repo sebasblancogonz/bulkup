@@ -107,7 +107,7 @@ extension ConditionalMeal {
     convenience init(from serverMeal: ServerConditionalMeal) {
         self.init(
             mealDescription: serverMeal.description,
-            ingredients: serverMeal.ingredients
+            ingredients: serverMeal.ingredients ?? []
         )
     }
 }

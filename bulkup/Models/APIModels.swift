@@ -31,6 +31,22 @@ struct APIConfig {
         #endif
     }
 
+    static var gotifyURL: String {
+        if let urlString = Bundle.main.object(
+            forInfoDictionaryKey: "GOTIFY_URL"
+        ) as? String,
+            !urlString.isEmpty
+        {
+            return urlString
+        }
+
+        #if DEBUG
+            return "https://notifications.getbulkup.com"
+        #else
+            return "https://notifications.getbulkup.com"
+        #endif
+    }
+
     static var environment: Environment {
         if let envString = Bundle.main.object(
             forInfoDictionaryKey: "ENVIRONMENT"
@@ -148,17 +164,67 @@ struct ProfileResponse: Codable {
 
 
 struct LoadDietPlanResponse: Codable {
-    let success: Bool
+    let success: Bool?
     let dietData: [ServerDietDay]?
     let planId: String?
     let filename: String?
     let createdAt: String?
     let updatedAt: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case success
+        case dietData, dietDataSnake = "diet_data"
+        case planId, planIdSnake = "plan_id", planIdMongo = "_id"
+        case filename
+        case createdAt, createdAtSnake = "created_at"
+        case updatedAt, updatedAtSnake = "updated_at"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        success = try container.decodeIfPresent(Bool.self, forKey: .success)
+        dietData = try container.decodeIfPresent([ServerDietDay].self, forKey: .dietData)
+            ?? container.decodeIfPresent([ServerDietDay].self, forKey: .dietDataSnake)
+        planId = try container.decodeIfPresent(String.self, forKey: .planId)
+            ?? container.decodeIfPresent(String.self, forKey: .planIdSnake)
+            ?? container.decodeIfPresent(String.self, forKey: .planIdMongo)
+        filename = try container.decodeIfPresent(String.self, forKey: .filename)
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
+            ?? container.decodeIfPresent(String.self, forKey: .createdAtSnake)
+        updatedAt = try container.decodeIfPresent(String.self, forKey: .updatedAt)
+            ?? container.decodeIfPresent(String.self, forKey: .updatedAtSnake)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(success, forKey: .success)
+        try container.encodeIfPresent(dietData, forKey: .dietData)
+        try container.encodeIfPresent(planId, forKey: .planId)
+        try container.encodeIfPresent(filename, forKey: .filename)
+        try container.encodeIfPresent(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(updatedAt, forKey: .updatedAt)
+    }
 }
 
 struct LoadDietPlanOuterResponse: Codable {
     let success: Bool
     let data: LoadDietPlanResponse
+
+    private enum CodingKeys: String, CodingKey {
+        case success, data
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        success = try container.decode(Bool.self, forKey: .success)
+
+        if let nestedData = try? container.decode(LoadDietPlanResponse.self, forKey: .data) {
+            self.data = nestedData
+        } else {
+            // Fallback: try decoding flat response (no data wrapper)
+            self.data = try LoadDietPlanResponse(from: decoder)
+        }
+    }
 }
 
 struct ServerDietDay: Codable {
@@ -194,7 +260,7 @@ struct ServerMealConditions: Codable {
 
 struct ServerConditionalMeal: Codable {
     let description: String
-    let ingredients: [String]
+    let ingredients: [String]?
 }
 
 struct ServerSupplement: Codable {
@@ -457,5 +523,41 @@ struct ServerWorkout: Codable, Identifiable {
 
 // Also add this request model for loading plans
 struct LoadPlanRequest: Codable {
+    let userId: String
+}
+
+// MARK: - Diet Plan Management Models
+
+struct ServerDietPlan: Codable, Identifiable {
+    let id: String?
+    let userId: String
+    let filename: String
+    let dietData: [ServerDietDay]?
+    let active: Bool
+    let createdAt: Date
+    let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case userId, filename, dietData, active, createdAt, updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(String.self, forKey: .id)
+        userId = try container.decode(String.self, forKey: .userId)
+        filename = try container.decode(String.self, forKey: .filename)
+        dietData = try container.decodeIfPresent([ServerDietDay].self, forKey: .dietData)
+        active = try container.decode(Bool.self, forKey: .active)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+    }
+}
+
+struct ActivateDietPlanRequest: Codable {
+    let userId: String
+}
+
+struct DeleteDietPlanRequest: Codable {
     let userId: String
 }

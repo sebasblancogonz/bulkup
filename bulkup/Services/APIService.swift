@@ -164,66 +164,67 @@ class APIService: ObservableObject {
             )
         }
 
+        let data: Data
+        let response: URLResponse
+
         do {
-            let (data, response) = try await session.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw APIError.networkError("Respuesta inválida")
-            }
-
-            switch httpResponse.statusCode {
-            case 200...299:
-                break
-            case 400:
-                throw APIError.invalidRequest(httpResponse)
-            case 401:
-                throw APIError.unauthorized
-            default:
-                throw APIError.serverError(httpResponse.statusCode)
-            }
-
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .custom { decoder in
-                let container = try decoder.singleValueContainer()
-                let dateString = try container.decode(String.self)
-
-                // Crear un formatter personalizado
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-                formatter.locale = Locale(identifier: "en_US_POSIX")
-                formatter.timeZone = TimeZone(secondsFromGMT: 0)
-
-                if let date = formatter.date(from: dateString) {
-                    return date
-                }
-
-                // Backup formatter sin milisegundos
-                let backupFormatter = DateFormatter()
-                backupFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-                backupFormatter.locale = Locale(identifier: "en_US_POSIX")
-                backupFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-
-                if let date = backupFormatter.date(from: dateString) {
-                    return date
-                }
-
-                throw DecodingError.dataCorruptedError(
-                    in: container,
-                    debugDescription: "Cannot decode date string \(dateString)"
-                )
-            }  // Añadir esta línea
-            return try decoder.decode(T.self, from: data)
-
+            (data, response) = try await session.data(for: request)
         } catch {
-            if error is APIError {
-                throw error
-            } else if error is DecodingError {
-                print("Decoding error: \(error)")
-                throw APIError.decodingError
-            } else {
-                print("Network error: \(error)")
-                throw APIError.networkError(error.localizedDescription)
+            throw APIError.networkError(error.localizedDescription)
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.networkError("Respuesta inválida")
+        }
+
+        switch httpResponse.statusCode {
+        case 200...299:
+            break
+        case 400:
+            throw APIError.invalidRequest(httpResponse)
+        case 401:
+            throw APIError.unauthorized
+        default:
+            throw APIError.serverError(httpResponse.statusCode)
+        }
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateString = try container.decode(String.self)
+
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+
+            if let date = formatter.date(from: dateString) {
+                return date
             }
+
+            let backupFormatter = DateFormatter()
+            backupFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            backupFormatter.locale = Locale(identifier: "en_US_POSIX")
+            backupFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+
+            if let date = backupFormatter.date(from: dateString) {
+                return date
+            }
+
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Cannot decode date string \(dateString)"
+            )
+        }
+
+        do {
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            print("Decoding error for endpoint '\(endpoint)': \(error)")
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("Raw JSON response: \(jsonString)")
+            }
+            throw APIError.decodingError
         }
     }
 

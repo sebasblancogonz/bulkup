@@ -68,14 +68,36 @@ extension APIService {
     {
         let requestBody = ["userId": userId]
 
-        // Usar estructura exterior para diet también
-        let outerResponse: LoadDietPlanOuterResponse =
-            try await requestWithBody(
-                endpoint: "load-diet-plan",
-                method: .POST,
-                body: requestBody
-            )
+        // Make request manually to log raw JSON
+        guard let url = URL(string: "\(APIConfig.baseURL)/load-diet-plan") else {
+            throw APIError.invalidURL
+        }
 
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        if let token = UserDefaults.standard.string(forKey: "auth_token") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        request.httpBody = try JSONEncoder().encode(requestBody)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+            throw APIError.serverError(statusCode)
+        }
+
+        // Always log raw JSON for debugging
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("[Diet API] Raw response: \(jsonString)")
+        }
+
+        let decoder = JSONDecoder()
+        let outerResponse = try decoder.decode(LoadDietPlanOuterResponse.self, from: data)
         return outerResponse.data
     }
 
@@ -322,5 +344,39 @@ extension APIService {
             from: data
         )
         return uploadResponse.files[0].url
+    }
+
+    // MARK: - Diet Plan Management
+
+    func listDietPlans(userId: String) async throws -> [ServerDietPlan] {
+        let request = LoadPlanRequest(userId: userId)
+
+        let response: APIResponse<[ServerDietPlan]> = try await requestWithBody(
+            endpoint: "list-diet-plans",
+            method: .POST,
+            body: request
+        )
+
+        return response.data ?? []
+    }
+
+    func activateDietPlan(userId: String, planId: String) async throws {
+        let request = ActivateDietPlanRequest(userId: userId)
+
+        let _: APIResponse<EmptyResponse> = try await requestWithBody(
+            endpoint: "diet-plans/\(planId)/activate",
+            method: .POST,
+            body: request
+        )
+    }
+
+    func deleteDietPlan(userId: String, planId: String) async throws {
+        let request = DeleteDietPlanRequest(userId: userId)
+
+        let _: APIResponse<EmptyResponse> = try await requestWithBody(
+            endpoint: "diet-plans/\(planId)",
+            method: .DELETE,
+            body: request
+        )
     }
 }

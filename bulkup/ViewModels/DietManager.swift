@@ -67,29 +67,56 @@ class DietManager: ObservableObject {
         }
     }
     
-    func loadActiveDietPlan(userId: String) async {
+    func loadActiveDietPlan(userId: String, retryCount: Int = 0) async {
+        print("[DietManager] loadActiveDietPlan called for userId: \(userId) (attempt \(retryCount + 1))")
         isLoading = true
         errorMessage = nil
-        
+
         do {
             let response = try await apiService.loadActiveDietPlan(userId: userId)
-            
-            if let serverDietData = response.dietData {
-                // Convertir datos del servidor a modelos locales
+            print("[DietManager] Response received - dietData: \(response.dietData?.count ?? 0) days, planId: \(response.planId ?? "nil")")
+
+            if let serverDietData = response.dietData, !serverDietData.isEmpty {
                 let localDietDays = convertServerDataToLocal(serverDietData)
                 setDietData(localDietDays, planId: response.planId)
+                print("[DietManager] Diet data set: \(localDietDays.count) days")
+            } else if retryCount < 3 {
+                // Retry with delay - backend may not have persisted data yet
+                let delay = UInt64((retryCount + 1) * 2) * 1_000_000_000
+                print("[DietManager] No diet data yet, retrying in \((retryCount + 1) * 2)s...")
+                try? await Task.sleep(nanoseconds: delay)
+                isLoading = false
+                await loadActiveDietPlan(userId: userId, retryCount: retryCount + 1)
+                return
             } else {
-                // No hay plan activo
                 setDietData([])
+                print("[DietManager] No diet data after \(retryCount + 1) attempts")
             }
         } catch {
             errorMessage = error.localizedDescription
-            print("Error loading active diet plan: \(error)")
+            print("[DietManager] Error loading diet plan: \(error)")
         }
-        
+
         isLoading = false
     }
     
+    func clearAllData() {
+        dietData = []
+        dietPlanId = nil
+        errorMessage = nil
+
+        let descriptor = FetchDescriptor<DietDay>()
+        do {
+            let existingDays = try modelContext.fetch(descriptor)
+            for day in existingDays {
+                modelContext.delete(day)
+            }
+            try modelContext.save()
+        } catch {
+            print("Error clearing local diet data: \(error)")
+        }
+    }
+
     private func convertServerDataToLocal(_ serverData: [ServerDietDay]) -> [DietDay] {
         return serverData.map { serverDay in
             let localDay = DietDay(day: serverDay.day)
@@ -120,14 +147,14 @@ class DietManager: ObservableObject {
                     if let trainingDays = serverConditions.trainingDays {
                         localConditions.trainingDays = ConditionalMeal(
                             mealDescription: trainingDays.description,
-                            ingredients: trainingDays.ingredients
+                            ingredients: trainingDays.ingredients ?? []
                         )
                     }
-                    
+
                     if let nonTrainingDays = serverConditions.nonTrainingDays {
                         localConditions.nonTrainingDays = ConditionalMeal(
                             mealDescription: nonTrainingDays.description,
-                            ingredients: nonTrainingDays.ingredients
+                            ingredients: nonTrainingDays.ingredients ?? []
                         )
                     }
                     
