@@ -5,6 +5,7 @@ extension AuthManager {
     private enum TokenKeys {
         static let authToken = "auth_token"
         static let userId = "user_id"
+        static let appleUserId = "apple_user_id"
     }
     
     // MARK: - Token Storage
@@ -26,10 +27,16 @@ extension AuthManager {
         return UserDefaults.standard.string(forKey: TokenKeys.userId)
     }
     
+    func storeAppleUserId(_ appleUserId: String) {
+        UserDefaults.standard.set(appleUserId, forKey: TokenKeys.appleUserId)
+        UserDefaults.standard.synchronize()
+    }
+
     /// Clears the stored authentication data
     func clearStoredAuth() {
         UserDefaults.standard.removeObject(forKey: TokenKeys.authToken)
         UserDefaults.standard.removeObject(forKey: TokenKeys.userId)
+        UserDefaults.standard.removeObject(forKey: TokenKeys.appleUserId)
         UserDefaults.standard.synchronize()
     }
     

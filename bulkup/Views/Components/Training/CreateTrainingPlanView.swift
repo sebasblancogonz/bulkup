@@ -5,12 +5,15 @@
 //  Created by sebastianblancogonz on 23/8/25.
 //
 
+import PhotosUI
 import SwiftUI
 
 struct CreateTrainingPlanView: View {
     @EnvironmentObject var trainingManager: TrainingManager
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
+
+    var initialMethod: CreationMethod?
 
     @State private var planName = ""
     @State private var startDate = Date()
@@ -22,6 +25,8 @@ struct CreateTrainingPlanView: View {
     @State private var errorMessage: String?
     @State private var showingFilePicker = false
     @State private var showingTemplateSelection = false
+    @State private var showingPhotoPicker = false
+    @State private var selectedPhotoItem: PhotosPickerItem?
 
     @ObservedObject private var uploadManager = SmartFileUploadManager.shared
     @State private var isProcessingFile = false
@@ -32,12 +37,14 @@ struct CreateTrainingPlanView: View {
         case manual = "manual"
         case upload = "upload"
         case template = "template"
+        case imageUpload = "imageUpload"
 
         var displayName: String {
             switch self {
             case .manual: return "Crear Manualmente"
             case .upload: return "Subir Archivo"
             case .template: return "Usar Plantilla"
+            case .imageUpload: return "Importar desde Imagen"
             }
         }
 
@@ -46,6 +53,7 @@ struct CreateTrainingPlanView: View {
             case .manual: return "pencil.and.outline"
             case .upload: return "doc.badge.plus"
             case .template: return "doc.on.doc"
+            case .imageUpload: return "photo.on.rectangle"
             }
         }
 
@@ -54,6 +62,7 @@ struct CreateTrainingPlanView: View {
             case .manual: return "Construye tu plan paso a paso"
             case .upload: return "Sube un PDF con tu rutina"
             case .template: return "Comienza con una plantilla"
+            case .imageUpload: return "Sube una foto de tu rutina"
             }
         }
     }
@@ -174,8 +183,24 @@ struct CreateTrainingPlanView: View {
                 createPlanFromTemplate(template)
             }
         }
+        .photosPicker(
+            isPresented: $showingPhotoPicker,
+            selection: $selectedPhotoItem,
+            matching: .images
+        )
+        .onChange(of: selectedPhotoItem) { _, newItem in
+            guard let newItem else { return }
+            Task {
+                if let data = try? await newItem.loadTransferable(type: Data.self) {
+                    await processTrainingPlanImage(data)
+                }
+            }
+        }
         .onAppear {
             setupNotificationObserver()
+            if let initial = initialMethod {
+                creationMethod = initial
+            }
         }
         .onDisappear {
             cleanupNotifications()
@@ -235,12 +260,13 @@ struct CreateTrainingPlanView: View {
 
         switch creationMethod {
         case .manual:
-            // For now, create an empty plan - you'd implement a manual creation flow
             createEmptyPlan()
         case .upload:
             showingFilePicker = true
         case .template:
             showingTemplateSelection = true
+        case .imageUpload:
+            showingPhotoPicker = true
         }
     }
 
@@ -457,6 +483,121 @@ struct CreateTrainingPlanView: View {
         let (responseData, response) = try await URLSession.shared.data(
             for: request
         )
+
+        guard let httpResponse = response as? HTTPURLResponse,
+            httpResponse.statusCode == 200
+        else {
+            throw FileUploadError.serverError(
+                (response as? HTTPURLResponse)?.statusCode ?? 0
+            )
+        }
+
+        let uploadResponse = try JSONDecoder().decode(
+            FileProcessingResponse.self,
+            from: responseData
+        )
+
+        guard uploadResponse.success else {
+            throw FileUploadError.uploadFailed(uploadResponse.message)
+        }
+
+        return uploadResponse
+    }
+
+    @MainActor
+    private func processTrainingPlanImage(_ imageData: Data) {
+        guard let userId = authManager.user?.id else {
+            errorMessage = "Usuario no autenticado"
+            return
+        }
+
+        isProcessingFile = true
+        errorMessage = nil
+
+        GotifyWebSocketManager.shared.connect(userId: userId)
+
+        Task {
+            do {
+                let fileName = planName.isEmpty ? "training_plan.jpg" : "\(planName).jpg"
+                let response = try await uploadImageToServer(
+                    imageData: imageData,
+                    fileName: fileName,
+                    userId: userId
+                )
+                processId = response.processId
+            } catch {
+                await MainActor.run {
+                    isProcessingFile = false
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func uploadImageToServer(
+        imageData: Data,
+        fileName: String,
+        userId: String
+    ) async throws -> FileProcessingResponse {
+        guard let url = URL(string: "\(APIConfig.baseURL)/process-file-smart") else {
+            throw FileUploadError.invalidURL
+        }
+
+        let boundary = UUID().uuidString
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
+
+        var data = Data()
+
+        // userId
+        data.append("--\(boundary)\r\n".data(using: .utf8)!)
+        data.append(
+            "Content-Disposition: form-data; name=\"userId\"\r\n\r\n".data(using: .utf8)!
+        )
+        data.append("\(userId)\r\n".data(using: .utf8)!)
+
+        // planName
+        data.append("--\(boundary)\r\n".data(using: .utf8)!)
+        data.append(
+            "Content-Disposition: form-data; name=\"planName\"\r\n\r\n".data(using: .utf8)!
+        )
+        data.append("\(fileName)\r\n".data(using: .utf8)!)
+
+        // dates if needed
+        if useCustomDates {
+            let formatter = ISO8601DateFormatter()
+
+            data.append("--\(boundary)\r\n".data(using: .utf8)!)
+            data.append(
+                "Content-Disposition: form-data; name=\"startDate\"\r\n\r\n".data(using: .utf8)!
+            )
+            data.append("\(formatter.string(from: startDate))\r\n".data(using: .utf8)!)
+
+            data.append("--\(boundary)\r\n".data(using: .utf8)!)
+            data.append(
+                "Content-Disposition: form-data; name=\"endDate\"\r\n\r\n".data(using: .utf8)!
+            )
+            data.append("\(formatter.string(from: endDate))\r\n".data(using: .utf8)!)
+        }
+
+        // image file
+        data.append("--\(boundary)\r\n".data(using: .utf8)!)
+        data.append(
+            "Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n"
+                .data(using: .utf8)!
+        )
+        data.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        data.append(imageData)
+        data.append("\r\n".data(using: .utf8)!)
+        data.append("--\(boundary)--\r\n".data(using: .utf8)!)
+
+        request.httpBody = data
+
+        let (responseData, response) = try await URLSession.shared.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse,
             httpResponse.statusCode == 200

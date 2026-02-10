@@ -126,6 +126,12 @@ struct RegisterRequest: Codable {
     }
 }
 
+struct AppleSignInRequest: Codable {
+    let identityToken: String
+    let firstName: String?
+    let lastName: String?
+}
+
 struct UpdateProfileRequest: Codable {
     let name: String?
     let dateOfBirth: Date?
@@ -560,4 +566,26 @@ struct ActivateDietPlanRequest: Codable {
 
 struct DeleteDietPlanRequest: Codable {
     let userId: String
+}
+
+// MARK: - Shared Plan Models
+
+struct SharePlanRequest: Codable {
+    let userId: String
+    let planId: String
+}
+
+struct SharePlanResponse: Codable {
+    let code: String
+    let expiresAt: Date
+}
+
+struct ImportSharedPlanRequest: Codable {
+    let userId: String
+    let code: String
+}
+
+struct ImportSharedPlanResponse: Codable {
+    let planId: String
+    let filename: String
 }

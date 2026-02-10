@@ -4,6 +4,7 @@
 //
 //  Created by sebastianblancogonz on 17/8/25.
 //
+import AuthenticationServices
 import SwiftUI
 import SwiftData
 
@@ -94,6 +95,31 @@ struct LoginContentView: View {
                         .foregroundColor(.orange)
                 }
                 .padding(.top, 8)
+
+                // Divider
+                HStack {
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.gray.opacity(0.3))
+                    Text("o")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.gray.opacity(0.3))
+                }
+                .padding(.horizontal, 24)
+
+                // Sign in with Apple
+                SignInWithAppleButton(.signIn) { request in
+                    request.requestedScopes = [.fullName, .email]
+                } onCompletion: { result in
+                    handleAppleSignIn(result: result)
+                }
+                .signInWithAppleButtonStyle(.black)
+                .frame(height: 56)
+                .cornerRadius(16)
+                .padding(.horizontal, 24)
             }
             
             Spacer()
@@ -111,7 +137,7 @@ struct LoginContentView: View {
     
     private func handleAuthAction() {
         errorMessage = nil
-        
+
         Task {
             do {
                 if isRegistering {
@@ -122,6 +148,48 @@ struct LoginContentView: View {
             } catch {
                 errorMessage = error.localizedDescription
             }
+        }
+    }
+
+    private func handleAppleSignIn(result: Result<ASAuthorization, Error>) {
+        errorMessage = nil
+
+        switch result {
+        case .success(let authorization):
+            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+                errorMessage = "Error: credencial inválida"
+                return
+            }
+
+            guard let identityTokenData = credential.identityToken,
+                  let identityToken = String(data: identityTokenData, encoding: .utf8) else {
+                errorMessage = "Error: no se pudo obtener el token de identidad"
+                return
+            }
+
+            let firstName = credential.fullName?.givenName
+            let lastName = credential.fullName?.familyName
+            let appleUserID = credential.user
+
+            Task {
+                do {
+                    try await authManager.signInWithApple(
+                        identityToken: identityToken,
+                        firstName: firstName,
+                        lastName: lastName
+                    )
+                    authManager.storeAppleUserId(appleUserID)
+                } catch {
+                    errorMessage = error.localizedDescription
+                }
+            }
+
+        case .failure(let error):
+            if let authError = error as? ASAuthorizationError,
+               authError.code == .canceled {
+                return
+            }
+            errorMessage = "Error al iniciar sesión con Apple: \(error.localizedDescription)"
         }
     }
 }

@@ -4,15 +4,25 @@
 //
 //  Created by sebastianblancogonz on 17/8/25.
 //
+import AuthenticationServices
 import SwiftUI
 import SwiftData
 
 @main
 struct BulkUp: App {
-    
+
     init() {
-        // La validación va en el inicializador
         APIConfig.validateConfiguration()
+
+        NotificationCenter.default.addObserver(
+            forName: ASAuthorizationAppleIDProvider.credentialRevokedNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                AuthManager.shared.logout()
+            }
+        }
     }
     
     var body: some Scene {

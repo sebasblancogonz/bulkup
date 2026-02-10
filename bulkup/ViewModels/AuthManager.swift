@@ -5,6 +5,7 @@
 //  Created by sebastianblancogonz on 17/8/25.
 //
 
+import AuthenticationServices
 import Foundation
 import SwiftData
 
@@ -113,6 +114,52 @@ class AuthManager: ObservableObject {
         NotificationCenter.default.post(name: .userDidLogin, object: newUser)
     }
 
+    func signInWithApple(identityToken: String, firstName: String?, lastName: String?) async throws {
+        guard !isLoading else { return }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        let response = try await apiService.appleSignIn(
+            identityToken: identityToken,
+            firstName: firstName,
+            lastName: lastName
+        )
+
+        storeToken(response.token, userId: response.userId)
+
+        let descriptor = FetchDescriptor<User>()
+        let existingUsers = try modelContext.fetch(descriptor)
+        for user in existingUsers {
+            modelContext.delete(user)
+        }
+
+        let newUser = User(
+            id: response.userId,
+            email: response.email,
+            name: response.name,
+            token: response.token
+        )
+
+        newUser.dateOfBirth = response.dateOfBirth
+        newUser.profileImageURL = response.profileImageURL
+
+        modelContext.insert(newUser)
+        try modelContext.save()
+
+        self.user = newUser
+        self.isAuthenticated = true
+
+        if !isLoadingUserData {
+            self.isLoadingUserData = true
+            await loadAllUserData(userId: newUser.id)
+            await updateUserSubscriptionStatus()
+            self.isLoadingUserData = false
+        }
+
+        NotificationCenter.default.post(name: .userDidLogin, object: newUser)
+    }
+
     func logout() {
         print("🚪 Iniciando logout...")
 
@@ -166,6 +213,8 @@ class AuthManager: ObservableObject {
                     self.user = storedUser
                     self.isAuthenticated = true
 
+                    checkAppleCredentialState()
+
                     // Intentar sincronizar con el perfil del servidor
                     Task {
                         await syncUserProfile()
@@ -215,6 +264,31 @@ class AuthManager: ObservableObject {
         }
 
         print("🎉 Todos los datos del usuario cargados")
+    }
+
+    // MARK: - Apple Credential State
+
+    func checkAppleCredentialState() {
+        guard let appleUserID = UserDefaults.standard.string(forKey: "apple_user_id") else {
+            return
+        }
+
+        let provider = ASAuthorizationAppleIDProvider()
+        provider.getCredentialState(forUserID: appleUserID) { state, _ in
+            DispatchQueue.main.async {
+                switch state {
+                case .revoked, .notFound:
+                    print("Apple credential invalid - logging out")
+                    self.logout()
+                case .authorized:
+                    break
+                case .transferred:
+                    break
+                @unknown default:
+                    break
+                }
+            }
+        }
     }
 
     // MARK: - Profile Management

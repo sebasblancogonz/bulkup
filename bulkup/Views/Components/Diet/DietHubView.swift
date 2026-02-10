@@ -67,20 +67,7 @@ struct DietHubView: View {
                 }
             }
         }
-        .navigationTitle("Dieta")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            if selectedView != .active {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button {
-                        showingCreateDietPlan = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(.green)
-                    }
-                }
-            }
-        }
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showingCreateDietPlan) {
             CreateDietPlanView()
                 .environmentObject(dietManager)
@@ -97,12 +84,12 @@ struct DietHubView: View {
                     }
                 } label: {
                     VStack(spacing: 8) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             Image(systemName: section.icon)
-                                .font(.system(size: 16, weight: .medium))
+                                .font(.system(size: 14, weight: .semibold))
 
                             Text(section.displayName)
-                                .font(.system(size: 16, weight: .medium))
+                                .font(.system(size: 15, weight: .semibold))
                         }
                         .foregroundColor(
                             selectedView == section ? .green : .secondary
@@ -122,10 +109,22 @@ struct DietHubView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
+
+            if selectedView == .library {
+                Button {
+                    showingCreateDietPlan = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundColor(.green)
+                }
+                .padding(.trailing, 4)
+                .transition(.opacity.combined(with: .scale))
+            }
         }
         .padding(.horizontal)
         .padding(.bottom, 1)
-        .padding(.top, 8)
+        .padding(.top, 12)
         .background(Color(.systemBackground))
         .overlay(
             Rectangle()

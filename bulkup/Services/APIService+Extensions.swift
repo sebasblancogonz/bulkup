@@ -25,6 +25,26 @@ extension APIService {
         return authData
     }
 
+    func appleSignIn(identityToken: String, firstName: String?, lastName: String?) async throws -> AuthResponse {
+        let request = AppleSignInRequest(
+            identityToken: identityToken,
+            firstName: firstName,
+            lastName: lastName
+        )
+
+        let response: APIResponse<AuthResponse> = try await requestWithBody(
+            endpoint: "auth/apple",
+            method: .POST,
+            body: request
+        )
+
+        guard let authData = response.data else {
+            throw APIError.unauthorized
+        }
+
+        return authData
+    }
+
     // Función register actualizada para incluir dateOfBirth
     func register(
         email: String,
@@ -209,6 +229,40 @@ extension APIService {
             method: .DELETE,
             body: request
         )
+    }
+
+    // MARK: - Shared Plans
+
+    func sharePlan(userId: String, planId: String) async throws -> SharePlanResponse {
+        let request = SharePlanRequest(userId: userId, planId: planId)
+
+        let response: APIResponse<SharePlanResponse> = try await requestWithBody(
+            endpoint: "share-plan",
+            method: .POST,
+            body: request
+        )
+
+        guard let data = response.data else {
+            throw APIError.noData
+        }
+
+        return data
+    }
+
+    func importSharedPlan(userId: String, code: String) async throws -> ImportSharedPlanResponse {
+        let request = ImportSharedPlanRequest(userId: userId, code: code)
+
+        let response: APIResponse<ImportSharedPlanResponse> = try await requestWithBody(
+            endpoint: "import-shared-plan",
+            method: .POST,
+            body: request
+        )
+
+        guard let data = response.data else {
+            throw APIError.noData
+        }
+
+        return data
     }
 
     // MARK: - Profile Management
