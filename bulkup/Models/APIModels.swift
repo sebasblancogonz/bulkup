@@ -27,7 +27,7 @@ struct APIConfig {
         #if DEBUG
             return "http://localhost:8080"
         #else
-            return "https://weight-tracker-backend.tme3al.easypanel.host"
+            return "https://api.getbulkup.com"
         #endif
     }
 
