@@ -117,7 +117,7 @@ struct UserProfileView: View {
         VStack(spacing: 16) {
             // Avatar
             ZStack(alignment: .bottomTrailing) {
-                if let urlString = authManager.user?.profileImageURL,
+                if let urlString = authManager.user?.safeProfileImageURL,
                     let url = URL(string: urlString)
                 {
                     CachedAsyncImage(

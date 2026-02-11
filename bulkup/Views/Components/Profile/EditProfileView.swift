@@ -271,7 +271,7 @@ struct EditProfileView: View {
                 .aspectRatio(contentMode: .fill)
                 .frame(width: 120, height: 120)
                 .clipShape(Circle())
-        } else if let imageURL = profileManager.profile?.profileImageURL,
+        } else if let imageURL = profileManager.profile?.profileImageURL?.replacingOccurrences(of: "http://", with: "https://"),
                   let url = URL(string: imageURL) {
             CachedAsyncImage(
                 url: url,

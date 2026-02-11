@@ -44,20 +44,10 @@ struct ExerciseCardView: View {
     }
     
     private var normalizedDayName: String {
-        let dayMapping: [String: String] = [
-            "lunes": "lunes",
-            "martes": "martes",
-            "miércoles": "miercoles",
-            "jueves": "jueves",
-            "viernes": "viernes",
-            "sábado": "sabado",
-            "domingo": "domingo"
-        ]
-        
-        let lowercased = dayName.lowercased()
-        return dayMapping[lowercased] ?? dayName.lowercased()
+        dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
     }
-    
+
     private var completedSets: Int {
         trainingManager.getCompletedSets(
             day: normalizedDayName,
@@ -119,7 +109,7 @@ struct ExerciseCardView: View {
                         Text(exercise.name)
                             .font(.headline)
                             .foregroundColor(.primary)
-                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
                         
                         HStack(spacing: 12) {
                             // Sets and reps
@@ -327,20 +317,10 @@ struct CompactWeightSetView: View {
     @FocusState private var isFocused: Bool
     
     private var normalizedDayName: String {
-        let dayMapping: [String: String] = [
-            "lunes": "lunes",
-            "martes": "martes",
-            "miércoles": "miercoles",
-            "jueves": "jueves",
-            "viernes": "viernes",
-            "sábado": "sabado",
-            "domingo": "domingo"
-        ]
-        
-        let lowercased = dayName.lowercased()
-        return dayMapping[lowercased] ?? dayName.lowercased()
+        dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
     }
-    
+
     private var currentWeekString: String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"

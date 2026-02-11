@@ -18,8 +18,12 @@ extension APIService {
             body: request
         )
 
+        if !response.success {
+            throw APIError.networkError(response.error ?? "Error al iniciar sesión")
+        }
+
         guard let authData = response.data else {
-            throw APIError.unauthorized
+            throw APIError.noData
         }
 
         return authData
@@ -38,8 +42,12 @@ extension APIService {
             body: request
         )
 
+        if !response.success {
+            throw APIError.networkError(response.error ?? "Error al iniciar sesión con Apple")
+        }
+
         guard let authData = response.data else {
-            throw APIError.unauthorized
+            throw APIError.noData
         }
 
         return authData
@@ -64,6 +72,10 @@ extension APIService {
             method: .POST,
             body: request
         )
+
+        if !response.success {
+            throw APIError.networkError(response.error ?? "Error al registrar usuario")
+        }
 
         guard let authData = response.data else {
             throw APIError.noData
@@ -397,7 +409,8 @@ extension APIService {
             ZiplineUploadResponse.self,
             from: data
         )
-        return uploadResponse.files[0].url
+        let imageUrl = uploadResponse.files[0].url
+        return imageUrl.replacingOccurrences(of: "http://", with: "https://")
     }
 
     // MARK: - Diet Plan Management

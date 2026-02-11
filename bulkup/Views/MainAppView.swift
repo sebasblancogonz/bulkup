@@ -259,7 +259,7 @@ struct MainAppView: View {
                     VStack(spacing: 4) {
 
                         // Avatar or person icon
-                        if let urlString = authManager.user?.profileImageURL,
+                        if let urlString = authManager.user?.safeProfileImageURL,
                             let url = URL(string: urlString)
                         {
                             CachedAsyncImage(

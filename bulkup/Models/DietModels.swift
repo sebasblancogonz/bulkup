@@ -144,19 +144,23 @@ class User {
         self.token = token
     }
     
+    var safeProfileImageURL: String? {
+        profileImageURL?.replacingOccurrences(of: "http://", with: "https://")
+    }
+
     // Método helper para actualizar desde ProfileResponse
     func updateFromProfile(_ profile: ProfileResponse) {
         self.name = profile.name
         self.dateOfBirth = profile.dateOfBirth
-        self.profileImageURL = profile.profileImageURL
+        self.profileImageURL = profile.profileImageURL?.replacingOccurrences(of: "http://", with: "https://")
         self.updatedAt = profile.updatedAt
     }
-    
+
     // Método helper para actualizar desde AuthResponse (login/register)
     func updateFromAuthResponse(_ auth: AuthResponse) {
         self.name = auth.name
         self.dateOfBirth = auth.dateOfBirth
-        self.profileImageURL = auth.profileImageURL
+        self.profileImageURL = auth.profileImageURL?.replacingOccurrences(of: "http://", with: "https://")
         self.token = auth.token
         self.updatedAt = Date()
     }

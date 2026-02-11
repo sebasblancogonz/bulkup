@@ -20,7 +20,7 @@ struct ProfileView: View {
             VStack(spacing: 24) {
                 // Avatar grande
                 VStack(spacing: 16) {
-                    if let urlString = authManager.user?.profileImageURL,
+                    if let urlString = authManager.user?.safeProfileImageURL,
                        let url = URL(string: urlString) {
                         
                         CachedAsyncImage(url: url) { image, colors in

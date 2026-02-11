@@ -61,24 +61,12 @@ struct TrainingView: View {
     // Función para mapear fecha del calendario a día de entrenamiento
     private func getTrainingDayForDate(_ date: Date) -> String? {
         let dayName = dayFormatter.string(from: date).lowercased()
-
-        let dayMapping: [String: String] = [
-            "lunes": "lunes",
-            "martes": "martes",
-            "miércoles": "miercoles",
-            "jueves": "jueves",
-            "viernes": "viernes",
-            "sábado": "sabado",
-            "domingo": "domingo",
-        ]
-
-        let mappedDay = dayMapping[dayName]
+            .folding(options: .diacriticInsensitive, locale: .current)
 
         return trainingManager.trainingData.first { trainingDay in
-            trainingDay.day.lowercased() == mappedDay?.lowercased()
-                || trainingDay.day.lowercased().contains(
-                    mappedDay?.lowercased() ?? ""
-                )
+            let normalized = trainingDay.day.lowercased()
+                .folding(options: .diacriticInsensitive, locale: .current)
+            return normalized == dayName || normalized.contains(dayName)
         }?.day
     }
 
@@ -496,14 +484,16 @@ struct TrainingView: View {
             "miercoles": 3,
             "jueves": 4,
             "viernes": 5,
-            "sábado": 6,
+            "sabado": 6,
             "domingo": 7,
         ]
 
         let today = Date()
         let calendar = Calendar.current
 
-        guard let targetWeekday = dayMapping[dayName.lowercased()] else {
+        let normalized = dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+        guard let targetWeekday = dayMapping[normalized] else {
             return today
         }
 
