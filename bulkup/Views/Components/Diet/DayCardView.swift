@@ -53,6 +53,7 @@ struct DayCardView: View {
                 }
                 .padding()
                 .background(Color(.systemGray6))
+                .contentShape(Rectangle())
             }
             .buttonStyle(PlainButtonStyle())
             

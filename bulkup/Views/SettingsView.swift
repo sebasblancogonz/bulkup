@@ -504,6 +504,7 @@ struct SettingsRow: View {
                     .foregroundColor(.secondary)
                     .font(.caption)
             }
+            .contentShape(Rectangle())
         }
     }
 }

@@ -145,6 +145,7 @@ struct ExerciseExplorerView: View {
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(8)
+                        .contentShape(Rectangle())
                 }
             }
         }
@@ -185,6 +186,7 @@ struct ExerciseExplorerView: View {
                         : .white
                 )
                 .cornerRadius(8)
+                .contentShape(Rectangle())
             }
             .disabled(exerciseExplorerManager.currentPage == 1)
             
@@ -216,6 +218,7 @@ struct ExerciseExplorerView: View {
                         : .white
                 )
                 .cornerRadius(8)
+                .contentShape(Rectangle())
             }
             .disabled(exerciseExplorerManager.currentPage == exerciseExplorerManager.totalPages)
         }
@@ -295,6 +298,7 @@ struct FilterSheet: View {
                                 Spacer()
                             }
                             .foregroundColor(.red)
+                            .contentShape(Rectangle())
                         }
                         .padding(.top, 8)
                     }

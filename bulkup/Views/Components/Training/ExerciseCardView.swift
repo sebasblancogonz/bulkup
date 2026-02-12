@@ -433,6 +433,7 @@ struct CompactWeightSetView: View {
                     .padding(.horizontal, 8)
                     .background(Color.blue.opacity(0.1))
                     .cornerRadius(4)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(PlainButtonStyle())
             }

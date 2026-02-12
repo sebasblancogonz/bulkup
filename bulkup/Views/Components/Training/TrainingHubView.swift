@@ -130,6 +130,7 @@ struct TrainingHubView: View {
                                 value: selectedView
                             )
                     }
+                    .contentShape(Rectangle())
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -259,6 +260,7 @@ struct TrainingHubView: View {
                     .foregroundColor(.white)
                     .cornerRadius(12)
                     .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .contentShape(Rectangle())
                 }
 
                 Button {
@@ -276,6 +278,7 @@ struct TrainingHubView: View {
                     .background(Color(.systemGray6))
                     .foregroundColor(.primary)
                     .cornerRadius(12)
+                    .contentShape(Rectangle())
                 }
 
                 Button {
@@ -293,6 +296,7 @@ struct TrainingHubView: View {
                     .background(Color(.systemGray6))
                     .foregroundColor(.primary)
                     .cornerRadius(12)
+                    .contentShape(Rectangle())
                 }
             }
             .padding(.horizontal, 32)
@@ -694,6 +698,7 @@ struct TrainingPlanCard: View {
                 .background(Color.blue.opacity(0.1))
                 .foregroundColor(.blue)
                 .cornerRadius(8)
+                .contentShape(Rectangle())
 
                 if !plan.isActive {
                     Button("Activar") {
@@ -705,6 +710,7 @@ struct TrainingPlanCard: View {
                     .background(Color.green)
                     .foregroundColor(.white)
                     .cornerRadius(8)
+                    .contentShape(Rectangle())
                 }
             }
         }

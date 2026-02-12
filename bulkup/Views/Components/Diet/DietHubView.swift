@@ -106,6 +106,7 @@ struct DietHubView: View {
                                 value: selectedView
                             )
                     }
+                    .contentShape(Rectangle())
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -199,6 +200,7 @@ struct DietHubView: View {
                     .foregroundColor(.white)
                     .cornerRadius(12)
                     .shadow(color: .green.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .contentShape(Rectangle())
                 }
 
                 Button {
@@ -216,6 +218,7 @@ struct DietHubView: View {
                     .background(Color(.systemGray6))
                     .foregroundColor(.primary)
                     .cornerRadius(12)
+                    .contentShape(Rectangle())
                 }
             }
             .padding(.horizontal, 32)
@@ -547,6 +550,7 @@ struct DietPlanCard: View {
                 .background(Color.green)
                 .foregroundColor(.white)
                 .cornerRadius(8)
+                .contentShape(Rectangle())
             }
         }
         .padding()

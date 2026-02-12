@@ -52,6 +52,7 @@ struct ProfileMenuItem: View {
             .padding(.horizontal, 16)
             .background(Color(.systemGray6))
             .cornerRadius(12)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

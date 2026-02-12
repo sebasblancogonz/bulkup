@@ -302,6 +302,7 @@ struct SubscriptionView: View {
                     )
                     .cornerRadius(16)
                     .shadow(color: .purple.opacity(0.3), radius: 10, x: 0, y: 5)
+                    .contentShape(Rectangle())
                 }
             }
         }
@@ -482,6 +483,7 @@ struct SubscriptionPlanCard: View {
                 x: 0,
                 y: 5
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
     }

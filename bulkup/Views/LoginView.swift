@@ -82,6 +82,7 @@ struct LoginContentView: View {
                     .foregroundColor(.white)
                     .cornerRadius(16)
                     .shadow(color: Color.orange.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .contentShape(Rectangle())
                 }
                 .disabled(authManager.isLoading || email.isEmpty || password.isEmpty || (isRegistering && name.isEmpty))
                 .opacity((email.isEmpty || password.isEmpty || (isRegistering && name.isEmpty)) ? 0.6 : 1)
@@ -93,8 +94,10 @@ struct LoginContentView: View {
                         .font(.footnote)
                         .fontWeight(.medium)
                         .foregroundColor(.orange)
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
                 }
-                .padding(.top, 8)
 
                 // Divider
                 HStack {

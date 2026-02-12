@@ -65,6 +65,7 @@ struct TabButton: View {
                 .spring(response: 0.3, dampingFraction: 0.7),
                 value: isSelected
             )
+            .contentShape(Rectangle())
         }
         .disabled(isDisabled)
         .buttonStyle(PlainButtonStyle())

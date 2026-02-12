@@ -18,6 +18,7 @@ struct CreateDietPlanView: View {
     @State private var errorMessage: String?
     @State private var processId: String?
     @State private var notificationObserver: NSObjectProtocol?
+    @State private var showingErrorAlert = false
 
     @ObservedObject private var uploadManager = SmartFileUploadManager.shared
 
@@ -161,8 +162,16 @@ struct CreateDietPlanView: View {
         ) { result in
             handleFileSelection(result)
         }
+        .alert("Error al procesar", isPresented: $showingErrorAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage ?? "Error desconocido")
+        }
         .onAppear {
             setupNotificationObserver()
+            if let userId = authManager.user?.id {
+                GotifyWebSocketManager.shared.connect(userId: userId)
+            }
         }
         .onDisappear {
             cleanupNotifications()
@@ -243,9 +252,8 @@ struct CreateDietPlanView: View {
 
         isProcessingFile = true
         errorMessage = nil
-
-        // Conectar WebSocket para recibir notificaciones
-        GotifyWebSocketManager.shared.connect(userId: userId)
+        uploadManager.processingProgress = "Subiendo archivo..."
+        uploadManager.fileName = url.lastPathComponent
 
         Task {
             do {
@@ -412,6 +420,7 @@ struct CreateDietPlanView: View {
     private func handleProcessingFailed(error: String?) {
         isProcessingFile = false
         errorMessage = error ?? "Error al procesar el archivo"
+        showingErrorAlert = true
         uploadManager.reset()
     }
 

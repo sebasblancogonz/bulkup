@@ -21,18 +21,19 @@ struct FilterSection: View {
                     Text(title)
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                    
+
                     if !selected.isEmpty {
                         Text("(\(selected.count))")
                             .font(.caption)
                             .foregroundColor(.blue)
                     }
-                    
+
                     Spacer()
-                    
+
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.caption)
                 }
+                .contentShape(Rectangle())
             }
             .foregroundColor(.primary)
             
@@ -51,12 +52,13 @@ struct FilterSection: View {
                             HStack {
                                 Image(systemName: selected.contains(option) ? "checkmark.square.fill" : "square")
                                     .foregroundColor(selected.contains(option) ? .blue : .secondary)
-                                
+
                                 Text(translateOption(option))
                                     .font(.caption)
-                                
+
                                 Spacer()
                             }
+                            .contentShape(Rectangle())
                         }
                         .foregroundColor(.primary)
                     }

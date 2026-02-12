@@ -337,6 +337,7 @@ struct UserProfileView: View {
                 .padding()
                 .background(Color.orange.opacity(0.1))
                 .cornerRadius(12)
+                .contentShape(Rectangle())
             }
 
             Button(action: { showingDeleteAccountAlert = true }) {
@@ -349,6 +350,7 @@ struct UserProfileView: View {
                 .padding()
                 .background(Color.red.opacity(0.1))
                 .cornerRadius(12)
+                .contentShape(Rectangle())
             }
         }
         .padding(.vertical, 8)
@@ -630,6 +632,7 @@ struct MenuRow: View {
             .padding()
             .background(Color(.systemGray6))
             .cornerRadius(12)
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
     }

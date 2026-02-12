@@ -32,6 +32,7 @@ struct CreateTrainingPlanView: View {
     @State private var isProcessingFile = false
     @State private var processId: String?
     @State private var notificationObserver: NSObjectProtocol?
+    @State private var showingErrorAlert = false
 
     enum CreationMethod: String, CaseIterable {
         case manual = "manual"
@@ -196,8 +197,16 @@ struct CreateTrainingPlanView: View {
                 }
             }
         }
+        .alert("Error al procesar", isPresented: $showingErrorAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage ?? "Error desconocido")
+        }
         .onAppear {
             setupNotificationObserver()
+            if let userId = authManager.user?.id {
+                GotifyWebSocketManager.shared.connect(userId: userId)
+            }
             if let initial = initialMethod {
                 creationMethod = initial
             }
@@ -366,13 +375,11 @@ struct CreateTrainingPlanView: View {
 
         isProcessingFile = true
         errorMessage = nil
-
-        // Conectar WebSocket para recibir notificaciones
-        GotifyWebSocketManager.shared.connect(userId: userId)
+        uploadManager.processingProgress = "Subiendo archivo..."
+        uploadManager.fileName = url.lastPathComponent
 
         Task {
             do {
-                // Subir archivo al servidor
                 let response = try await uploadFileToServer(
                     fileURL: url,
                     fileName: planName.isEmpty
@@ -381,9 +388,6 @@ struct CreateTrainingPlanView: View {
                 )
 
                 processId = response.processId
-
-                // El procesamiento continúa de forma asíncrona
-                // Las notificaciones llegarán vía WebSocket
 
             } catch {
                 await MainActor.run {
@@ -513,8 +517,8 @@ struct CreateTrainingPlanView: View {
 
         isProcessingFile = true
         errorMessage = nil
-
-        GotifyWebSocketManager.shared.connect(userId: userId)
+        uploadManager.processingProgress = "Subiendo imagen..."
+        uploadManager.fileName = planName.isEmpty ? "training_plan.jpg" : "\(planName).jpg"
 
         Task {
             do {
@@ -680,6 +684,7 @@ struct CreateTrainingPlanView: View {
     private func handleProcessingFailed(error: String?) {
         isProcessingFile = false
         errorMessage = error ?? "Error al procesar el archivo"
+        showingErrorAlert = true
         uploadManager.reset()
     }
 
@@ -746,6 +751,7 @@ struct CreationMethodCard: View {
                             .fill(Color(.systemBackground))
                     )
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
     }

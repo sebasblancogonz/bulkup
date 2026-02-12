@@ -95,6 +95,7 @@ private struct TemplateCard: View {
                         .foregroundColor(.secondary)
                 }
                 .padding()
+                .contentShape(Rectangle())
             }
             .buttonStyle(PlainButtonStyle())
 
@@ -157,6 +158,7 @@ private struct TemplateCard: View {
                         .padding(.vertical, 12)
                         .background(template.color)
                         .cornerRadius(10)
+                        .contentShape(Rectangle())
                     }
                 }
                 .padding()

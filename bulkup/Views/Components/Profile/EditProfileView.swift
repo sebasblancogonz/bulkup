@@ -86,8 +86,9 @@ struct EditProfileView: View {
                                 .padding()
                                 .background(Color(.systemGray6))
                                 .cornerRadius(8)
+                                .contentShape(Rectangle())
                             }
-                            
+
                             if let age = profileManager.calculateAge(from: dateOfBirth) {
                                 Text("\(age) años")
                                     .font(.caption)
