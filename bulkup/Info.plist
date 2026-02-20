@@ -12,6 +12,8 @@
 	<string>$(ENVIRONMENT)</string>
 	<key>GOTIFY_CLIENT_TOKEN</key>
 	<string>$(GOTIFY_CLIENT_TOKEN)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
     <key>NSAppTransportSecurity</key>
     <dict>
       <key>NSExceptionDomains</key>

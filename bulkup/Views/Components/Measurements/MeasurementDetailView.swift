@@ -18,6 +18,9 @@ struct MeasurementDetailView: View {
     @State private var bodyComposition: BodyComposition?
     @State private var isCalculatingComposition = false
     @State private var showingDeleteConfirmation = false
+    @State private var showingBodyFatOverride = false
+    @State private var bodyFatOverrideText = ""
+    @State private var isSavingOverride = false
     
     var body: some View {
         NavigationView {
@@ -216,44 +219,71 @@ struct MeasurementDetailView: View {
                 Text("Composición Corporal")
                     .font(.headline)
                     .fontWeight(.bold)
-                
+
                 Spacer()
-                
-                if isCalculatingComposition {
+
+                if isCalculatingComposition || isSavingOverride {
                     ProgressView()
                         .scaleEffect(0.8)
                 }
             }
-            
+
             if let composition = bodyComposition {
                 LazyVGrid(columns: [
                     GridItem(.flexible()),
                     GridItem(.flexible())
                 ], spacing: 12) {
-                    CompositionCard(
-                        title: "% Grasa",
-                        value: String(format: "%.1f%%", composition.porcentajeGrasa),
-                        color: .orange
-                    )
-                    
+                    // Body fat card with edit button
+                    Button {
+                        bodyFatOverrideText = String(format: "%.1f", composition.porcentajeGrasa)
+                        showingBodyFatOverride = true
+                    } label: {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("% Grasa")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Image(systemName: "pencil")
+                                    .font(.caption2)
+                                    .foregroundColor(.orange)
+                            }
+
+                            Text(String(format: "%.1f%%", composition.porcentajeGrasa))
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundColor(.orange)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(10)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
                     CompositionCard(
                         title: "Masa Muscular",
                         value: String(format: "%.1f kg", composition.masaMuscular),
                         color: .green
                     )
-                    
+
                     CompositionCard(
                         title: "Masa Magra",
                         value: String(format: "%.1f kg", composition.masaMagra),
                         color: .blue
                     )
-                    
+
                     CompositionCard(
                         title: "Agua Corporal",
                         value: String(format: "%.1f kg", composition.aguaCorporal),
                         color: .cyan
                     )
                 }
+
+                Text("Pulsa en % Grasa para corregirlo con tu dato real")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             } else if !isCalculatingComposition {
                 Button("Calcular Composición Corporal") {
                     Task {
@@ -262,6 +292,16 @@ struct MeasurementDetailView: View {
                 }
                 .buttonStyle(SecondaryButtonStyle())
             }
+        }
+        .alert("Modificar % Grasa Corporal", isPresented: $showingBodyFatOverride) {
+            TextField("% Grasa", text: $bodyFatOverrideText)
+                .keyboardType(.decimalPad)
+            Button("Cancelar", role: .cancel) { }
+            Button("Guardar") {
+                saveBodyFatOverride()
+            }
+        } message: {
+            Text("Introduce el porcentaje de grasa proporcionado por tu nutricionista")
         }
     }
     
@@ -358,6 +398,25 @@ struct MeasurementDetailView: View {
         let result = await measurementsManager.calculateBodyComposition(measurementId: measurementId)
         bodyComposition = result
         isCalculatingComposition = false
+    }
+
+    private func saveBodyFatOverride() {
+        let normalized = bodyFatOverrideText.replacingOccurrences(of: ",", with: ".")
+        guard let measurementId = measurement.id,
+              let percentage = Double(normalized),
+              percentage > 0, percentage < 60 else { return }
+
+        isSavingOverride = true
+        Task {
+            let result = await measurementsManager.overrideBodyFat(
+                measurementId: measurementId,
+                bodyFatPercentage: percentage
+            )
+            if let result {
+                bodyComposition = result
+            }
+            isSavingOverride = false
+        }
     }
     
     private func deleteMeasurement() {

@@ -216,4 +216,24 @@ class BodyMeasurementsManager: ObservableObject {
             return nil
         }
     }
+
+    // MARK: - Override Body Fat
+    func overrideBodyFat(measurementId: String, bodyFatPercentage: Double) async -> BodyComposition? {
+        errorMessage = nil
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            let composition = try await apiService.overrideBodyFat(
+                measurementId: measurementId,
+                bodyFatPercentage: bodyFatPercentage
+            )
+            if currentMeasurements?.id == measurementId {
+                bodyComposition = composition
+            }
+            return composition
+        } catch {
+            errorMessage = "Error al actualizar % graso: \(error.localizedDescription)"
+            return nil
+        }
+    }
 }

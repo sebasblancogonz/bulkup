@@ -15,8 +15,10 @@ struct UserProfileView: View {
     @ObservedObject private var dietManager = DietManager.shared
     @ObservedObject private var trainingManager = TrainingManager.shared
     @ObservedObject private var measurementsManager = BodyMeasurementsManager.shared
+    @ObservedObject private var friendsManager = FriendsManager.shared
 
     @State private var showingEditProfile = false
+    @State private var showingBodyMeasurements = false
     @State private var showingSettings = false
     @State private var showingSubscription = false
     @State private var showingLogoutAlert = false
@@ -55,6 +57,9 @@ struct UserProfileView: View {
         }
         .navigationTitle("Mi Perfil")
         .navigationBarTitleDisplayMode(.large)
+        .task {
+            await friendsManager.loadMyStreak()
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { showingSettings = true }) {
@@ -65,6 +70,12 @@ struct UserProfileView: View {
         .sheet(isPresented: $showingEditProfile) {
             EditProfileView()
                 .environmentObject(authManager)
+        }
+        .sheet(isPresented: $showingBodyMeasurements) {
+            NavigationView {
+                BodyMeasurementsView()
+                    .environmentObject(authManager)
+            }
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
@@ -250,6 +261,13 @@ struct UserProfileView: View {
             )
 
             MenuRow(
+                title: "Medidas Corporales",
+                icon: "figure.arms.open",
+                color: .teal,
+                action: { showingBodyMeasurements = true }
+            )
+
+            MenuRow(
                 title: "Mi Suscripción",
                 icon: "crown",
                 color: .purple,
@@ -402,13 +420,11 @@ struct UserProfileView: View {
     }
 
     private func calculateWorkouts() -> Int {
-        // Return number of completed workouts
-        return 0  // Implement based on your data
+        return friendsManager.myStreak?.totalDays ?? 0
     }
 
     private func calculateStreak() -> Int {
-        // Return current streak
-        return 0  // Implement based on your data
+        return friendsManager.myStreak?.currentStreak ?? 0
     }
 
     // MARK: - Notifications

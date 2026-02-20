@@ -104,6 +104,7 @@ struct AuthResponse: Codable {
     let dateOfBirth: Date?
     let profileImageURL: String?
     let token: String
+    let friendCode: String?
     let createdAt: Date
 }
 
@@ -136,11 +137,13 @@ struct UpdateProfileRequest: Codable {
     let name: String?
     let dateOfBirth: Date?
     let profileImageURL: String?
-    
-    init(name: String? = nil, dateOfBirth: Date? = nil, profileImageURL: String? = nil) {
+    let nextReviewDate: Date?
+
+    init(name: String? = nil, dateOfBirth: Date? = nil, profileImageURL: String? = nil, nextReviewDate: Date? = nil) {
         self.name = name
         self.dateOfBirth = dateOfBirth
         self.profileImageURL = profileImageURL
+        self.nextReviewDate = nextReviewDate
     }
 }
 
@@ -164,6 +167,8 @@ struct ProfileResponse: Codable {
     let name: String
     let dateOfBirth: Date?
     let profileImageURL: String?
+    let friendCode: String?
+    let nextReviewDate: Date?
     let createdAt: Date
     let updatedAt: Date
 }
@@ -588,4 +593,93 @@ struct ImportSharedPlanRequest: Codable {
 struct ImportSharedPlanResponse: Codable {
     let planId: String
     let filename: String
+}
+
+// MARK: - Meal Tracking Models
+
+struct MealCompletionData: Codable {
+    let mealType: String
+    let mealOrder: Int
+    var completed: Bool
+    var notes: String?
+    var completedAt: Date?
+}
+
+struct DailyMealTrackingResponse: Codable {
+    let id: String?
+    let userId: String
+    let planId: String
+    let date: String
+    let dayName: String
+    let meals: [MealCompletionData]
+    let createdAt: Date
+    let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case userId, planId, date, dayName, meals, createdAt, updatedAt
+    }
+}
+
+struct SaveMealTrackingRequest: Codable {
+    let userId: String
+    let planId: String
+    let date: String
+    let dayName: String
+    let meals: [MealCompletionData]
+}
+
+struct ComplianceStatsResponse: Codable {
+    let totalMeals: Int
+    let completedMeals: Int
+    let complianceRate: Double
+    let currentStreak: Int
+    let daysTracked: Int
+}
+
+// MARK: - Friends & Streak Models
+
+struct FriendProfile: Codable, Identifiable {
+    let userId: String
+    let name: String
+    let profileImageURL: String?
+    let currentStreak: Int
+    let longestStreak: Int
+    let totalDays: Int
+
+    var id: String { userId }
+}
+
+struct TrainingStreakResponse: Codable {
+    let userId: String
+    let currentStreak: Int
+    let longestStreak: Int
+    let totalDays: Int
+}
+
+struct LeaderboardResponse: Codable {
+    let friends: [FriendProfile]
+    let myStreak: TrainingStreakResponse
+}
+
+struct AddFriendRequest: Codable {
+    let userId: String
+    let friendCode: String
+}
+
+struct AddFriendResponse: Codable {
+    let friendUserId: String
+    let friendName: String
+    let friendImageURL: String?
+}
+
+struct CompleteWorkoutRequest: Codable {
+    let userId: String
+    let date: String
+    let planId: String?
+    let dayName: String?
+}
+
+struct FriendCodeResponse: Codable {
+    let friendCode: String
 }

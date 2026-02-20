@@ -10,8 +10,11 @@ import SwiftUI
 struct DietHubView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var dietManager: DietManager
+    @ObservedObject private var measurementsManager = BodyMeasurementsManager.shared
+    @ObservedObject private var mealTrackingManager = MealTrackingManager.shared
     @State private var selectedView: DietHubSection = .active
     @State private var showingCreateDietPlan = false
+    @State private var projection: NutritionProjection?
 
     enum DietHubSection: String, CaseIterable {
         case active = "active"
@@ -42,9 +45,7 @@ struct DietHubView: View {
                     if dietManager.dietData.isEmpty {
                         activePlanEmptyState
                     } else {
-                        DietView()
-                            .environmentObject(dietManager)
-                            .environmentObject(authManager)
+                        activePlanContent
                     }
                 case .library:
                     DietPlanLibraryView()
@@ -73,6 +74,132 @@ struct DietHubView: View {
                 .environmentObject(dietManager)
                 .environmentObject(authManager)
         }
+        .onAppear {
+            loadMetricsData()
+        }
+    }
+
+    @State private var showMetricsDetail = false
+
+    private var activePlanContent: some View {
+        VStack(spacing: 0) {
+            // Collapsible metrics header
+            metricsHeader
+
+            // Diet View (has its own ScrollView)
+            DietView()
+                .environmentObject(dietManager)
+                .environmentObject(authManager)
+        }
+    }
+
+    private var metricsHeader: some View {
+        VStack(spacing: 0) {
+            // Compact summary bar (always visible)
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    showMetricsDetail.toggle()
+                }
+            } label: {
+                HStack(spacing: 12) {
+                    if let m = measurementsManager.currentMeasurements,
+                       let c = measurementsManager.bodyComposition {
+                        Label(String(format: "%.1f kg", m.peso), systemImage: "scalemass")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+
+                        Label(String(format: "%.1f%%", c.bodyFatPercentage), systemImage: "percent")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
+
+                    if let stats = mealTrackingManager.complianceStats {
+                        Label(
+                            String(format: "%.0f%%", stats.complianceRate * 100),
+                            systemImage: "checkmark.circle"
+                        )
+                        .font(.caption)
+                        .foregroundColor(stats.complianceRate >= 0.8 ? .green : .orange)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: showMetricsDetail ? "chevron.up" : "chevron.down")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(Color(.systemGray6))
+            }
+
+            if showMetricsDetail {
+                ScrollView {
+                    VStack(spacing: 8) {
+                        NutritionSummaryCard(
+                            measurements: measurementsManager.currentMeasurements,
+                            composition: measurementsManager.bodyComposition,
+                            complianceStats: mealTrackingManager.complianceStats
+                        )
+
+                        ReviewDatePickerView()
+                            .environmentObject(authManager)
+
+                        ProjectionsCard(
+                            projection: projection,
+                            reviewDate: authManager.user?.nextReviewDate
+                        )
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                }
+                .frame(maxHeight: 350)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+
+    private func loadMetricsData() {
+        guard let userId = authManager.user?.id else { return }
+        Task {
+            async let loadMeasurements: () = measurementsManager.loadLatestMeasurements(userId: userId)
+            async let loadStats: () = mealTrackingManager.loadComplianceStats(userId: userId)
+            _ = await (loadMeasurements, loadStats)
+
+            // Calculate body composition if we have measurements
+            if let measurementId = measurementsManager.currentMeasurements?.id {
+                _ = await measurementsManager.calculateBodyComposition(measurementId: measurementId)
+            }
+
+            // Calculate projections
+            computeProjection()
+        }
+    }
+
+    private func computeProjection() {
+        guard let composition = measurementsManager.bodyComposition,
+              let measurements = measurementsManager.currentMeasurements,
+              let reviewDate = authManager.user?.nextReviewDate else {
+            projection = nil
+            return
+        }
+
+        let daysToReview = Calendar.current.dateComponents([.day], from: Date(), to: reviewDate).day ?? 0
+        guard daysToReview > 0 else {
+            projection = nil
+            return
+        }
+
+        let complianceRate = mealTrackingManager.complianceStats?.complianceRate ?? 0.0
+
+        projection = ProjectionCalculator.calculate(
+            currentWeight: measurements.peso,
+            currentBodyFatPercentage: composition.bodyFatPercentage,
+            currentLeanMass: composition.leanMass,
+            complianceRate: complianceRate,
+            daysToReview: daysToReview,
+            sex: measurements.sexo
+        )
     }
 
     private var sectionPicker: some View {

@@ -231,6 +231,13 @@ struct AddMeasurementsView: View {
         }
     }
     
+    // MARK: - Helpers
+    /// Parses a decimal string supporting both comma and dot as decimal separator
+    private func parseDecimal(_ text: String) -> Double? {
+        let normalized = text.replacingOccurrences(of: ",", with: ".")
+        return Double(normalized)
+    }
+
     // MARK: - Computed Properties
     private var isFormValid: Bool {
         !weight.isEmpty &&
@@ -238,26 +245,26 @@ struct AddMeasurementsView: View {
         !age.isEmpty &&
         !waist.isEmpty &&
         !neck.isEmpty &&
-        Double(weight) != nil &&
-        Double(height) != nil &&
+        parseDecimal(weight) != nil &&
+        parseDecimal(height) != nil &&
         Int(age) != nil &&
-        Double(waist) != nil &&
-        Double(neck) != nil
+        parseDecimal(waist) != nil &&
+        parseDecimal(neck) != nil
     }
-    
+
     // MARK: - Functions
     private func saveMeasurements() {
         guard let userId = authManager.user?.id,
-              let weightValue = Double(weight),
-              let heightValue = Double(height),
+              let weightValue = parseDecimal(weight),
+              let heightValue = parseDecimal(height),
               let ageValue = Int(age),
-              let waistValue = Double(waist),
-              let neckValue = Double(neck) else {
+              let waistValue = parseDecimal(waist),
+              let neckValue = parseDecimal(neck) else {
             return
         }
-        
+
         isLoading = true
-        
+
         Task {
             await measurementsManager.saveMeasurements(
                 userId: userId,
@@ -267,10 +274,10 @@ struct AddMeasurementsView: View {
                 sex: sex,
                 waist: waistValue,
                 neck: neckValue,
-                hip: hip.isEmpty ? nil : Double(hip),
-                arm: arm.isEmpty ? nil : Double(arm),
-                thigh: thigh.isEmpty ? nil : Double(thigh),
-                calf: calf.isEmpty ? nil : Double(calf)
+                hip: hip.isEmpty ? nil : parseDecimal(hip),
+                arm: arm.isEmpty ? nil : parseDecimal(arm),
+                thigh: thigh.isEmpty ? nil : parseDecimal(thigh),
+                calf: calf.isEmpty ? nil : parseDecimal(calf)
             )
             
             isLoading = false
