@@ -396,7 +396,7 @@ class TrainingManager: ObservableObject {
             await MainActor.run {
                 // Eliminar solo las keys que contienen la fecha de la semana actual
                 let keysToRemove = self.weights.keys.filter { key in
-                    key.contains(weekStartString)
+                    key.hasSuffix("-\(weekStartString)")
                 }
                 for key in keysToRemove {
                     self.weights.removeValue(forKey: key)
@@ -404,7 +404,7 @@ class TrainingManager: ObservableObject {
                 
                 // Limpiar notas solo de la semana actual
                 let noteKeysToRemove = self.backendExerciseNotes.keys.filter { key in
-                    key.contains(weekStartString)
+                    key.hasSuffix("-\(weekStartString)")
                 }
                 for key in noteKeysToRemove {
                     self.backendExerciseNotes.removeValue(forKey: key)
@@ -417,7 +417,7 @@ class TrainingManager: ObservableObject {
             for week in weeksToLoad {
                 // Solo cargar si no tenemos ya datos para esa semana (excepto la actual que acabamos de limpiar)
                 if week != weekStartString {
-                    let existingKeys = weights.keys.filter { $0.contains(week) }
+                    let existingKeys = weights.keys.filter { $0.hasSuffix("-\(week)") }
                     if !existingKeys.isEmpty {
                         print("⏭️ Saltando semana \(week) - ya tenemos \(existingKeys.count) registros")
                         continue
@@ -520,7 +520,7 @@ class TrainingManager: ObservableObject {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let currentWeek = dateFormatter.string(from: getWeekStart(weekStart))
-            let currentWeekCount = self.weights.keys.filter { $0.contains(currentWeek) }.count
+            let currentWeekCount = self.weights.keys.filter { $0.hasSuffix("-\(currentWeek)") }.count
             print("📊 Pesos para la semana actual (\(currentWeek)): \(currentWeekCount)")
         }
     }
