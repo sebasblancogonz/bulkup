@@ -1,0 +1,16 @@
+{
+  "sourceLanguage" : "es",
+  "strings" : {
+    "Ajustes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } }
+      }
+    },
+    "Idioma / Language" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Language" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
