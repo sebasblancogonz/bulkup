@@ -441,6 +441,13 @@ Run the build command. Expected: `BUILD SUCCEEDED`. New literals now appear in `
 
 - [ ] **Step 4: Add English translations for every new/blank key in this batch**
 
+> **Invariant (do not break):** the catalog MUST keep emitting `es.lproj`, which
+> requires at least the seeded keys ("Ajustes", "Idioma / Language") to retain
+> their explicit `es` localizations. New keys need **only an `en` value** — a
+> string with no `es` entry still resolves correctly in Spanish because an
+> `es.lproj` lookup miss returns the key itself (the Spanish source text). Do not
+> delete the seeded `es` entries.
+
 Open `bulkup/Localization/Localizable.xcstrings` and, for each key introduced by this batch, set the `en` `stringUnit` `value` to the English translation with `state: "translated"`. Example entry:
 
 ```json
