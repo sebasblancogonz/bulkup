@@ -7,6 +7,44 @@
 import SwiftData
 import SwiftUI
 
+// MARK: - App Tab Definition
+enum AppTab: String, CaseIterable, Identifiable {
+    case today
+    case training
+    case diet
+    case profile
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .today: "Hoy"
+        case .training: "Entreno"
+        case .diet: "Dieta"
+        case .profile: "Perfil"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .today: "house"
+        case .training: "dumbbell"
+        case .diet: "fork.knife"
+        case .profile: "person"
+        }
+    }
+
+    var selectedIcon: String {
+        switch self {
+        case .today: "house.fill"
+        case .training: "dumbbell.fill"
+        case .diet: "fork.knife"
+        case .profile: "person.fill"
+        }
+    }
+}
+
+// MARK: - Main App View
 struct MainAppView: View {
     let modelContext: ModelContext
 
@@ -17,122 +55,11 @@ struct MainAppView: View {
     @ObservedObject private var dietManager = DietManager.shared
     @ObservedObject private var trainingManager = TrainingManager.shared
     @ObservedObject private var storeKitManager = StoreKitManager.shared
+    @ObservedObject private var workoutSession = WorkoutSessionManager.shared
 
-    @State private var showingSubscriptionAlert = false
-    @State private var showingSubscriptionView = false
-    @State private var selectedTab: AppTab = .training
-    @State private var showingProfile = false
+    @State private var selectedTab: AppTab = .today
     @State private var showingNotifications = false
-
-    private var userHasActiveSubscription: Bool {
-        return storeKitManager.hasActiveSubscription
-    }
-
-    enum AppTab: String, CaseIterable, Identifiable {
-        case diet = "diet"
-        case training = "training"
-        case friends = "friends"
-        case rm = "rm"
-        case exercises = "exercises"
-        case profile = "perfil"
-
-        var id: String { rawValue }
-
-        var displayName: String {
-            switch self {
-            case .profile: return "Perfil"
-            case .diet: return "Dieta"
-            case .training: return "Entrenamiento"
-            case .friends: return "Amigos"
-            case .rm: return "Mis RM"
-            case .exercises: return "Ejercicios"
-            }
-        }
-
-        var shortName: String {
-            switch self {
-            case .profile: return "Perfil"
-            case .diet: return "Dieta"
-            case .training: return "Entreno"
-            case .friends: return "Amigos"
-            case .rm: return "RM"
-            case .exercises: return "Ejercicios"
-            }
-        }
-
-        var iconName: String {
-            switch self {
-            case .diet: return "fork.knife"
-            case .training: return "dumbbell.fill"
-            case .friends: return "person.2.fill"
-            case .rm: return "chart.bar.fill"
-            case .exercises: return "list.bullet"
-            case .profile: return "person.circle.fill"
-            }
-        }
-
-        var gradient: LinearGradient {
-            switch self {
-
-            case .diet:
-                return LinearGradient(
-                    colors: [.green, .green.opacity(0.8)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            case .training:
-                return LinearGradient(
-                    colors: [.blue, .blue.opacity(0.8)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            case .friends:
-                return LinearGradient(
-                    colors: [.orange, .orange.opacity(0.8)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            case .rm:
-                return LinearGradient(
-                    colors: [.orange, .orange.opacity(0.8)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            case .exercises:
-                return LinearGradient(
-                    colors: [.pink, .pink.opacity(0.8)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            case .profile:
-                return LinearGradient(
-                    colors: [.pink, .pink.opacity(0.8)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            }
-        }
-
-        var primaryColor: Color {
-            switch self {
-            case .diet: return .green
-            case .training: return .blue
-            case .friends: return .orange
-            case .rm: return .orange
-            case .exercises: return .pink
-            case .profile: return .teal
-            }
-        }
-
-        var isDisabled: Bool {
-            switch self {
-            case .rm, .exercises, .profile, .friends:
-                return false
-            case .diet, .training:
-                return false  // Se evaluará dinámicamente en la vista
-            }
-        }
-    }
+    @State private var showWorkoutMenu = false
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
@@ -141,28 +68,47 @@ struct MainAppView: View {
     var body: some View {
         Group {
             if authManager.isLoadingUserData {
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                    Text("Cargando tus datos...")
-                        .font(.headline)
-                }
+                loadingView
             } else {
-                GeometryReader { geometry in
-                    ZStack(alignment: .bottom) {
-                        VStack(spacing: 0) {
-                            if geometry.size.width > 600 {
-                                tabNavigationView
+                ZStack(alignment: .bottom) {
+                    TabView(selection: $selectedTab) {
+                        Tab("Hoy", systemImage: "house.fill", value: .today) {
+                            TodayView()
+                                .environmentObject(authManager)
+                                .toolbarVisibility(workoutSession.isActive ? .hidden : .automatic, for: .tabBar)
+                        }
+
+                        Tab("Entreno", systemImage: "dumbbell.fill", value: .training) {
+                            NavigationStack {
+                                TrainingHubView()
+                                    .environmentObject(authManager)
+                                    .environmentObject(trainingManager)
                             }
-
-                            contentView
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .toolbarVisibility(workoutSession.isActive ? .hidden : .automatic, for: .tabBar)
                         }
 
-                        if geometry.size.width <= 600 {
-                            fixedMobileTabBar
-                                .ignoresSafeArea(.keyboard, edges: .bottom) // fijo abajo
+                        Tab("Dieta", systemImage: "fork.knife", value: .diet) {
+                            NavigationStack {
+                                DietHubView()
+                                    .environmentObject(authManager)
+                                    .environmentObject(dietManager)
+                            }
+                            .toolbarVisibility(workoutSession.isActive ? .hidden : .automatic, for: .tabBar)
                         }
+
+                        Tab("Perfil", systemImage: "person.fill", value: .profile) {
+                            NavigationStack {
+                                UserProfileView()
+                                    .environmentObject(authManager)
+                            }
+                            .toolbarVisibility(workoutSession.isActive ? .hidden : .automatic, for: .tabBar)
+                        }
+                    }
+                    .tint(BulkUpColors.accent)
+
+                    // Floating workout FAB when session active
+                    if workoutSession.isActive {
+                        workoutFAB
                     }
                 }
                 .environmentObject(dietManager)
@@ -170,226 +116,201 @@ struct MainAppView: View {
                 .onReceive(
                     NotificationCenter.default.publisher(for: .userDidLogout)
                 ) { _ in
-                    showingProfile = false
                     showingNotifications = false
+                    selectedTab = .today
+                }
+                .onReceive(
+                    NotificationCenter.default.publisher(for: .navigateToTraining)
+                ) { _ in
                     selectedTab = .training
                 }
-                .sheet(isPresented: $showingProfile) {
-                    ProfileView()
-                        .environmentObject(authManager)
+                .onReceive(
+                    NotificationCenter.default.publisher(for: .navigateToDiet)
+                ) { _ in
+                    selectedTab = .diet
                 }
                 .sheet(isPresented: $showingNotifications) {
                     NotificationView()
-                }.alert(
-                    "Suscripción Requerida",
-                    isPresented: $showingSubscriptionAlert
-                ) {
-                    Button("Ver Planes", role: nil) {
-                        showingSubscriptionView = true
-                    }
-                    Button("Cancelar", role: .cancel) {}
-                } message: {
-                    Text(
-                        "Necesitas una suscripción activa para subir y gestionar tus planes de entrenamiento y dieta."
-                    )
-                }
-                .sheet(isPresented: $showingSubscriptionView) {
-                    SubscriptionView()
-                        .environmentObject(authManager)
                 }
             }
         }
     }
 
-    private var fixedMobileTabBar: some View {
+    // MARK: - Workout Floating Action Button
+
+    private var workoutFAB: some View {
         VStack(spacing: 0) {
-            Rectangle()
-                .fill(Color(.systemGray4))
-                .frame(height: 0.5)
+            Spacer()
 
-            HStack(spacing: 0) {
-                ForEach(AppTab.allCases.filter { $0 != .profile }) { tab in
-                    Button(action: {
-                        HapticManager.shared.trigger(
-                            .medium,
-                            enabled: hapticFeedback
-                        )
-                        if !isTabDisabled(tab) {
-                            selectedTab = tab
-                        }
-                    }) {
-                        VStack(spacing: 4) {
-                            ZStack(alignment: .topTrailing) {
-                                Image(
-                                    systemName: selectedTab == tab
-                                        ? tab.iconName
-                                        : tab.iconName.replacingOccurrences(
-                                            of: ".fill",
-                                            with: ""
-                                        )
-                                )
-                                .font(
-                                    .system(
-                                        size: 20,
-                                        weight: selectedTab == tab
-                                            ? .semibold : .medium
-                                    )
-                                )
-                                .foregroundColor(
-                                    isTabDisabled(tab)
-                                        ? .gray.opacity(0.4)
-                                        : selectedTab == tab ? .blue : .gray
-                                )
-                            }
+            // Expanded menu items
+            if showWorkoutMenu {
+                workoutMenuItems
+                    .transition(.asymmetric(
+                        insertion: .scale(scale: 0.5, anchor: .bottom).combined(with: .opacity),
+                        removal: .scale(scale: 0.5, anchor: .bottom).combined(with: .opacity)
+                    ))
+            }
 
-                            Text(tab.shortName)
-                                .font(.caption2)
-                                .fontWeight(
-                                    selectedTab == tab ? .semibold : .medium
-                                )
-                                .foregroundColor(
-                                    isTabDisabled(tab)
-                                        ? .gray.opacity(0.4)
-                                        : selectedTab == tab ? .blue : .gray
-                                )
+            // Main circular button
+            Button {
+                if hapticFeedback {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                }
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    showWorkoutMenu.toggle()
+                }
+            } label: {
+                ZStack {
+                    // Outer glow
+                    Circle()
+                        .fill(BulkUpColors.accent.opacity(0.15))
+                        .frame(width: 72, height: 72)
+
+                    // Main circle
+                    Circle()
+                        .fill(BulkUpColors.accent)
+                        .frame(width: 60, height: 60)
+                        .shadow(color: BulkUpColors.accent.opacity(0.4), radius: 12, y: 4)
+
+                    if showWorkoutMenu {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(BulkUpColors.onAccent)
+                    } else {
+                        // Timer display inside button
+                        VStack(spacing: 1) {
+                            Image(systemName: "figure.run")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(BulkUpColors.onAccent)
+
+                            Text(workoutSession.formattedElapsed())
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .monospacedDigit()
+                                .foregroundColor(BulkUpColors.onAccent)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
                     }
-                    .disabled(isTabDisabled(tab))
-                    .buttonStyle(PlainButtonStyle())
-                }
-
-                Button(action: {
-                    HapticManager.shared.trigger(
-                        .medium,
-                        enabled: hapticFeedback
-                    )
-                    selectedTab = .profile
-                }) {
-                    VStack(spacing: 4) {
-
-                        // Avatar or person icon
-                        if let urlString = authManager.user?.safeProfileImageURL,
-                            let url = URL(string: urlString)
-                        {
-                            CachedAsyncImage(
-                                url: url,
-                                content: { image, colors in
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 24, height: 24)
-                                        .clipShape(Circle())
-                                        .overlay(
-                                            Circle()
-                                                .stroke(
-                                                    selectedTab == .profile
-                                                        ? Color.teal
-                                                        : Color.clear,
-                                                    lineWidth: 2
-                                                )
-                                        )
-                                },
-                                placeholder: {
-                                    profileIconPlaceholder
-                                }
-                            )
-                        } else {
-                            profileIconPlaceholder
-                        }
-
-                        Text("Perfil")
-                            .font(.caption2)
-                            .fontWeight(
-                                selectedTab == .profile ? .semibold : .medium
-                            )
-                            .foregroundColor(
-                                selectedTab == .profile ? .teal : .gray
-                            )
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-            .background(Color(.systemBackground))
-        }
-        .background(
-            Color(.systemBackground)
-                .ignoresSafeArea(edges: .bottom)
-        )
-    }
-
-    private var profileIconPlaceholder: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    selectedTab == .profile
-                        ? Color.teal : Color.gray.opacity(0.3)
-                )
-                .frame(width: 24, height: 24)
-
-            Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundColor(.white)
-        }
-    }
-
-    private var tabNavigationView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(AppTab.allCases) { tab in
-                    TabButton(
-                        tab: tab,
-                        isSelected: selectedTab == tab,
-                        isDisabled: isTabDisabled(tab),
-                        action: { selectedTab = tab }
-                    )
                 }
             }
-            .padding(.horizontal)
+            .buttonStyle(.plain)
+            .padding(.bottom, 16)
         }
-        .background(Color(.systemGray6).opacity(0.5))
+        .padding(.horizontal, Spacing.screenH)
     }
 
-    @ViewBuilder
-    private var contentView: some View {
-        switch selectedTab {
-        case .diet:
-            NavigationStack {
-                DietHubView()
-                    .environmentObject(authManager)
-                    .environmentObject(dietManager)
+    // MARK: - Workout Menu Items
+
+    private var workoutMenuItems: some View {
+        VStack(spacing: Spacing.sm) {
+            // Navigate to workout
+            if selectedTab != .training {
+                workoutMenuItem(
+                    icon: "dumbbell.fill",
+                    label: "Ir al entreno",
+                    color: BulkUpColors.accent
+                ) {
+                    withAnimation { selectedTab = .training }
+                    closeMenu()
+                }
             }
-        case .training:
-            // UPDATED: Use the new TrainingHubView instead of checking for empty data
-            NavigationStack {
-                TrainingHubView()
-                    .environmentObject(authManager)
-                    .environmentObject(trainingManager)
+
+            // Pause / Resume
+            workoutMenuItem(
+                icon: workoutSession.isPaused ? "play.fill" : "pause.fill",
+                label: workoutSession.isPaused ? "Continuar" : "Pausar",
+                color: BulkUpColors.warning
+            ) {
+                if workoutSession.isPaused {
+                    workoutSession.resumeWorkout()
+                } else {
+                    workoutSession.pauseWorkout()
+                }
+                closeMenu()
             }
-        case .friends:
-            NavigationStack {
-                FriendsView()
-                    .environmentObject(authManager)
+
+            // Finish
+            workoutMenuItem(
+                icon: "checkmark.circle.fill",
+                label: "Finalizar",
+                color: BulkUpColors.success
+            ) {
+                closeMenu()
+                selectedTab = .training
+                // Small delay so tab switch completes first
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    NotificationCenter.default.post(name: .finishWorkoutSession, object: nil)
+                }
             }
-        case .profile:
-            NavigationStack {
-                UserProfileView()
-                    .environmentObject(authManager)
+
+            // Discard
+            workoutMenuItem(
+                icon: "trash.fill",
+                label: "Descartar",
+                color: BulkUpColors.error
+            ) {
+                closeMenu()
+                workoutSession.discardWorkout()
             }
-        case .rm:
-            RMTrackerView()
-                .environmentObject(authManager)
-        case .exercises:
-            ExerciseExplorerView()
-                .environmentObject(authManager)
+        }
+        .padding(.bottom, Spacing.sm)
+    }
+
+    private func workoutMenuItem(
+        icon: String,
+        label: String,
+        color: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button {
+            if hapticFeedback {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+            action()
+        } label: {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(color)
+                    .frame(width: 32, height: 32)
+                    .background(color.opacity(0.15))
+                    .clipShape(Circle())
+
+                Text(label)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(BulkUpColors.textPrimary)
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
+            .frame(maxWidth: 180, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .stroke(BulkUpColors.border, lineWidth: 0.5)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func closeMenu() {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            showWorkoutMenu = false
         }
     }
 
-    private func isTabDisabled(_ tab: AppTab) -> Bool {
-        return false
+    // MARK: - Loading View
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .scaleEffect(1.5)
+                .tint(BulkUpColors.accent)
+            Text("Cargando tus datos...")
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.textPrimary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(BulkUpColors.background.ignoresSafeArea())
     }
-
 }

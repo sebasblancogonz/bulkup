@@ -12,43 +12,43 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var authManager = AuthManager.shared
-    @AppStorage("theme") private var theme = "system"
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
         Group {
             if authManager.isAuthenticated {
-                MainAppView(modelContext: modelContext)
-                    .environmentObject(authManager)
+                if hasCompletedOnboarding {
+                    MainAppView(modelContext: modelContext)
+                        .environmentObject(authManager)
+                } else {
+                    OnboardingView()
+                        .environmentObject(authManager)
+                }
             } else {
                 LoginContentView()
                     .environmentObject(authManager)
             }
         }
+        .background(BulkUpColors.background.ignoresSafeArea())
+        .preferredColorScheme(.dark)
         .onAppear {
-            // ✅ Configurar el contexto solo una vez
+            // Configurar el contexto solo una vez
             if authManager.modelContext !== modelContext {
                 authManager.modelContext = modelContext
                 authManager.loadStoredUser()
             }
-            applyTheme(theme)
+            forceDarkMode()
         }
         .animation(.easeInOut(duration: 0.3), value: authManager.isAuthenticated)
+        .animation(.easeInOut(duration: 0.3), value: hasCompletedOnboarding)
     }
 
-    private func applyTheme(_ theme: String) {
+    private func forceDarkMode() {
         guard
             let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
             let window = windowScene.windows.first
         else { return }
-
-        switch theme {
-        case "light":
-            window.overrideUserInterfaceStyle = .light
-        case "dark":
-            window.overrideUserInterfaceStyle = .dark
-        default:
-            window.overrideUserInterfaceStyle = .unspecified
-        }
+        window.overrideUserInterfaceStyle = .dark
     }
 }
 
