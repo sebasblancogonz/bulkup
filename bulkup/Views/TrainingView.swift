@@ -78,12 +78,12 @@ struct TrainingView: View {
         return f.string(from: currentDate).lowercased()
     }
 
-    private var weekRangeLabel: String {
+    private var weekRangeLabel: LocalizedStringKey {
         let start = trainingManager.getWeekStart(trainingManager.selectedWeek)
         let f = DateFormatter()
         f.locale = LanguageManager.shared.locale
         f.dateFormat = "d MMM"
-        return String(localized: "Semana del \(f.string(from: start))")
+        return "Semana del \(f.string(from: start))"
     }
 
     private func exerciseRowId(_ exercise: Exercise, day: String) -> String {
@@ -301,10 +301,10 @@ struct TrainingView: View {
     private var emptyStateView: some View {
         EmptyStateView(
             icon: "dumbbell.fill",
-            title: String(localized: "Hora de entrenar!"),
-            subtitle: String(localized: "Sube tu plan de entrenamiento y comienza a registrar tu progreso"),
+            title: "Hora de entrenar!",
+            subtitle: "Sube tu plan de entrenamiento y comienza a registrar tu progreso",
             color: BulkUpColors.accent,
-            actionTitle: String(localized: "Subir Plan de Entrenamiento"),
+            actionTitle: "Subir Plan de Entrenamiento",
             actionIcon: "plus.circle.fill",
             action: {
                 NotificationCenter.default.post(name: .navigateToTrainingLibrary, object: nil)

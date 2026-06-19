@@ -103,29 +103,29 @@ struct WorkoutSummaryView: View {
         ], spacing: Spacing.md) {
             statCell(
                 value: summary.formattedDuration,
-                label: String(localized: "Duracion"),
+                label: "Duracion",
                 icon: "clock.fill"
             )
             statCell(
                 value: "\(summary.formattedVolume) kg",
-                label: String(localized: "Volumen"),
+                label: "Volumen",
                 icon: "scalemass.fill"
             )
             statCell(
                 value: "\(summary.totalSets)",
-                label: String(localized: "Series"),
+                label: "Series",
                 icon: "number"
             )
             statCell(
                 value: "\(summary.exercisesCompleted)",
-                label: String(localized: "Ejercicios"),
+                label: "Ejercicios",
                 icon: "figure.strengthtraining.traditional"
             )
         }
         .padding(.horizontal, Spacing.xl)
     }
 
-    private func statCell(value: String, label: String, icon: String) -> some View {
+    private func statCell(value: String, label: LocalizedStringKey, icon: String) -> some View {
         VStack(spacing: Spacing.sm) {
             Image(systemName: icon)
                 .font(.system(size: 16))
@@ -135,7 +135,7 @@ struct WorkoutSummaryView: View {
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundColor(BulkUpColors.textPrimary)
 
-            Text(LocalizedStringKey(label))
+            Text(label)
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
         }

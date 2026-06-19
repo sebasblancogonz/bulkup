@@ -210,7 +210,7 @@ struct TodayView: View {
     private var greetingHeader: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack(alignment: .firstTextBaseline) {
-                Text(greetingText)
+                greetingTextView
                     .font(BulkUpFont.screenTitle())
                     .foregroundColor(BulkUpColors.textPrimary)
 
@@ -242,18 +242,23 @@ struct TodayView: View {
         }
     }
 
-    private var greetingText: String {
+    private var greetingKey: LocalizedStringKey {
         let hour = Calendar.current.component(.hour, from: Date())
+        if hour < 12 { return "Buenos dias" }
+        else if hour < 20 { return "Buenas tardes" }
+        else { return "Buenas noches" }
+    }
+
+    /// Returns a live-switching localized greeting `Text`, with optional name suffix.
+    private var greetingTextView: some View {
         let name = authManager.user?.name.components(separatedBy: " ").first ?? ""
-        let greeting: String
-        if hour < 12 {
-            greeting = String(localized: "Buenos dias")
-        } else if hour < 20 {
-            greeting = String(localized: "Buenas tardes")
-        } else {
-            greeting = String(localized: "Buenas noches")
+        return Group {
+            if name.isEmpty {
+                Text(greetingKey)
+            } else {
+                Text("\(Text(greetingKey)), \(name)")
+            }
         }
-        return name.isEmpty ? greeting : "\(greeting), \(name)"
     }
 
     // MARK: - Calendar Strip
@@ -323,13 +328,13 @@ struct TodayView: View {
                 // Content overlay
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading, spacing: Spacing.sm) {
-                        PillBadge(text: String(localized: "Hoy"), color: BulkUpColors.accent, icon: "bolt.fill")
+                        PillBadge(text: "Hoy", color: BulkUpColors.accent, icon: "bolt.fill")
 
                         Text(dayLabel)
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(BulkUpColors.textPrimary)
 
-                        Text(String(format: String(localized: "%lld ejercicios"), totalExercises))
+                        Text("\(totalExercises) ejercicios")
                             .font(BulkUpFont.caption())
                             .foregroundColor(BulkUpColors.textSecondary)
                     }
@@ -402,7 +407,7 @@ struct TodayView: View {
             if week.total > 0 {
                 StatCard(
                     value: "\(week.completed)/\(week.total)",
-                    label: String(localized: "Entrenos"),
+                    label: "Entrenos",
                     icon: "dumbbell.fill"
                 )
             }
@@ -410,7 +415,7 @@ struct TodayView: View {
             if let rate = weeklyComplianceRate {
                 StatCard(
                     value: "\(Int(rate * 100))%",
-                    label: String(localized: "Dieta"),
+                    label: "Dieta",
                     icon: "fork.knife"
                 )
             }
@@ -418,7 +423,7 @@ struct TodayView: View {
             if let w = latestWeight {
                 StatCard(
                     value: String(format: "%.1f", w),
-                    label: String(localized: "Peso (kg)"),
+                    label: "Peso (kg)",
                     icon: "scalemass.fill"
                 )
             }
@@ -438,7 +443,7 @@ struct TodayView: View {
                 .padding(.vertical, Spacing.xl)
         } else if trainingManager.trainingData.isEmpty {
             emptyStateLine(
-                text: String(localized: "Sin plan de entreno"),
+                text: "Sin plan de entreno",
                 icon: "dumbbell",
                 action: {
                     NotificationCenter.default.post(name: .navigateToTraining, object: nil)
@@ -549,7 +554,7 @@ struct TodayView: View {
                 .padding(.vertical, Spacing.md)
         } else if dietManager.dietData.isEmpty {
             emptyStateLine(
-                text: String(localized: "Sin plan de dieta"),
+                text: "Sin plan de dieta",
                 icon: "fork.knife",
                 action: {
                     NotificationCenter.default.post(name: .navigateToDiet, object: nil)
@@ -562,7 +567,7 @@ struct TodayView: View {
             mealsContent(dayData)
         } else {
             emptyStateLine(
-                text: String(localized: "Sin comidas para hoy"),
+                text: "Sin comidas para hoy",
                 icon: "fork.knife",
                 action: {
                     NotificationCenter.default.post(name: .navigateToDiet, object: nil)

@@ -29,21 +29,21 @@ struct LoginContentView: View {
                 VStack(spacing: Spacing.lg) {
                     if isRegistering {
                         CustomTextField(
-                            placeholder: String(localized: "Nombre"),
+                            placeholder: "Nombre",
                             text: $name,
                             icon: "person.fill"
                         )
                     }
 
                     CustomTextField(
-                        placeholder: String(localized: "Email"),
+                        placeholder: "Email",
                         text: $email,
                         icon: "envelope.fill",
                         keyboardType: .emailAddress
                     )
 
                     CustomSecureField(
-                        placeholder: String(localized: "Contraseña"),
+                        placeholder: "Contraseña",
                         text: $password,
                         icon: "lock.fill"
                     )
@@ -52,7 +52,7 @@ struct LoginContentView: View {
 
                 // Error message
                 if let errorMessage = errorMessage {
-                    Text(errorMessage)
+                    Text(LocalizedStringKey(errorMessage))
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.error)
                         .multilineTextAlignment(.center)
@@ -67,7 +67,7 @@ struct LoginContentView: View {
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 .scaleEffect(0.9)
                         } else {
-                            Text(isRegistering ? String(localized: "Crear cuenta") : String(localized: "Iniciar sesión"))
+                            Text(isRegistering ? LocalizedStringKey("Crear cuenta") : LocalizedStringKey("Iniciar sesión"))
                         }
                     }
                     .primaryButtonStyle(color: BulkUpColors.accent)
@@ -79,7 +79,7 @@ struct LoginContentView: View {
 
                 // Toggle mode
                 Button(action: { isRegistering.toggle() }) {
-                    Text(isRegistering ? String(localized: "¿Ya tienes cuenta? Inicia sesión") : String(localized: "¿No tienes cuenta? Regístrate"))
+                    Text(isRegistering ? LocalizedStringKey("¿Ya tienes cuenta? Inicia sesión") : LocalizedStringKey("¿No tienes cuenta? Regístrate"))
                         .font(.footnote)
                         .fontWeight(.medium)
                         .foregroundColor(BulkUpColors.accent)
@@ -184,7 +184,7 @@ struct LoginContentView: View {
 
 // Custom text field with design system tokens
 struct CustomTextField: View {
-    let placeholder: String
+    let placeholder: LocalizedStringKey
     @Binding var text: String
     let icon: String
     var keyboardType: UIKeyboardType = .default
@@ -216,7 +216,7 @@ struct CustomTextField: View {
 
 // Custom secure field with design system tokens
 struct CustomSecureField: View {
-    let placeholder: String
+    let placeholder: LocalizedStringKey
     @Binding var text: String
     let icon: String
     @State private var isSecure = true

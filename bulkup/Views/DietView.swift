@@ -47,7 +47,7 @@ struct DietView: View {
         return ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 dayHeader(
-                    title: String(localized: "Plan Semanal"),
+                    title: "Plan Semanal",
                     completedCount: completedCount,
                     totalCount: sortedMeals.count
                 )
@@ -170,10 +170,10 @@ struct DietView: View {
         return ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 dayHeader(
-                    title: formatDayName(day.day),
+                    title: LocalizedStringKey(formatDayName(day.day)),
                     completedCount: completedCount,
                     totalCount: sortedMeals.count,
-                    subtitle: String(format: String(localized: "Día %lld de %lld"), index + 1, dietManager.dietData.count)
+                    subtitle: "Día \(index + 1) de \(dietManager.dietData.count)"
                 )
                 .padding(.horizontal, Spacing.screenH)
                 .padding(.top, Spacing.lg)
@@ -219,7 +219,7 @@ struct DietView: View {
 
     // MARK: - Day Header
 
-    private func dayHeader(title: String, completedCount: Int, totalCount: Int, subtitle: String? = nil) -> some View {
+    private func dayHeader(title: LocalizedStringKey, completedCount: Int, totalCount: Int, subtitle: LocalizedStringKey? = nil) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack(alignment: .firstTextBaseline) {
                 Text(title)
@@ -229,7 +229,7 @@ struct DietView: View {
                 Spacer()
 
                 if totalCount > 0 {
-                    Text(String(format: String(localized: "%lld/%lld comidas"), completedCount, totalCount))
+                    Text("\(completedCount)/\(totalCount) comidas")
                         .font(.system(size: 13, weight: .bold, design: .monospaced))
                         .foregroundColor(
                             completedCount == totalCount
@@ -402,7 +402,7 @@ struct DietView: View {
                         .tracking(1.5)
                         .foregroundColor(BulkUpColors.textSecondary)
                     Spacer()
-                    PillBadge(text: String(localized: "Permitida"), color: BulkUpColors.success, icon: "checkmark.circle")
+                    PillBadge(text: "Permitida", color: BulkUpColors.success, icon: "checkmark.circle")
                 }
 
                 Text("Registra lo que comiste en tu comida libre")
