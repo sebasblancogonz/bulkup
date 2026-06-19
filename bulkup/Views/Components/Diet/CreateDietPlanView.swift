@@ -5,6 +5,7 @@
 //  Created by sebastianblancogonz on 9/2/26.
 //
 
+import PhotosUI
 import SwiftUI
 
 struct CreateDietPlanView: View {
@@ -14,6 +15,8 @@ struct CreateDietPlanView: View {
 
     @State private var planName = ""
     @State private var showingFilePicker = false
+    @State private var showingPhotoPicker = false
+    @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var isProcessingFile = false
     @State private var errorMessage: String?
     @State private var processId: String?
@@ -25,25 +28,25 @@ struct CreateDietPlanView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: Spacing.xl) {
                     // Header
-                    VStack(spacing: 12) {
+                    VStack(spacing: Spacing.md) {
                         ZStack {
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [.green.opacity(0.2), .green.opacity(0.05)],
+                                        colors: [BulkUpColors.diet.opacity(0.2), BulkUpColors.diet.opacity(0.05)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
                                 )
                                 .frame(width: 80, height: 80)
 
-                            Image(systemName: "doc.badge.plus")
+                            Image(systemName: "doc.viewfinder")
                                 .font(.system(size: 36))
                                 .foregroundStyle(
                                     LinearGradient(
-                                        colors: [.green, .green.opacity(0.7)],
+                                        colors: [BulkUpColors.diet, BulkUpColors.diet.opacity(0.7)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -51,94 +54,130 @@ struct CreateDietPlanView: View {
                         }
 
                         Text("Subir Plan de Dieta")
-                            .font(.title2)
-                            .fontWeight(.bold)
+                            .font(BulkUpFont.sectionHeader())
+                            .foregroundColor(BulkUpColors.textPrimary)
 
-                        Text("Sube un PDF con tu plan de alimentación y la IA lo procesará automáticamente")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        Text("Sube un PDF o foto con tu plan de alimentación y la IA lo procesará automáticamente")
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.textSecondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                     }
-                    .padding(.top, 8)
+                    .padding(.top, Spacing.sm)
 
                     // Plan Name
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: Spacing.md) {
                         Text("Nombre del Plan")
-                            .font(.headline)
-                            .fontWeight(.semibold)
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         TextField("Ej: Dieta Volumen 2026", text: $planName)
                             .textFieldStyle(.roundedBorder)
                             .submitLabel(.done)
                     }
 
-                    // Upload Button
-                    Button(action: {
-                        showingFilePicker = true
-                    }) {
-                        VStack(spacing: 16) {
+                    // Upload Buttons
+                    HStack(spacing: Spacing.md) {
+                        // PDF Upload
+                        Button(action: {
+                            showingFilePicker = true
+                        }) {
                             ZStack {
-                                RoundedRectangle(cornerRadius: 16)
+                                RoundedRectangle(cornerRadius: CornerRadius.large)
                                     .strokeBorder(
                                         style: StrokeStyle(lineWidth: 2, dash: [8])
                                     )
-                                    .foregroundColor(.green.opacity(0.4))
+                                    .foregroundColor(BulkUpColors.diet.opacity(0.4))
                                     .frame(height: 160)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: CornerRadius.large)
+                                            .fill(BulkUpColors.surfaceElevated)
+                                    )
 
-                                VStack(spacing: 12) {
+                                VStack(spacing: Spacing.md) {
                                     Image(systemName: "arrow.up.doc.fill")
-                                        .font(.system(size: 40))
-                                        .foregroundColor(.green)
+                                        .font(.system(size: 36))
+                                        .foregroundColor(BulkUpColors.diet)
 
-                                    Text("Seleccionar PDF")
-                                        .font(.headline)
-                                        .foregroundColor(.green)
+                                    Text("Subir PDF")
+                                        .font(BulkUpFont.cardTitle())
+                                        .foregroundColor(BulkUpColors.diet)
 
-                                    Text("Toca para elegir tu archivo")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                                    Text("Archivo PDF")
+                                        .font(BulkUpFont.caption())
+                                        .foregroundColor(BulkUpColors.textSecondary)
                                 }
                             }
                         }
+                        .disabled(planName.isEmpty)
+                        .opacity(planName.isEmpty ? 0.5 : 1.0)
+
+                        // Image Upload
+                        Button(action: {
+                            showingPhotoPicker = true
+                        }) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: CornerRadius.large)
+                                    .strokeBorder(
+                                        style: StrokeStyle(lineWidth: 2, dash: [8])
+                                    )
+                                    .foregroundColor(BulkUpColors.diet.opacity(0.4))
+                                    .frame(height: 160)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: CornerRadius.large)
+                                            .fill(BulkUpColors.surfaceElevated)
+                                    )
+
+                                VStack(spacing: Spacing.md) {
+                                    Image(systemName: "photo.on.rectangle")
+                                        .font(.system(size: 36))
+                                        .foregroundColor(BulkUpColors.diet)
+
+                                    Text("Subir Imagen")
+                                        .font(BulkUpFont.cardTitle())
+                                        .foregroundColor(BulkUpColors.diet)
+
+                                    Text("Foto de tu dieta")
+                                        .font(BulkUpFont.caption())
+                                        .foregroundColor(BulkUpColors.textSecondary)
+                                }
+                            }
+                        }
+                        .disabled(planName.isEmpty)
+                        .opacity(planName.isEmpty ? 0.5 : 1.0)
                     }
-                    .disabled(planName.isEmpty)
-                    .opacity(planName.isEmpty ? 0.5 : 1.0)
 
                     if planName.isEmpty {
                         Text("Escribe un nombre para el plan antes de subir el archivo")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
                     }
 
                     // Features Info
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: Spacing.md) {
                         Text("La IA detectará automáticamente:")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         featureRow(icon: "fork.knife", text: "Comidas y horarios")
                         featureRow(icon: "list.bullet", text: "Ingredientes y cantidades")
                         featureRow(icon: "pills.fill", text: "Suplementación")
                         featureRow(icon: "calendar", text: "Planificación semanal o por fases")
                     }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.systemGray6))
-                    )
+                    .flatCardStyle()
 
                     // Error Message
                     if let errorMessage = errorMessage {
                         Text(errorMessage)
-                            .font(.subheadline)
-                            .foregroundColor(.red)
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.error)
                             .padding(.horizontal)
                             .multilineTextAlignment(.center)
                     }
                 }
                 .padding()
             }
+            .background(BulkUpColors.background)
             .navigationTitle("Nueva Dieta")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -162,10 +201,34 @@ struct CreateDietPlanView: View {
         ) { result in
             handleFileSelection(result)
         }
+        .photosPicker(
+            isPresented: $showingPhotoPicker,
+            selection: $selectedPhotoItem,
+            matching: .images
+        )
+        .onChange(of: selectedPhotoItem) { _, newItem in
+            guard let newItem else { return }
+            Task {
+                if let data = try? await newItem.loadTransferable(type: Data.self) {
+                    // Library photos are usually HEIC; re-encode to real JPEG so
+                    // the bytes match the image/jpeg content-type the server expects.
+                    let jpeg = UIImage(data: data)?.jpegData(compressionQuality: 0.85) ?? data
+                    await processDietImage(jpeg)
+                }
+            }
+        }
         .alert("Error al procesar", isPresented: $showingErrorAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(errorMessage ?? "Error desconocido")
+        }
+        .onChange(of: uploadManager.timedOut) { _, timedOut in
+            if timedOut {
+                isProcessingFile = false
+                errorMessage = "El procesamiento tardó demasiado. Intenta de nuevo."
+                showingErrorAlert = true
+                uploadManager.reset()
+            }
         }
         .onAppear {
             setupNotificationObserver()
@@ -181,12 +244,12 @@ struct CreateDietPlanView: View {
     private func featureRow(icon: String, text: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.subheadline)
-                .foregroundColor(.green)
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.diet)
                 .frame(width: 24)
             Text(text)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
     }
 
@@ -197,15 +260,15 @@ struct CreateDietPlanView: View {
                 VStack(spacing: 20) {
                     ProgressView()
                         .scaleEffect(1.5)
-                        .tint(.white)
+                        .tint(BulkUpColors.accent)
 
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.sm) {
                         Text("Procesando con IA...")
-                            .font(.headline)
+                            .font(BulkUpFont.cardTitle())
                             .foregroundColor(.white)
 
                         Text(uploadManager.processingProgress)
-                            .font(.subheadline)
+                            .font(BulkUpFont.body())
                             .foregroundColor(.white.opacity(0.8))
 
                         if !uploadManager.fileName.isEmpty {
@@ -213,21 +276,21 @@ struct CreateDietPlanView: View {
                                 Image(systemName: "doc.fill")
                                     .foregroundColor(.white.opacity(0.7))
                                 Text(uploadManager.fileName)
-                                    .font(.caption)
+                                    .font(BulkUpFont.caption())
                                     .foregroundColor(.white.opacity(0.7))
                                     .lineLimit(1)
                             }
-                            .padding(.horizontal, 12)
+                            .padding(.horizontal, Spacing.md)
                             .padding(.vertical, 6)
                             .background(Color.white.opacity(0.2))
-                            .cornerRadius(20)
+                            .cornerRadius(CornerRadius.xl)
                         }
                     }
                 }
-                .padding(24)
+                .padding(Spacing.xl)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.black.opacity(0.5))
+                    RoundedRectangle(cornerRadius: CornerRadius.large)
+                        .fill(BulkUpColors.surface.opacity(0.9))
                 )
             }
     }
@@ -254,11 +317,12 @@ struct CreateDietPlanView: View {
         errorMessage = nil
         uploadManager.processingProgress = "Subiendo archivo..."
         uploadManager.fileName = url.lastPathComponent
+        uploadManager.startTimeout()
 
         Task {
             do {
-                let response = try await uploadFileToServer(
-                    fileURL: url,
+                let response = try await uploadManager.uploadFile(
+                    at: url,
                     fileName: planName.isEmpty ? url.lastPathComponent : "\(planName).pdf",
                     userId: userId
                 )
@@ -274,82 +338,37 @@ struct CreateDietPlanView: View {
         }
     }
 
-    private func uploadFileToServer(
-        fileURL: URL,
-        fileName: String,
-        userId: String
-    ) async throws -> FileProcessingResponse {
-        guard fileURL.startAccessingSecurityScopedResource() else {
-            throw FileUploadError.accessDenied
+    // MARK: - Image Upload
+
+    @MainActor
+    private func processDietImage(_ imageData: Data) {
+        guard let userId = authManager.user?.id else {
+            errorMessage = "Usuario no autenticado"
+            return
         }
 
-        defer {
-            fileURL.stopAccessingSecurityScopedResource()
+        isProcessingFile = true
+        errorMessage = nil
+        uploadManager.processingProgress = "Subiendo imagen..."
+        uploadManager.fileName = planName.isEmpty ? "diet_plan.jpg" : "\(planName).jpg"
+        uploadManager.startTimeout()
+
+        Task {
+            do {
+                let fileName = planName.isEmpty ? "diet_plan.jpg" : "\(planName).jpg"
+                let response = try await uploadManager.uploadImage(
+                    imageData,
+                    fileName: fileName,
+                    userId: userId
+                )
+                processId = response.processId
+            } catch {
+                await MainActor.run {
+                    isProcessingFile = false
+                    errorMessage = error.localizedDescription
+                }
+            }
         }
-
-        let fileData = try Data(contentsOf: fileURL)
-
-        guard let url = URL(string: "\(APIConfig.baseURL)/process-file-smart") else {
-            throw FileUploadError.invalidURL
-        }
-
-        let boundary = UUID().uuidString
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue(
-            "multipart/form-data; boundary=\(boundary)",
-            forHTTPHeaderField: "Content-Type"
-        )
-
-        var data = Data()
-
-        // userId
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"userId\"\r\n\r\n".data(using: .utf8)!
-        )
-        data.append("\(userId)\r\n".data(using: .utf8)!)
-
-        // planName
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"planName\"\r\n\r\n".data(using: .utf8)!
-        )
-        data.append("\(fileName)\r\n".data(using: .utf8)!)
-
-        // file
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n"
-                .data(using: .utf8)!
-        )
-        data.append("Content-Type: application/pdf\r\n\r\n".data(using: .utf8)!)
-        data.append(fileData)
-        data.append("\r\n".data(using: .utf8)!)
-        data.append("--\(boundary)--\r\n".data(using: .utf8)!)
-
-        request.httpBody = data
-
-        let (responseData, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200
-        else {
-            throw FileUploadError.serverError(
-                (response as? HTTPURLResponse)?.statusCode ?? 0
-            )
-        }
-
-        let uploadResponse = try JSONDecoder().decode(
-            FileProcessingResponse.self,
-            from: responseData
-        )
-
-        guard uploadResponse.success else {
-            throw FileUploadError.uploadFailed(uploadResponse.message)
-        }
-
-        return uploadResponse
     }
 
     // MARK: - Notification Handling
@@ -397,6 +416,7 @@ struct CreateDietPlanView: View {
     }
 
     private func handleProcessingCompleted(extras: GotifyExtras) {
+        uploadManager.cancelTimeout()
         print("[Diet] handleProcessingCompleted called")
         print("[Diet] authManager.user?.id = \(authManager.user?.id ?? "nil")")
 
@@ -418,6 +438,7 @@ struct CreateDietPlanView: View {
     }
 
     private func handleProcessingFailed(error: String?) {
+        uploadManager.cancelTimeout()
         isProcessingFile = false
         errorMessage = error ?? "Error al procesar el archivo"
         showingErrorAlert = true

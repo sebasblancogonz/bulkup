@@ -1,4 +1,3 @@
-import Combine
 import Foundation
 
 // MARK: - Processing Status Models
@@ -9,173 +8,102 @@ struct FileProcessingResponse: Codable {
 }
 
 // MARK: - Smart File Upload Manager
+/// Shared upload progress + timeout state. Lives as an ObservableObject because
+/// the create views update progress and cancel the timeout from inside
+/// NotificationCenter closures, where `@State` value types are frozen by struct
+/// capture — a reference type is the only thing those closures can mutate.
 @MainActor
 class SmartFileUploadManager: ObservableObject {
     static let shared = SmartFileUploadManager()
 
-    // UI State
-    @Published var isLoading = false
     @Published var processingProgress = ""
     @Published var fileName = ""
-    @Published var detectedType: FileType = .unknown
-    @Published var error: String?
-    @Published var showSuccessAlert = false
-    @Published var successMessage = ""
+    /// Flips to true when processing exceeds `processingTimeout`. Views observe
+    /// this and surface an error instead of spinning forever (e.g. if the
+    /// completion notification is never delivered).
+    @Published var timedOut = false
 
-    // WebSocket integration
-    @Published var isWebSocketConnected = false
-    private var cancellables = Set<AnyCancellable>()
-    private var currentProcessId: String?
-    private var processingTimeoutTask: Task<Void, Never>?
+    private var timeoutTask: Task<Void, Never>?
     private let processingTimeout: TimeInterval = 120 // 2 minutes
 
-    private init() {
-        setupWebSocketObserver()
-    }
+    private init() {}
 
-    private func setupWebSocketObserver() {
-        // Observe WebSocket connection state
-        GotifyWebSocketManager.shared.$isConnected
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] connected in
-                self?.isWebSocketConnected = connected
-            }
-            .store(in: &cancellables)
-
-        // Listen for Gotify notifications
-        NotificationCenter.default.publisher(
-            for: NSNotification.Name("GotifyNotificationReceived")
-        )
-        .compactMap { $0.object as? GotifyNotification }
-        .sink { [weak self] notification in
-            self?.handleGotifyNotification(notification)
-        }
-        .store(in: &cancellables)
-    }
-
-    private func handleGotifyNotification(_ notification: GotifyNotification) {
-        guard let extras = notification.extras,
-            let processId = extras.processId,
-            processId == currentProcessId
-        else {
-            return
-        }
-
-        switch extras.status {
-        case "processing":
-            processingProgress = "Procesando archivo..."
-
-        case "analyzing":
-            processingProgress = "Analizando contenido..."
-
-        case "completed":
-            processingTimeoutTask?.cancel()
-            handleProcessingCompleted(extras: extras)
-
-        case "failed":
-            processingTimeoutTask?.cancel()
-            handleProcessingFailed(error: extras.error)
-
-        default:
-            break
-        }
-    }
-
-    private func startProcessingTimeout() {
-        processingTimeoutTask?.cancel()
-        processingTimeoutTask = Task {
-            try? await Task.sleep(nanoseconds: UInt64(processingTimeout * 1_000_000_000))
+    /// Start (or restart) the watchdog. Call when processing begins.
+    func startTimeout() {
+        timeoutTask?.cancel()
+        timedOut = false
+        timeoutTask = Task { [weak self] in
+            guard let self else { return }
+            try? await Task.sleep(nanoseconds: UInt64(self.processingTimeout * 1_000_000_000))
             guard !Task.isCancelled else { return }
-            isLoading = false
-            currentProcessId = nil
-            error = "El procesamiento tardó demasiado. Intenta de nuevo."
+            self.timedOut = true
         }
     }
 
-    private func handleProcessingCompleted(extras: GotifyExtras) {
-        isLoading = false
-        currentProcessId = nil
-
-        if let detectedType = extras.detectedType {
-            self.detectedType = detectedType == "diet" ? .diet : .training
-
-            if detectedType == "diet" {
-                successMessage = "Plan de dieta cargado exitosamente"
-            } else {
-                successMessage = "Plan de entrenamiento cargado exitosamente"
-            }
-
-            showSuccessAlert = true
-        }
+    /// Cancel the watchdog. Safe to call from a frozen-`@State` closure since
+    /// `self` is a reference type.
+    func cancelTimeout() {
+        timeoutTask?.cancel()
+        timeoutTask = nil
     }
 
-    private func handleProcessingFailed(error: String?) {
-        isLoading = false
-        currentProcessId = nil
-        self.error = error ?? "Error desconocido en el procesamiento"
+    func reset() {
+        cancelTimeout()
+        processingProgress = ""
+        fileName = ""
+        timedOut = false
     }
+}
 
-    func uploadFile(
-        fileURL: URL,
+// MARK: - Upload
+extension SmartFileUploadManager {
+    /// Upload a PDF document (security-scoped URL) to /process-file-smart.
+    nonisolated func uploadFile(
+        at fileURL: URL,
+        fileName: String,
         userId: String,
-        dietManager: DietManager,
-        trainingManager: TrainingManager
-    ) async {
-        await MainActor.run {
-            isLoading = true
-            fileName = fileURL.lastPathComponent
-            processingProgress = "Subiendo archivo..."
-            error = nil
-            detectedType = .unknown
+        startDate: Date? = nil,
+        endDate: Date? = nil
+    ) async throws -> FileProcessingResponse {
+        guard fileURL.startAccessingSecurityScopedResource() else {
+            throw FileUploadError.accessDenied
         }
+        defer { fileURL.stopAccessingSecurityScopedResource() }
 
-        // Ensure WebSocket connection
-        if !isWebSocketConnected {
-            GotifyWebSocketManager.shared.connect(userId: userId)
-        }
-
-        do {
-            // Start accessing the file
-            guard fileURL.startAccessingSecurityScopedResource() else {
-                throw FileUploadError.accessDenied
-            }
-
-            defer {
-                fileURL.stopAccessingSecurityScopedResource()
-            }
-
-            // Read file data
-            let fileData = try Data(contentsOf: fileURL)
-
-            // Upload file
-            let processId = try await uploadFileToServer(
-                fileData: fileData,
-                fileName: fileName,
-                userId: userId
-            )
-
-            self.currentProcessId = processId
-            self.processingProgress =
-                "Archivo subido, iniciando procesamiento..."
-            startProcessingTimeout()
-
-        } catch {
-            self.isLoading = false
-            self.error = error.localizedDescription
-        }
+        let data = try Data(contentsOf: fileURL)
+        return try await uploadToServer(
+            fileData: data, fileName: fileName, mimeType: "application/pdf",
+            userId: userId, startDate: startDate, endDate: endDate
+        )
     }
 
-    private func uploadFileToServer(
+    /// Upload a JPEG image to /process-file-smart.
+    nonisolated func uploadImage(
+        _ imageData: Data,
+        fileName: String,
+        userId: String,
+        startDate: Date? = nil,
+        endDate: Date? = nil
+    ) async throws -> FileProcessingResponse {
+        try await uploadToServer(
+            fileData: imageData, fileName: fileName, mimeType: "image/jpeg",
+            userId: userId, startDate: startDate, endDate: endDate
+        )
+    }
+
+    /// Builds and sends the multipart POST shared by every upload path.
+    nonisolated private func uploadToServer(
         fileData: Data,
         fileName: String,
-        userId: String
-    ) async throws -> String {
-
+        mimeType: String,
+        userId: String,
+        startDate: Date?,
+        endDate: Date?
+    ) async throws -> FileProcessingResponse {
         guard let url = URL(string: "\(APIConfig.baseURL)/process-file-smart") else {
             throw FileUploadError.invalidURL
         }
 
-        // Create multipart form data
         let boundary = UUID().uuidString
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -183,41 +111,50 @@ class SmartFileUploadManager: ObservableObject {
             "multipart/form-data; boundary=\(boundary)",
             forHTTPHeaderField: "Content-Type"
         )
+        // Same auth scheme as APIService: Bearer token from UserDefaults.
+        if let token = UserDefaults.standard.string(forKey: "auth_token") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
 
-        var data = Data()
+        var body = Data()
+        func appendField(_ name: String, _ value: String) {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append(
+                "Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8)!
+            )
+            body.append("\(value)\r\n".data(using: .utf8)!)
+        }
 
-        // Add userId field
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"userId\"\r\n\r\n".data(
-                using: .utf8
-            )!
-        )
-        data.append("\(userId)\r\n".data(using: .utf8)!)
+        appendField("userId", userId)
+        appendField("planName", fileName)
 
-        // Add file data
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
+        if let startDate, let endDate {
+            let formatter = ISO8601DateFormatter()
+            appendField("startDate", formatter.string(from: startDate))
+            appendField("endDate", formatter.string(from: endDate))
+        }
+
+        // file part
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append(
             "Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n"
                 .data(using: .utf8)!
         )
-        data.append("Content-Type: application/pdf\r\n\r\n".data(using: .utf8)!)
-        data.append(fileData)
-        data.append("\r\n".data(using: .utf8)!)
-        data.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(fileData)
+        body.append("\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
-        request.httpBody = data
+        request.httpBody = body
 
-        let (responseData, response) = try await URLSession.shared.data(
-            for: request
-        )
+        let (responseData, response) = try await URLSession.shared.data(for: request)
 
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw FileUploadError.invalidResponse
-        }
-
-        guard httpResponse.statusCode == 200 else {
-            throw FileUploadError.serverError(httpResponse.statusCode)
+        guard let httpResponse = response as? HTTPURLResponse,
+            httpResponse.statusCode == 200
+        else {
+            throw FileUploadError.serverError(
+                (response as? HTTPURLResponse)?.statusCode ?? 0
+            )
         }
 
         let uploadResponse = try JSONDecoder().decode(
@@ -229,18 +166,7 @@ class SmartFileUploadManager: ObservableObject {
             throw FileUploadError.uploadFailed(uploadResponse.message)
         }
 
-        return uploadResponse.processId
-    }
-
-    func reset() {
-        isLoading = false
-        processingProgress = ""
-        fileName = ""
-        detectedType = .unknown
-        error = nil
-        showSuccessAlert = false
-        successMessage = ""
-        currentProcessId = nil
+        return uploadResponse
     }
 }
 
