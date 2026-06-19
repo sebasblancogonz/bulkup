@@ -206,7 +206,7 @@ struct AddMeasurementsView: View {
                                 Image(systemName: "checkmark.circle.fill")
                             }
 
-                            Text(isLoading ? "Guardando..." : "Guardar Medidas")
+                            Text(isLoading ? String(localized: "Guardando...") : String(localized: "Guardar Medidas"))
                         }
                     }
                     .buttonStyle(PrimaryButtonStyle(color: BulkUpColors.accent))
@@ -219,7 +219,7 @@ struct AddMeasurementsView: View {
                 .padding()
             }
             .background(BulkUpColors.background.ignoresSafeArea())
-            .navigationTitle("Agregar Medidas")
+            .navigationTitle(String(localized: "Agregar Medidas"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

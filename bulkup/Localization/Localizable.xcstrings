@@ -1482,6 +1482,727 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "... and %lld more meals" } }
       }
+    },
+
+    "Tus PR" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your PRs" } }
+      }
+    },
+    "Records Personales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Personal Records" } }
+      }
+    },
+    "Registra y sigue tus PR en los ejercicios principales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Record and track your PRs on the main exercises" } }
+      }
+    },
+    "Registra peso y repeticiones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log weight and reps" } }
+      }
+    },
+    "Calculo automatico de RM estimado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Automatic estimated 1RM calculation" } }
+      }
+    },
+    "Historial y progresion por ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "History and progression per exercise" } }
+      }
+    },
+    "Estadisticas de tus levantamientos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your lifting stats" } }
+      }
+    },
+    "Actualizando..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Updating..." } }
+      }
+    },
+    "Récord actualizado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Record updated" } }
+      }
+    },
+    "Récord creado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Record created" } }
+      }
+    },
+    "Error al guardar el récord" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error saving the record" } }
+      }
+    },
+    "Récord eliminado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Record deleted" } }
+      }
+    },
+    "Error al eliminar el récord" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error deleting the record" } }
+      }
+    },
+    "Cargando datos..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading data..." } }
+      }
+    },
+    "Buscar ejercicio..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Search exercise..." } }
+      }
+    },
+    "Ver Detalle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View Detail" } }
+      }
+    },
+    "Mejor PR" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Best PR" } }
+      }
+    },
+    "RM Estimado: %@ kg" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Est. 1RM: %@ kg" } }
+      }
+    },
+    "Total registros:" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total records:" } }
+      }
+    },
+    "¿Eliminar récord?" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete record?" } }
+      }
+    },
+    "Esta acción no se puede deshacer" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This action cannot be undone" } }
+      }
+    },
+    "Sin récords registrados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No records logged" } }
+      }
+    },
+    "¡Registra tu primer RM!" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log your first PR!" } }
+      }
+    },
+    "Detalles del Ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Exercise Details" } }
+      }
+    },
+    "Ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Exercise" } }
+      }
+    },
+    "Seleccionar ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Select exercise" } }
+      }
+    },
+    "Fecha" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Date" } }
+      }
+    },
+    "Información Adicional" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Additional Info" } }
+      }
+    },
+    "RM Estimado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Est. 1RM" } }
+      }
+    },
+    "Cálculo Automático" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Auto Calculation" } }
+      }
+    },
+    "Basado en fórmula híbrida" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Based on hybrid formula" } }
+      }
+    },
+    "Editar RM" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit PR" } }
+      }
+    },
+    "Nuevo RM" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New PR" } }
+      }
+    },
+    "Actualizar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Update" } }
+      }
+    },
+    "Seleccionar Ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Select Exercise" } }
+      }
+    },
+    "Cerrar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } }
+      }
+    },
+    "Porcentajes del 1RM" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "1RM Percentages" } }
+      }
+    },
+    "Progreso Histórico" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Historical Progress" } }
+      }
+    },
+    "Historial Completo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Full History" } }
+      }
+    },
+    "Añadir" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add" } }
+      }
+    },
+    "No hay registros" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No records" } }
+      }
+    },
+    "Añade tu primer récord para este ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add your first record for this exercise" } }
+      }
+    },
+    "Error al eliminar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error deleting" } }
+      }
+    },
+    "Error al guardar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error saving" } }
+      }
+    },
+    "Total Sets" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total Sets" } }
+      }
+    },
+    "registrados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "recorded" } }
+      }
+    },
+    "Progreso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Progress" } }
+      }
+    },
+    "desde inicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "since start" } }
+      }
+    },
+    "Volumen Total" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total Volume" } }
+      }
+    },
+    "kg × reps" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "kg × reps" } }
+      }
+    },
+    "Sin imágenes disponibles" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No images available" } }
+      }
+    },
+    "Músculos trabajados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Muscles worked" } }
+      }
+    },
+    "Principales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Primary" } }
+      }
+    },
+    "Secundarios" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Secondary" } }
+      }
+    },
+    "Detalles técnicos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Technical details" } }
+      }
+    },
+    "Tipo de fuerza" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Force type" } }
+      }
+    },
+    "Mecánica" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mechanic" } }
+      }
+    },
+    "Equipo necesario" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Required equipment" } }
+      }
+    },
+    "Nivel de dificultad" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Difficulty level" } }
+      }
+    },
+    "Instrucciones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Instructions" } }
+      }
+    },
+    "Pesos Registrados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Logged Weights" } }
+      }
+    },
+    "Total de sets registrados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total sets logged" } }
+      }
+    },
+    "Ejercicios con RM" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Exercises with PR" } }
+      }
+    },
+    "Con récords registrados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "With records logged" } }
+      }
+    },
+    "Este Mes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This Month" } }
+      }
+    },
+    "Nuevos registros" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New records" } }
+      }
+    },
+    "Medidas Corporales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Body Measurements" } }
+      }
+    },
+    "Haz seguimiento de tu composicion corporal y progreso fisico" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Track your body composition and physical progress" } }
+      }
+    },
+    "Registro de peso, cintura, cuello y mas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log weight, waist, neck, and more" } }
+      }
+    },
+    "Historial de mediciones con graficos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Measurement history with charts" } }
+      }
+    },
+    "Calculo de IMC y composicion corporal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "BMI and body composition calculation" } }
+      }
+    },
+    "Tendencias y cambios entre mediciones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trends and changes between measurements" } }
+      }
+    },
+    "Cargando medidas..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading measurements..." } }
+      }
+    },
+    "No hay medidas registradas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No measurements recorded" } }
+      }
+    },
+    "Agrega tus primeras medidas para comenzar a hacer seguimiento de tu progreso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add your first measurements to start tracking your progress" } }
+      }
+    },
+    "Agregar Primera Medida" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add First Measurement" } }
+      }
+    },
+    "Última Medición" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Latest Measurement" } }
+      }
+    },
+    "Progreso de Peso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Weight Progress" } }
+      }
+    },
+    "Historial de Mediciones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Measurement History" } }
+      }
+    },
+    "Cintura" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Waist" } }
+      }
+    },
+    "IMC" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "BMI" } }
+      }
+    },
+    "Nuevas Medidas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Measurements" } }
+      }
+    },
+    "Registra tus medidas para calcular tu composición corporal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Record your measurements to calculate your body composition" } }
+      }
+    },
+    "Información Básica" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Basic Info" } }
+      }
+    },
+    "años" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "yrs" } }
+      }
+    },
+    "Sexo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sex" } }
+      }
+    },
+    "Hombre" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Male" } }
+      }
+    },
+    "Mujer" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Female" } }
+      }
+    },
+    "Edad calculada desde tu fecha de nacimiento. Puedes modificarla si es necesario." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Age calculated from your date of birth. You can edit it if needed." } }
+      }
+    },
+    "Cuello" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Neck" } }
+      }
+    },
+    "Medidas Adicionales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Additional Measurements" } }
+      }
+    },
+    "Cadera" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Hip" } }
+      }
+    },
+    "Brazo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Arm" } }
+      }
+    },
+    "Muslo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Thigh" } }
+      }
+    },
+    "Pantorrilla" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Calf" } }
+      }
+    },
+    "(opcional)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "(optional)" } }
+      }
+    },
+    "Guardar Medidas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save Measurements" } }
+      }
+    },
+    "Agregar Medidas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Measurements" } }
+      }
+    },
+    "Detalle de Medición" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Measurement Detail" } }
+      }
+    },
+    "Hace %lld días" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld days ago" } }
+      }
+    },
+    "Medidas Principales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Main Measurements" } }
+      }
+    },
+    "Cambios desde la medición anterior" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Changes since last measurement" } }
+      }
+    },
+    "Composición Corporal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Body Composition" } }
+      }
+    },
+    "Masa Muscular" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Muscle Mass" } }
+      }
+    },
+    "Agua Corporal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Body Water" } }
+      }
+    },
+    "Pulsa en % Grasa para corregirlo con tu dato real" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tap % Fat to correct it with your real value" } }
+      }
+    },
+    "Calcular Composición Corporal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Calculate Body Composition" } }
+      }
+    },
+    "Modificar % Grasa Corporal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit Body Fat %" } }
+      }
+    },
+    "% Grasa" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "% Fat" } }
+      }
+    },
+    "Introduce el porcentaje de grasa proporcionado por tu nutricionista" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter the body fat percentage provided by your nutritionist" } }
+      }
+    },
+    "Eliminar Medición" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Measurement" } }
+      }
+    },
+    "Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar esta medición?" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This action cannot be undone. Are you sure you want to delete this measurement?" } }
+      }
+    },
+    "Bajo peso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Underweight" } }
+      }
+    },
+    "Normal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Normal" } }
+      }
+    },
+    "Sobrepeso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Overweight" } }
+      }
+    },
+    "Obesidad" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Obesity" } }
+      }
+    },
+    "Resumen Semanal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Weekly Summary" } }
+      }
+    },
+    "Cumplimiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Compliance" } }
+      }
+    },
+    "Racha" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Streak" } }
+      }
+    },
+    "%1$d/%2$d dias" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$d/%2$d days" } }
+      }
+    },
+    "Entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Training" } }
+      }
+    },
+    "Plan activo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Active plan" } }
+      }
+    },
+    "Racha actual: %lld dias" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Current streak: %lld days" } }
+      }
+    },
+    "No hay plan de entrenamiento activo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No active workout plan" } }
+      }
+    },
+    "Alimentacion" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Nutrition" } }
+      }
+    },
+    "Marca tus comidas para ver estadisticas de cumplimiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mark your meals to see compliance stats" } }
+      }
+    },
+    "No hay plan de dieta activo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No active diet plan" } }
+      }
+    },
+    "Ver todos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View all" } }
+      }
+    },
+    "Registra tus levantamientos en la seccion RM" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log your lifts in the PR section" } }
+      }
+    },
+    "Ranking" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ranking" } }
+      }
+    },
+    "Agrega amigos para ver el ranking" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add friends to see the ranking" } }
+      }
+    },
+    "Mi Codigo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "My Code" } }
+      }
+    },
+    "Ver historial" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View history" } }
+      }
+    },
+    "Agrega tus medidas corporales para ver tu progreso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add your body measurements to see your progress" } }
+      }
+    },
+    "(tu)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "(you)" } }
+      }
+    },
+    "Ver leaderboard completo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View full leaderboard" } }
+      }
+    },
+    "Desbloquea el Progreso Completo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlock Full Progress" } }
+      }
+    },
+    "Medidas corporales, records personales y ranking con amigos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Body measurements, personal records and friend rankings" } }
+      }
+    },
+    "Seguimiento de composicion corporal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Body composition tracking" } }
+      }
+    },
+    "Records personales (RM)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Personal records (PR)" } }
+      }
+    },
+    "Ranking y competencia con amigos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ranking and competing with friends" } }
+      }
+    },
+    "Registra y sigue tus PR con PRO" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Track your PRs with PRO" } }
+      }
+    },
+    "Compite con amigos con PRO" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Compete with friends with PRO" } }
+      }
+    },
+    "Agregar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add" } }
+      }
     }
   },
   "version" : "1.0"

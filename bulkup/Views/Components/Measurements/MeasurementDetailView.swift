@@ -48,7 +48,7 @@ struct MeasurementDetailView: View {
                 .padding()
             }
             .background(BulkUpColors.background.ignoresSafeArea())
-            .navigationTitle("Detalle de Medición")
+            .navigationTitle(String(localized: "Detalle de Medición"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -371,10 +371,10 @@ struct MeasurementDetailView: View {
 
     private var imcCategory: String {
         switch imc {
-        case ..<18.5: return "Bajo peso"
-        case 18.5..<25: return "Normal"
-        case 25..<30: return "Sobrepeso"
-        default: return "Obesidad"
+        case ..<18.5: return String(localized: "Bajo peso")
+        case 18.5..<25: return String(localized: "Normal")
+        case 25..<30: return String(localized: "Sobrepeso")
+        default: return String(localized: "Obesidad")
         }
     }
 

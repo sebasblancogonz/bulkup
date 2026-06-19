@@ -85,7 +85,7 @@ struct RMTrackerView: View {
                     }
                 }
             }
-            .navigationTitle("Tus PR")
+            .navigationTitle(String(localized: "Tus PR"))
             .navigationBarTitleDisplayMode(.large)
             .sheet(isPresented: $showAddForm) {
                 AddRecordFormView(
@@ -180,10 +180,10 @@ struct RMTrackerView: View {
                 await MainActor.run {
                     if success {
                         resetForm()
-                        let message = editingRecordId != nil ? "Récord actualizado" : "Récord creado"
+                        let message = editingRecordId != nil ? String(localized: "Récord actualizado") : String(localized: "Récord creado")
                         notificationManager.showNotification(.success, message: message)
                     } else {
-                        notificationManager.showNotification(.error, message: "Error al guardar el récord")
+                        notificationManager.showNotification(.error, message: String(localized: "Error al guardar el récord"))
                     }
                 }
             }
@@ -200,9 +200,9 @@ struct RMTrackerView: View {
 
                 await MainActor.run {
                     if success {
-                        notificationManager.showNotification(.success, message: "Récord eliminado")
+                        notificationManager.showNotification(.success, message: String(localized: "Récord eliminado"))
                     } else {
-                        notificationManager.showNotification(.error, message: "Error al eliminar el récord")
+                        notificationManager.showNotification(.error, message: String(localized: "Error al eliminar el récord"))
                     }
                 }
             }
@@ -279,12 +279,12 @@ struct RMTrackerView: View {
                 if success {
                     notificationManager.showNotification(
                         .success,
-                        message: "Récord eliminado"
+                        message: String(localized: "Récord eliminado")
                     )
                 } else {
                     notificationManager.showNotification(
                         .error,
-                        message: "Error al eliminar el récord"
+                        message: String(localized: "Error al eliminar el récord")
                     )
                 }
             }
@@ -642,7 +642,7 @@ struct AddRecordFormView: View {
                     }
                 }
             }
-            .navigationTitle(isEditing ? "Editar RM" : "Nuevo RM")
+            .navigationTitle(isEditing ? String(localized: "Editar RM") : String(localized: "Nuevo RM"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -718,7 +718,7 @@ struct ExercisePickerView: View {
                 }
             }
             .searchable(text: $searchText, prompt: "Buscar ejercicio...")
-            .navigationTitle("Seleccionar Ejercicio")
+            .navigationTitle(String(localized: "Seleccionar Ejercicio"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

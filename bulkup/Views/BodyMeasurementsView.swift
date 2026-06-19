@@ -38,7 +38,7 @@ struct BodyMeasurementsView: View {
         ScrollView {
             VStack(spacing: 20) {
                 if measurementsManager.isLoading && measurementsManager.measurementsHistory.isEmpty {
-                    ProgressView("Cargando medidas...")
+                    ProgressView(String(localized: "Cargando medidas..."))
                         .frame(maxWidth: .infinity, minHeight: 200)
                 } else if measurementsManager.measurementsHistory.isEmpty {
                     // Estado vacío
