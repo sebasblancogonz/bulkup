@@ -64,7 +64,7 @@ struct LoginContentView: View {
                     HStack {
                         if authManager.isLoading {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .progressViewStyle(CircularProgressViewStyle(tint: BulkUpColors.onAccent))
                                 .scaleEffect(0.9)
                         } else {
                             Text(isRegistering ? LocalizedStringKey("Crear cuenta") : LocalizedStringKey("Iniciar sesión"))

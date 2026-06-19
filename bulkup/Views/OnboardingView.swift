@@ -340,7 +340,7 @@ struct OnboardingView: View {
 
                 Image(systemName: icon)
                     .font(BulkUpFont.body())
-                    .foregroundColor(.white)
+                    .foregroundColor(BulkUpColors.onAccent)
             }
 
             Text(LocalizedStringKey(text))
@@ -358,7 +358,7 @@ struct OnboardingView: View {
             HStack(spacing: Spacing.lg) {
                 Image(systemName: icon)
                     .font(BulkUpFont.sectionHeader())
-                    .foregroundColor(selectedGoal == goal ? .white : BulkUpColors.accent)
+                    .foregroundColor(selectedGoal == goal ? BulkUpColors.onAccent : BulkUpColors.accent)
                     .frame(width: 44, height: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
@@ -421,7 +421,7 @@ struct OnboardingView: View {
             HStack(spacing: Spacing.lg) {
                 Image(systemName: icon)
                     .font(BulkUpFont.sectionHeader())
-                    .foregroundColor(.white)
+                    .foregroundColor(BulkUpColors.onAccent)
                     .frame(width: 52, height: 52)
                     .background(
                         RoundedRectangle(cornerRadius: CornerRadius.medium)
@@ -470,7 +470,7 @@ struct OnboardingView: View {
             HStack {
                 if isSavingMeasurements {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .progressViewStyle(CircularProgressViewStyle(tint: BulkUpColors.onAccent))
                         .scaleEffect(0.9)
                 } else {
                     Text(LocalizedStringKey(title))
