@@ -79,6 +79,15 @@ class WorkoutSessionManager: ObservableObject {
 
         startElapsedTimer()
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+
+        // Seed the shared store and start the Live Activity
+        let tm = trainingManager ?? TrainingManager.shared
+        let live = buildLiveWorkout(dayName: dayName, trainingManager: tm)
+        SharedWorkoutStore.save(live)
+        WorkoutActivityController.shared.start(
+            dayName: dayName,
+            state: WorkoutActivityController.contentState(from: live)
+        )
     }
 
     /// Mark sets as completed if they already have weight data saved
@@ -251,6 +260,8 @@ class WorkoutSessionManager: ObservableObject {
         pauseStartTime = nil
         summaryData = nil
         showSummary = false
+        SharedWorkoutStore.save(nil)
+        WorkoutActivityController.shared.end()
     }
 
     // MARK: - Set Completion
@@ -496,6 +507,68 @@ class WorkoutSessionManager: ObservableObject {
             prs: [],
             date: Date()
         )
+    }
+
+    // MARK: - Live Workout Builder
+
+    /// Mirrors buildSummary's iteration to produce a LiveWorkout for the shared store
+    /// and the Lock Screen Live Activity.
+    private func buildLiveWorkout(dayName: String, trainingManager: TrainingManager) -> LiveWorkout {
+        let normalizedDay = dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+
+        let weightUnit = UserDefaults.standard.string(forKey: "units") == "imperial" ? "lb" : "kg"
+        let weightStep: Double = weightUnit == "lb" ? 5 : 2.5
+        let repStep = 1
+
+        var liveSets: [LiveWorkout.LiveSet] = []
+
+        if let dayData = trainingManager.trainingData.first(where: {
+            $0.day.lowercased()
+                .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
+        }) {
+            for exercise in dayData.exercises {
+                let totalSets = exercise.sets
+                for setIdx in 0..<totalSets {
+                    let weightKey = trainingManager.generateWeightKey(
+                        day: normalizedDay,
+                        exerciseIndex: exercise.orderIndex,
+                        exerciseName: exercise.name,
+                        setIndex: setIdx
+                    )
+                    let weight = trainingManager.weights[weightKey] ?? 0
+                    let reps = parseReps(exercise.reps)
+                    let key = setKey(day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIdx)
+                    let completed = completedSetIds.contains(key)
+
+                    liveSets.append(LiveWorkout.LiveSet(
+                        exerciseIndex: exercise.orderIndex,
+                        exerciseName: exercise.name,
+                        setIndex: setIdx,
+                        setsTotalForExercise: totalSets,
+                        weight: weight,
+                        reps: reps,
+                        restSeconds: exercise.restSeconds,
+                        completed: completed
+                    ))
+                }
+            }
+        }
+
+        var live = LiveWorkout(
+            dayName: dayName,
+            workoutName: workoutName ?? dayName,
+            startDate: startTime ?? Date(),
+            isPaused: isPaused,
+            weightUnit: weightUnit,
+            weightStep: weightStep,
+            repStep: repStep,
+            sets: liveSets,
+            cursor: 0,
+            restEndDate: nil
+        )
+        live.advanceCursor()
+        return live
     }
 
     private func parseReps(_ repsString: String) -> Int {
