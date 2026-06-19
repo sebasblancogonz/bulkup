@@ -12,6 +12,7 @@ enum AppTab: String, CaseIterable, Identifiable {
     case today
     case training
     case diet
+    case progress
     case profile
 
     var id: String { rawValue }
@@ -21,6 +22,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         case .today: "Hoy"
         case .training: "Entreno"
         case .diet: "Dieta"
+        case .progress: "Progreso"
         case .profile: "Perfil"
         }
     }
@@ -30,6 +32,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         case .today: "house"
         case .training: "dumbbell"
         case .diet: "fork.knife"
+        case .progress: "chart.bar"
         case .profile: "person"
         }
     }
@@ -39,6 +42,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         case .today: "house.fill"
         case .training: "dumbbell.fill"
         case .diet: "fork.knife"
+        case .progress: "chart.bar.fill"
         case .profile: "person.fill"
         }
     }
@@ -94,6 +98,13 @@ struct MainAppView: View {
                                     .environmentObject(dietManager)
                             }
                             .toolbarVisibility(workoutSession.isActive ? .hidden : .automatic, for: .tabBar)
+                        }
+
+                        Tab("Progreso", systemImage: "chart.bar.fill", value: .progress) {
+                            // ProgressDashboardView wraps its own NavigationStack — don't nest another.
+                            ProgressDashboardView()
+                                .environmentObject(authManager)
+                                .toolbarVisibility(workoutSession.isActive ? .hidden : .automatic, for: .tabBar)
                         }
 
                         Tab("Perfil", systemImage: "person.fill", value: .profile) {
