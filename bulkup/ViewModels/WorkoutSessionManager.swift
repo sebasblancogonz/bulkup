@@ -13,6 +13,10 @@ import SwiftUI
 class WorkoutSessionManager: ObservableObject {
     static let shared = WorkoutSessionManager()
 
+    init() {
+        setupDarwinBridge()
+    }
+
     // MARK: - Published State
 
     @Published var isActive = false
@@ -287,6 +291,205 @@ class WorkoutSessionManager: ObservableObject {
 
         if restSeconds > 0 {
             startRestTimer(seconds: restSeconds, nextSetInfo: nextInfo)
+        }
+
+        // App → store: mirror this completion into the shared store + activity.
+        if isActive {
+            mirrorCompletionToStore(
+                exerciseIndex: exerciseIndex,
+                setIndex: setIndex,
+                restSeconds: restSeconds,
+                trainingManager: .shared
+            )
+        }
+    }
+
+    /// Reflect an in-app set completion into the shared store and refresh the
+    /// Live Activity. Matches the store `LiveSet` by exerciseIndex + setIndex.
+    /// Additive: does NOT touch weight persistence — only the live mirror.
+    private func mirrorCompletionToStore(
+        exerciseIndex: Int,
+        setIndex: Int,
+        restSeconds: Int,
+        trainingManager: TrainingManager
+    ) {
+        guard var w = SharedWorkoutStore.load() else { return }
+        guard let day = currentDayName else { return }
+        let normalizedDay = day.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+
+        guard let idx = w.sets.firstIndex(where: {
+            $0.exerciseIndex == exerciseIndex && $0.setIndex == setIndex
+        }) else { return }
+
+        w.sets[idx].completed = true
+
+        // Pull the latest weight/reps from in-app state where available.
+        let exerciseName = w.sets[idx].exerciseName
+        let weightKey = trainingManager.generateWeightKey(
+            day: normalizedDay,
+            exerciseIndex: exerciseIndex,
+            exerciseName: exerciseName,
+            setIndex: setIndex
+        )
+        if let weight = trainingManager.weights[weightKey], weight > 0 {
+            w.sets[idx].weight = weight
+        }
+        let repsKey = setKey(day: normalizedDay, exerciseIndex: exerciseIndex, setIndex: setIndex)
+        if let reps = actualReps[repsKey] {
+            w.sets[idx].reps = reps
+        }
+
+        w.restEndDate = restSeconds > 0
+            ? Date().addingTimeInterval(TimeInterval(restSeconds))
+            : nil
+        w.advanceCursor()
+
+        SharedWorkoutStore.save(w)
+        WorkoutActivityController.shared.update(
+            WorkoutActivityController.contentState(from: w)
+        )
+    }
+
+    /// Rebuild the shared store's per-set weight/reps/completed from the current
+    /// session + TrainingManager state and refresh the activity. Use after
+    /// weight edits made in-app. Reuses the same iteration as `buildLiveWorkout`,
+    /// preserving the existing cursor/restEndDate when possible.
+    func syncStoreFromSession(trainingManager: TrainingManager) {
+        guard isActive, let dayName = currentDayName else { return }
+        let existing = SharedWorkoutStore.load()
+        var live = buildLiveWorkout(dayName: dayName, trainingManager: trainingManager)
+        // Preserve any in-flight rest timer state from the existing store.
+        if let existing {
+            live.restEndDate = existing.restEndDate
+        }
+        SharedWorkoutStore.save(live)
+        WorkoutActivityController.shared.update(
+            WorkoutActivityController.contentState(from: live)
+        )
+    }
+
+    // MARK: - Store → App Reconciliation (widget mutations)
+
+    /// Pull mutations made via the widget (in the shared store) back into the
+    /// session and TrainingManager. Idempotent: safe to call repeatedly.
+    ///
+    /// Mapping:
+    /// - For each store `LiveSet` with `completed == true` whose `setKey`
+    ///   (day = normalized `currentDayName`) is NOT already in `completedSetIds`:
+    ///   insert into `completedSetIds`, record `actualReps[key] = liveSet.reps`,
+    ///   and push `liveSet.weight` into `trainingManager.weights` via `updateWeight`.
+    /// - For the CURRENT (incomplete) cursor set, mirror its weight/reps so live
+    ///   widget adjustments show in-app even before completion.
+    /// - Each exercise that gained newly-completed sets is persisted via
+    ///   `saveWeightsToDatabase` (skipped if no authenticated userId).
+    func reconcileFromStore(trainingManager: TrainingManager) {
+        guard isActive, let dayName = currentDayName else { return }
+        guard let w = SharedWorkoutStore.load() else { return }
+
+        let normalizedDay = dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+
+        var newlyCompleted = false
+        // exerciseIndex -> exerciseName, for exercises that gained completed sets
+        var exercisesToPersist: [Int: String] = [:]
+
+        for liveSet in w.sets {
+            let key = setKey(
+                day: normalizedDay,
+                exerciseIndex: liveSet.exerciseIndex,
+                setIndex: liveSet.setIndex
+            )
+
+            if liveSet.completed {
+                // Always reflect the widget's weight/reps for completed sets.
+                if liveSet.weight > 0 {
+                    trainingManager.updateWeight(
+                        day: normalizedDay,
+                        exerciseIndex: liveSet.exerciseIndex,
+                        exerciseName: liveSet.exerciseName,
+                        setIndex: liveSet.setIndex,
+                        weight: liveSet.weight
+                    )
+                }
+                if !completedSetIds.contains(key) {
+                    completedSetIds.insert(key)
+                    actualReps[key] = liveSet.reps
+                    newlyCompleted = true
+                    exercisesToPersist[liveSet.exerciseIndex] = liveSet.exerciseName
+                } else if actualReps[key] != liveSet.reps {
+                    actualReps[key] = liveSet.reps
+                }
+            }
+        }
+
+        // Mirror the current (incomplete) cursor set's adjustments in-app.
+        if let current = w.current, !current.completed, current.weight > 0 {
+            trainingManager.updateWeight(
+                day: normalizedDay,
+                exerciseIndex: current.exerciseIndex,
+                exerciseName: current.exerciseName,
+                setIndex: current.setIndex,
+                weight: current.weight
+            )
+        }
+
+        // Persist exercises that gained completed sets (if authenticated).
+        if newlyCompleted, let userId = AuthManager.shared.user?.id {
+            for (exerciseIndex, exerciseName) in exercisesToPersist {
+                let name = exerciseName
+                let idx = exerciseIndex
+                Task {
+                    await trainingManager.saveWeightsToDatabase(
+                        day: normalizedDay,
+                        exerciseIndex: idx,
+                        exerciseName: name,
+                        note: "",
+                        userId: userId
+                    )
+                }
+            }
+        }
+
+        // Refresh the Live Activity from the (authoritative) store state.
+        WorkoutActivityController.shared.update(
+            WorkoutActivityController.contentState(from: w)
+        )
+    }
+
+    // MARK: - Darwin Bridge
+
+    private func setupDarwinBridge() {
+        let name = SharedWorkoutStore.darwinName as CFString
+        let observer = Unmanaged.passUnretained(self).toOpaque()
+        CFNotificationCenterAddObserver(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            observer,
+            { _, _, _, _, _ in
+                // Darwin callbacks arrive on an arbitrary thread; bounce to main
+                // and post an in-app notification the session observes.
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(
+                        name: .liveWorkoutStoreChanged,
+                        object: nil
+                    )
+                }
+            },
+            name,
+            nil,
+            .deliverImmediately
+        )
+
+        NotificationCenter.default.addObserver(
+            forName: .liveWorkoutStoreChanged,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                WorkoutSessionManager.shared.reconcileFromStore(
+                    trainingManager: .shared
+                )
+            }
         }
     }
 
