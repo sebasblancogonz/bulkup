@@ -10,6 +10,7 @@ import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var authManager: AuthManager
+    @EnvironmentObject var languageManager: LanguageManager
     @Environment(\.dismiss) private var dismiss
 
     // Estados para configuraciones
@@ -95,6 +96,21 @@ struct SettingsView: View {
 
                 // MARK: - Personalización
                 Section("Personalización") {
+                    SettingsPicker(
+                        icon: "globe",
+                        iconColor: BulkUpColors.accent,
+                        title: "Idioma / Language",
+                        selection: Binding(
+                            get: { languageManager.language.rawValue },
+                            set: { languageManager.language = AppLanguage(rawValue: $0) ?? .system }
+                        ),
+                        options: [
+                            ("system", "Sistema / System"),
+                            ("es", "Español"),
+                            ("en", "English"),
+                        ]
+                    )
+
                     SettingsPicker(
                         icon: "ruler.fill",
                         iconColor: BulkUpColors.accent,
