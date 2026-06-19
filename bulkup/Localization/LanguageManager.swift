@@ -41,4 +41,24 @@ final class LanguageManager: ObservableObject {
         self.language = initial
         Bundle.setLanguage(initial.localeCode)
     }
+
+#if DEBUG
+    /// Asserts the localization infra is wired: both lproj bundles exist and the
+    /// English override actually changes a known string. Call once at launch.
+    static func runSelfCheck() {
+        guard
+            let esPath = Bundle.main.path(forResource: "es", ofType: "lproj"),
+            let enPath = Bundle.main.path(forResource: "en", ofType: "lproj"),
+            let esBundle = Bundle(path: esPath),
+            let enBundle = Bundle(path: enPath)
+        else {
+            assertionFailure("i18n: es/en .lproj not found — catalog or knownRegions misconfigured")
+            return
+        }
+        let es = esBundle.localizedString(forKey: "Ajustes", value: nil, table: nil)
+        let en = enBundle.localizedString(forKey: "Ajustes", value: nil, table: nil)
+        assert(es == "Ajustes", "i18n: Spanish source string changed unexpectedly (got \(es))")
+        assert(en == "Settings", "i18n: English translation missing/incorrect (got \(en))")
+    }
+#endif
 }

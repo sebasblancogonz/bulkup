@@ -13,6 +13,9 @@ struct BulkUp: App {
 
     init() {
         APIConfig.validateConfiguration()
+#if DEBUG
+        LanguageManager.runSelfCheck()
+#endif
 
         NotificationCenter.default.addObserver(
             forName: ASAuthorizationAppleIDProvider.credentialRevokedNotification,
