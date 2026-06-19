@@ -18,6 +18,7 @@ struct MealCardView: View {
     var onNotesChanged: ((String) -> Void)?
 
     @State private var trackingNotes: String = ""
+    @State private var showingRecipeChat = false
 
     private var isCompleted: Bool {
         trackingRecord?.completed ?? false
@@ -56,6 +57,12 @@ struct MealCardView: View {
         .clipped()
         .opacity(isCompleted ? 0.85 : 1.0)
         .padding(.horizontal, Spacing.screenH)
+        .sheet(isPresented: $showingRecipeChat) {
+            RecipeChatView(
+                mealType: meal.type,
+                ingredients: Array(Set(meal.options.flatMap { $0.ingredients })).sorted()
+            )
+        }
     }
 
     // MARK: - Collapsed Row
@@ -147,6 +154,16 @@ struct MealCardView: View {
             if let conditions = meal.conditions {
                 MealConditionsView(conditions: conditions, mealType: meal.type)
             }
+
+            // Recipe chat button
+            Button {
+                showingRecipeChat = true
+            } label: {
+                Label("Receta con IA", systemImage: "sparkles")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.accent)
+            }
+            .buttonStyle(.plain)
 
             // Tracking notes (when completed)
             if let record = trackingRecord, record.completed {
