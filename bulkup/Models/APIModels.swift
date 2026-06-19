@@ -138,12 +138,18 @@ struct UpdateProfileRequest: Codable {
     let dateOfBirth: Date?
     let profileImageURL: String?
     let nextReviewDate: Date?
+    let allergies: [String]?
+    let likedFoods: [String]?
+    let dislikedFoods: [String]?
 
-    init(name: String? = nil, dateOfBirth: Date? = nil, profileImageURL: String? = nil, nextReviewDate: Date? = nil) {
+    init(name: String? = nil, dateOfBirth: Date? = nil, profileImageURL: String? = nil, nextReviewDate: Date? = nil, allergies: [String]? = nil, likedFoods: [String]? = nil, dislikedFoods: [String]? = nil) {
         self.name = name
         self.dateOfBirth = dateOfBirth
         self.profileImageURL = profileImageURL
         self.nextReviewDate = nextReviewDate
+        self.allergies = allergies
+        self.likedFoods = likedFoods
+        self.dislikedFoods = dislikedFoods
     }
 }
 
@@ -171,6 +177,9 @@ struct ProfileResponse: Codable {
     let nextReviewDate: Date?
     let createdAt: Date
     let updatedAt: Date
+    var allergies: [String]?
+    var likedFoods: [String]?
+    var dislikedFoods: [String]?
 }
 
 

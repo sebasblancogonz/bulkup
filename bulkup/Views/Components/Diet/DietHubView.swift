@@ -15,6 +15,7 @@ struct DietHubView: View {
     @State private var showingDietPlanEditor = false
     @State private var showingSubscription = false
     @State private var showingLibrarySheet = false
+    @State private var showingFoodPreferences = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -41,6 +42,9 @@ struct DietHubView: View {
         .sheet(isPresented: $showingSubscription) {
             SubscriptionView()
                 .environmentObject(authManager)
+        }
+        .sheet(isPresented: $showingFoodPreferences) {
+            FoodPreferencesView()
         }
         .sheet(isPresented: $showingLibrarySheet) {
             NavigationStack {
@@ -143,6 +147,14 @@ struct DietHubView: View {
                     showingDietPlanEditor = true
                 } label: {
                     Label("Crear manualmente", systemImage: "square.and.pencil")
+                }
+
+                Divider()
+
+                Button {
+                    showingFoodPreferences = true
+                } label: {
+                    Label("Preferencias y alergias", systemImage: "fork.knife.circle")
                 }
             } label: {
                 Image(systemName: "ellipsis")

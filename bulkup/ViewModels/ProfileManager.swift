@@ -101,6 +101,39 @@ class ProfileManager: ObservableObject {
         }
     }
     
+    // MARK: - Update Food Preferences
+    func updateFoodPreferences(allergies: [String], likedFoods: [String], dislikedFoods: [String]) async -> Bool {
+        isLoading = true
+        errorMessage = nil
+
+        let currentProfile = profile
+
+        let request = UpdateProfileRequest(
+            name: currentProfile?.name,
+            dateOfBirth: currentProfile?.dateOfBirth,
+            profileImageURL: currentProfile?.profileImageURL,
+            allergies: allergies,
+            likedFoods: likedFoods,
+            dislikedFoods: dislikedFoods
+        )
+
+        do {
+            profile = try await apiService.updateProfile(request: request)
+
+            if let profile = profile {
+                AuthManager.shared.updateUserFromProfile(profile)
+            }
+
+            isLoading = false
+            return true
+        } catch {
+            errorMessage = "Error al actualizar preferencias alimentarias: \(error.localizedDescription)"
+            AppLogger.shared.error("Error updating food preferences: \(error)")
+            isLoading = false
+            return false
+        }
+    }
+
     // MARK: - Upload Profile Image
     func uploadProfileImage(imageData: Data) async -> Bool {
         isUploadingImage = true
