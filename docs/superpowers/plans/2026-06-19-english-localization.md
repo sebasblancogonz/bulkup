@@ -435,11 +435,19 @@ let s = String(localized: "Serie \(n) de \(total)")   // Swift maps to "Serie %l
 
 `Text("literal")` needs **no change** (auto-extracts). `Text(variable)` where `variable` is a localized `String` is fine once the variable was produced via `String(localized:)`.
 
-- [ ] **Step 3: Build to trigger extraction of new `Text` literals and confirm compilation**
+- [ ] **Step 3: Build to confirm compilation**
 
-Run the build command. Expected: `BUILD SUCCEEDED`. New literals now appear in `Localizable.xcstrings` (source = Spanish).
+Run the build command. Expected: `BUILD SUCCEEDED`.
 
-- [ ] **Step 4: Add English translations for every new/blank key in this batch**
+> **IMPORTANT — command-line `xcodebuild` does NOT auto-populate the catalog.**
+> Verified empirically: extracted `Text("…")` literals are **not** written back
+> into the source `Localizable.xcstrings` by `xcodebuild` (that is an Xcode-IDE-only
+> behavior). Therefore you must add every key to the catalog **manually** in
+> Step 4 — do not expect the build to discover them. A `Text("Hola")` literal
+> still localizes correctly at runtime **as long as the catalog has a matching
+> entry** (the build compiles `en.lproj`/`es.lproj` from the catalog).
+
+- [ ] **Step 4: Manually add catalog entries (key + English) for every user-facing string in this batch**
 
 > **Invariant (do not break):** the catalog MUST keep emitting `es.lproj`, which
 > requires at least the seeded keys ("Ajustes", "Idioma / Language") to retain
@@ -448,7 +456,12 @@ Run the build command. Expected: `BUILD SUCCEEDED`. New literals now appear in `
 > `es.lproj` lookup miss returns the key itself (the Spanish source text). Do not
 > delete the seeded `es` entries.
 
-Open `bulkup/Localization/Localizable.xcstrings` and, for each key introduced by this batch, set the `en` `stringUnit` `value` to the English translation with `state: "translated"`. Example entry:
+Open `bulkup/Localization/Localizable.xcstrings` and, for **every** user-facing
+Spanish string in this batch (both the `Text("…")` literals AND the strings you
+wrapped in `String(localized:)`), add an entry whose key is the exact Spanish
+string and whose `en` `stringUnit` `value` is the English translation with
+`state: "translated"`. The key must match the literal character-for-character.
+Example entry:
 
 ```json
 "Usuario no autenticado" : {
@@ -468,9 +481,16 @@ For format strings, keep placeholders identical (`%lld`, `%@`) and reorder words
 }
 ```
 
-- [ ] **Step 5: Build + manual spot-check in English**
+- [ ] **Step 5: Build, then verify the compiled `en.lproj` contains this batch's translations**
 
-Run the build command (Expected: `BUILD SUCCEEDED`). Launch with the app set to English and visit the batch's screens; confirm those strings are English and nothing shows a raw key. Untranslated keys fall back to Spanish (acceptable mid-sweep).
+Run the build command (Expected: `BUILD SUCCEEDED`). Then confirm the catalog actually compiled into the English bundle (this replaces the IDE spot-check, since we're headless):
+
+```bash
+APP=$(find ~/Library/Developer/Xcode/DerivedData/bulkup-*/Build/Products/Development-iphonesimulator/bulkup.app -maxdepth 0 | head -1)
+# spot-check a few keys you added this batch resolve to English:
+find "$APP/en.lproj" -name "*.strings" -exec plutil -p {} \; | grep -F "<one of your English values>"
+```
+Expected: the English values appear. (Optional/manual: launch in the simulator with the app set to English and visit the batch's screens.) Untranslated keys fall back to Spanish (acceptable mid-sweep).
 
 - [ ] **Step 6: Commit the batch**
 
