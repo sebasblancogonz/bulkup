@@ -883,7 +883,7 @@ struct ProgressDashboardView: View {
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMM yyyy"
-        formatter.locale = Locale(identifier: "es_ES")
+        formatter.locale = LanguageManager.shared.locale
         return formatter.string(from: date)
     }
 
