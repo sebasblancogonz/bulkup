@@ -11,25 +11,26 @@ struct NutritionSummaryCard: View {
     let complianceStats: ComplianceStatsResponse?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
                 Image(systemName: "chart.bar.fill")
-                    .foregroundColor(.green)
+                    .foregroundColor(BulkUpColors.diet)
 
                 Text("Resumen Nutricional")
-                    .font(.headline)
+                    .font(BulkUpFont.cardTitle())
                     .fontWeight(.bold)
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                 Spacer()
             }
 
             if let m = measurements, let c = composition {
                 HStack(spacing: 0) {
-                    MetricPill(label: "Peso", value: String(format: "%.1f kg", m.peso), color: .blue)
+                    MetricPill(label: "Peso", value: String(format: "%.1f kg", m.peso), color: BulkUpColors.training)
                     Spacer()
-                    MetricPill(label: "% Grasa", value: String(format: "%.1f%%", c.bodyFatPercentage), color: .orange)
+                    MetricPill(label: "% Grasa", value: String(format: "%.1f%%", c.bodyFatPercentage), color: BulkUpColors.accent)
                     Spacer()
-                    MetricPill(label: "Masa Magra", value: String(format: "%.1f kg", c.leanMass), color: .green)
+                    MetricPill(label: "Masa Magra", value: String(format: "%.1f kg", c.leanMass), color: BulkUpColors.diet)
                 }
 
                 if let stats = complianceStats {
@@ -40,8 +41,8 @@ struct NutritionSummaryCard: View {
                             String(format: "Cumplimiento: %.0f%%", stats.complianceRate * 100),
                             systemImage: "checkmark.circle"
                         )
-                        .font(.caption)
-                        .foregroundColor(stats.complianceRate >= 0.8 ? .green : .orange)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(stats.complianceRate >= 0.8 ? BulkUpColors.diet : BulkUpColors.accent)
 
                         Spacer()
 
@@ -50,26 +51,24 @@ struct NutritionSummaryCard: View {
                                 "\(stats.currentStreak) dias seguidos",
                                 systemImage: "flame"
                             )
-                            .font(.caption)
-                            .foregroundColor(.orange)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.accent)
                         }
                     }
                 }
             } else {
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     Image(systemName: "info.circle")
-                        .foregroundColor(.secondary)
-                        .font(.caption)
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .font(BulkUpFont.caption())
 
                     Text("Agrega tus medidas corporales para ver tu resumen")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
             }
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .flatCardStyle()
     }
 }
 
@@ -80,18 +79,18 @@ struct MetricPill: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: Spacing.xs) {
             Text(value)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundColor(color)
+                .font(BulkUpFont.sectionHeader())
+                .foregroundColor(BulkUpColors.textPrimary)
 
             Text(label)
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .padding(.vertical, Spacing.sm)
         .background(color.opacity(0.08))
-        .cornerRadius(8)
+        .cornerRadius(CornerRadius.small)
     }
 }

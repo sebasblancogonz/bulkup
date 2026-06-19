@@ -10,355 +10,381 @@ import SwiftUI
 struct DietHubView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var dietManager: DietManager
-    @ObservedObject private var measurementsManager = BodyMeasurementsManager.shared
-    @ObservedObject private var mealTrackingManager = MealTrackingManager.shared
-    @State private var selectedView: DietHubSection = .active
+    @ObservedObject private var storeKit = StoreKitManager.shared
     @State private var showingCreateDietPlan = false
-    @State private var projection: NutritionProjection?
-
-    enum DietHubSection: String, CaseIterable {
-        case active = "active"
-        case library = "library"
-
-        var displayName: String {
-            switch self {
-            case .active: return "Plan Activo"
-            case .library: return "Mis Planes"
-            }
-        }
-
-        var icon: String {
-            switch self {
-            case .active: return "leaf.fill"
-            case .library: return "folder.fill"
-            }
-        }
-    }
+    @State private var showingDietPlanEditor = false
+    @State private var showingSubscription = false
+    @State private var showingLibrarySheet = false
 
     var body: some View {
         VStack(spacing: 0) {
-            sectionPicker
-
-            Group {
-                switch selectedView {
-                case .active:
-                    if dietManager.dietData.isEmpty {
-                        activePlanEmptyState
-                    } else {
-                        activePlanContent
-                    }
-                case .library:
-                    DietPlanLibraryView()
-                        .environmentObject(dietManager)
-                        .environmentObject(authManager)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onChange(of: selectedView) { oldValue, newValue in
-                if newValue == .active, let userId = authManager.user?.id {
-                    Task {
-                        await dietManager.loadActiveDietPlan(userId: userId)
-
-                        if dietManager.dietPlanId == nil {
-                            await MainActor.run {
-                                dietManager.clearAllData()
-                            }
-                        }
-                    }
-                }
+            if dietManager.isLoading {
+                loadingView
+            } else if dietManager.dietData.isEmpty {
+                activePlanEmptyState
+            } else {
+                activePlanContent
             }
         }
+        .background(BulkUpColors.background)
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showingCreateDietPlan) {
             CreateDietPlanView()
                 .environmentObject(dietManager)
                 .environmentObject(authManager)
         }
+        .sheet(isPresented: $showingDietPlanEditor) {
+            DietPlanEditorView()
+                .environmentObject(dietManager)
+                .environmentObject(authManager)
+        }
+        .sheet(isPresented: $showingSubscription) {
+            SubscriptionView()
+                .environmentObject(authManager)
+        }
+        .sheet(isPresented: $showingLibrarySheet) {
+            NavigationStack {
+                DietPlanLibraryView()
+                    .environmentObject(dietManager)
+                    .environmentObject(authManager)
+                    .navigationTitle("Mis Planes")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Cerrar") {
+                                showingLibrarySheet = false
+                            }
+                            .foregroundColor(BulkUpColors.diet)
+                        }
+
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Menu {
+                                Button {
+                                    showingLibrarySheet = false
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        if storeKit.isSubscribed {
+                                            showingCreateDietPlan = true
+                                        } else {
+                                            showingSubscription = true
+                                        }
+                                    }
+                                } label: {
+                                    Label("Importar con IA", systemImage: "sparkles")
+                                }
+
+                                Button {
+                                    showingLibrarySheet = false
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        showingDietPlanEditor = true
+                                    }
+                                } label: {
+                                    Label("Crear manualmente", systemImage: "square.and.pencil")
+                                }
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(BulkUpColors.diet)
+                            }
+                        }
+                    }
+            }
+        }
         .onAppear {
-            loadMetricsData()
+            if dietManager.dietData.isEmpty && !dietManager.isLoading {
+                if let userId = authManager.user?.id {
+                    Task {
+                        await dietManager.loadActiveDietPlan(userId: userId)
+                    }
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateToDietLibrary)) { _ in
+            showingLibrarySheet = true
         }
     }
 
-    @State private var showMetricsDetail = false
+    // MARK: - Plan Header
+
+    private var planHeader: some View {
+        HStack(spacing: Spacing.md) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(dietManager.activePlanName ?? "Plan de Dieta")
+                    .font(BulkUpFont.sectionHeader())
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .lineLimit(1)
+
+                Text("\(dietManager.dietData.count) dias · \(totalMealCount) comidas")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+            }
+
+            Spacer()
+
+            Menu {
+                Button {
+                    showingLibrarySheet = true
+                } label: {
+                    Label("Mis Planes", systemImage: "folder.fill")
+                }
+
+                Divider()
+
+                Button {
+                    if storeKit.isSubscribed {
+                        showingCreateDietPlan = true
+                    } else {
+                        showingSubscription = true
+                    }
+                } label: {
+                    Label("Importar con IA", systemImage: "sparkles")
+                }
+
+                Button {
+                    showingDietPlanEditor = true
+                } label: {
+                    Label("Crear manualmente", systemImage: "square.and.pencil")
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(BulkUpColors.textSecondary)
+                    .frame(width: 36, height: 36)
+                    .background(BulkUpColors.surfaceElevated)
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, Spacing.screenH)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.sm)
+    }
+
+    private var totalMealCount: Int {
+        dietManager.dietData.first?.meals.count ?? 0
+    }
+
+    // MARK: - Active Plan Content
 
     private var activePlanContent: some View {
         VStack(spacing: 0) {
-            // Collapsible metrics header
-            metricsHeader
+            planHeader
 
-            // Diet View (has its own ScrollView)
             DietView()
                 .environmentObject(dietManager)
                 .environmentObject(authManager)
         }
     }
 
-    private var metricsHeader: some View {
-        VStack(spacing: 0) {
-            // Compact summary bar (always visible)
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    showMetricsDetail.toggle()
-                }
-            } label: {
-                HStack(spacing: 12) {
-                    if let m = measurementsManager.currentMeasurements,
-                       let c = measurementsManager.bodyComposition {
-                        Label(String(format: "%.1f kg", m.peso), systemImage: "scalemass")
-                            .font(.caption)
-                            .foregroundColor(.blue)
+    // MARK: - Loading View
 
-                        Label(String(format: "%.1f%%", c.bodyFatPercentage), systemImage: "percent")
-                            .font(.caption)
-                            .foregroundColor(.orange)
-                    }
+    private var loadingView: some View {
+        VStack(spacing: Spacing.xl) {
+            ProgressView()
+                .scaleEffect(1.5)
+                .tint(BulkUpColors.diet)
 
-                    if let stats = mealTrackingManager.complianceStats {
-                        Label(
-                            String(format: "%.0f%%", stats.complianceRate * 100),
-                            systemImage: "checkmark.circle"
-                        )
-                        .font(.caption)
-                        .foregroundColor(stats.complianceRate >= 0.8 ? .green : .orange)
-                    }
+            VStack(spacing: Spacing.sm) {
+                Text("Cargando tu plan...")
+                    .font(BulkUpFont.cardTitle())
+                    .foregroundColor(BulkUpColors.textPrimary)
 
-                    Spacer()
-
-                    Image(systemName: showMetricsDetail ? "chevron.up" : "chevron.down")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .background(Color(.systemGray6))
+                Text("Preparando tu alimentacion perfecta")
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textSecondary)
             }
-
-            if showMetricsDetail {
-                ScrollView {
-                    VStack(spacing: 8) {
-                        NutritionSummaryCard(
-                            measurements: measurementsManager.currentMeasurements,
-                            composition: measurementsManager.bodyComposition,
-                            complianceStats: mealTrackingManager.complianceStats
-                        )
-
-                        ReviewDatePickerView()
-                            .environmentObject(authManager)
-
-                        ProjectionsCard(
-                            projection: projection,
-                            reviewDate: authManager.user?.nextReviewDate
-                        )
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                }
-                .frame(maxHeight: 350)
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
-        }
-    }
-
-    private func loadMetricsData() {
-        guard let userId = authManager.user?.id else { return }
-        Task {
-            async let loadMeasurements: () = measurementsManager.loadLatestMeasurements(userId: userId)
-            async let loadStats: () = mealTrackingManager.loadComplianceStats(userId: userId)
-            _ = await (loadMeasurements, loadStats)
-
-            // Calculate body composition if we have measurements
-            if let measurementId = measurementsManager.currentMeasurements?.id {
-                _ = await measurementsManager.calculateBodyComposition(measurementId: measurementId)
-            }
-
-            // Calculate projections
-            computeProjection()
-        }
-    }
-
-    private func computeProjection() {
-        guard let composition = measurementsManager.bodyComposition,
-              let measurements = measurementsManager.currentMeasurements,
-              let reviewDate = authManager.user?.nextReviewDate else {
-            projection = nil
-            return
-        }
-
-        let daysToReview = Calendar.current.dateComponents([.day], from: Date(), to: reviewDate).day ?? 0
-        guard daysToReview > 0 else {
-            projection = nil
-            return
-        }
-
-        let complianceRate = mealTrackingManager.complianceStats?.complianceRate ?? 0.0
-
-        projection = ProjectionCalculator.calculate(
-            currentWeight: measurements.peso,
-            currentBodyFatPercentage: composition.bodyFatPercentage,
-            currentLeanMass: composition.leanMass,
-            complianceRate: complianceRate,
-            daysToReview: daysToReview,
-            sex: measurements.sexo
-        )
-    }
-
-    private var sectionPicker: some View {
-        HStack(spacing: 0) {
-            ForEach(DietHubSection.allCases, id: \.self) { section in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        selectedView = section
-                    }
-                } label: {
-                    VStack(spacing: 8) {
-                        HStack(spacing: 6) {
-                            Image(systemName: section.icon)
-                                .font(.system(size: 14, weight: .semibold))
-
-                            Text(section.displayName)
-                                .font(.system(size: 15, weight: .semibold))
-                        }
-                        .foregroundColor(
-                            selectedView == section ? .green : .secondary
-                        )
-
-                        Rectangle()
-                            .fill(
-                                selectedView == section
-                                    ? Color.green : Color.clear
-                            )
-                            .frame(height: 2)
-                            .animation(
-                                .easeInOut(duration: 0.2),
-                                value: selectedView
-                            )
-                    }
-                    .contentShape(Rectangle())
-                }
-                .frame(maxWidth: .infinity)
-            }
-
-            if selectedView == .library {
-                Button {
-                    showingCreateDietPlan = true
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(.green)
-                }
-                .padding(.trailing, 4)
-                .transition(.opacity.combined(with: .scale))
-            }
-        }
-        .padding(.horizontal)
-        .padding(.bottom, 1)
-        .padding(.top, 12)
-        .background(Color(.systemBackground))
-        .overlay(
-            Rectangle()
-                .fill(Color(.systemGray5))
-                .frame(height: 0.5),
-            alignment: .bottom
-        )
-    }
-
-    private var activePlanEmptyState: some View {
-        VStack(spacing: 24) {
-            VStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    .green.opacity(0.2), .green.opacity(0.05),
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 100, height: 100)
-
-                    Image(systemName: "leaf.fill")
-                        .font(.system(size: 50))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.green, .green.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                }
-                .shadow(color: .green.opacity(0.2), radius: 20, x: 0, y: 10)
-            }
-
-            VStack(spacing: 12) {
-                Text("No tienes un plan activo")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-
-                Text("Sube un nuevo plan o activa uno desde tu biblioteca")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-            }
-
-            VStack(spacing: 12) {
-                Button {
-                    showingCreateDietPlan = true
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "doc.badge.plus")
-                            .font(.title3)
-
-                        Text("Subir Plan de Dieta")
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .background(
-                        LinearGradient(
-                            colors: [.green, .green.opacity(0.8)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .shadow(color: .green.opacity(0.3), radius: 8, x: 0, y: 4)
-                    .contentShape(Rectangle())
-                }
-
-                Button {
-                    selectedView = .library
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "folder.fill")
-                            .font(.title3)
-
-                        Text("Ver Mis Planes")
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .background(Color(.systemGray6))
-                    .foregroundColor(.primary)
-                    .cornerRadius(12)
-                    .contentShape(Rectangle())
-                }
-            }
-            .padding(.horizontal, 32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.top, -50)
-        .onAppear {
-            if !dietManager.isLoading, let userId = authManager.user?.id {
-                Task {
-                    await dietManager.loadActiveDietPlan(userId: userId)
+    }
+
+    // MARK: - Empty State
+
+    private var activePlanEmptyState: some View {
+        ScrollView {
+            VStack(spacing: Spacing.xl) {
+                VStack(spacing: Spacing.lg) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        BulkUpColors.diet.opacity(0.2), BulkUpColors.diet.opacity(0.05),
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 100, height: 100)
+
+                        Image(systemName: "leaf.fill")
+                            .font(.system(size: 50))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [BulkUpColors.diet, BulkUpColors.diet.opacity(0.7)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    }
+                    .shadow(color: BulkUpColors.diet.opacity(0.2), radius: 20, x: 0, y: 10)
                 }
+
+                VStack(spacing: Spacing.md) {
+                    Text("No tienes un plan activo")
+                        .font(BulkUpFont.sectionHeader())
+                        .foregroundColor(BulkUpColors.textPrimary)
+
+                    Text("Crea un nuevo plan o activa uno desde tu biblioteca")
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Spacing.screenH)
+                }
+
+                // Creation options cards
+                VStack(spacing: Spacing.md) {
+                    // Importar con IA
+                    Button {
+                        if storeKit.isSubscribed {
+                            showingCreateDietPlan = true
+                        } else {
+                            showingSubscription = true
+                        }
+                    } label: {
+                        HStack(spacing: 14) {
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [BulkUpColors.diet.opacity(0.2), BulkUpColors.diet.opacity(0.08)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 48, height: 48)
+
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 22, weight: .medium))
+                                    .foregroundColor(BulkUpColors.diet)
+                            }
+
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                HStack(spacing: 6) {
+                                    Text("Importar con IA")
+                                        .font(BulkUpFont.cardTitle())
+                                        .foregroundColor(BulkUpColors.textPrimary)
+
+                                    if !storeKit.isSubscribed {
+                                        Text("PRO")
+                                            .font(BulkUpFont.caption())
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(BulkUpColors.secondary)
+                                            .cornerRadius(4)
+                                    }
+                                }
+
+                                Text("Sube un PDF o foto de tu dieta")
+                                    .font(BulkUpFont.body())
+                                    .foregroundColor(BulkUpColors.textSecondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: storeKit.isSubscribed ? "chevron.right" : "lock.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(storeKit.isSubscribed ? BulkUpColors.diet.opacity(0.5) : BulkUpColors.secondary.opacity(0.6))
+                        }
+                        .padding(Spacing.lg)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.large)
+                                .fill(BulkUpColors.surface)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.large)
+                                .stroke(BulkUpColors.diet.opacity(0.3), lineWidth: 1.5)
+                        )
+                        .shadow(color: BulkUpColors.diet.opacity(0.15), radius: 8, x: 0, y: 4)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    // Crear manualmente
+                    Button {
+                        showingDietPlanEditor = true
+                    } label: {
+                        dietCreationOptionRow(
+                            icon: "square.and.pencil",
+                            title: "Crear manualmente",
+                            subtitle: "Construye tu plan paso a paso"
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                .padding(.horizontal, 20)
+
+                // Ver Mis Planes link
+                Button {
+                    showingLibrarySheet = true
+                } label: {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "folder.fill")
+                            .font(BulkUpFont.body())
+
+                        Text("Ver Mis Planes")
+                            .fontWeight(.medium)
+                    }
+                    .foregroundColor(BulkUpColors.diet)
+                }
+                .padding(.top, Spacing.xs)
             }
+            .padding(.top, Spacing.xl)
+            .padding(.bottom, Spacing.xxl)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(BulkUpColors.background)
+    }
+
+    private func dietCreationOptionRow(icon: String, title: String, subtitle: String) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(BulkUpColors.surfaceElevated)
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(BulkUpColors.diet)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(BulkUpFont.body())
+                    .fontWeight(.semibold)
+                    .foregroundColor(BulkUpColors.textPrimary)
+
+                Text(subtitle)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(BulkUpColors.textTertiary)
+        }
+        .padding(.horizontal, Spacing.screenH)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(BulkUpColors.surface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .stroke(BulkUpColors.surfaceElevated, lineWidth: 1)
+        )
+        .contentShape(Rectangle())
     }
 }
 
@@ -368,23 +394,22 @@ struct DietPlanLibraryView: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var dietPlans: [DietPlan] = []
     @State private var isLoading = false
-    @State private var showingCreatePlan = false
 
     var body: some View {
         Group {
             if isLoading {
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.lg) {
                     ProgressView()
                         .scaleEffect(1.2)
                     Text("Cargando planes...")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if dietPlans.isEmpty {
                 libraryEmptyState
             } else {
-                plansList.padding(.bottom, 55)
+                plansList
             }
         }
         .onAppear {
@@ -396,14 +421,14 @@ struct DietPlanLibraryView: View {
     }
 
     private var libraryEmptyState: some View {
-        VStack(spacing: 24) {
-            VStack(spacing: 16) {
+        VStack(spacing: Spacing.xl) {
+            VStack(spacing: Spacing.lg) {
                 ZStack {
                     Circle()
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    .gray.opacity(0.2), .gray.opacity(0.05),
+                                    BulkUpColors.textTertiary.opacity(0.2), BulkUpColors.textTertiary.opacity(0.05),
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -413,49 +438,27 @@ struct DietPlanLibraryView: View {
 
                     Image(systemName: "folder")
                         .font(.system(size: 40))
-                        .foregroundColor(.gray)
+                        .foregroundColor(BulkUpColors.textTertiary)
                 }
             }
 
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.md) {
                 Text("Biblioteca vacia")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .font(BulkUpFont.sectionHeader())
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                 Text("Sube tu primer plan de dieta")
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textSecondary)
                     .multilineTextAlignment(.center)
-            }
-
-            Button {
-                showingCreatePlan = true
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title3)
-
-                    Text("Subir Plan")
-                        .fontWeight(.semibold)
-                }
-                .frame(width: 200, height: 44)
-                .background(Color.green)
-                .foregroundColor(.white)
-                .cornerRadius(12)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .sheet(isPresented: $showingCreatePlan) {
-            CreateDietPlanView()
-                .environmentObject(dietManager)
-                .environmentObject(authManager)
-        }
     }
 
     private var plansList: some View {
         ScrollView {
-            LazyVStack(spacing: 12) {
+            LazyVStack(spacing: Spacing.md) {
                 ForEach(dietPlans) { plan in
                     DietPlanCard(
                         plan: plan,
@@ -569,22 +572,23 @@ struct DietPlanCard: View {
     @State private var isActivating = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
             // Header
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(plan.name)
-                        .font(.headline)
+                        .font(BulkUpFont.cardTitle())
                         .fontWeight(.bold)
+                        .foregroundColor(BulkUpColors.textPrimary)
 
                     if plan.isActive {
-                        HStack(spacing: 4) {
+                        HStack(spacing: Spacing.xs) {
                             Circle()
-                                .fill(Color.green)
+                                .fill(BulkUpColors.diet)
                                 .frame(width: 8, height: 8)
                             Text("Plan Activo")
-                                .font(.caption)
-                                .foregroundColor(.green)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.diet)
                                 .fontWeight(.medium)
                         }
                     }
@@ -611,26 +615,26 @@ struct DietPlanCard: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.gray)
+                        .font(BulkUpFont.sectionHeader())
+                        .foregroundColor(BulkUpColors.textTertiary)
                 }
             }
 
             // Plan Info
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack {
                     Label(
                         "\(plan.dietDays.count) dias",
                         systemImage: "calendar"
                     )
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
 
                     Spacer()
 
                     Text("Creado \(plan.createdAt, style: .relative)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
 
                 if let totalMeals = plan.dietDays.first?.mealCount {
@@ -638,28 +642,28 @@ struct DietPlanCard: View {
                         "\(totalMeals) comidas por dia",
                         systemImage: "fork.knife"
                     )
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
                 }
 
                 // Day name chips preview
                 if !plan.dietDays.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: Spacing.sm) {
                             ForEach(plan.dietDays.prefix(5), id: \.day) { day in
                                 Text(day.day.capitalized)
-                                    .font(.caption2)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.green.opacity(0.1))
-                                    .foregroundColor(.green)
-                                    .cornerRadius(4)
+                                    .font(BulkUpFont.caption())
+                                    .padding(.horizontal, Spacing.sm)
+                                    .padding(.vertical, Spacing.xs)
+                                    .background(BulkUpColors.diet.opacity(0.1))
+                                    .foregroundColor(BulkUpColors.diet)
+                                    .cornerRadius(CornerRadius.small)
                             }
 
                             if plan.dietDays.count > 5 {
                                 Text("+\(plan.dietDays.count - 5)")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .font(BulkUpFont.caption())
+                                    .foregroundColor(BulkUpColors.textSecondary)
                             }
                         }
                     }
@@ -674,18 +678,13 @@ struct DietPlanCard: View {
                 .font(.system(size: 14, weight: .medium))
                 .frame(maxWidth: .infinity)
                 .frame(height: 36)
-                .background(Color.green)
+                .background(BulkUpColors.diet)
                 .foregroundColor(.white)
-                .cornerRadius(8)
+                .cornerRadius(CornerRadius.small)
                 .contentShape(Rectangle())
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-        )
+        .cardStyle()
         .alert("Eliminar Plan", isPresented: $showingDeleteAlert) {
             Button("Cancelar", role: .cancel) {}
             Button("Eliminar", role: .destructive, action: onDelete)

@@ -7,135 +7,135 @@
 import SwiftData
 import SwiftUI
 
-// MARK: - Vista de tarjeta de día SIMPLIFICADA para evitar bloqueos
+// MARK: - Vista de tarjeta de dia SIMPLIFICADA para evitar bloqueos
 struct SimpleDayCardView: View {
     let day: DietDay
     let dayIndex: Int
     let isExpanded: Bool
     let onToggleExpand: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 0) {
-            // Header clickeable MÁS SIMPLE
+            // Header clickeable
             Button(action: onToggleExpand) {
                 HStack {
                     Circle()
-                        .fill(Color.green)
+                        .fill(BulkUpColors.diet)
                         .frame(width: 10, height: 10)
-                    
+
                     Text(day.day.capitalized.replacingOccurrences(of: "_", with: " "))
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                    
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textPrimary)
+
                     Spacer()
-                    
+
                     Text("\(day.meals.count) comidas")
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(6)
-                    
+                        .font(BulkUpFont.caption())
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, Spacing.xs)
+                        .background(BulkUpColors.surfaceElevated)
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .cornerRadius(CornerRadius.small)
+
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.secondary)
-                        .font(.caption)
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .font(BulkUpFont.caption())
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(BulkUpColors.surfaceElevated)
                 .contentShape(Rectangle())
             }
             .buttonStyle(PlainButtonStyle())
-            
-            // Contenido SIN ANIMACIONES COMPLEJAS
+
+            // Contenido
             if isExpanded {
-                VStack(spacing: 12) {
-                    // ✅ Limitar el número de comidas mostradas para evitar sobrecarga
+                VStack(spacing: Spacing.md) {
                     let sortedMeals = day.meals.sorted(by: { $0.orderIndex < $1.orderIndex })
-                    let mealsToShow = Array(sortedMeals.prefix(10)) // Máximo 10 comidas
-                    
+                    let mealsToShow = Array(sortedMeals.prefix(10))
+
                     ForEach(mealsToShow, id: \.id) { meal in
                         CompactMealView(meal: meal)
                     }
-                    
+
                     if sortedMeals.count > 10 {
-                        Text("... y \(sortedMeals.count - 10) comidas más")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        Text("... y \(sortedMeals.count - 10) comidas mas")
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
                             .padding()
                     }
                 }
                 .padding()
-                .background(Color(.systemBackground))
+                .background(BulkUpColors.surface)
             }
         }
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .background(BulkUpColors.surface)
+        .cornerRadius(CornerRadius.large)
+        .overlay(RoundedRectangle(cornerRadius: CornerRadius.large).stroke(BulkUpColors.border, lineWidth: 0.5))
     }
 }
 
 // MARK: - Vista compacta de comida para evitar sobrecarga
 struct CompactMealView: View {
     let meal: Meal
-    
+
     var body: some View {
         HStack {
             // Icono de comida
             mealIcon
                 .frame(width: 20, height: 20)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(meal.type.capitalized.replacingOccurrences(of: "_", with: " "))
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textPrimary)
+
                 if !meal.time.isEmpty {
                     Text(meal.time)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
             }
-            
+
             Spacer()
-            
+
             Text("\(meal.options.count) opciones")
-                .font(.caption2)
+                .font(BulkUpFont.caption())
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(Color(.systemGray5))
-                .cornerRadius(4)
+                .background(BulkUpColors.surfaceElevated)
+                .foregroundColor(BulkUpColors.textSecondary)
+                .cornerRadius(Spacing.xs)
         }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 8)
-        .background(Color(.systemGray6).opacity(0.5))
-        .cornerRadius(8)
+        .padding(.vertical, Spacing.xs)
+        .padding(.horizontal, Spacing.sm)
+        .background(BulkUpColors.surfaceElevated.opacity(0.5))
+        .cornerRadius(CornerRadius.small)
     }
-    
+
     private var mealIcon: some View {
         let iconName: String
         let iconColor: Color
-        
+
         switch meal.type.lowercased() {
         case let type where type.contains("desayuno") || type.contains("breakfast"):
             iconName = "cup.and.saucer.fill"
-            iconColor = .orange
+            iconColor = BulkUpColors.accent
         case let type where type.contains("almuerzo") || type.contains("comida") || type.contains("lunch"):
             iconName = "sun.max.fill"
-            iconColor = .yellow
+            iconColor = BulkUpColors.warning
         case let type where type.contains("merienda") || type.contains("snack"):
             iconName = "sunset.fill"
-            iconColor = .purple
+            iconColor = BulkUpColors.secondary
         case let type where type.contains("cena") || type.contains("dinner"):
             iconName = "moon.fill"
-            iconColor = .blue
+            iconColor = BulkUpColors.training
         default:
             iconName = "fork.knife"
-            iconColor = .green
+            iconColor = BulkUpColors.diet
         }
-        
+
         return Image(systemName: iconName)
             .foregroundColor(iconColor)
-            .font(.caption)
+            .font(BulkUpFont.caption())
     }
 }
