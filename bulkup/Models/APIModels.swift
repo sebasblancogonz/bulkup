@@ -238,10 +238,19 @@ struct LoadDietPlanOuterResponse: Codable {
     }
 }
 
+struct ServerMacros: Codable {
+    let calories: Int
+    let protein: Int
+    let carbs: Int
+    let fat: Int
+}
+
 struct ServerDietDay: Codable {
     let day: String
     let meals: [ServerMeal]
-    let supplements: [ServerSupplement]?
+    var supplements: [ServerSupplement]?
+    var macros: ServerMacros? = nil
+    var allowsCheatMeal: Bool? = nil
 }
 
 struct ServerMeal: Codable {
@@ -438,6 +447,64 @@ enum APIError: LocalizedError {
 
 struct EmptyResponse: Codable {}
 
+// MARK: - Workout Sessions
+
+struct ExerciseSessionData: Codable {
+    let name: String
+    let exerciseIndex: Int
+    let setsCompleted: Int
+    let setsTotal: Int
+    let totalVolume: Double
+    let skipped: Bool
+}
+
+struct SaveWorkoutSessionRequest: Codable {
+    let userId: String
+    let planId: String?
+    let dayName: String
+    let workoutName: String?
+    let durationSeconds: Int
+    let totalVolume: Double
+    let totalSets: Int
+    let exercisesCompleted: Int
+    let exercisesTotal: Int
+    let exercisesSkipped: Int
+    let exercises: [ExerciseSessionData]
+    let date: String
+}
+
+struct WorkoutSessionRecord: Codable, Identifiable {
+    let _id: String?
+    let userId: String
+    let planId: String?
+    let dayName: String
+    let workoutName: String?
+    let durationSeconds: Int
+    let totalVolume: Double
+    let totalSets: Int
+    let exercisesCompleted: Int
+    let exercisesTotal: Int
+    let exercisesSkipped: Int
+    let exercises: [ExerciseSessionData]?
+    let date: String
+    let completedAt: String?
+
+    var id: String { _id ?? date }
+
+    var formattedDuration: String {
+        let m = durationSeconds / 60
+        let s = durationSeconds % 60
+        return String(format: "%d:%02d", m, s)
+    }
+
+    var formattedVolume: String {
+        if totalVolume >= 1000 {
+            return String(format: "%.1fk", totalVolume / 1000)
+        }
+        return String(format: "%.0f", totalVolume)
+    }
+}
+
 struct LoadWeightsRequest: Codable {
     let userId: String
     let weekStart: String
@@ -565,6 +632,16 @@ struct ServerDietPlan: Codable, Identifiable {
     }
 }
 
+struct CreateDietPlanRequest: Codable {
+    let userId: String
+    let filename: String
+    let dietData: [ServerDietDay]
+}
+
+struct CreateDietPlanResponse: Codable {
+    let planId: String
+}
+
 struct ActivateDietPlanRequest: Codable {
     let userId: String
 }
@@ -612,12 +689,13 @@ struct DailyMealTrackingResponse: Codable {
     let date: String
     let dayName: String
     let meals: [MealCompletionData]
+    let cheatMealLog: String?
     let createdAt: Date
     let updatedAt: Date
 
     enum CodingKeys: String, CodingKey {
         case id = "_id"
-        case userId, planId, date, dayName, meals, createdAt, updatedAt
+        case userId, planId, date, dayName, meals, cheatMealLog, createdAt, updatedAt
     }
 }
 
@@ -627,6 +705,7 @@ struct SaveMealTrackingRequest: Codable {
     let date: String
     let dayName: String
     let meals: [MealCompletionData]
+    var cheatMealLog: String?
 }
 
 struct ComplianceStatsResponse: Codable {
