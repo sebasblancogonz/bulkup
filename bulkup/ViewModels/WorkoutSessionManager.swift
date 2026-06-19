@@ -1,0 +1,552 @@
+//
+//  WorkoutSessionManager.swift
+//  bulkup
+//
+//  Manages active workout session state: elapsed timer, rest countdown,
+//  per-set completion tracking, failure marking, and summary data.
+//
+
+import Combine
+import SwiftUI
+
+@MainActor
+class WorkoutSessionManager: ObservableObject {
+    static let shared = WorkoutSessionManager()
+
+    // MARK: - Published State
+
+    @Published var isActive = false
+    @Published var startTime: Date?
+    @Published var elapsedSeconds: Int = 0
+    @Published var isPaused = false
+    @Published var currentDayName: String?
+    @Published var workoutName: String?
+
+    /// "{day}-{exerciseIndex}-{setIndex}" keys for completed sets
+    @Published var completedSetIds: Set<String> = []
+    /// Sets marked as failure
+    @Published var failedSetIds: Set<String> = []
+    /// Exercises marked as skipped/discarded: key = "{day}-{exerciseIndex}"
+    @Published var skippedExercises: Set<String> = []
+
+    // Rest timer
+    @Published var restTimerActive = false
+    @Published var restTimerRemaining: Int = 0
+    @Published var restTimerTotal: Int = 0
+    @Published var nextSetInfo: String?
+
+    /// Extra sets added per exercise: key = "{day}-{exerciseIndex}"
+    @Published var addedSets: [String: Int] = [:]
+
+    /// Reps actually performed per set (overrides plan reps)
+    @Published var actualReps: [String: Int] = [:]
+
+    // MARK: - Summary Data (populated on finish)
+
+    @Published var showSummary = false
+    @Published var summaryData: WorkoutSummary?
+
+    // MARK: - Private
+
+    private var elapsedTimer: AnyCancellable?
+    private var restTimer: AnyCancellable?
+    private var restEndTime: Date?
+    private var pauseStartTime: Date?
+    private var totalPausedSeconds: TimeInterval = 0
+
+    // MARK: - Session Lifecycle
+
+    func startWorkout(dayName: String, workoutName: String?, trainingManager: TrainingManager? = nil) {
+        isActive = true
+        startTime = Date()
+        elapsedSeconds = 0
+        isPaused = false
+        currentDayName = dayName
+        self.workoutName = workoutName
+        completedSetIds.removeAll()
+        failedSetIds.removeAll()
+        skippedExercises.removeAll()
+        addedSets.removeAll()
+        actualReps.removeAll()
+        totalPausedSeconds = 0
+        summaryData = nil
+        showSummary = false
+
+        // Pre-populate completed sets from already-logged weights
+        if let tm = trainingManager {
+            prePopulateFromWeights(dayName: dayName, trainingManager: tm)
+        }
+
+        startElapsedTimer()
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+    }
+
+    /// Mark sets as completed if they already have weight data saved
+    private func prePopulateFromWeights(dayName: String, trainingManager: TrainingManager) {
+        let normalizedDay = dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+
+        guard let dayData = trainingManager.trainingData.first(where: {
+            $0.day.lowercased()
+                .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
+        }) else { return }
+
+        for exercise in dayData.exercises {
+            for setIdx in 0..<exercise.sets {
+                let weightKey = trainingManager.generateWeightKey(
+                    day: normalizedDay,
+                    exerciseIndex: exercise.orderIndex,
+                    exerciseName: exercise.name,
+                    setIndex: setIdx
+                )
+                if let w = trainingManager.weights[weightKey], w > 0 {
+                    let key = setKey(day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIdx)
+                    completedSetIds.insert(key)
+                }
+            }
+        }
+    }
+
+    func pauseWorkout() {
+        isPaused = true
+        pauseStartTime = Date()
+        elapsedTimer?.cancel()
+    }
+
+    func resumeWorkout() {
+        if let pauseStart = pauseStartTime {
+            totalPausedSeconds += Date().timeIntervalSince(pauseStart)
+        }
+        isPaused = false
+        pauseStartTime = nil
+        startElapsedTimer()
+    }
+
+    func finishWorkout(
+        trainingManager: TrainingManager
+    ) -> WorkoutSummary {
+        elapsedTimer?.cancel()
+        restTimer?.cancel()
+        restTimerActive = false
+
+        let duration = elapsedSeconds
+        let summary = buildSummary(
+            duration: duration,
+            trainingManager: trainingManager
+        )
+        summaryData = summary
+        showSummary = true
+        return summary
+    }
+
+    func discardWorkout() {
+        resetAll()
+    }
+
+    func saveAndDismissSummary() {
+        showSummary = false
+        resetAll()
+    }
+
+    /// Persist workout session to backend
+    func saveSessionToBackend(
+        userId: String,
+        planId: String?,
+        trainingManager: TrainingManager
+    ) {
+        guard let summary = summaryData, let dayName = currentDayName else { return }
+
+        let normalizedDay = dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+
+        // Build per-exercise data
+        var exerciseData: [ExerciseSessionData] = []
+        if let dayData = trainingManager.trainingData.first(where: {
+            $0.day.lowercased()
+                .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
+        }) {
+            for exercise in dayData.exercises {
+                let skipped = isExerciseSkipped(day: normalizedDay, exerciseIndex: exercise.orderIndex)
+                let total = exercise.sets + extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex)
+                let done = skipped ? 0 : completedSetsCount(day: normalizedDay, exerciseIndex: exercise.orderIndex, totalSets: total)
+
+                var volume: Double = 0
+                if !skipped {
+                    for setIdx in 0..<total {
+                        let key = setKey(day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIdx)
+                        if completedSetIds.contains(key) {
+                            let weightKey = trainingManager.generateWeightKey(
+                                day: normalizedDay,
+                                exerciseIndex: exercise.orderIndex,
+                                exerciseName: exercise.name,
+                                setIndex: setIdx
+                            )
+                            let weight = trainingManager.weights[weightKey] ?? 0
+                            let reps = actualReps[key] ?? parseReps(exercise.reps)
+                            volume += weight * Double(reps)
+                        }
+                    }
+                }
+
+                exerciseData.append(ExerciseSessionData(
+                    name: exercise.name,
+                    exerciseIndex: exercise.orderIndex,
+                    setsCompleted: done,
+                    setsTotal: total,
+                    totalVolume: volume,
+                    skipped: skipped
+                ))
+            }
+        }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        let dateStr = dateFormatter.string(from: summary.date)
+
+        let request = SaveWorkoutSessionRequest(
+            userId: userId,
+            planId: planId,
+            dayName: dayName,
+            workoutName: workoutName,
+            durationSeconds: summary.duration,
+            totalVolume: summary.totalVolume,
+            totalSets: summary.totalSets,
+            exercisesCompleted: summary.exercisesCompleted,
+            exercisesTotal: summary.exercisesTotal,
+            exercisesSkipped: Int(skippedExercises.count),
+            exercises: exerciseData,
+            date: dateStr
+        )
+
+        Task {
+            do {
+                try await APIService.shared.saveWorkoutSession(request)
+            } catch {
+                print("Error saving workout session: \(error)")
+            }
+        }
+    }
+
+    private func resetAll() {
+        elapsedTimer?.cancel()
+        restTimer?.cancel()
+        isActive = false
+        startTime = nil
+        elapsedSeconds = 0
+        isPaused = false
+        currentDayName = nil
+        workoutName = nil
+        completedSetIds.removeAll()
+        failedSetIds.removeAll()
+        skippedExercises.removeAll()
+        addedSets.removeAll()
+        actualReps.removeAll()
+        restTimerActive = false
+        restTimerRemaining = 0
+        restTimerTotal = 0
+        restEndTime = nil
+        nextSetInfo = nil
+        totalPausedSeconds = 0
+        pauseStartTime = nil
+        summaryData = nil
+        showSummary = false
+    }
+
+    // MARK: - Set Completion
+
+    func setKey(day: String, exerciseIndex: Int, setIndex: Int) -> String {
+        "\(day)-\(exerciseIndex)-\(setIndex)"
+    }
+
+    func exerciseKey(day: String, exerciseIndex: Int) -> String {
+        "\(day)-\(exerciseIndex)"
+    }
+
+    func completeSet(
+        day: String,
+        exerciseIndex: Int,
+        setIndex: Int,
+        restSeconds: Int,
+        nextInfo: String? = nil
+    ) {
+        let key = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: setIndex)
+        completedSetIds.insert(key)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+        if restSeconds > 0 {
+            startRestTimer(seconds: restSeconds, nextSetInfo: nextInfo)
+        }
+    }
+
+    func uncompleteSet(day: String, exerciseIndex: Int, setIndex: Int) {
+        let key = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: setIndex)
+        completedSetIds.remove(key)
+        failedSetIds.remove(key)
+    }
+
+    func isSetCompleted(day: String, exerciseIndex: Int, setIndex: Int) -> Bool {
+        completedSetIds.contains(
+            setKey(day: day, exerciseIndex: exerciseIndex, setIndex: setIndex)
+        )
+    }
+
+    func toggleFailure(day: String, exerciseIndex: Int, setIndex: Int) {
+        let key = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: setIndex)
+        if failedSetIds.contains(key) {
+            failedSetIds.remove(key)
+        } else {
+            failedSetIds.insert(key)
+        }
+    }
+
+    func isSetFailed(day: String, exerciseIndex: Int, setIndex: Int) -> Bool {
+        failedSetIds.contains(
+            setKey(day: day, exerciseIndex: exerciseIndex, setIndex: setIndex)
+        )
+    }
+
+    // MARK: - Exercise Skipping
+
+    func skipExercise(day: String, exerciseIndex: Int) {
+        let key = exerciseKey(day: day, exerciseIndex: exerciseIndex)
+        skippedExercises.insert(key)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    func unskipExercise(day: String, exerciseIndex: Int) {
+        let key = exerciseKey(day: day, exerciseIndex: exerciseIndex)
+        skippedExercises.remove(key)
+    }
+
+    func isExerciseSkipped(day: String, exerciseIndex: Int) -> Bool {
+        skippedExercises.contains(exerciseKey(day: day, exerciseIndex: exerciseIndex))
+    }
+
+    // MARK: - Added Sets
+
+    func addSet(day: String, exerciseIndex: Int) {
+        let key = exerciseKey(day: day, exerciseIndex: exerciseIndex)
+        addedSets[key, default: 0] += 1
+    }
+
+    func extraSets(day: String, exerciseIndex: Int) -> Int {
+        addedSets[exerciseKey(day: day, exerciseIndex: exerciseIndex)] ?? 0
+    }
+
+    // MARK: - Actual Reps
+
+    func setActualReps(day: String, exerciseIndex: Int, setIndex: Int, reps: Int) {
+        let key = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: setIndex)
+        actualReps[key] = reps
+    }
+
+    func getActualReps(day: String, exerciseIndex: Int, setIndex: Int) -> Int? {
+        actualReps[setKey(day: day, exerciseIndex: exerciseIndex, setIndex: setIndex)]
+    }
+
+    // MARK: - Rest Timer
+
+    func startRestTimer(seconds: Int, nextSetInfo: String?) {
+        restTimer?.cancel()
+        restTimerTotal = seconds
+        restTimerRemaining = seconds
+        restEndTime = Date().addingTimeInterval(TimeInterval(seconds))
+        self.nextSetInfo = nextSetInfo
+        restTimerActive = true
+
+        restTimer = Timer.publish(every: 1, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.tickRest()
+            }
+    }
+
+    /// Recompute remaining from a wall-clock end time so the countdown stays
+    /// correct after the app is backgrounded (Combine timers pause in the bg).
+    private func tickRest() {
+        guard let end = restEndTime else { return }
+        let remaining = Int(ceil(end.timeIntervalSinceNow))
+        if remaining > 0 {
+            restTimerRemaining = remaining
+        } else {
+            restTimerRemaining = 0
+            restTimerActive = false
+            restTimer?.cancel()
+            restEndTime = nil
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        }
+    }
+
+    func skipRest() {
+        restTimerActive = false
+        restTimerRemaining = 0
+        restEndTime = nil
+        restTimer?.cancel()
+    }
+
+    func addRestTime(seconds: Int) {
+        restTimerRemaining += seconds
+        restTimerTotal += seconds
+        restEndTime = (restEndTime ?? Date()).addingTimeInterval(TimeInterval(seconds))
+    }
+
+    // MARK: - Elapsed Timer
+
+    private func startElapsedTimer() {
+        elapsedTimer?.cancel()
+        elapsedTimer = Timer.publish(every: 1, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self, let start = self.startTime, !self.isPaused else { return }
+                let total = Date().timeIntervalSince(start) - self.totalPausedSeconds
+                self.elapsedSeconds = max(0, Int(total))
+            }
+    }
+
+    // MARK: - Formatting
+
+    func formattedElapsed() -> String {
+        let m = elapsedSeconds / 60
+        let s = elapsedSeconds % 60
+        return String(format: "%d:%02d", m, s)
+    }
+
+    static func formatTime(_ seconds: Int) -> String {
+        let m = seconds / 60
+        let s = seconds % 60
+        return String(format: "%02d:%02d", m, s)
+    }
+
+    // MARK: - Summary Builder
+
+    private func buildSummary(
+        duration: Int,
+        trainingManager: TrainingManager
+    ) -> WorkoutSummary {
+        guard let dayName = currentDayName else {
+            return WorkoutSummary(
+                duration: duration, totalVolume: 0,
+                totalSets: 0, exercisesCompleted: 0,
+                exercisesTotal: 0, prs: [], date: Date()
+            )
+        }
+
+        let normalizedDay = dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+
+        guard let dayData = trainingManager.trainingData.first(where: {
+            $0.day.lowercased()
+                .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
+        }) else {
+            return WorkoutSummary(
+                duration: duration, totalVolume: 0,
+                totalSets: 0, exercisesCompleted: 0,
+                exercisesTotal: 0, prs: [], date: Date()
+            )
+        }
+
+        var totalVolume: Double = 0
+        var totalSetsCompleted = 0
+        var exercisesCompleted = 0
+        var skippedCount = 0
+
+        for exercise in dayData.exercises {
+            // Skip discarded exercises
+            if isExerciseSkipped(day: normalizedDay, exerciseIndex: exercise.orderIndex) {
+                skippedCount += 1
+                continue
+            }
+
+            let totalSetsForExercise = exercise.sets + extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex)
+            var exerciseHasCompletedSet = false
+
+            for setIdx in 0..<totalSetsForExercise {
+                let key = setKey(day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIdx)
+                if completedSetIds.contains(key) {
+                    totalSetsCompleted += 1
+                    exerciseHasCompletedSet = true
+
+                    // Volume = weight × reps
+                    let weightKey = trainingManager.generateWeightKey(
+                        day: normalizedDay,
+                        exerciseIndex: exercise.orderIndex,
+                        exerciseName: exercise.name,
+                        setIndex: setIdx
+                    )
+                    let weight = trainingManager.weights[weightKey] ?? 0
+                    let reps = actualReps[key] ?? parseReps(exercise.reps)
+                    totalVolume += weight * Double(reps)
+                }
+            }
+
+            if exerciseHasCompletedSet {
+                exercisesCompleted += 1
+            }
+        }
+
+        let effectiveTotal = dayData.exercises.count - skippedCount
+
+        return WorkoutSummary(
+            duration: duration,
+            totalVolume: totalVolume,
+            totalSets: totalSetsCompleted,
+            exercisesCompleted: exercisesCompleted,
+            exercisesTotal: effectiveTotal,
+            prs: [],
+            date: Date()
+        )
+    }
+
+    private func parseReps(_ repsString: String) -> Int {
+        // Handle "8-12" → take higher, "10" → 10, "10, 8, 6" → average
+        let cleaned = repsString.components(separatedBy: ",").first?
+            .trimmingCharacters(in: .whitespaces) ?? repsString
+
+        if cleaned.contains("-") {
+            let parts = cleaned.split(separator: "-")
+            return parts.last.flatMap { Int($0) } ?? 0
+        }
+        return Int(cleaned) ?? 0
+    }
+
+    // MARK: - Exercise completion helpers
+
+    func completedSetsCount(day: String, exerciseIndex: Int, totalSets: Int) -> Int {
+        (0..<totalSets).filter { isSetCompleted(day: day, exerciseIndex: exerciseIndex, setIndex: $0) }.count
+    }
+
+    func isExerciseComplete(day: String, exerciseIndex: Int, totalSets: Int) -> Bool {
+        isExerciseSkipped(day: day, exerciseIndex: exerciseIndex) ||
+        completedSetsCount(day: day, exerciseIndex: exerciseIndex, totalSets: totalSets) == totalSets
+    }
+}
+
+// MARK: - Summary Model
+
+struct WorkoutSummary {
+    let duration: Int
+    let totalVolume: Double
+    let totalSets: Int
+    let exercisesCompleted: Int
+    let exercisesTotal: Int
+    let prs: [String] // exercise names with new PRs
+    let date: Date
+
+    var formattedDuration: String {
+        let m = duration / 60
+        let s = duration % 60
+        return String(format: "%d:%02d", m, s)
+    }
+
+    var formattedVolume: String {
+        if totalVolume >= 1000 {
+            return String(format: "%.1fk", totalVolume / 1000)
+        }
+        return String(format: "%.0f", totalVolume)
+    }
+
+    var isPartialCompletion: Bool {
+        exercisesCompleted < exercisesTotal
+    }
+}
