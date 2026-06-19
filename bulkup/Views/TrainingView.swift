@@ -27,8 +27,8 @@ struct TrainingView: View {
 
         var displayName: String {
             switch self {
-            case .week: return "Semanal"
-            case .day: return "Diario"
+            case .week: return String(localized: "Semanal")
+            case .day: return String(localized: "Diario")
             }
         }
 
@@ -83,7 +83,7 @@ struct TrainingView: View {
         let f = DateFormatter()
         f.locale = LanguageManager.shared.locale
         f.dateFormat = "d MMM"
-        return "Semana del \(f.string(from: start))"
+        return String(localized: "Semana del \(f.string(from: start))")
     }
 
     private func exerciseRowId(_ exercise: Exercise, day: String) -> String {
@@ -301,10 +301,10 @@ struct TrainingView: View {
     private var emptyStateView: some View {
         EmptyStateView(
             icon: "dumbbell.fill",
-            title: "Hora de entrenar!",
-            subtitle: "Sube tu plan de entrenamiento y comienza a registrar tu progreso",
+            title: String(localized: "Hora de entrenar!"),
+            subtitle: String(localized: "Sube tu plan de entrenamiento y comienza a registrar tu progreso"),
             color: BulkUpColors.accent,
-            actionTitle: "Subir Plan de Entrenamiento",
+            actionTitle: String(localized: "Subir Plan de Entrenamiento"),
             actionIcon: "plus.circle.fill",
             action: {
                 NotificationCenter.default.post(name: .navigateToTrainingLibrary, object: nil)

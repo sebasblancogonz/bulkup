@@ -392,6 +392,176 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "No data" } }
       }
+    },
+    "Semanal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Weekly" } }
+      }
+    },
+    "Diario" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Daily" } }
+      }
+    },
+    "Semana del %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Week of %@" } }
+      }
+    },
+    "Cargando historial de pesos..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading weight history..." } }
+      }
+    },
+    "Tu rutina esta lista, preparando el progreso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your routine is ready, loading progress" } }
+      }
+    },
+    "Cargando tu rutina..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading your routine..." } }
+      }
+    },
+    "Preparando ejercicios y pesos..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Preparing exercises and weights..." } }
+      }
+    },
+    "Hora de entrenar!" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Time to train!" } }
+      }
+    },
+    "Sube tu plan de entrenamiento y comienza a registrar tu progreso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upload your workout plan and start tracking your progress" } }
+      }
+    },
+    "Subir Plan de Entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upload Workout Plan" } }
+      }
+    },
+    "Continuar Entreno" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue Workout" } }
+      }
+    },
+    "Comenzar Entreno" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Start Workout" } }
+      }
+    },
+    "Completado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Completed" } }
+      }
+    },
+    "Descanso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rest" } }
+      }
+    },
+    "Sin ejercicios para este dia" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No exercises for this day" } }
+      }
+    },
+    "%lld ej." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld ex." } }
+      }
+    },
+    "Entrenamiento Completado!" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Workout Complete!" } }
+      }
+    },
+    "Has completado todos los ejercicios de hoy" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "You've completed all of today's exercises" } }
+      }
+    },
+    "Ejercicios" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Exercises" } }
+      }
+    },
+    "Series" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sets" } }
+      }
+    },
+    "Registrar para mi racha" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log for my streak" } }
+      }
+    },
+    "Entreno en curso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Workout in progress" } }
+      }
+    },
+    "Finalizar entreno" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Finish workout" } }
+      }
+    },
+    "Cancelar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } }
+      }
+    },
+    "Descartar entreno?" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Discard workout?" } }
+      }
+    },
+    "Se perdera todo el progreso de esta sesion." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "All progress from this session will be lost." } }
+      }
+    },
+    "DESCANSO" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "REST" } }
+      }
+    },
+    "Siguiente: %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Next: %@" } }
+      }
+    },
+    "Saltar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skip" } }
+      }
+    },
+    "Entreno completado!" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Workout complete!" } }
+      }
+    },
+    "%lld/%lld ejercicios completados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$lld/%2$lld exercises completed" } }
+      }
+    },
+    "Guardar y salir" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save and exit" } }
+      }
+    },
+    "Duracion" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Duration" } }
+      }
+    },
+    "Volumen" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Volume" } }
+      }
     }
   },
   "version" : "1.0"

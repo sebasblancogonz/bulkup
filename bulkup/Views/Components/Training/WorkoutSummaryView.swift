@@ -103,22 +103,22 @@ struct WorkoutSummaryView: View {
         ], spacing: Spacing.md) {
             statCell(
                 value: summary.formattedDuration,
-                label: "Duracion",
+                label: String(localized: "Duracion"),
                 icon: "clock.fill"
             )
             statCell(
                 value: "\(summary.formattedVolume) kg",
-                label: "Volumen",
+                label: String(localized: "Volumen"),
                 icon: "scalemass.fill"
             )
             statCell(
                 value: "\(summary.totalSets)",
-                label: "Series",
+                label: String(localized: "Series"),
                 icon: "number"
             )
             statCell(
                 value: "\(summary.exercisesCompleted)",
-                label: "Ejercicios",
+                label: String(localized: "Ejercicios"),
                 icon: "figure.strengthtraining.traditional"
             )
         }
