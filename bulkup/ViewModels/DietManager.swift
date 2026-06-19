@@ -15,6 +15,7 @@ class DietManager: ObservableObject {
 
     @Published var dietData: [DietDay] = []
     @Published var dietPlanId: String?
+    @Published var activePlanName: String?
     @Published var isLoading = false
     @Published var errorMessage: String?
     
@@ -79,6 +80,7 @@ class DietManager: ObservableObject {
             if let serverDietData = response.dietData, !serverDietData.isEmpty {
                 let localDietDays = convertServerDataToLocal(serverDietData)
                 setDietData(localDietDays, planId: response.planId)
+                self.activePlanName = response.filename
                 print("[DietManager] Diet data set: \(localDietDays.count) days")
             } else if retryCount < 3 {
                 // Retry with delay - backend may not have persisted data yet
@@ -103,6 +105,7 @@ class DietManager: ObservableObject {
     func clearAllData() {
         dietData = []
         dietPlanId = nil
+        activePlanName = nil
         errorMessage = nil
 
         let descriptor = FetchDescriptor<DietDay>()
@@ -120,7 +123,19 @@ class DietManager: ObservableObject {
     private func convertServerDataToLocal(_ serverData: [ServerDietDay]) -> [DietDay] {
         return serverData.map { serverDay in
             let localDay = DietDay(day: serverDay.day)
-            
+
+            // Map macros
+            if let macros = serverDay.macros {
+                localDay.hasMacros = true
+                localDay.macroCalories = macros.calories
+                localDay.macroProtein = macros.protein
+                localDay.macroCarbs = macros.carbs
+                localDay.macroFat = macros.fat
+            }
+
+            // Map cheat meal
+            localDay.allowsCheatMeal = serverDay.allowsCheatMeal ?? false
+
             localDay.meals = serverDay.meals.enumerated().map { (idx, serverMeal) in
                 let localMeal = Meal(
                     type: serverMeal.type,

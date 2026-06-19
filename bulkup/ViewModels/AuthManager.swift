@@ -163,8 +163,10 @@ class AuthManager: ObservableObject {
     func logout() {
         print("🚪 Iniciando logout...")
 
-        // Clear stored token
+        // Clear stored token and onboarding state
         clearStoredAuth()
+        UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+        UserDefaults.standard.removeObject(forKey: "userGoal")
 
         let descriptor = FetchDescriptor<User>()
         do {
@@ -212,6 +214,11 @@ class AuthManager: ObservableObject {
 
                     self.user = storedUser
                     self.isAuthenticated = true
+
+                    // Existing users skip onboarding
+                    if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+                        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+                    }
 
                     checkAppleCredentialState()
 
