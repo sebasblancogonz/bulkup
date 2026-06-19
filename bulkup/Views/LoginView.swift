@@ -29,21 +29,21 @@ struct LoginContentView: View {
                 VStack(spacing: Spacing.lg) {
                     if isRegistering {
                         CustomTextField(
-                            placeholder: "Nombre",
+                            placeholder: String(localized: "Nombre"),
                             text: $name,
                             icon: "person.fill"
                         )
                     }
 
                     CustomTextField(
-                        placeholder: "Email",
+                        placeholder: String(localized: "Email"),
                         text: $email,
                         icon: "envelope.fill",
                         keyboardType: .emailAddress
                     )
 
                     CustomSecureField(
-                        placeholder: "Contraseña",
+                        placeholder: String(localized: "Contraseña"),
                         text: $password,
                         icon: "lock.fill"
                     )
@@ -67,7 +67,7 @@ struct LoginContentView: View {
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 .scaleEffect(0.9)
                         } else {
-                            Text(isRegistering ? "Crear cuenta" : "Iniciar sesión")
+                            Text(isRegistering ? String(localized: "Crear cuenta") : String(localized: "Iniciar sesión"))
                         }
                     }
                     .primaryButtonStyle(color: BulkUpColors.accent)
@@ -79,7 +79,7 @@ struct LoginContentView: View {
 
                 // Toggle mode
                 Button(action: { isRegistering.toggle() }) {
-                    Text(isRegistering ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate")
+                    Text(isRegistering ? String(localized: "¿Ya tienes cuenta? Inicia sesión") : String(localized: "¿No tienes cuenta? Regístrate"))
                         .font(.footnote)
                         .fontWeight(.medium)
                         .foregroundColor(BulkUpColors.accent)
@@ -145,13 +145,13 @@ struct LoginContentView: View {
         switch result {
         case .success(let authorization):
             guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-                errorMessage = "Error: credencial inválida"
+                errorMessage = String(localized: "Error: credencial inválida")
                 return
             }
 
             guard let identityTokenData = credential.identityToken,
                   let identityToken = String(data: identityTokenData, encoding: .utf8) else {
-                errorMessage = "Error: no se pudo obtener el token de identidad"
+                errorMessage = String(localized: "Error: no se pudo obtener el token de identidad")
                 return
             }
 
@@ -177,7 +177,7 @@ struct LoginContentView: View {
                authError.code == .canceled {
                 return
             }
-            errorMessage = "Error al iniciar sesión con Apple: \(error.localizedDescription)"
+            errorMessage = String(localized: "Error al iniciar sesión con Apple: \(error.localizedDescription)")
         }
     }
 }

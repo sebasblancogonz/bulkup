@@ -12,6 +12,226 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Language" } },
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Idioma / Language" } }
       }
+    },
+    "Bienvenido a BulkUp" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Welcome to BulkUp" } }
+      }
+    },
+    "Come, entrena, crece, repite" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Eat, train, grow, repeat" } }
+      }
+    },
+    "Come, entrena, crece, repite." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Eat, train, grow, repeat." } }
+      }
+    },
+    "Planifica tu entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Plan your workouts" } }
+      }
+    },
+    "Controla tu alimentacion" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Track your nutrition" } }
+      }
+    },
+    "Mide tu progreso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Measure your progress" } }
+      }
+    },
+    "Comenzar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Get started" } }
+      }
+    },
+    "Cual es tu objetivo?" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "What's your goal?" } }
+      }
+    },
+    "Esto nos ayuda a personalizar tu experiencia" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This helps us personalize your experience" } }
+      }
+    },
+    "Ganar masa muscular" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Build muscle mass" } }
+      }
+    },
+    "Aumentar volumen y fuerza" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Increase size and strength" } }
+      }
+    },
+    "Perder grasa" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Lose fat" } }
+      }
+    },
+    "Definicion y perdida de peso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Definition and weight loss" } }
+      }
+    },
+    "Mantener y mejorar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Maintain and improve" } }
+      }
+    },
+    "Recomposicion corporal" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Body recomposition" } }
+      }
+    },
+    "Continuar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } }
+      }
+    },
+    "Tus medidas basicas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your basic measurements" } }
+      }
+    },
+    "Esto nos ayuda a calcular tus proyecciones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This helps us calculate your projections" } }
+      }
+    },
+    "Peso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Weight" } }
+      }
+    },
+    "kg" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "kg" } }
+      }
+    },
+    "Altura" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Height" } }
+      }
+    },
+    "cm" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "cm" } }
+      }
+    },
+    "Edad" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Age" } }
+      }
+    },
+    "anos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "yrs" } }
+      }
+    },
+    "Guardar y continuar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save and continue" } }
+      }
+    },
+    "Omitir por ahora" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skip for now" } }
+      }
+    },
+    "Crea tu primer plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create your first plan" } }
+      }
+    },
+    "Puedes subir una foto o PDF de tu plan y nuestra IA lo digitaliza al instante" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upload a photo or PDF of your plan and our AI digitizes it instantly" } }
+      }
+    },
+    "Subir plan de entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upload workout plan" } }
+      }
+    },
+    "Nuestra IA convierte tu plan en un formato interactivo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Our AI converts your plan into an interactive format" } }
+      }
+    },
+    "Subir plan de dieta" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upload diet plan" } }
+      }
+    },
+    "Digitaliza tu dieta y lleva el seguimiento diario" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Digitize your diet and track it daily" } }
+      }
+    },
+    "Explorar la app" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Explore the app" } }
+      }
+    },
+    "Nombre" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Name" } }
+      }
+    },
+    "Email" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Email" } }
+      }
+    },
+    "Contraseña" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Password" } }
+      }
+    },
+    "Crear cuenta" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create account" } }
+      }
+    },
+    "Iniciar sesión" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log in" } }
+      }
+    },
+    "¿Ya tienes cuenta? Inicia sesión" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Already have an account? Log in" } }
+      }
+    },
+    "¿No tienes cuenta? Regístrate" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Don't have an account? Sign up" } }
+      }
+    },
+    "o" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "or" } }
+      }
+    },
+    "Error: credencial inválida" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error: invalid credential" } }
+      }
+    },
+    "Error: no se pudo obtener el token de identidad" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error: could not retrieve identity token" } }
+      }
+    },
+    "Error al iniciar sesión con Apple: %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error signing in with Apple: %@" } }
+      }
     }
   },
   "version" : "1.0"
