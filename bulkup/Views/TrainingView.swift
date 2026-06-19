@@ -42,7 +42,10 @@ struct TrainingView: View {
 
     private var dayFormatter: DateFormatter {
         let f = DateFormatter()
-        f.locale = LanguageManager.shared.locale
+        // Produces the weekday name matched against the plan's Spanish day data
+        // (getTrainingDayForDate). Must stay Spanish, not the app/display locale —
+        // otherwise "monday" never matches "lunes" and every day reads as rest.
+        f.locale = Locale(identifier: "es_ES")
         f.dateFormat = "EEEE"
         f.calendar = Calendar(identifier: .gregorian)
         f.calendar?.firstWeekday = 2

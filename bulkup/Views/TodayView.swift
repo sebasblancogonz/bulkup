@@ -39,7 +39,9 @@ struct TodayView: View {
     /// Normalized day name for matching: lowercase, no diacritics
     private var todayDayName: String {
         let f = DateFormatter()
-        f.locale = LanguageManager.shared.locale
+        // Matched against the plan's Spanish day-name data — must stay Spanish,
+        // NOT the app/display locale (English would yield "monday" ≠ "lunes").
+        f.locale = Locale(identifier: "es_ES")
         f.dateFormat = "EEEE"
         return f.string(from: Date()).lowercased()
             .folding(options: .diacriticInsensitive, locale: .current)
