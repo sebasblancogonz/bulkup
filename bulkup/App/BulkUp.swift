@@ -17,6 +17,7 @@ struct BulkUp: App {
         LanguageManager.runSelfCheck()
         SharedWorkoutStore.runSelfCheck()
         ThemeSelfCheck.run()
+        FoodTagInput.runSelfCheck()
 #endif
 
         NotificationCenter.default.addObserver(
