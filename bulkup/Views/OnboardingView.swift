@@ -392,7 +392,7 @@ struct OnboardingView: View {
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
                     .stroke(selectedGoal == goal ? BulkUpColors.accent : Color.clear, lineWidth: 2)
             )
-            .shadow(color: selectedGoal == goal ? BulkUpColors.accent.opacity(0.15) : .black.opacity(0.05), radius: 8)
+            .shadow(color: selectedGoal == goal ? BulkUpColors.accent.opacity(0.15) : BulkUpColors.shadow.opacity(0.05), radius: 8)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -460,7 +460,7 @@ struct OnboardingView: View {
                 RoundedRectangle(cornerRadius: CornerRadius.large)
                     .stroke(color.opacity(0.2), lineWidth: 1)
             )
-            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
+            .shadow(color: BulkUpColors.shadow.opacity(0.06), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(PlainButtonStyle())
     }
