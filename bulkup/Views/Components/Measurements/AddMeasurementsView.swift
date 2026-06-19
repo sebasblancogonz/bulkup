@@ -206,7 +206,7 @@ struct AddMeasurementsView: View {
                                 Image(systemName: "checkmark.circle.fill")
                             }
 
-                            Text(isLoading ? "Guardando..." : "Guardar Medidas")
+                            Text(isLoading ? LocalizedStringKey("Guardando...") : LocalizedStringKey("Guardar Medidas"))
                         }
                     }
                     .buttonStyle(PrimaryButtonStyle(color: BulkUpColors.accent))
@@ -316,7 +316,7 @@ struct MeasurementField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(spacing: 4) {
-                Label(title, systemImage: icon)
+                Label(LocalizedStringKey(title), systemImage: icon)
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
 

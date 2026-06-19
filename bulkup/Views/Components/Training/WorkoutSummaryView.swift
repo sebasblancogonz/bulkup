@@ -125,7 +125,7 @@ struct WorkoutSummaryView: View {
         .padding(.horizontal, Spacing.xl)
     }
 
-    private func statCell(value: String, label: String, icon: String) -> some View {
+    private func statCell(value: String, label: LocalizedStringKey, icon: String) -> some View {
         VStack(spacing: Spacing.sm) {
             Image(systemName: icon)
                 .font(.system(size: 16))

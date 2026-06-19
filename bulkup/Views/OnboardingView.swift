@@ -343,7 +343,7 @@ struct OnboardingView: View {
                     .foregroundColor(.white)
             }
 
-            Text(text)
+            Text(LocalizedStringKey(text))
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.textPrimary)
         }
@@ -366,11 +366,11 @@ struct OnboardingView: View {
                     )
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(BulkUpFont.cardTitle())
                         .foregroundColor(BulkUpColors.textPrimary)
 
-                    Text(subtitle)
+                    Text(LocalizedStringKey(subtitle))
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
@@ -397,7 +397,7 @@ struct OnboardingView: View {
         .buttonStyle(PlainButtonStyle())
     }
 
-    private func measurementField(placeholder: String, unit: String, icon: String, text: Binding<String>) -> some View {
+    private func measurementField(placeholder: LocalizedStringKey, unit: LocalizedStringKey, icon: String, text: Binding<String>) -> some View {
         HStack(spacing: Spacing.md) {
             Image(systemName: icon)
                 .foregroundColor(BulkUpColors.textTertiary)
@@ -435,11 +435,11 @@ struct OnboardingView: View {
                     )
 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(BulkUpFont.cardTitle())
                         .foregroundColor(BulkUpColors.textPrimary)
 
-                    Text(subtitle)
+                    Text(LocalizedStringKey(subtitle))
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                         .lineLimit(2)
@@ -473,7 +473,7 @@ struct OnboardingView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(0.9)
                 } else {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                 }
             }
             .primaryButtonStyle(color: BulkUpColors.accent)

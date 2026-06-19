@@ -38,7 +38,7 @@ struct NutritionSummaryCard: View {
 
                     HStack {
                         Label(
-                            String(format: "Cumplimiento: %.0f%%", stats.complianceRate * 100),
+                            "Cumplimiento: \(String(format: "%.0f", stats.complianceRate * 100))%",
                             systemImage: "checkmark.circle"
                         )
                         .font(BulkUpFont.caption())
@@ -84,7 +84,7 @@ struct MetricPill: View {
                 .font(BulkUpFont.sectionHeader())
                 .foregroundColor(BulkUpColors.textPrimary)
 
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
         }

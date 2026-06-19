@@ -145,7 +145,6 @@ struct ExerciseExplorerView: View {
             Text("Mostrando \(exerciseExplorerManager.paginatedExercises.count) de \(exerciseExplorerManager.filteredExercises.count) ejercicios")
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
-
             Spacer()
         }
     }

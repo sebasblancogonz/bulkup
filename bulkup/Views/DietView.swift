@@ -170,7 +170,7 @@ struct DietView: View {
         return ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 dayHeader(
-                    title: formatDayName(day.day),
+                    title: LocalizedStringKey(formatDayName(day.day)),
                     completedCount: completedCount,
                     totalCount: sortedMeals.count,
                     subtitle: "Día \(index + 1) de \(dietManager.dietData.count)"
@@ -219,7 +219,7 @@ struct DietView: View {
 
     // MARK: - Day Header
 
-    private func dayHeader(title: String, completedCount: Int, totalCount: Int, subtitle: String? = nil) -> some View {
+    private func dayHeader(title: LocalizedStringKey, completedCount: Int, totalCount: Int, subtitle: LocalizedStringKey? = nil) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack(alignment: .firstTextBaseline) {
                 Text(title)
@@ -573,7 +573,7 @@ private struct MacroBar: View {
             }
             .frame(height: 6)
 
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(BulkUpColors.textTertiary)
 

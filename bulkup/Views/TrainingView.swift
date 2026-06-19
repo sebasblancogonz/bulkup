@@ -25,7 +25,7 @@ struct TrainingView: View {
         case week = "week"
         case day = "day"
 
-        var displayName: String {
+        var displayName: LocalizedStringKey {
             switch self {
             case .week: return "Semanal"
             case .day: return "Diario"
@@ -42,7 +42,7 @@ struct TrainingView: View {
 
     private var dayFormatter: DateFormatter {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "es_ES")
+        f.locale = LanguageManager.shared.locale
         f.dateFormat = "EEEE"
         f.calendar = Calendar(identifier: .gregorian)
         f.calendar?.firstWeekday = 2
@@ -51,7 +51,7 @@ struct TrainingView: View {
 
     private var calendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
-        cal.locale = Locale(identifier: "es_ES")
+        cal.locale = LanguageManager.shared.locale
         cal.firstWeekday = 2
         return cal
     }
@@ -73,15 +73,15 @@ struct TrainingView: View {
 
     private var compactDateLabel: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "es_ES")
+        f.locale = LanguageManager.shared.locale
         f.dateFormat = "EEEE d MMM"
         return f.string(from: currentDate).lowercased()
     }
 
-    private var weekRangeLabel: String {
+    private var weekRangeLabel: LocalizedStringKey {
         let start = trainingManager.getWeekStart(trainingManager.selectedWeek)
         let f = DateFormatter()
-        f.locale = Locale(identifier: "es_ES")
+        f.locale = LanguageManager.shared.locale
         f.dateFormat = "d MMM"
         return "Semana del \(f.string(from: start))"
     }

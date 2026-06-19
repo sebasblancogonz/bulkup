@@ -19,7 +19,7 @@ struct ConditionCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(BulkUpFont.dataLabel())
                 .foregroundColor(color)
 

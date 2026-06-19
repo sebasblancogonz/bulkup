@@ -38,7 +38,7 @@ struct CompactExerciseCard: View {
                                 .font(BulkUpFont.caption())
                                 .foregroundColor(BulkUpColors.training)
 
-                            Text(translateMuscle(firstMuscle))
+                            Text(LocalizedStringKey(translateMuscle(firstMuscle)))
                                 .font(BulkUpFont.caption())
                                 .foregroundColor(BulkUpColors.textSecondary)
                                 .lineLimit(1)
@@ -199,7 +199,7 @@ struct CompactTag: View {
     let color: Color
 
     var body: some View {
-        Text(text)
+        Text(LocalizedStringKey(text))
             .font(BulkUpFont.dataLabel())
             .padding(.horizontal, 6)
             .padding(.vertical, 3)

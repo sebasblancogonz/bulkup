@@ -354,7 +354,7 @@ struct SubscriptionView: View {
             }
         } catch {
             isPurchasing = false
-            errorMessage = "Error al procesar la compra: \(error.localizedDescription)"
+            errorMessage = String(localized: "Error al procesar la compra: \(error.localizedDescription)")
             showingError = true
         }
     }
@@ -368,7 +368,7 @@ struct SubscriptionView: View {
         if storeManager.hasActiveSubscription {
             dismiss()
         } else {
-            errorMessage = "No se encontraron compras previas para restaurar."
+            errorMessage = String(localized: "No se encontraron compras previas para restaurar.")
             showingError = true
         }
     }
@@ -388,12 +388,12 @@ struct BenefitRow: View {
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.body())
                     .fontWeight(.semibold)
                     .foregroundColor(BulkUpColors.textPrimary)
 
-                Text(description)
+                Text(LocalizedStringKey(description))
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }
@@ -477,23 +477,23 @@ struct SubscriptionPlanCard: View {
         .buttonStyle(PlainButtonStyle())
     }
 
-    private var planTitle: String {
+    private var planTitle: LocalizedStringKey {
         if product.id.contains("monthly") {
             return "Mensual"
         } else if product.id.contains("yearly") {
             return "Anual"
         } else {
-            return storeManager.periodString(for: product).capitalized
+            return LocalizedStringKey(storeManager.periodString(for: product).capitalized)
         }
     }
 
-    private var planDescription: String {
+    private var planDescription: LocalizedStringKey {
         if product.id.contains("monthly") {
             return "Facturado mensualmente"
         } else if product.id.contains("yearly") {
             return "Facturado anualmente"
         } else {
-            return "Facturado \(storeManager.periodString(for: product))"
+            return LocalizedStringKey("Facturado \(storeManager.periodString(for: product))")
         }
     }
 
@@ -511,6 +511,6 @@ struct SubscriptionPlanCard: View {
         guard savings > 0 else { return nil }
 
         let percentage = Int((savings / monthlyCostPerYear) * 100.0)
-        return "Ahorra \(percentage)%"
+        return String(localized: "Ahorra \(percentage)%")
     }
 }

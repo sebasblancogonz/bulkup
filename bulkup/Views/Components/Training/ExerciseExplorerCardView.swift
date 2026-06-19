@@ -25,19 +25,19 @@ struct ExerciseExplorerCardView: View {
                 }
 
                 if let level = exercise.level {
-                    TagView(text: "Nivel: \(translateLevel(level))", color: BulkUpColors.training)
+                    TagView(text: translateLevel(level), color: BulkUpColors.training, prefixKey: "Nivel")
                 }
 
                 if let force = exercise.force {
-                    TagView(text: "Fuerza: \(translateForce(force))", color: BulkUpColors.success)
+                    TagView(text: translateForce(force), color: BulkUpColors.success, prefixKey: "Fuerza")
                 }
 
                 if let mechanic = exercise.mechanic {
-                    TagView(text: "Mecánica: \(translateMechanic(mechanic))", color: BulkUpColors.warning)
+                    TagView(text: translateMechanic(mechanic), color: BulkUpColors.warning, prefixKey: "Mecánica")
                 }
 
                 if let equipment = exercise.equipment {
-                    TagView(text: "Equipo: \(translateEquipment(equipment))", color: BulkUpColors.secondary)
+                    TagView(text: translateEquipment(equipment), color: BulkUpColors.secondary, prefixKey: "Equipo")
                 }
             }
 
@@ -48,7 +48,7 @@ struct ExerciseExplorerCardView: View {
                         .font(BulkUpFont.dataLabel())
                         .foregroundColor(BulkUpColors.textSecondary)
 
-                    Text(primaryMuscles.map { translateMuscle($0) }.joined(separator: ", "))
+                    localizedMuscleList(primaryMuscles)
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textPrimary)
                 }
@@ -61,7 +61,7 @@ struct ExerciseExplorerCardView: View {
                         .font(BulkUpFont.dataLabel())
                         .foregroundColor(BulkUpColors.textSecondary)
 
-                    Text(secondaryMuscles.map { translateMuscle($0) }.joined(separator: ", "))
+                    localizedMuscleList(secondaryMuscles)
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textPrimary)
                 }
@@ -74,6 +74,19 @@ struct ExerciseExplorerCardView: View {
         .background(BulkUpColors.surface)
         .cornerRadius(CornerRadius.medium)
         .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+    }
+
+    // Builds a single Text where each muscle is localized live (via LocalizedStringKey)
+    // and joined with ", " — avoids pre-joining into one non-key string.
+    private func localizedMuscleList(_ muscles: [String]) -> Text {
+        var result = Text("")
+        for (index, muscle) in muscles.enumerated() {
+            if index > 0 {
+                result = result + Text(", ")
+            }
+            result = result + Text(LocalizedStringKey(translateMuscle(muscle)))
+        }
+        return result
     }
 
     // Funciones de traducción

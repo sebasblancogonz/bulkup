@@ -108,7 +108,7 @@ struct DietHubView: View {
     private var planHeader: some View {
         HStack(spacing: Spacing.md) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(dietManager.activePlanName ?? "Plan de Dieta")
+                Text(dietManager.activePlanName ?? String(localized: "Plan de Dieta"))
                     .font(BulkUpFont.sectionHeader())
                     .foregroundColor(BulkUpColors.textPrimary)
                     .lineLimit(1)
@@ -358,12 +358,12 @@ struct DietHubView: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.body())
                     .fontWeight(.semibold)
                     .foregroundColor(BulkUpColors.textPrimary)
 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }

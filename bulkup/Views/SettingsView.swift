@@ -10,6 +10,7 @@ import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var authManager: AuthManager
+    @EnvironmentObject var languageManager: LanguageManager
     @Environment(\.dismiss) private var dismiss
 
     // Estados para configuraciones
@@ -95,6 +96,21 @@ struct SettingsView: View {
 
                 // MARK: - Personalización
                 Section("Personalización") {
+                    SettingsPicker(
+                        icon: "globe",
+                        iconColor: BulkUpColors.accent,
+                        title: "Idioma / Language",
+                        selection: Binding(
+                            get: { languageManager.language.rawValue },
+                            set: { languageManager.language = AppLanguage(rawValue: $0) ?? .system }
+                        ),
+                        options: [
+                            ("system", "Sistema / System"),
+                            ("es", "Español"),
+                            ("en", "English"),
+                        ]
+                    )
+
                     SettingsPicker(
                         icon: "ruler.fill",
                         iconColor: BulkUpColors.accent,
@@ -411,12 +427,12 @@ struct SettingsToggle: View {
                 .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.body())
                     .foregroundColor(BulkUpColors.textPrimary)
 
                 if let subtitle = subtitle {
-                    Text(subtitle)
+                    Text(LocalizedStringKey(subtitle))
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
@@ -446,14 +462,14 @@ struct SettingsPicker: View {
                 .foregroundColor(iconColor)
                 .frame(width: 24, height: 24)
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .foregroundColor(BulkUpColors.textPrimary)
 
             Spacer()
 
             Picker(title, selection: $selection) {
                 ForEach(options, id: \.0) { option in
-                    Text(option.1).tag(option.0)
+                    Text(LocalizedStringKey(option.1)).tag(option.0)
                 }
             }
             .pickerStyle(.menu)
@@ -491,12 +507,12 @@ struct SettingsRow: View {
                     .frame(width: 24, height: 24)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textPrimary)
 
                     if let subtitle = subtitle {
-                        Text(subtitle)
+                        Text(LocalizedStringKey(subtitle))
                             .font(BulkUpFont.caption())
                             .foregroundColor(BulkUpColors.textSecondary)
                     }

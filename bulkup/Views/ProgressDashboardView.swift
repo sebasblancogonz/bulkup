@@ -812,7 +812,7 @@ struct ProgressDashboardView: View {
         let totalDays = trainingManager.trainingData.count
         guard totalDays > 0 else { return "0/0" }
         let completedDays = trainingManager.trainingData.filter { isDayCompleted($0) }.count
-        return "\(completedDays)/\(totalDays) dias"
+        return String(format: String(localized: "%1$d/%2$d dias"), completedDays, totalDays)
     }
 
     private var weeklyComplianceText: String {
@@ -883,7 +883,7 @@ struct ProgressDashboardView: View {
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMM yyyy"
-        formatter.locale = Locale(identifier: "es_ES")
+        formatter.locale = LanguageManager.shared.locale
         return formatter.string(from: date)
     }
 

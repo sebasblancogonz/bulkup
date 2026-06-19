@@ -23,7 +23,7 @@ struct TrainingHubView: View {
         case active = "active"
         case library = "library"
 
-        var displayName: String {
+        var displayName: LocalizedStringKey {
             switch self {
             case .active: return "Plan Activo"
             case .library: return "Mis Planes"
@@ -440,12 +440,12 @@ struct TrainingHubView: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.body())
                     .fontWeight(.semibold)
                     .foregroundColor(BulkUpColors.textPrimary)
 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }
@@ -1186,7 +1186,7 @@ struct ImportPlanByCodeView: View {
             } catch {
                 await MainActor.run {
                     isImporting = false
-                    errorMessage = "Código inválido o expirado"
+                    errorMessage = String(localized: "Código inválido o expirado")
                 }
             }
         }

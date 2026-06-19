@@ -52,7 +52,7 @@ struct LoginContentView: View {
 
                 // Error message
                 if let errorMessage = errorMessage {
-                    Text(errorMessage)
+                    Text(LocalizedStringKey(errorMessage))
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.error)
                         .multilineTextAlignment(.center)
@@ -67,7 +67,7 @@ struct LoginContentView: View {
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 .scaleEffect(0.9)
                         } else {
-                            Text(isRegistering ? "Crear cuenta" : "Iniciar sesión")
+                            Text(isRegistering ? LocalizedStringKey("Crear cuenta") : LocalizedStringKey("Iniciar sesión"))
                         }
                     }
                     .primaryButtonStyle(color: BulkUpColors.accent)
@@ -79,7 +79,7 @@ struct LoginContentView: View {
 
                 // Toggle mode
                 Button(action: { isRegistering.toggle() }) {
-                    Text(isRegistering ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate")
+                    Text(isRegistering ? LocalizedStringKey("¿Ya tienes cuenta? Inicia sesión") : LocalizedStringKey("¿No tienes cuenta? Regístrate"))
                         .font(.footnote)
                         .fontWeight(.medium)
                         .foregroundColor(BulkUpColors.accent)
@@ -145,13 +145,13 @@ struct LoginContentView: View {
         switch result {
         case .success(let authorization):
             guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-                errorMessage = "Error: credencial inválida"
+                errorMessage = String(localized: "Error: credencial inválida")
                 return
             }
 
             guard let identityTokenData = credential.identityToken,
                   let identityToken = String(data: identityTokenData, encoding: .utf8) else {
-                errorMessage = "Error: no se pudo obtener el token de identidad"
+                errorMessage = String(localized: "Error: no se pudo obtener el token de identidad")
                 return
             }
 
@@ -177,14 +177,14 @@ struct LoginContentView: View {
                authError.code == .canceled {
                 return
             }
-            errorMessage = "Error al iniciar sesión con Apple: \(error.localizedDescription)"
+            errorMessage = String(localized: "Error al iniciar sesión con Apple: \(error.localizedDescription)")
         }
     }
 }
 
 // Custom text field with design system tokens
 struct CustomTextField: View {
-    let placeholder: String
+    let placeholder: LocalizedStringKey
     @Binding var text: String
     let icon: String
     var keyboardType: UIKeyboardType = .default
@@ -216,7 +216,7 @@ struct CustomTextField: View {
 
 // Custom secure field with design system tokens
 struct CustomSecureField: View {
-    let placeholder: String
+    let placeholder: LocalizedStringKey
     @Binding var text: String
     let icon: String
     @State private var isSecure = true

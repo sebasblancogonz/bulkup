@@ -101,7 +101,7 @@ struct ProjectionMetric: View {
             }
             .foregroundColor(changeColor)
 
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
         }

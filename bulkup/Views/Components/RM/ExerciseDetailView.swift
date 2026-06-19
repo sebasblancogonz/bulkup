@@ -301,9 +301,9 @@ struct ExerciseDetailView: View {
 
             await MainActor.run {
                 if success {
-                    notificationManager.showNotification(.success, message: "Récord eliminado")
+                    notificationManager.showNotification(.success, message: String(localized: "Récord eliminado"))
                 } else {
-                    notificationManager.showNotification(.error, message: "Error al eliminar")
+                    notificationManager.showNotification(.error, message: String(localized: "Error al eliminar"))
                 }
             }
         }
@@ -331,10 +331,10 @@ struct ExerciseDetailView: View {
             await MainActor.run {
                 if success {
                     resetForm()
-                    let message = editingRecordId != nil ? "Récord actualizado" : "Récord creado"
+                    let message = editingRecordId != nil ? String(localized: "Récord actualizado") : String(localized: "Récord creado")
                     notificationManager.showNotification(.success, message: message)
                 } else {
-                    notificationManager.showNotification(.error, message: "Error al guardar")
+                    notificationManager.showNotification(.error, message: String(localized: "Error al guardar"))
                 }
             }
         }
@@ -407,7 +407,7 @@ struct RMStatCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
 
@@ -415,7 +415,7 @@ struct RMStatCard: View {
                 .font(BulkUpFont.heroStat())
                 .foregroundColor(color)
 
-            Text(subtitle)
+            Text(LocalizedStringKey(subtitle))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
         }

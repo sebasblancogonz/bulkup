@@ -317,7 +317,7 @@ struct FriendsView: View {
     private func todayDateString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE d 'de' MMMM"
-        formatter.locale = Locale(identifier: "es_ES")
+        formatter.locale = LanguageManager.shared.locale
         return formatter.string(from: Date()).capitalized
     }
 }

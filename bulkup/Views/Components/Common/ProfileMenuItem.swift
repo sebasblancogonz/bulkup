@@ -29,12 +29,12 @@ struct ProfileMenuItem: View {
 
                 // Text content
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textPrimary)
 
                     if let subtitle = subtitle {
-                        Text(subtitle)
+                        Text(LocalizedStringKey(subtitle))
                             .font(BulkUpFont.caption())
                             .foregroundColor(BulkUpColors.textSecondary)
                     }

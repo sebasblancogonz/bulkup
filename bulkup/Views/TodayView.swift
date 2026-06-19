@@ -23,7 +23,7 @@ struct TodayView: View {
 
     private var calendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
-        cal.locale = Locale(identifier: "es_ES")
+        cal.locale = LanguageManager.shared.locale
         cal.firstWeekday = 2
         return cal
     }
@@ -31,7 +31,7 @@ struct TodayView: View {
     /// "lunes 14" — lowercase day name + day number
     private var compactDate: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "es_ES")
+        f.locale = LanguageManager.shared.locale
         f.dateFormat = "EEEE d"
         return f.string(from: Date()).lowercased()
     }
@@ -39,7 +39,7 @@ struct TodayView: View {
     /// Normalized day name for matching: lowercase, no diacritics
     private var todayDayName: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "es_ES")
+        f.locale = LanguageManager.shared.locale
         f.dateFormat = "EEEE"
         return f.string(from: Date()).lowercased()
             .folding(options: .diacriticInsensitive, locale: .current)
@@ -210,7 +210,7 @@ struct TodayView: View {
     private var greetingHeader: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack(alignment: .firstTextBaseline) {
-                Text(greetingText)
+                greetingTextView
                     .font(BulkUpFont.screenTitle())
                     .foregroundColor(BulkUpColors.textPrimary)
 
@@ -242,18 +242,23 @@ struct TodayView: View {
         }
     }
 
-    private var greetingText: String {
+    private var greetingKey: LocalizedStringKey {
         let hour = Calendar.current.component(.hour, from: Date())
+        if hour < 12 { return "Buenos dias" }
+        else if hour < 20 { return "Buenas tardes" }
+        else { return "Buenas noches" }
+    }
+
+    /// Returns a live-switching localized greeting `Text`, with optional name suffix.
+    private var greetingTextView: some View {
         let name = authManager.user?.name.components(separatedBy: " ").first ?? ""
-        let greeting: String
-        if hour < 12 {
-            greeting = "Buenos dias"
-        } else if hour < 20 {
-            greeting = "Buenas tardes"
-        } else {
-            greeting = "Buenas noches"
+        return Group {
+            if name.isEmpty {
+                Text(greetingKey)
+            } else {
+                Text("\(Text(greetingKey)), \(name)")
+            }
         }
-        return name.isEmpty ? greeting : "\(greeting), \(name)"
     }
 
     // MARK: - Calendar Strip
@@ -648,7 +653,7 @@ struct TodayView: View {
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(text)
+                    Text(LocalizedStringKey(text))
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textSecondary)
                     Text("Toca para empezar")

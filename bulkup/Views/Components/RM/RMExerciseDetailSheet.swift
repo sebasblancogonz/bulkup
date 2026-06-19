@@ -368,11 +368,11 @@ struct DetailRow: View {
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
 
-                Text(value)
+                Text(LocalizedStringKey(value))
                     .font(BulkUpFont.body())
                     .foregroundColor(BulkUpColors.textPrimary)
             }
@@ -388,7 +388,7 @@ struct MuscleChip: View {
     let isPrimary: Bool
 
     var body: some View {
-        Text(name)
+        Text(LocalizedStringKey(name))
             .font(BulkUpFont.caption())
             .fontWeight(isPrimary ? .semibold : .regular)
             .padding(.horizontal, 12)

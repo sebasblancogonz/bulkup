@@ -369,7 +369,7 @@ struct MeasurementDetailView: View {
         measurement.peso / pow(measurement.altura / 100, 2)
     }
 
-    private var imcCategory: String {
+    private var imcCategory: LocalizedStringKey {
         switch imc {
         case ..<18.5: return "Bajo peso"
         case 18.5..<25: return "Normal"
@@ -430,7 +430,7 @@ struct MeasurementDetailView: View {
 struct DetailMetricCard: View {
     let title: String
     let value: String
-    let unit: String
+    let unit: LocalizedStringKey
     let icon: String
     let color: Color
 
@@ -441,7 +441,7 @@ struct DetailMetricCard: View {
                     .font(BulkUpFont.caption())
                     .foregroundColor(color)
 
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }
@@ -486,7 +486,7 @@ struct ComparisonRow: View {
 
     var body: some View {
         HStack {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.textPrimary)
 
@@ -522,7 +522,7 @@ struct CompositionCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
 

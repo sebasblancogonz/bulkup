@@ -12,6 +12,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var authManager = AuthManager.shared
+    @StateObject private var languageManager = LanguageManager.shared
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
@@ -41,6 +42,9 @@ struct ContentView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: authManager.isAuthenticated)
         .animation(.easeInOut(duration: 0.3), value: hasCompletedOnboarding)
+        .environment(\.locale, languageManager.locale)
+        .environmentObject(languageManager)
+        .id(languageManager.language)
     }
 
     private func forceDarkMode() {

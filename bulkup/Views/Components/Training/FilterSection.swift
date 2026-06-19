@@ -18,7 +18,7 @@ struct FilterSection: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Button(action: { isExpanded.toggle() }) {
                 HStack {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(BulkUpFont.body())
                         .fontWeight(.semibold)
                         .foregroundColor(BulkUpColors.textPrimary)
@@ -55,7 +55,7 @@ struct FilterSection: View {
                                 Image(systemName: selected.contains(option) ? "checkmark.square.fill" : "square")
                                     .foregroundColor(selected.contains(option) ? BulkUpColors.training : BulkUpColors.textSecondary)
 
-                                Text(translateOption(option))
+                                Text(LocalizedStringKey(translateOption(option)))
                                     .font(BulkUpFont.caption())
                                     .foregroundColor(BulkUpColors.textPrimary)
 

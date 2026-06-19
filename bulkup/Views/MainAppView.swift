@@ -256,7 +256,7 @@ struct MainAppView: View {
 
     private func workoutMenuItem(
         icon: String,
-        label: String,
+        label: LocalizedStringKey,
         color: Color,
         action: @escaping () -> Void
     ) -> some View {
