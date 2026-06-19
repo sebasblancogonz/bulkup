@@ -34,8 +34,10 @@ struct AdjustWeightIntent: LiveActivityIntent {
     init() {}
     init(delta: Double) { self.delta = delta }
     func perform() async throws -> some IntentResult {
+        // No Darwin notify: a transient weight tweak doesn't need to wake the app
+        // to reconcile (avoids a second activity update + contention → snappier tap).
+        // The final value is reconciled on set completion / app foreground.
         SharedWorkoutStore.adjustWeight(delta)
-        notifyStoreChanged()
         await refreshActivity()
         return .result()
     }
@@ -47,8 +49,8 @@ struct AdjustRepsIntent: LiveActivityIntent {
     init() {}
     init(delta: Int) { self.delta = delta }
     func perform() async throws -> some IntentResult {
+        // No Darwin notify (see AdjustWeightIntent): keeps the ± tap snappy.
         SharedWorkoutStore.adjustReps(delta)
-        notifyStoreChanged()
         await refreshActivity()
         return .result()
     }
