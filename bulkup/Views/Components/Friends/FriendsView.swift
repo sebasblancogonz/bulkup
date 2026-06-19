@@ -179,7 +179,7 @@ struct FriendsView: View {
                 if let myStreak = friendsManager.myStreak {
                     leaderboardRow(
                         rank: calculateMyRank(),
-                        name: authManager.user?.name ?? String(localized: "Yo"),
+                        name: authManager.user?.name ?? "Yo",
                         imageURL: authManager.user?.safeProfileImageURL,
                         streak: myStreak.currentStreak,
                         isMe: true
@@ -212,13 +212,13 @@ struct FriendsView: View {
     private var emptyFriendsState: some View {
         EmptyStateView(
             icon: "person.2.slash",
-            title: String(localized: "Sin amigos todavía"),
-            subtitle: String(localized: "Comparte tu código o agrega el de un amigo para empezar a competir"),
+            title: "Sin amigos todavía",
+            subtitle: "Comparte tu código o agrega el de un amigo para empezar a competir",
             color: BulkUpColors.accent,
-            actionTitle: String(localized: "Mi Código"),
+            actionTitle: "Mi Código",
             actionIcon: "person.text.rectangle",
             action: { showingMyCode = true },
-            secondaryActionTitle: String(localized: "Agregar"),
+            secondaryActionTitle: "Agregar",
             secondaryActionIcon: "person.badge.plus",
             secondaryAction: { showingAddFriend = true }
         )

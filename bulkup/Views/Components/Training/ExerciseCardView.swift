@@ -397,7 +397,7 @@ struct ExerciseWeightLogger: View {
             Image(systemName: "note.text")
                 .font(.system(size: 10))
                 .foregroundColor(BulkUpColors.textTertiary)
-            TextField(String(localized: "Notas..."), text: $localNote)
+            TextField("Notas...", text: $localNote)
                 .font(.system(size: 12))
                 .foregroundColor(BulkUpColors.textPrimary)
         }
@@ -634,7 +634,7 @@ struct ExerciseWeightLogger: View {
             Image(systemName: "note.text")
                 .font(.system(size: 10))
                 .foregroundColor(BulkUpColors.textTertiary)
-            TextField(String(localized: "Notas..."), text: $localNote)
+            TextField("Notas...", text: $localNote)
                 .font(.system(size: 12))
                 .foregroundColor(BulkUpColors.textPrimary)
         }

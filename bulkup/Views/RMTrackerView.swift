@@ -85,7 +85,7 @@ struct RMTrackerView: View {
                     }
                 }
             }
-            .navigationTitle(String(localized: "Tus PR"))
+            .navigationTitle("Tus PR")
             .navigationBarTitleDisplayMode(.large)
             .sheet(isPresented: $showAddForm) {
                 AddRecordFormView(
@@ -642,7 +642,7 @@ struct AddRecordFormView: View {
                     }
                 }
             }
-            .navigationTitle(isEditing ? String(localized: "Editar RM") : String(localized: "Nuevo RM"))
+            .navigationTitle(isEditing ? LocalizedStringKey("Editar RM") : LocalizedStringKey("Nuevo RM"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -718,7 +718,7 @@ struct ExercisePickerView: View {
                 }
             }
             .searchable(text: $searchText, prompt: "Buscar ejercicio...")
-            .navigationTitle(String(localized: "Seleccionar Ejercicio"))
+            .navigationTitle("Seleccionar Ejercicio")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

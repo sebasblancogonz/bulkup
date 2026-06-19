@@ -48,7 +48,7 @@ struct MeasurementDetailView: View {
                 .padding()
             }
             .background(BulkUpColors.background.ignoresSafeArea())
-            .navigationTitle(String(localized: "Detalle de Medición"))
+            .navigationTitle("Detalle de Medición")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -369,12 +369,12 @@ struct MeasurementDetailView: View {
         measurement.peso / pow(measurement.altura / 100, 2)
     }
 
-    private var imcCategory: String {
+    private var imcCategory: LocalizedStringKey {
         switch imc {
-        case ..<18.5: return String(localized: "Bajo peso")
-        case 18.5..<25: return String(localized: "Normal")
-        case 25..<30: return String(localized: "Sobrepeso")
-        default: return String(localized: "Obesidad")
+        case ..<18.5: return "Bajo peso"
+        case 18.5..<25: return "Normal"
+        case 25..<30: return "Sobrepeso"
+        default: return "Obesidad"
         }
     }
 
@@ -430,7 +430,7 @@ struct MeasurementDetailView: View {
 struct DetailMetricCard: View {
     let title: String
     let value: String
-    let unit: String
+    let unit: LocalizedStringKey
     let icon: String
     let color: Color
 

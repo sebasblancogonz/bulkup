@@ -131,10 +131,10 @@ struct ExerciseExplorerView: View {
     private var emptyStateView: some View {
         EmptyStateView(
             icon: "magnifyingglass",
-            title: String(localized: "No se encontraron ejercicios"),
-            subtitle: String(localized: "Prueba con otros términos de búsqueda o ajusta los filtros"),
+            title: "No se encontraron ejercicios",
+            subtitle: "Prueba con otros términos de búsqueda o ajusta los filtros",
             color: BulkUpColors.training,
-            actionTitle: hasActiveFilters ? String(localized: "Limpiar filtros") : nil,
+            actionTitle: hasActiveFilters ? "Limpiar filtros" : nil,
             actionIcon: hasActiveFilters ? "xmark.circle.fill" : nil,
             action: hasActiveFilters ? { exerciseExplorerManager.resetFilters() } : nil
         )
@@ -223,7 +223,7 @@ struct FilterSheet: View {
                 VStack(alignment: .leading, spacing: 20) {
                     // Categoría
                     FilterSection(
-                        title: String(localized: "Categoría"),
+                        title: "Categoría",
                         options: exerciseExplorerManager.categories,
                         selected: exerciseExplorerManager.categoryFilter,
                         onSelectionChange: { newSelection in
@@ -236,7 +236,7 @@ struct FilterSheet: View {
 
                     // Equipo
                     FilterSection(
-                        title: String(localized: "Equipo"),
+                        title: "Equipo",
                         options: exerciseExplorerManager.equipments,
                         selected: exerciseExplorerManager.equipmentFilter,
                         onSelectionChange: { newSelection in
@@ -249,7 +249,7 @@ struct FilterSheet: View {
 
                     // Fuerza
                     FilterSection(
-                        title: String(localized: "Fuerza"),
+                        title: "Fuerza",
                         options: exerciseExplorerManager.forces,
                         selected: exerciseExplorerManager.forceFilter,
                         onSelectionChange: { newSelection in
@@ -262,7 +262,7 @@ struct FilterSheet: View {
 
                     // Nivel
                     FilterSection(
-                        title: String(localized: "Nivel"),
+                        title: "Nivel",
                         options: exerciseExplorerManager.levels,
                         selected: exerciseExplorerManager.levelFilter,
                         onSelectionChange: { newSelection in

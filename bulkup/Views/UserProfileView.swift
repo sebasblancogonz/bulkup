@@ -234,7 +234,7 @@ struct UserProfileView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.md) {
                 ProfileStatCard(
-                    title: String(localized: "Días activo"),
+                    title: "Días activo",
                     value: calculateDaysActive(),
                     icon: "calendar",
                     color: BulkUpColors.accent,
@@ -242,7 +242,7 @@ struct UserProfileView: View {
                 )
 
                 ProfileStatCard(
-                    title: String(localized: "Entrenamientos"),
+                    title: "Entrenamientos",
                     value: calculateWorkouts(),
                     icon: "dumbbell",
                     color: BulkUpColors.accent,
@@ -250,7 +250,7 @@ struct UserProfileView: View {
                 )
 
                 ProfileStatCard(
-                    title: String(localized: "Racha"),
+                    title: "Racha",
                     value: calculateStreak(),
                     icon: "flame.fill",
                     color: calculateStreak() > 0 ? BulkUpColors.accent : BulkUpColors.textTertiary,
@@ -266,14 +266,14 @@ struct UserProfileView: View {
     private var menuSection: some View {
         VStack(spacing: Spacing.sm) {
             MenuRow(
-                title: String(localized: "Editar Perfil"),
+                title: "Editar Perfil",
                 icon: "person.circle",
                 color: BulkUpColors.accent,
                 action: { showingEditProfile = true }
             )
 
             MenuRow(
-                title: String(localized: "Medidas Corporales"),
+                title: "Medidas Corporales",
                 icon: "figure.arms.open",
                 color: BulkUpColors.accent,
                 showBadge: !storeKitManager.hasActiveSubscription,
@@ -281,7 +281,7 @@ struct UserProfileView: View {
             )
 
             MenuRow(
-                title: String(localized: "Mi Suscripción"),
+                title: "Mi Suscripción",
                 icon: "crown",
                 color: BulkUpColors.accent,
                 showBadge: !storeKitManager.hasActiveSubscription,
@@ -289,7 +289,7 @@ struct UserProfileView: View {
             )
 
             MenuRow(
-                title: String(localized: "Historial de Pagos"),
+                title: "Historial de Pagos",
                 icon: "creditcard",
                 color: BulkUpColors.accent,
                 action: {
@@ -300,7 +300,7 @@ struct UserProfileView: View {
             )
 
             MenuRow(
-                title: String(localized: "Exportar Datos"),
+                title: "Exportar Datos",
                 icon: "square.and.arrow.up",
                 color: BulkUpColors.accent,
                 action: { exportUserData() }
@@ -319,13 +319,13 @@ struct UserProfileView: View {
 
             VStack(spacing: Spacing.sm) {
                 SettingRow(
-                    title: String(localized: "Vibración háptica"),
+                    title: "Vibración háptica",
                     icon: "iphone.radiowaves.left.and.right",
                     isOn: $hapticFeedback
                 )
 
                 SettingRow(
-                    title: String(localized: "Notificaciones"),
+                    title: "Notificaciones",
                     icon: "bell",
                     isOn: Binding(
                         get: { notificationsEnabled },

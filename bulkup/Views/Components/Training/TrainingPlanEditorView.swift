@@ -51,7 +51,7 @@ struct TrainingPlanEditorView: View {
                 .padding(Spacing.lg)
             }
             .background(BulkUpColors.background)
-            .navigationTitle(isEditing ? String(localized: "Editar Plan") : String(localized: "Nuevo Plan"))
+            .navigationTitle(isEditing ? LocalizedStringKey("Editar Plan") : LocalizedStringKey("Nuevo Plan"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -60,7 +60,7 @@ struct TrainingPlanEditorView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isSaving ? String(localized: "Guardando...") : String(localized: "Guardar")) {
+                    Button(isSaving ? LocalizedStringKey("Guardando...") : LocalizedStringKey("Guardar")) {
                         savePlan()
                     }
                     .disabled(
