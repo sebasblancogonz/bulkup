@@ -1,3 +1,4 @@
+import ActivityKit
 import AppIntents
 import Foundation
 
@@ -8,10 +9,22 @@ private func notifyStoreChanged() {
     )
 }
 
+@available(iOS 16.1, *)
+private func refreshActivity() async {
+    guard let w = SharedWorkoutStore.load() else { return }
+    let content = ActivityContent(state: WorkoutActivityAttributes.ContentState(from: w), staleDate: nil)
+    for activity in Activity<WorkoutActivityAttributes>.activities {
+        await activity.update(content)
+    }
+}
+
 struct CompleteCurrentSetIntent: LiveActivityIntent {
     static var title: LocalizedStringResource = "Complete set"
     func perform() async throws -> some IntentResult {
-        SharedWorkoutStore.completeCurrentSet(); notifyStoreChanged(); return .result()
+        SharedWorkoutStore.completeCurrentSet()
+        notifyStoreChanged()
+        await refreshActivity()
+        return .result()
     }
 }
 
@@ -21,7 +34,10 @@ struct AdjustWeightIntent: LiveActivityIntent {
     init() {}
     init(delta: Double) { self.delta = delta }
     func perform() async throws -> some IntentResult {
-        SharedWorkoutStore.adjustWeight(delta); notifyStoreChanged(); return .result()
+        SharedWorkoutStore.adjustWeight(delta)
+        notifyStoreChanged()
+        await refreshActivity()
+        return .result()
     }
 }
 
@@ -31,14 +47,20 @@ struct AdjustRepsIntent: LiveActivityIntent {
     init() {}
     init(delta: Int) { self.delta = delta }
     func perform() async throws -> some IntentResult {
-        SharedWorkoutStore.adjustReps(delta); notifyStoreChanged(); return .result()
+        SharedWorkoutStore.adjustReps(delta)
+        notifyStoreChanged()
+        await refreshActivity()
+        return .result()
     }
 }
 
 struct SkipRestIntent: LiveActivityIntent {
     static var title: LocalizedStringResource = "Skip rest"
     func perform() async throws -> some IntentResult {
-        SharedWorkoutStore.skipRest(); notifyStoreChanged(); return .result()
+        SharedWorkoutStore.skipRest()
+        notifyStoreChanged()
+        await refreshActivity()
+        return .result()
     }
 }
 
@@ -48,6 +70,9 @@ struct AddRestIntent: LiveActivityIntent {
     init() {}
     init(seconds: Int) { self.seconds = seconds }
     func perform() async throws -> some IntentResult {
-        SharedWorkoutStore.addRest(seconds); notifyStoreChanged(); return .result()
+        SharedWorkoutStore.addRest(seconds)
+        notifyStoreChanged()
+        await refreshActivity()
+        return .result()
     }
 }

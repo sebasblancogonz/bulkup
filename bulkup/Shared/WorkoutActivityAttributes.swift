@@ -32,3 +32,18 @@ struct WorkoutActivityAttributes: ActivityAttributes {
 
     var dayName: String
 }
+
+extension WorkoutActivityAttributes.ContentState {
+    init(from w: LiveWorkout) {
+        let cur = w.current
+        self.init(
+            workoutName: w.workoutName, startDate: w.startDate, isPaused: w.isPaused,
+            exerciseName: cur?.exerciseName ?? "", setIndex: cur?.setIndex ?? 0,
+            setsTotal: cur?.setsTotalForExercise ?? 0,
+            weight: cur?.weight ?? 0, reps: cur?.reps ?? 0, weightUnit: w.weightUnit,
+            completedSets: w.completedCount, totalSets: w.sets.count,
+            isResting: w.restEndDate.map { $0 > Date() } ?? false,
+            restEndDate: w.restEndDate, isFinished: w.isFinished
+        )
+    }
+}

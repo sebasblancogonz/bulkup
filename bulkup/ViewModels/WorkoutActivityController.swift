@@ -61,24 +61,6 @@ final class WorkoutActivityController {
     // MARK: - State Mapping
 
     static func contentState(from w: LiveWorkout) -> WorkoutActivityAttributes.ContentState {
-        let currentSet = w.current
-        let isResting = w.restEndDate.map { $0 > Date() } ?? false
-
-        return WorkoutActivityAttributes.ContentState(
-            workoutName: w.workoutName,
-            startDate: w.startDate,
-            isPaused: w.isPaused,
-            exerciseName: currentSet?.exerciseName ?? "",
-            setIndex: currentSet?.setIndex ?? 0,
-            setsTotal: currentSet?.setsTotalForExercise ?? 0,
-            weight: currentSet?.weight ?? 0,
-            reps: currentSet?.reps ?? 0,
-            weightUnit: w.weightUnit,
-            completedSets: w.completedCount,
-            totalSets: w.sets.count,
-            isResting: isResting,
-            restEndDate: w.restEndDate,
-            isFinished: w.isFinished
-        )
+        return .init(from: w)
     }
 }
