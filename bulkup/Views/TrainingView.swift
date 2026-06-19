@@ -25,10 +25,10 @@ struct TrainingView: View {
         case week = "week"
         case day = "day"
 
-        var displayName: String {
+        var displayName: LocalizedStringKey {
             switch self {
-            case .week: return String(localized: "Semanal")
-            case .day: return String(localized: "Diario")
+            case .week: return "Semanal"
+            case .day: return "Diario"
             }
         }
 

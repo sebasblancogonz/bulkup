@@ -23,7 +23,7 @@ struct TrainingHubView: View {
         case active = "active"
         case library = "library"
 
-        var displayName: String {
+        var displayName: LocalizedStringKey {
             switch self {
             case .active: return "Plan Activo"
             case .library: return "Mis Planes"

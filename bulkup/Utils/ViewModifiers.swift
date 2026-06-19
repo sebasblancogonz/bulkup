@@ -194,7 +194,8 @@ struct PillBadge: View {
                 Image(systemName: icon)
                     .font(.system(size: 9, weight: .bold))
             }
-            Text(text.uppercased())
+            Text(LocalizedStringKey(text))
+                .textCase(.uppercase)
                 .font(BulkUpFont.badge())
                 .tracking(1)
         }
@@ -232,7 +233,8 @@ struct StatCard: View {
                         .foregroundColor(trendUp ? BulkUpColors.success : BulkUpColors.error)
                 }
             }
-            Text(label.uppercased())
+            Text(LocalizedStringKey(label))
+                .textCase(.uppercase)
                 .font(BulkUpFont.badge())
                 .tracking(0.5)
                 .foregroundColor(BulkUpColors.textSecondary)
