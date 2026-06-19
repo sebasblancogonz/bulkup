@@ -338,6 +338,16 @@ extension View {
         }
     }
 
+    /// Soft adaptive card shadow (deep in dark, soft warm-gray in light).
+    func cardShadow(radius: CGFloat = 12, y: CGFloat = 6) -> some View {
+        shadow(color: BulkUpColors.shadow.opacity(0.18), radius: radius, x: 0, y: y)
+    }
+
+    /// Accent glow that reads in both modes.
+    func accentGlowShadow(radius: CGFloat = 16) -> some View {
+        shadow(color: BulkUpColors.accent.opacity(0.35), radius: radius, x: 0, y: 0)
+    }
+
     /// Gradient scrim overlay for text readability on images
     func gradientScrim(alignment: Alignment = .bottom) -> some View {
         self.overlay(alignment: alignment) {

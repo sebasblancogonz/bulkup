@@ -36,8 +36,8 @@ struct RestTimerSheet: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.black.opacity(0.4),
-                                Color.black.opacity(0.15),
+                                BulkUpColors.shadow.opacity(0.4),
+                                BulkUpColors.shadow.opacity(0.15),
                                 Color.clear
                             ],
                             center: .center,
@@ -48,7 +48,7 @@ struct RestTimerSheet: View {
                     .frame(width: 140, height: 140)
 
                 Circle()
-                    .stroke(Color.white.opacity(0.06), lineWidth: 8)
+                    .stroke(BulkUpColors.border, lineWidth: 8)
                     .frame(width: 120, height: 120)
 
                 Circle()

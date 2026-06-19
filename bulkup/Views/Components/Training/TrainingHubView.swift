@@ -287,10 +287,10 @@ struct TrainingHubView: View {
                                         Text("PRO")
                                             .font(BulkUpFont.caption())
                                             .fontWeight(.bold)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(BulkUpColors.onAccent)
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
-                                            .background(Color.purple)
+                                            .background(BulkUpColors.secondary)
                                             .cornerRadius(4)
                                     }
                                 }
@@ -374,10 +374,10 @@ struct TrainingHubView: View {
                                         Text("PRO")
                                             .font(BulkUpFont.caption())
                                             .fontWeight(.bold)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(BulkUpColors.onAccent)
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
-                                            .background(Color.purple)
+                                            .background(BulkUpColors.secondary)
                                             .cornerRadius(4)
                                     }
                                 }
@@ -775,7 +775,7 @@ struct TrainingPlanCard: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 36)
                         .background(isActivating ? BulkUpColors.textTertiary : BulkUpColors.success)
-                        .foregroundColor(.white)
+                        .foregroundColor(BulkUpColors.onAccent)
                         .cornerRadius(CornerRadius.small)
                     }
 
@@ -869,7 +869,7 @@ struct TrainingPlanCard: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 36)
                     .background(BulkUpColors.success)
-                    .foregroundColor(.white)
+                    .foregroundColor(BulkUpColors.onAccent)
                     .cornerRadius(CornerRadius.small)
                     .contentShape(Rectangle())
                 }
@@ -1014,7 +1014,7 @@ struct ShareCodeView: View {
                         }
                         .frame(width: 200, height: 44)
                         .background(copied ? BulkUpColors.success : BulkUpColors.training)
-                        .foregroundColor(.white)
+                        .foregroundColor(BulkUpColors.onAccent)
                         .cornerRadius(CornerRadius.medium)
                     }
 

@@ -16,6 +16,7 @@ struct BulkUp: App {
 #if DEBUG
         LanguageManager.runSelfCheck()
         SharedWorkoutStore.runSelfCheck()
+        ThemeSelfCheck.run()
 #endif
 
         NotificationCenter.default.addObserver(

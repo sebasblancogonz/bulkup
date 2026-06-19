@@ -148,7 +148,7 @@ struct SubscriptionRequiredView: View {
                         endPoint: .trailing
                     )
                 )
-                .foregroundColor(.white)
+                .foregroundColor(BulkUpColors.onAccent)
                 .cornerRadius(CornerRadius.medium)
             }
         }

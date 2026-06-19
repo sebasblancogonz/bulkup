@@ -95,7 +95,7 @@ struct ReviewDatePickerView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 36)
                 .background(BulkUpColors.secondary)
-                .foregroundColor(.white)
+                .foregroundColor(BulkUpColors.onAccent)
                 .cornerRadius(CornerRadius.small)
             }
             .disabled(isSaving)

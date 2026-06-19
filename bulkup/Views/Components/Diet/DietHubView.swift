@@ -276,7 +276,7 @@ struct DietHubView: View {
                                         Text("PRO")
                                             .font(BulkUpFont.caption())
                                             .fontWeight(.bold)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(BulkUpColors.onAccent)
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
                                             .background(BulkUpColors.secondary)
@@ -679,7 +679,7 @@ struct DietPlanCard: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 36)
                 .background(BulkUpColors.diet)
-                .foregroundColor(.white)
+                .foregroundColor(BulkUpColors.onAccent)
                 .cornerRadius(CornerRadius.small)
                 .contentShape(Rectangle())
             }

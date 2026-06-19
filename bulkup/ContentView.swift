@@ -15,6 +15,11 @@ struct ContentView: View {
     @StateObject private var authManager = AuthManager.shared
     @StateObject private var languageManager = LanguageManager.shared
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("theme") private var theme = "system"
+
+    private var themeColorScheme: ColorScheme? {
+        switch theme { case "light": return .light; case "dark": return .dark; default: return nil }
+    }
 
     var body: some View {
         Group {
@@ -32,14 +37,13 @@ struct ContentView: View {
             }
         }
         .background(BulkUpColors.background.ignoresSafeArea())
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(themeColorScheme)
         .onAppear {
             // Configurar el contexto solo una vez
             if authManager.modelContext !== modelContext {
                 authManager.modelContext = modelContext
                 authManager.loadStoredUser()
             }
-            forceDarkMode()
         }
         .onChange(of: scenePhase) { _, newPhase in
             // Reconcile any widget-side mutations when returning to foreground.
@@ -54,14 +58,6 @@ struct ContentView: View {
         .environment(\.locale, languageManager.locale)
         .environmentObject(languageManager)
         .id(languageManager.language)
-    }
-
-    private func forceDarkMode() {
-        guard
-            let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-            let window = windowScene.windows.first
-        else { return }
-        window.overrideUserInterfaceStyle = .dark
     }
 }
 

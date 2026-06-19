@@ -37,7 +37,7 @@ struct RMNotificationView: View {
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
                     .fill(BulkUpColors.surface)
-                    .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 4)
+                    .shadow(color: BulkUpColors.shadow.opacity(0.15), radius: 12, x: 0, y: 4)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
