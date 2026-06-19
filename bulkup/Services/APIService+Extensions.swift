@@ -528,4 +528,70 @@ extension APIService {
         }
         return try JSONDecoder().decode(RecipeChatResponse.self, from: data).reply
     }
+
+    // MARK: - Diet Fidelity (skipped days)
+
+    func logSkippedDay(date: String, description: String) async throws -> SkippedDay {
+        guard let url = URL(string: "\(APIConfig.baseURL)/diet/skipped-day") else {
+            throw APIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = UserDefaults.standard.string(forKey: "auth_token") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        request.httpBody = try JSONEncoder().encode(LogSkippedDayBody(date: date, description: description))
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
+        }
+        return try JSONDecoder().decode(SkippedDay.self, from: data)
+    }
+
+    func getSkippedDays() async throws -> [SkippedDay] {
+        guard let url = URL(string: "\(APIConfig.baseURL)/diet/skipped-days") else {
+            throw APIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = UserDefaults.standard.string(forKey: "auth_token") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
+        }
+        return try JSONDecoder().decode(SkippedDaysResponse.self, from: data).skippedDays
+    }
+
+    func deleteSkippedDay(date: String) async throws {
+        let encodedDate = date.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? date
+        guard let url = URL(string: "\(APIConfig.baseURL)/diet/skipped-day?date=\(encodedDate)") else {
+            throw APIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = UserDefaults.standard.string(forKey: "auth_token") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
+        }
+    }
 }
+
+// MARK: - Diet Fidelity DTOs
+
+struct SkippedDay: Codable, Identifiable {
+    var id: String { date }
+    let date: String
+    let description: String
+    let calories: Int
+}
+
+private struct SkippedDaysResponse: Codable { let skippedDays: [SkippedDay] }
+private struct LogSkippedDayBody: Codable { let date: String; let description: String }

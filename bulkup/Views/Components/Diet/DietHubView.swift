@@ -180,6 +180,10 @@ struct DietHubView: View {
         VStack(spacing: 0) {
             planHeader
 
+            DietFidelityView()
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.bottom, Spacing.md)
+
             DietView()
                 .environmentObject(dietManager)
                 .environmentObject(authManager)
