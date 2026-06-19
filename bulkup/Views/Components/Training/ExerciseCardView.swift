@@ -397,7 +397,7 @@ struct ExerciseWeightLogger: View {
             Image(systemName: "note.text")
                 .font(.system(size: 10))
                 .foregroundColor(BulkUpColors.textTertiary)
-            TextField("Notas...", text: $localNote)
+            TextField(String(localized: "Notas..."), text: $localNote)
                 .font(.system(size: 12))
                 .foregroundColor(BulkUpColors.textPrimary)
         }
@@ -634,7 +634,7 @@ struct ExerciseWeightLogger: View {
             Image(systemName: "note.text")
                 .font(.system(size: 10))
                 .foregroundColor(BulkUpColors.textTertiary)
-            TextField("Notas...", text: $localNote)
+            TextField(String(localized: "Notas..."), text: $localNote)
                 .font(.system(size: 12))
                 .foregroundColor(BulkUpColors.textPrimary)
         }
@@ -701,7 +701,7 @@ struct ExerciseWeightLogger: View {
         if nextSetIdx < totalSetsCount {
             let weightStr = safeGetWeightText(nextSetIdx)
             let repsStr = safeGetRepsText(nextSetIdx)
-            nextInfo = "Serie \(nextSetIdx + 1) · \(weightStr)kg × \(repsStr)"
+            nextInfo = String(format: String(localized: "Serie %lld · %@kg × %@"), nextSetIdx + 1, weightStr, repsStr)
         } else {
             nextInfo = nil
         }

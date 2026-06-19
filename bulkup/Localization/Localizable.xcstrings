@@ -562,6 +562,71 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Volume" } }
       }
+    },
+    "Omitido" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skipped" } }
+      }
+    },
+    "%llds descanso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%llds rest" } }
+      }
+    },
+    "ANTERIOR" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "PREVIOUS" } }
+      }
+    },
+    "SERIE" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "SET" } }
+      }
+    },
+    "KG" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "KG" } }
+      }
+    },
+    "REPS" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "REPS" } }
+      }
+    },
+    "Anadir serie" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add set" } }
+      }
+    },
+    "Notas..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Notes..." } }
+      }
+    },
+    "anterior: %@ kg" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "previous: %@ kg" } }
+      }
+    },
+    "PESO" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "WEIGHT" } }
+      }
+    },
+    "Restaurar ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Restore exercise" } }
+      }
+    },
+    "Omitir ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skip exercise" } }
+      }
+    },
+    "Serie %lld · %@kg × %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Set %lld · %@kg × %@" } }
+      }
     }
   },
   "version" : "1.0"
