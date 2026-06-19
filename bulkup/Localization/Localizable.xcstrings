@@ -232,6 +232,166 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Error signing in with Apple: %@" } }
       }
+    },
+    "Hoy" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today" } }
+      }
+    },
+    "Entreno" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Training" } }
+      }
+    },
+    "Dieta" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Diet" } }
+      }
+    },
+    "Perfil" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Profile" } }
+      }
+    },
+    "Cargando tus datos..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading your data..." } }
+      }
+    },
+    "Ir al entreno" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Go to workout" } }
+      }
+    },
+    "Pausar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pause" } }
+      }
+    },
+    "Finalizar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Finish" } }
+      }
+    },
+    "Descartar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Discard" } }
+      }
+    },
+    "Buenos dias" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Good morning" } }
+      }
+    },
+    "Buenas tardes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Good afternoon" } }
+      }
+    },
+    "Buenas noches" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Good evening" } }
+      }
+    },
+    "Dia de descanso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rest day" } }
+      }
+    },
+    "Recupera energia para manana" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recover your energy for tomorrow" } }
+      }
+    },
+    "Entrenos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Workouts" } }
+      }
+    },
+    "Peso (kg)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Weight (kg)" } }
+      }
+    },
+    "Sin plan de entreno" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No workout plan" } }
+      }
+    },
+    "Sin plan de dieta" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No diet plan" } }
+      }
+    },
+    "Sin comidas para hoy" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No meals for today" } }
+      }
+    },
+    "Toca para empezar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tap to get started" } }
+      }
+    },
+    "EJERCICIOS" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "EXERCISES" } }
+      }
+    },
+    "COMIDAS" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "MEALS" } }
+      }
+    },
+    "Marcar como completado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mark as complete" } }
+      }
+    },
+    "Usar anterior" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Use previous" } }
+      }
+    },
+    "Guardar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save" } }
+      }
+    },
+    "Guardado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved" } }
+      }
+    },
+    "Sin seguimiento de peso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No weight tracking" } }
+      }
+    },
+    "%lld ejercicios" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld exercises" } }
+      }
+    },
+    "Notificaciones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Notifications" } }
+      }
+    },
+    "No hay notificaciones nuevas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No new notifications" } }
+      }
+    },
+    "Cerrar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } }
+      }
+    },
+    "Sin datos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No data" } }
+      }
     }
   },
   "version" : "1.0"

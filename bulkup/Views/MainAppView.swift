@@ -205,7 +205,7 @@ struct MainAppView: View {
             if selectedTab != .training {
                 workoutMenuItem(
                     icon: "dumbbell.fill",
-                    label: "Ir al entreno",
+                    label: String(localized: "Ir al entreno"),
                     color: BulkUpColors.accent
                 ) {
                     withAnimation { selectedTab = .training }
@@ -216,7 +216,7 @@ struct MainAppView: View {
             // Pause / Resume
             workoutMenuItem(
                 icon: workoutSession.isPaused ? "play.fill" : "pause.fill",
-                label: workoutSession.isPaused ? "Continuar" : "Pausar",
+                label: workoutSession.isPaused ? String(localized: "Continuar") : String(localized: "Pausar"),
                 color: BulkUpColors.warning
             ) {
                 if workoutSession.isPaused {
@@ -230,7 +230,7 @@ struct MainAppView: View {
             // Finish
             workoutMenuItem(
                 icon: "checkmark.circle.fill",
-                label: "Finalizar",
+                label: String(localized: "Finalizar"),
                 color: BulkUpColors.success
             ) {
                 closeMenu()
@@ -244,7 +244,7 @@ struct MainAppView: View {
             // Discard
             workoutMenuItem(
                 icon: "trash.fill",
-                label: "Descartar",
+                label: String(localized: "Descartar"),
                 color: BulkUpColors.error
             ) {
                 closeMenu()
