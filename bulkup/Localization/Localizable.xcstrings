@@ -627,6 +627,411 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Set %lld · %@kg × %@" } }
       }
+    },
+    "Plan Activo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Active Plan" } }
+      }
+    },
+    "Mis Planes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "My Plans" } }
+      }
+    },
+    "Usar plantilla" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Use template" } }
+      }
+    },
+    "Crear manualmente" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create manually" } }
+      }
+    },
+    "Importar con IA" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import with AI" } }
+      }
+    },
+    "Importar con codigo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import with code" } }
+      }
+    },
+    "No tienes un plan activo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "You don't have an active plan" } }
+      }
+    },
+    "Crea un nuevo plan o activa uno desde tu biblioteca" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create a new plan or activate one from your library" } }
+      }
+    },
+    "Sube una foto o PDF de tu rutina" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upload a photo or PDF of your routine" } }
+      }
+    },
+    "Comienza con una plantilla predefinida" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Start with a preset template" } }
+      }
+    },
+    "Construye tu plan paso a paso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Build your plan step by step" } }
+      }
+    },
+    "Usa un codigo compartido por otro usuario" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Use a code shared by another user" } }
+      }
+    },
+    "Ver Mis Planes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View My Plans" } }
+      }
+    },
+    "Cargando planes..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading plans..." } }
+      }
+    },
+    "Biblioteca vacía" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Empty library" } }
+      }
+    },
+    "Crea tu primer plan de entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create your first workout plan" } }
+      }
+    },
+    "Crear Plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create Plan" } }
+      }
+    },
+    "Editar Plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit Plan" } }
+      }
+    },
+    "Compartiendo..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sharing..." } }
+      }
+    },
+    "Compartir" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share" } }
+      }
+    },
+    "Compartir (PRO)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share (PRO)" } }
+      }
+    },
+    "Activando..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Activating..." } }
+      }
+    },
+    "Activar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Activate" } }
+      }
+    },
+    "Eliminar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } }
+      }
+    },
+    "Eliminar Plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Plan" } }
+      }
+    },
+    "¿Estás seguro de que deseas eliminar este plan? Esta acción no se puede deshacer." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Are you sure you want to delete this plan? This action cannot be undone." } }
+      }
+    },
+    "%lld días" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld days" } }
+      }
+    },
+    "Duración" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Duration" } }
+      }
+    },
+    "Editar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } }
+      }
+    },
+    "Plan Compartido" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Plan Shared" } }
+      }
+    },
+    "Comparte este código con otro usuario para que pueda importar tu plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share this code with another user so they can import your plan" } }
+      }
+    },
+    "Copiar Código" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Copy Code" } }
+      }
+    },
+    "Copiado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Copied" } }
+      }
+    },
+    "Listo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } }
+      }
+    },
+    "Importar Plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import Plan" } }
+      }
+    },
+    "Ingresa el código de 6 caracteres que te compartieron" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter the 6-character code you were shared" } }
+      }
+    },
+    "CÓDIGO" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "CODE" } }
+      }
+    },
+    "Plan importado exitosamente" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Plan imported successfully" } }
+      }
+    },
+    "Importando..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Importing..." } }
+      }
+    },
+    "Código inválido o expirado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Invalid or expired code" } }
+      }
+    },
+    "Nuevo Plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Plan" } }
+      }
+    },
+    "Guardando..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saving..." } }
+      }
+    },
+    "Información del Plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Plan Info" } }
+      }
+    },
+    "Nombre del plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Plan name" } }
+      }
+    },
+    "Fechas específicas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Specific dates" } }
+      }
+    },
+    "Fecha inicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Start date" } }
+      }
+    },
+    "Fecha fin" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "End date" } }
+      }
+    },
+    "Días de Entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Training Days" } }
+      }
+    },
+    "No hay días de entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No training days" } }
+      }
+    },
+    "Añade tu primer día para comenzar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add your first day to get started" } }
+      }
+    },
+    "Añadir Ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Exercise" } }
+      }
+    },
+    "Nombre del día" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Day name" } }
+      }
+    },
+    "Nombre del entrenamiento (opcional)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Workout name (optional)" } }
+      }
+    },
+    "Nombre del ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Exercise name" } }
+      }
+    },
+    "Repeticiones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reps" } }
+      }
+    },
+    "Descanso (s)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rest (s)" } }
+      }
+    },
+    "Notas (opcional)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Notes (optional)" } }
+      }
+    },
+    "Tempo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tempo" } }
+      }
+    },
+    "Seguir peso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Track weight" } }
+      }
+    },
+    "Eliminar ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete exercise" } }
+      }
+    },
+    "Añadir Día de Entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Training Day" } }
+      }
+    },
+    "Día de la semana" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Day of the week" } }
+      }
+    },
+    "Día" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Day" } }
+      }
+    },
+    "Nombre del entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Workout name" } }
+      }
+    },
+    "Ej: Push (Empujes)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "E.g.: Push" } }
+      }
+    },
+    "Añadir Día" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Day" } }
+      }
+    },
+    "Nuevo Ejercicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Exercise" } }
+      }
+    },
+    "Añadir" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add" } }
+      }
+    },
+    "Descanso (segundos)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rest (seconds)" } }
+      }
+    },
+    "Seguimiento de peso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Weight tracking" } }
+      }
+    },
+    "Músculos principales:" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Primary muscles:" } }
+      }
+    },
+    "Músculos secundarios:" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Secondary muscles:" } }
+      }
+    },
+    "Nivel: %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Level: %@" } }
+      }
+    },
+    "Fuerza: %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Force: %@" } }
+      }
+    },
+    "Mecánica: %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mechanic: %@" } }
+      }
+    },
+    "Equipo: %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Equipment: %@" } }
+      }
+    },
+    "Limpiar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Clear" } }
+      }
+    },
+    "Elige una plantilla para empezar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a template to get started" } }
+      }
+    },
+    "Plantillas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Templates" } }
+      }
+    },
+    "Usar esta plantilla" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Use this template" } }
+      }
+    },
+    "%lld días/semana" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld days/week" } }
+      }
     }
   },
   "version" : "1.0"

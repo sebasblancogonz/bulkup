@@ -1186,7 +1186,7 @@ struct ImportPlanByCodeView: View {
             } catch {
                 await MainActor.run {
                     isImporting = false
-                    errorMessage = "Código inválido o expirado"
+                    errorMessage = String(localized: "Código inválido o expirado")
                 }
             }
         }

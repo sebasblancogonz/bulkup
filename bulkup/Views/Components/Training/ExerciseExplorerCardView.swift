@@ -25,19 +25,19 @@ struct ExerciseExplorerCardView: View {
                 }
 
                 if let level = exercise.level {
-                    TagView(text: "Nivel: \(translateLevel(level))", color: BulkUpColors.training)
+                    TagView(text: String(localized: "Nivel: \(translateLevel(level))"), color: BulkUpColors.training)
                 }
 
                 if let force = exercise.force {
-                    TagView(text: "Fuerza: \(translateForce(force))", color: BulkUpColors.success)
+                    TagView(text: String(localized: "Fuerza: \(translateForce(force))"), color: BulkUpColors.success)
                 }
 
                 if let mechanic = exercise.mechanic {
-                    TagView(text: "Mecánica: \(translateMechanic(mechanic))", color: BulkUpColors.warning)
+                    TagView(text: String(localized: "Mecánica: \(translateMechanic(mechanic))"), color: BulkUpColors.warning)
                 }
 
                 if let equipment = exercise.equipment {
-                    TagView(text: "Equipo: \(translateEquipment(equipment))", color: BulkUpColors.secondary)
+                    TagView(text: String(localized: "Equipo: \(translateEquipment(equipment))"), color: BulkUpColors.secondary)
                 }
             }
 
