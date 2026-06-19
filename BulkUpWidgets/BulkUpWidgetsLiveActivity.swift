@@ -1,80 +1,65 @@
-//
-//  BulkUpWidgetsLiveActivity.swift
-//  BulkUpWidgets
-//
-//  Created by sebastian.blanco on 19/6/26.
-//
-
 import ActivityKit
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
-struct BulkUpWidgetsAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
-        // Dynamic stateful properties about your activity go here!
-        var emoji: String
-    }
-
-    // Fixed non-changing properties about your activity go here!
-    var name: String
-}
-
-struct BulkUpWidgetsLiveActivity: Widget {
+struct WorkoutLiveActivity: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: BulkUpWidgetsAttributes.self) { context in
-            // Lock screen/banner UI goes here
-            VStack {
-                Text("Hello \(context.state.emoji)")
-            }
-            .activityBackgroundTint(Color.cyan)
-            .activitySystemActionForegroundColor(Color.black)
-
+        ActivityConfiguration(for: WorkoutActivityAttributes.self) { context in
+            WorkoutLockScreenView(state: context.state)
+                .padding()
+                .activityBackgroundTint(Color.black.opacity(0.6))
         } dynamicIsland: { context in
             DynamicIsland {
-                // Expanded UI goes here.  Compose the expanded UI through
-                // various regions, like leading/trailing/center/bottom
                 DynamicIslandExpandedRegion(.leading) {
-                    Text("Leading")
+                    Text(timerInterval: context.state.startDate...Date.distantFuture, countsDown: false)
+                        .monospacedDigit().font(.caption)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text("Trailing")
-                }
-                DynamicIslandExpandedRegion(.bottom) {
-                    Text("Bottom \(context.state.emoji)")
-                    // more content
+                    Text("\(context.state.completedSets)/\(context.state.totalSets)").font(.caption)
                 }
             } compactLeading: {
-                Text("L")
+                Image(systemName: "dumbbell.fill")
             } compactTrailing: {
-                Text("T \(context.state.emoji)")
+                Text("\(context.state.completedSets)/\(context.state.totalSets)").font(.caption2)
             } minimal: {
-                Text(context.state.emoji)
+                Image(systemName: "dumbbell.fill")
             }
-            .widgetURL(URL(string: "http://www.apple.com"))
-            .keylineTint(Color.red)
         }
     }
 }
 
-extension BulkUpWidgetsAttributes {
-    fileprivate static var preview: BulkUpWidgetsAttributes {
-        BulkUpWidgetsAttributes(name: "World")
+struct WorkoutLockScreenView: View {
+    let state: WorkoutActivityAttributes.ContentState
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(state.workoutName).font(.headline).lineLimit(1)
+                Spacer()
+                Text(timerInterval: state.startDate...Date.distantFuture, countsDown: false)
+                    .monospacedDigit().font(.subheadline)
+            }
+            if state.isFinished {
+                Text("Workout complete").font(.subheadline)
+            } else if state.isResting, let end = state.restEndDate {
+                HStack {
+                    Text("Rest").font(.subheadline)
+                    Text(timerInterval: Date()...end, countsDown: true)
+                        .monospacedDigit().font(.title3.bold())
+                }
+            } else {
+                Text("\(state.exerciseName) · Set \(state.setIndex + 1)/\(state.setsTotal)")
+                    .font(.subheadline)
+                Text("\(formatWeight(state.weight)) \(state.weightUnit) × \(state.reps)")
+                    .font(.subheadline).foregroundStyle(.secondary)
+            }
+            ProgressView(value: Double(state.completedSets),
+                         total: Double(max(state.totalSets, 1)))
+                .tint(.green)
+        }
     }
-}
 
-extension BulkUpWidgetsAttributes.ContentState {
-    fileprivate static var smiley: BulkUpWidgetsAttributes.ContentState {
-        BulkUpWidgetsAttributes.ContentState(emoji: "😀")
-     }
-     
-     fileprivate static var starEyes: BulkUpWidgetsAttributes.ContentState {
-         BulkUpWidgetsAttributes.ContentState(emoji: "🤩")
-     }
-}
-
-#Preview("Notification", as: .content, using: BulkUpWidgetsAttributes.preview) {
-   BulkUpWidgetsLiveActivity()
-} contentStates: {
-    BulkUpWidgetsAttributes.ContentState.smiley
-    BulkUpWidgetsAttributes.ContentState.starEyes
+    private func formatWeight(_ w: Double) -> String {
+        w == w.rounded() ? String(format: "%.0f", w) : String(format: "%.1f", w)
+    }
 }

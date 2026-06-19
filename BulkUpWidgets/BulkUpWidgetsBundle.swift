@@ -1,18 +1,9 @@
-//
-//  BulkUpWidgetsBundle.swift
-//  BulkUpWidgets
-//
-//  Created by sebastian.blanco on 19/6/26.
-//
-
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
 @main
 struct BulkUpWidgetsBundle: WidgetBundle {
     var body: some Widget {
-        BulkUpWidgets()
-        BulkUpWidgetsControl()
-        BulkUpWidgetsLiveActivity()
+        WorkoutLiveActivity()
     }
 }

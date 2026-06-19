@@ -62,6 +62,15 @@
 			);
 			target = 16B2C0BD2FE59083000B7A44 /* BulkUpWidgetsExtension */;
 		};
+		16B2C0E22FE59389000B7A44 /* Exceptions for "bulkup" folder in "BulkUpWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Shared/SharedWorkoutStore.swift,
+				Shared/WorkoutActivityAttributes.swift,
+				Shared/WorkoutLiveActivityIntents.swift,
+			);
+			target = 16B2C0BD2FE59083000B7A44 /* BulkUpWidgetsExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -69,6 +78,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				160B35082E5548A600978545 /* Exceptions for "bulkup" folder in "bulkup" target */,
+				16B2C0E22FE59389000B7A44 /* Exceptions for "bulkup" folder in "BulkUpWidgetsExtension" target */,
 			);
 			path = bulkup;
 			sourceTree = "<group>";
