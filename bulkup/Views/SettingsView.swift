@@ -31,13 +31,13 @@ struct SettingsView: View {
     @State private var exportFileURL: URL?
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 // MARK: - Notificaciones
                 Section("Notificaciones") {
                     SettingsToggle(
                         icon: "dumbbell.fill",
-                        iconColor: .blue,
+                        iconColor: BulkUpColors.training,
                         title: "Recordatorios de Entrenamiento",
                         subtitle: "Te recordamos tus sesiones programadas",
                         isOn: $workoutReminders,
@@ -46,7 +46,7 @@ struct SettingsView: View {
 
                     SettingsToggle(
                         icon: "chart.line.uptrend.xyaxis",
-                        iconColor: .green,
+                        iconColor: BulkUpColors.success,
                         title: "Recordatorios de Progreso",
                         subtitle: "Actualiza tus medidas y peso",
                         isOn: $progressReminders,
@@ -55,7 +55,7 @@ struct SettingsView: View {
 
                     SettingsToggle(
                         icon: "calendar.badge.clock",
-                        iconColor: .orange,
+                        iconColor: BulkUpColors.accent,
                         title: "Reportes Semanales",
                         subtitle: "Resumen de tu semana de entrenamiento",
                         isOn: $weeklyReports,
@@ -67,7 +67,7 @@ struct SettingsView: View {
                 Section("Audio y Retroalimentación") {
                     SettingsToggle(
                         icon: "speaker.wave.2.fill",
-                        iconColor: .purple,
+                        iconColor: BulkUpColors.secondary,
                         title: "Efectos de Sonido",
                         subtitle: "Sonidos al completar ejercicios",
                         isOn: $soundEffects,
@@ -76,7 +76,7 @@ struct SettingsView: View {
 
                     SettingsToggle(
                         icon: "iphone.radiowaves.left.and.right",
-                        iconColor: .pink,
+                        iconColor: BulkUpColors.accent,
                         title: "Vibración Háptica",
                         subtitle: "Retroalimentación táctil",
                         isOn: $hapticFeedback,
@@ -85,7 +85,7 @@ struct SettingsView: View {
 
                     SettingsToggle(
                         icon: "timer",
-                        iconColor: .red,
+                        iconColor: BulkUpColors.error,
                         title: "Sonido de Descanso",
                         subtitle: "Alerta al finalizar tiempo de descanso",
                         isOn: $restTimerSound,
@@ -97,7 +97,7 @@ struct SettingsView: View {
                 Section("Personalización") {
                     SettingsPicker(
                         icon: "ruler.fill",
-                        iconColor: .indigo,
+                        iconColor: BulkUpColors.accent,
                         title: "Sistema de Unidades",
                         selection: $units,
                         options: [
@@ -108,7 +108,7 @@ struct SettingsView: View {
 
                     SettingsPicker(
                         icon: "calendar",
-                        iconColor: .teal,
+                        iconColor: BulkUpColors.accent,
                         title: "Inicio de Semana",
                         selection: $weekStart,
                         options: [
@@ -119,7 +119,7 @@ struct SettingsView: View {
 
                     SettingsPicker(
                         icon: "paintpalette.fill",
-                        iconColor: .cyan,
+                        iconColor: BulkUpColors.accent,
                         title: "Tema de Apariencia",
                         selection: $theme,
                         options: [
@@ -134,7 +134,7 @@ struct SettingsView: View {
                 Section("Entrenamiento") {
                     SettingsToggle(
                         icon: "lock.fill",
-                        iconColor: .yellow,
+                        iconColor: BulkUpColors.accent,
                         title: "Mantener Pantalla Activa",
                         subtitle: "Durante los entrenamientos",
                         isOn: $keepScreenOn,
@@ -143,7 +143,7 @@ struct SettingsView: View {
 
                     SettingsRow(
                         icon: "stopwatch.fill",
-                        iconColor: .orange,
+                        iconColor: BulkUpColors.accent,
                         title: "Tiempos de Descanso",
                         subtitle: "Configurar por defecto"
                     ) {
@@ -155,7 +155,7 @@ struct SettingsView: View {
                 Section("Datos y Privacidad") {
                     SettingsToggle(
                         icon: "icloud.fill",
-                        iconColor: .blue,
+                        iconColor: BulkUpColors.training,
                         title: "Respaldo Automático",
                         subtitle: "Sincronizar con iCloud",
                         isOn: $autoBackup,
@@ -164,7 +164,7 @@ struct SettingsView: View {
 
                     SettingsRow(
                         icon: "square.and.arrow.up.fill",
-                        iconColor: .green,
+                        iconColor: BulkUpColors.success,
                         title: "Exportar Datos",
                         subtitle: "Descargar tu información"
                     ) {
@@ -173,11 +173,10 @@ struct SettingsView: View {
 
                     SettingsRow(
                         icon: "lock.doc.fill",
-                        iconColor: .gray,
+                        iconColor: BulkUpColors.textSecondary,
                         title: "Política de Privacidad",
                         subtitle: "Cómo manejamos tus datos"
                     ) {
-                        // Abrir política de privacidad
                         if let url = URL(string: "https://bulkup.app/privacy") {
                             UIApplication.shared.open(url)
                         }
@@ -188,7 +187,7 @@ struct SettingsView: View {
                 Section("Soporte") {
                     SettingsRow(
                         icon: "questionmark.circle.fill",
-                        iconColor: .blue,
+                        iconColor: BulkUpColors.accent,
                         title: "Centro de Ayuda",
                         subtitle: "Preguntas frecuentes y tutoriales"
                     ) {
@@ -197,11 +196,10 @@ struct SettingsView: View {
 
                     SettingsRow(
                         icon: "envelope.fill",
-                        iconColor: .green,
+                        iconColor: BulkUpColors.accent,
                         title: "Contactar Soporte",
                         subtitle: "Enviar feedback o reportar problemas"
                     ) {
-                        // Abrir mail o formulario de contacto
                         let email = "support@bulkup.app"
                         if let url = URL(string: "mailto:\(email)") {
                             UIApplication.shared.open(url)
@@ -210,11 +208,10 @@ struct SettingsView: View {
 
                     SettingsRow(
                         icon: "star.fill",
-                        iconColor: .yellow,
+                        iconColor: BulkUpColors.accent,
                         title: "Calificar App",
                         subtitle: "Déjanos tu opinión en App Store"
                     ) {
-                        // Abrir App Store para calificar
                         if let url = URL(
                             string:
                                 "https://apps.apple.com/app/bulkup/id123456789?action=write-review"
@@ -228,7 +225,7 @@ struct SettingsView: View {
                 Section("Información") {
                     SettingsRow(
                         icon: "info.circle.fill",
-                        iconColor: .blue,
+                        iconColor: BulkUpColors.accent,
                         title: "Acerca de BulkUp",
                         subtitle: "Versión 1.0.0"
                     ) {
@@ -237,7 +234,7 @@ struct SettingsView: View {
 
                     SettingsRow(
                         icon: "doc.text.fill",
-                        iconColor: .gray,
+                        iconColor: BulkUpColors.textSecondary,
                         title: "Términos de Servicio"
                     ) {
                         if let url = URL(string: "https://bulkup.app/terms") {
@@ -250,7 +247,7 @@ struct SettingsView: View {
                 Section("Gestión de Cuenta") {
                     SettingsRow(
                         icon: "trash.fill",
-                        iconColor: .red,
+                        iconColor: BulkUpColors.error,
                         title: "Eliminar Cuenta",
                         subtitle: "Acción permanente e irreversible"
                     ) {
@@ -258,6 +255,8 @@ struct SettingsView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(BulkUpColors.background.ignoresSafeArea())
             .navigationTitle("Configuración")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -265,6 +264,7 @@ struct SettingsView: View {
                     Button("Cerrar") {
                         dismiss()
                     }
+                    .foregroundColor(BulkUpColors.accent)
                 }
             }
         }
@@ -412,18 +412,20 @@ struct SettingsToggle: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.body)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                 if let subtitle = subtitle {
                     Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
             }
 
             Spacer()
 
             Toggle("", isOn: $isOn)
+                .tint(BulkUpColors.accent)
         }
         .onChange(of: isOn) {
             HapticManager.shared.trigger(.selection, enabled: hapticFeedback)
@@ -445,6 +447,7 @@ struct SettingsPicker: View {
                 .frame(width: 24, height: 24)
 
             Text(title)
+                .foregroundColor(BulkUpColors.textPrimary)
 
             Spacer()
 
@@ -454,6 +457,7 @@ struct SettingsPicker: View {
                 }
             }
             .pickerStyle(.menu)
+            .tint(BulkUpColors.accent)
         }
     }
 }
@@ -488,21 +492,21 @@ struct SettingsRow: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body)
-                        .foregroundColor(.primary)
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textPrimary)
 
                     if let subtitle = subtitle {
                         Text(subtitle)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
                     }
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.secondary)
-                    .font(.caption)
+                    .foregroundColor(BulkUpColors.textSecondary)
+                    .font(BulkUpFont.caption())
             }
             .contentShape(Rectangle())
         }
@@ -515,40 +519,43 @@ struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 24) {
+        NavigationStack {
+            VStack(spacing: Spacing.xl) {
                 Spacer()
 
                 Image(systemName: "dumbbell.fill")
                     .font(.system(size: 60))
-                    .foregroundColor(.blue)
+                    .foregroundColor(BulkUpColors.accent)
 
                 Text("BulkUp")
-                    .font(.largeTitle)
+                    .font(BulkUpFont.screenTitle())
                     .fontWeight(.bold)
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                 Text("Versión \(Bundle.main.appVersion)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textSecondary)
 
                 Text("Tu compañero de entrenamiento y nutrición.")
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
                 Spacer()
 
                 Text("© 2025 BulkUp")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
                     .padding(.bottom)
             }
+            .background(BulkUpColors.background.ignoresSafeArea())
             .navigationTitle("Acerca de")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Cerrar") { dismiss() }
+                        .foregroundColor(BulkUpColors.accent)
                 }
             }
         }

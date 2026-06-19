@@ -10,7 +10,7 @@ import SwiftUI
 struct CompactExerciseCard: View {
     let exercise: RMExerciseFull
     @State private var showingDetail = false
-    
+
     var body: some View {
         Button(action: {
             showingDetail = true
@@ -18,33 +18,33 @@ struct CompactExerciseCard: View {
             VStack(alignment: .leading, spacing: 10) {
                 // Imagen miniatura o icono
                 thumbnailView
-                
+
                 // Información básica
                 VStack(alignment: .leading, spacing: 6) {
                     // Nombre del ejercicio
                     Text(exercise.nameEs)
-                        .font(.subheadline)
+                        .font(BulkUpFont.body())
                         .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BulkUpColors.textPrimary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
-                    
+
                     // Músculo principal
                     if let primaryMuscles = exercise.primaryMuscles,
                        !primaryMuscles.isEmpty,
                        let firstMuscle = primaryMuscles.first {
                         HStack(spacing: 4) {
                             Image(systemName: "figure.strengthtraining.traditional")
-                                .font(.caption2)
-                                .foregroundColor(.blue)
-                            
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.training)
+
                             Text(translateMuscle(firstMuscle))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textSecondary)
                                 .lineLimit(1)
                         }
                     }
-                    
+
                     // Tags compactos
                     HStack(spacing: 4) {
                         // Nivel
@@ -54,31 +54,31 @@ struct CompactExerciseCard: View {
                                 color: levelColor(level)
                             )
                         }
-                        
+
                         // Equipo
                         if let equipment = exercise.equipment, !equipment.isEmpty {
                             CompactTag(
                                 text: equipmentShortName(equipment),
-                                color: .purple
+                                color: BulkUpColors.secondary
                             )
                         }
                     }
                 }
-                
+
                 Spacer(minLength: 0)
             }
-            .padding(12)
+            .padding(Spacing.md)
             .frame(maxWidth: .infinity, minHeight: 140)
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .background(BulkUpColors.surface)
+            .cornerRadius(CornerRadius.large)
+            .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
         .sheet(isPresented: $showingDetail) {
             RMExerciseDetailSheet(exercise: exercise)
         }
     }
-    
+
     private var thumbnailView: some View {
         Group {
             if let images = exercise.images,
@@ -104,25 +104,25 @@ struct CompactExerciseCard: View {
             }
         }
     }
-    
+
     private var defaultThumbnail: some View {
         ZStack {
-            Color(.systemGray6)
-            
+            BulkUpColors.surfaceElevated
+
             Image(systemName: iconForCategory(exercise.category))
                 .font(.system(size: 30))
-                .foregroundColor(.secondary)
+                .foregroundColor(BulkUpColors.textSecondary)
         }
         .frame(height: 80)
         .frame(maxWidth: .infinity)
-        .cornerRadius(8)
+        .cornerRadius(CornerRadius.small)
     }
-    
+
     // MARK: - Helper Functions
-    
+
     private func iconForCategory(_ category: String?) -> String {
         guard let category = category else { return "figure.strengthtraining.traditional" }
-        
+
         switch category.lowercased() {
         case "strength": return "figure.strengthtraining.traditional"
         case "stretching": return "figure.flexibility"
@@ -132,7 +132,7 @@ struct CompactExerciseCard: View {
         default: return "figure.strengthtraining.traditional"
         }
     }
-    
+
     private func levelShortName(_ level: String) -> String {
         switch level.lowercased() {
         case "beginner": return "Básico"
@@ -141,7 +141,7 @@ struct CompactExerciseCard: View {
         default: return level
         }
     }
-    
+
     private func equipmentShortName(_ equipment: String) -> String {
         let translations: [String: String] = [
             "barbell": "Barra",
@@ -158,16 +158,16 @@ struct CompactExerciseCard: View {
         ]
         return translations[equipment.lowercased()] ?? equipment
     }
-    
+
     private func levelColor(_ level: String) -> Color {
         switch level.lowercased() {
-        case "beginner": return .green
-        case "intermediate": return .orange
-        case "expert": return .red
-        default: return .gray
+        case "beginner": return BulkUpColors.success
+        case "intermediate": return BulkUpColors.warning
+        case "expert": return BulkUpColors.error
+        default: return BulkUpColors.textTertiary
         }
     }
-    
+
     private func translateMuscle(_ muscle: String) -> String {
         let translations: [String: String] = [
             "chest": "Pecho",
@@ -197,11 +197,10 @@ struct CompactExerciseCard: View {
 struct CompactTag: View {
     let text: String
     let color: Color
-    
+
     var body: some View {
         Text(text)
-            .font(.caption2)
-            .fontWeight(.medium)
+            .font(BulkUpFont.dataLabel())
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
             .background(color.opacity(0.15))

@@ -19,15 +19,15 @@ struct AddFriendView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 32) {
+            VStack(spacing: Spacing.xxl) {
                 Spacer()
 
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.lg) {
                     ZStack {
                         Circle()
                             .fill(
                                 LinearGradient(
-                                    colors: [.orange.opacity(0.2), .orange.opacity(0.05)],
+                                    colors: [BulkUpColors.accent.opacity(0.2), BulkUpColors.accent.opacity(0.05)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -36,32 +36,32 @@ struct AddFriendView: View {
 
                         Image(systemName: "person.badge.plus")
                             .font(.system(size: 36))
-                            .foregroundColor(.orange)
+                            .foregroundColor(BulkUpColors.accent)
                     }
 
                     Text("Agregar Amigo")
-                        .font(.title2)
-                        .fontWeight(.bold)
+                        .font(BulkUpFont.sectionHeader())
+                        .foregroundColor(BulkUpColors.textPrimary)
 
                     Text("Ingresa el código de 8 caracteres de tu amigo")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                 }
 
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.lg) {
                     TextField("CÓDIGO", text: $code)
                         .font(.system(size: 28, weight: .bold, design: .monospaced))
                         .tracking(4)
                         .multilineTextAlignment(.center)
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
-                        .padding(.vertical, 16)
-                        .padding(.horizontal, 24)
+                        .padding(.vertical, Spacing.lg)
+                        .padding(.horizontal, Spacing.xl)
                         .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.systemGray6))
+                            RoundedRectangle(cornerRadius: CornerRadius.large)
+                                .fill(BulkUpColors.surfaceElevated)
                         )
                         .onChange(of: code) { _, newValue in
                             let filtered = String(newValue.uppercased().prefix(8))
@@ -73,23 +73,23 @@ struct AddFriendView: View {
 
                     if let error = errorMessage {
                         Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.error)
                     }
 
                     if success {
-                        HStack(spacing: 8) {
+                        HStack(spacing: Spacing.sm) {
                             Image(systemName: "checkmark.circle.fill")
                             Text("Amigo agregado exitosamente")
                         }
-                        .font(.subheadline)
-                        .foregroundColor(.green)
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.success)
                     }
 
                     Button {
                         addFriend()
                     } label: {
-                        HStack(spacing: 8) {
+                        HStack(spacing: Spacing.sm) {
                             if isLoading {
                                 ProgressView()
                                     .tint(.white)
@@ -101,9 +101,9 @@ struct AddFriendView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
-                        .background(code.count == 8 && !isLoading ? Color.orange : Color.gray)
+                        .background(code.count == 8 && !isLoading ? BulkUpColors.accent : BulkUpColors.textTertiary)
                         .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .cornerRadius(CornerRadius.medium)
                     }
                     .disabled(code.count != 8 || isLoading)
                 }
@@ -112,6 +112,7 @@ struct AddFriendView: View {
                 Spacer()
             }
             .padding()
+            .background(BulkUpColors.background.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

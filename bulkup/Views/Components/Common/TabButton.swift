@@ -4,11 +4,10 @@
 //
 //  Created by sebastianblancogonz on 18/8/25.
 //
-import SwiftData
 import SwiftUI
 
 struct TabButton: View {
-    let tab: MainAppView.AppTab
+    let tab: AppTab
     let isSelected: Bool
     let isDisabled: Bool
     let action: () -> Void
@@ -19,47 +18,35 @@ struct TabButton: View {
             let impactFeedback = UIImpactFeedbackGenerator(style: .light)
             impactFeedback.impactOccurred()
         }) {
-            HStack(spacing: 12) {
-                Image(systemName: tab.iconName)
-                    .font(.title3)
-                    .fontWeight(.semibold)
+            HStack(spacing: Spacing.md) {
+                Image(systemName: isSelected ? tab.selectedIcon : tab.icon)
+                    .font(BulkUpFont.sectionHeader())
 
-                Text(tab.displayName)
-                    .font(.subheadline)
+                Text(tab.label)
+                    .font(BulkUpFont.body())
                     .fontWeight(.semibold)
 
                 if isDisabled {
                     Text("Sin datos")
-                        .font(.caption2)
+                        .font(BulkUpFont.caption())
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color(.systemGray5))
+                        .background(BulkUpColors.surfaceElevated)
                         .cornerRadius(4)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
-
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
             .background(
                 isSelected
-                    ? tab.gradient
-                    : LinearGradient(
-                        colors: [Color(.systemGray6)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+                    ? AnyShapeStyle(BulkUpColors.accent.opacity(0.15))
+                    : AnyShapeStyle(BulkUpColors.surfaceElevated)
             )
             .foregroundColor(
-                isSelected ? .white : (isDisabled ? .secondary : .primary)
+                isSelected ? BulkUpColors.accent : (isDisabled ? BulkUpColors.textTertiary : BulkUpColors.textPrimary)
             )
-            .cornerRadius(12)
-            .shadow(
-                color: isSelected ? tab.primaryColor.opacity(0.3) : .clear,
-                radius: isSelected ? 8 : 0,
-                x: 0,
-                y: isSelected ? 4 : 0
-            )
+            .cornerRadius(CornerRadius.medium)
             .scaleEffect(isSelected ? 1.02 : 1.0)
             .animation(
                 .spring(response: 0.3, dampingFraction: 0.7),

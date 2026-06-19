@@ -6,9 +6,9 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     let placeholder: () -> Placeholder
 
     @State private var uiImage: UIImage?
-    @State private var dominantColors: [Color] = [.blue, .blue.opacity(0.7)]
+    @State private var dominantColors: [Color] = [BulkUpColors.training, BulkUpColors.training.opacity(0.7)]
     @State private var isLoading = true
-    @State private var hasError = false   // <- Nuevo
+    @State private var hasError = false
 
     private let imageLoader = ImageCacheManager.shared
 
@@ -49,7 +49,7 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
 
         let urlString = url.absoluteString
 
-        // Verificar si ya tenemos en caché imagen + colores
+        // Verificar si ya tenemos en cache imagen + colores
         if let cached = imageLoader.getCachedImage(from: urlString) {
             self.uiImage = cached.image
             self.dominantColors = cached.colors.map { Color($0) }
@@ -66,7 +66,7 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if let error = error {
                     AppLogger.shared.error("Error loading image with url: \(url). Failed with error: \(error.localizedDescription)")
-                    print("❌ Error descargando imagen: \(error.localizedDescription)")
+                    print("Error descargando imagen: \(error.localizedDescription)")
                     DispatchQueue.main.async {
                         self.isLoading = false
                         self.hasError = true

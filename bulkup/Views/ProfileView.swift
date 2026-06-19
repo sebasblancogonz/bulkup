@@ -19,13 +19,13 @@ struct ProfileView: View {
     @State private var projection: NutritionProjection?
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 24) {
+        NavigationStack {
+            VStack(spacing: Spacing.xl) {
                 // Avatar grande
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.lg) {
                     if let urlString = authManager.user?.safeProfileImageURL,
                        let url = URL(string: urlString) {
-                        
+
                         CachedAsyncImage(url: url) { image, colors in
                             ZStack {
                                 // Sombra/blur con colores de la imagen
@@ -37,22 +37,25 @@ struct ProfileView: View {
                                     .blur(radius: 25)
                                     .opacity(0.4)
                                     .offset(y: 8)
-                                
+
                                 // Imagen principal
                                 image
                                     .resizable()
                                     .scaledToFill()
                                     .frame(width: 100, height: 100)
                                     .clipShape(Circle())
+                                    .overlay(
+                                        Circle()
+                                            .stroke(BulkUpColors.accent, lineWidth: 2.5)
+                                    )
                             }
                         } placeholder: {
                             // Fallback con iniciales
                             ZStack {
-                                // Sombra para el fallback
                                 Circle()
                                     .fill(
                                         LinearGradient(
-                                            colors: [.blue.opacity(0.6), .blue.opacity(0.3)],
+                                            colors: [BulkUpColors.accent.opacity(0.6), BulkUpColors.accent.opacity(0.3)],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         )
@@ -61,12 +64,11 @@ struct ProfileView: View {
                                     .blur(radius: 25)
                                     .opacity(0.4)
                                     .offset(y: 8)
-                                
-                                // Círculo principal con iniciales
+
                                 Circle()
                                     .fill(
                                         LinearGradient(
-                                            colors: [.blue, .blue.opacity(0.7)],
+                                            colors: [BulkUpColors.accent, BulkUpColors.accent.opacity(0.7)],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         )
@@ -81,14 +83,13 @@ struct ProfileView: View {
                                     )
                             }
                         }
-                        
+
                     } else {
-                        // Sin imagen → iniciales (mismo código que el placeholder)
                         ZStack {
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [.blue.opacity(0.6), .blue.opacity(0.3)],
+                                        colors: [BulkUpColors.accent.opacity(0.6), BulkUpColors.accent.opacity(0.3)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -97,11 +98,11 @@ struct ProfileView: View {
                                 .blur(radius: 25)
                                 .opacity(0.4)
                                 .offset(y: 8)
-                            
+
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [.blue, .blue.opacity(0.7)],
+                                        colors: [BulkUpColors.accent, BulkUpColors.accent.opacity(0.7)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -116,20 +117,20 @@ struct ProfileView: View {
                                 )
                         }
                     }
-                    
-                    VStack(spacing: 4) {
+
+                    VStack(spacing: Spacing.xs) {
                         Text(authManager.user?.name ?? "Usuario")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
+                            .font(BulkUpFont.sectionHeader())
+                            .foregroundColor(BulkUpColors.textPrimary)
+
                         Text(authManager.user?.email ?? "")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.textSecondary)
                     }
                 }
 
                 // Opciones
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.md) {
                     ProfileMenuItem(
                         icon: "person.crop.circle",
                         title: "Editar Perfil",
@@ -187,14 +188,15 @@ struct ProfileView: View {
                 }) {
                     Text("Cerrar Sesión")
                         .fontWeight(.semibold)
-                        .foregroundColor(.red)
+                        .foregroundColor(BulkUpColors.error)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color.red.opacity(0.1))
-                        .cornerRadius(12)
+                        .background(BulkUpColors.error.opacity(0.1))
+                        .cornerRadius(CornerRadius.medium)
                 }
                 .padding()
             }
+            .background(BulkUpColors.background.ignoresSafeArea())
             .navigationTitle("Perfil")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -202,6 +204,7 @@ struct ProfileView: View {
                     Button("Cerrar") {
                         dismiss()
                     }
+                    .foregroundColor(BulkUpColors.accent)
                 }
             }
             .onAppear {
@@ -209,22 +212,16 @@ struct ProfileView: View {
             }
         }
         .sheet(isPresented: $showingBodyMeasurements) {
-            NavigationView {
-                BodyMeasurementsView()
-                    .environmentObject(authManager)
-            }
+            BodyMeasurementsView()
+                .environmentObject(authManager)
         }
         .sheet(isPresented: $showingEditProfile) {
-            NavigationView {
-                EditProfileView()
-                    .environmentObject(authManager)
-            }
+            EditProfileView()
+                .environmentObject(authManager)
         }
         .sheet(isPresented: $showSettings) {
-            NavigationView {
-                SettingsView()
-                    .environmentObject(authManager)
-            }
+            SettingsView()
+                .environmentObject(authManager)
         }
     }
 

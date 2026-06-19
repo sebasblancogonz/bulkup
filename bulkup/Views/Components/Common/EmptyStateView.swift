@@ -11,14 +11,21 @@ struct EmptyStateView: View {
     let icon: String
     let title: String
     let subtitle: String
-    let actionTitle: String
-    let actionIcon: String
     let color: Color
-    let action: () -> Void
-    
+
+    // Optional primary button
+    var actionTitle: String? = nil
+    var actionIcon: String? = nil
+    var action: (() -> Void)? = nil
+
+    // Optional secondary button
+    var secondaryActionTitle: String? = nil
+    var secondaryActionIcon: String? = nil
+    var secondaryAction: (() -> Void)? = nil
+
     var body: some View {
-        VStack(spacing: 32) {
-            VStack(spacing: 16) {
+        VStack(spacing: Spacing.xxl) {
+            VStack(spacing: Spacing.lg) {
                 ZStack {
                     Circle()
                         .fill(
@@ -29,7 +36,7 @@ struct EmptyStateView: View {
                             )
                         )
                         .frame(width: 120, height: 120)
-                    
+
                     Image(systemName: icon)
                         .font(.system(size: 60))
                         .foregroundStyle(
@@ -42,42 +49,55 @@ struct EmptyStateView: View {
                 }
                 .shadow(color: color.opacity(0.2), radius: 20, x: 0, y: 10)
             }
-            
-            VStack(spacing: 16) {
+
+            VStack(spacing: Spacing.lg) {
                 Text(title)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                
+                    .font(BulkUpFont.sectionHeader())
+                    .foregroundColor(BulkUpColors.textPrimary)
+
                 Text(subtitle)
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, Spacing.screenH)
             }
-            
-            Button(action: action) {
-                HStack(spacing: 12) {
-                    Image(systemName: actionIcon)
-                        .font(.title3)
-                    
-                    Text(actionTitle)
-                        .fontWeight(.semibold)
+
+            // Buttons section
+            if actionTitle != nil || secondaryActionTitle != nil {
+                VStack(spacing: Spacing.md) {
+                    // Primary button
+                    if let actionTitle = actionTitle, let action = action {
+                        Button(action: action) {
+                            HStack(spacing: Spacing.md) {
+                                if let actionIcon = actionIcon {
+                                    Image(systemName: actionIcon)
+                                        .font(BulkUpFont.sectionHeader())
+                                }
+
+                                Text(actionTitle)
+                            }
+                            .primaryButtonStyle(color: color)
+                        }
+                    }
+
+                    // Secondary button
+                    if let secondaryTitle = secondaryActionTitle, let secondaryAction = secondaryAction {
+                        Button(action: secondaryAction) {
+                            HStack(spacing: Spacing.sm) {
+                                if let secondaryIcon = secondaryActionIcon {
+                                    Image(systemName: secondaryIcon)
+                                        .font(BulkUpFont.body())
+                                }
+
+                                Text(secondaryTitle)
+                                    .fontWeight(.semibold)
+                            }
+                            .secondaryButtonStyle()
+                        }
+                    }
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(
-                    LinearGradient(
-                        colors: [color, color.opacity(0.8)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .foregroundColor(.white)
-                .cornerRadius(16)
-                .shadow(color: color.opacity(0.3), radius: 10, x: 0, y: 5)
+                .padding(.horizontal, Spacing.xxl)
             }
-            .padding(.horizontal, 32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()

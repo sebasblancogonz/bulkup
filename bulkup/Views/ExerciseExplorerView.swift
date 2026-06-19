@@ -11,10 +11,12 @@ import SwiftUI
 struct ExerciseExplorerView: View {
     @ObservedObject private var exerciseExplorerManager = ExerciseExplorerManager.shared
     @State private var showFilters = false
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
+                BulkUpColors.background.ignoresSafeArea()
+
                 if exerciseExplorerManager.loading {
                     loadingView
                 } else {
@@ -38,16 +40,17 @@ struct ExerciseExplorerView: View {
                     }) {
                         ZStack(alignment: .topTrailing) {
                             Image(systemName: "line.3.horizontal.decrease.circle")
-                                .font(.title3)
-                            
+                                .font(BulkUpFont.sectionHeader())
+                                .foregroundColor(BulkUpColors.accent)
+
                             let activeFilters = exerciseExplorerManager.categoryFilter.count +
                                               exerciseExplorerManager.equipmentFilter.count +
                                               exerciseExplorerManager.forceFilter.count +
                                               exerciseExplorerManager.levelFilter.count
-                            
+
                             if activeFilters > 0 {
                                 Circle()
-                                    .fill(Color.red)
+                                    .fill(BulkUpColors.error)
                                     .frame(width: 18, height: 18)
                                     .overlay(
                                         Text("\(activeFilters)")
@@ -68,19 +71,19 @@ struct ExerciseExplorerView: View {
             }
         }
     }
-    
+
     private var loadingView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             ProgressView()
                 .scaleEffect(1.5)
-                .tint(.blue)
-            
+                .tint(BulkUpColors.accent)
+
             Text("Cargando ejercicios...")
-                .font(.headline)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
     }
-    
+
     private var contentView: some View {
         Group {
             if exerciseExplorerManager.filteredExercises.isEmpty {
@@ -90,79 +93,63 @@ struct ExerciseExplorerView: View {
                     // Grid de tarjetas compactas
                     LazyVGrid(
                         columns: [
-                            GridItem(.flexible(), spacing: 12),
-                            GridItem(.flexible(), spacing: 12)
+                            GridItem(.flexible(), spacing: Spacing.md),
+                            GridItem(.flexible(), spacing: Spacing.md)
                         ],
-                        spacing: 12
+                        spacing: Spacing.md
                     ) {
                         ForEach(exerciseExplorerManager.paginatedExercises) { exercise in
                             CompactExerciseCard(exercise: exercise)
                         }
                     }
                     .padding()
-                    
+
                     // Información de resultados
                     if exerciseExplorerManager.filteredExercises.count > 0 {
                         resultsInfoView
                             .padding(.horizontal)
-                            .padding(.bottom, 8)
+                            .padding(.bottom, Spacing.sm)
                     }
-                    
+
                     // Paginación
                     if exerciseExplorerManager.totalPages > 1 {
                         paginationView
-                            .padding(.bottom, 80)
+                            .padding(.bottom, Spacing.lg)
                     }
                 }
             }
         }
     }
-    
-    private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 60))
-                .foregroundColor(.secondary)
-            
-            Text("No se encontraron ejercicios")
-                .font(.headline)
-            
-            Text("Prueba con otros términos de búsqueda o ajusta los filtros")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-            
-            if !exerciseExplorerManager.categoryFilter.isEmpty ||
-               !exerciseExplorerManager.equipmentFilter.isEmpty ||
-               !exerciseExplorerManager.forceFilter.isEmpty ||
-               !exerciseExplorerManager.levelFilter.isEmpty {
-                Button(action: exerciseExplorerManager.resetFilters) {
-                    Text("Limpiar filtros")
-                        .font(.callout)
-                        .fontWeight(.medium)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .contentShape(Rectangle())
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
+
+    private var hasActiveFilters: Bool {
+        !exerciseExplorerManager.categoryFilter.isEmpty ||
+        !exerciseExplorerManager.equipmentFilter.isEmpty ||
+        !exerciseExplorerManager.forceFilter.isEmpty ||
+        !exerciseExplorerManager.levelFilter.isEmpty
     }
-    
+
+    private var emptyStateView: some View {
+        EmptyStateView(
+            icon: "magnifyingglass",
+            title: "No se encontraron ejercicios",
+            subtitle: "Prueba con otros términos de búsqueda o ajusta los filtros",
+            color: BulkUpColors.training,
+            actionTitle: hasActiveFilters ? "Limpiar filtros" : nil,
+            actionIcon: hasActiveFilters ? "xmark.circle.fill" : nil,
+            action: hasActiveFilters ? { exerciseExplorerManager.resetFilters() } : nil
+        )
+    }
+
     private var resultsInfoView: some View {
         HStack {
             Text("Mostrando \(exerciseExplorerManager.paginatedExercises.count) de \(exerciseExplorerManager.filteredExercises.count) ejercicios")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
+
             Spacer()
         }
     }
-    
+
     private var paginationView: some View {
         HStack(spacing: 20) {
             Button(action: {
@@ -173,27 +160,27 @@ struct ExerciseExplorerView: View {
                     Text("Anterior")
                 }
                 .font(.callout)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.vertical, Spacing.sm)
                 .background(
                     exerciseExplorerManager.currentPage == 1
-                        ? Color(.systemGray5)
-                        : Color.blue
+                        ? BulkUpColors.surfaceElevated
+                        : BulkUpColors.training
                 )
                 .foregroundColor(
                     exerciseExplorerManager.currentPage == 1
-                        ? .secondary
+                        ? BulkUpColors.textSecondary
                         : .white
                 )
-                .cornerRadius(8)
+                .cornerRadius(CornerRadius.small)
                 .contentShape(Rectangle())
             }
             .disabled(exerciseExplorerManager.currentPage == 1)
-            
+
             Text("Página \(exerciseExplorerManager.currentPage) de \(exerciseExplorerManager.totalPages)")
-                .font(.subheadline)
-                .fontWeight(.medium)
-            
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textPrimary)
+
             Button(action: {
                 exerciseExplorerManager.currentPage = min(
                     exerciseExplorerManager.totalPages,
@@ -205,19 +192,19 @@ struct ExerciseExplorerView: View {
                     Image(systemName: "chevron.right")
                 }
                 .font(.callout)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.vertical, Spacing.sm)
                 .background(
                     exerciseExplorerManager.currentPage == exerciseExplorerManager.totalPages
-                        ? Color(.systemGray5)
-                        : Color.blue
+                        ? BulkUpColors.surfaceElevated
+                        : BulkUpColors.training
                 )
                 .foregroundColor(
                     exerciseExplorerManager.currentPage == exerciseExplorerManager.totalPages
-                        ? .secondary
+                        ? BulkUpColors.textSecondary
                         : .white
                 )
-                .cornerRadius(8)
+                .cornerRadius(CornerRadius.small)
                 .contentShape(Rectangle())
             }
             .disabled(exerciseExplorerManager.currentPage == exerciseExplorerManager.totalPages)
@@ -230,9 +217,9 @@ struct ExerciseExplorerView: View {
 struct FilterSheet: View {
     @ObservedObject var exerciseExplorerManager: ExerciseExplorerManager
     @Binding var isPresented: Bool
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Categoría
@@ -245,9 +232,9 @@ struct FilterSheet: View {
                             exerciseExplorerManager.resetPage()
                         },
                     )
-                    
+
                     Divider()
-                    
+
                     // Equipo
                     FilterSection(
                         title: "Equipo",
@@ -258,9 +245,9 @@ struct FilterSheet: View {
                             exerciseExplorerManager.resetPage()
                         },
                     )
-                    
+
                     Divider()
-                    
+
                     // Fuerza
                     FilterSection(
                         title: "Fuerza",
@@ -271,9 +258,9 @@ struct FilterSheet: View {
                             exerciseExplorerManager.resetPage()
                         },
                     )
-                    
+
                     Divider()
-                    
+
                     // Nivel
                     FilterSection(
                         title: "Nivel",
@@ -284,11 +271,11 @@ struct FilterSheet: View {
                             exerciseExplorerManager.resetPage()
                         },
                     )
-                    
-                    // Botón limpiar filtros (si hay filtros activos)
+
+                    // Botón limpiar filtros
                     if hasActiveFilters {
                         Divider()
-                        
+
                         Button(action: {
                             exerciseExplorerManager.resetFilters()
                         }) {
@@ -297,7 +284,7 @@ struct FilterSheet: View {
                                 Text("Limpiar todos los filtros")
                                 Spacer()
                             }
-                            .foregroundColor(.red)
+                            .foregroundColor(BulkUpColors.error)
                             .contentShape(Rectangle())
                         }
                         .padding(.top, 8)
@@ -305,6 +292,7 @@ struct FilterSheet: View {
                 }
                 .padding()
             }
+            .background(BulkUpColors.background.ignoresSafeArea())
             .navigationTitle("Filtros")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -313,18 +301,19 @@ struct FilterSheet: View {
                         isPresented = false
                     }
                     .fontWeight(.semibold)
+                    .foregroundColor(BulkUpColors.accent)
                 }
             }
         }
     }
-    
+
     private var hasActiveFilters: Bool {
         !exerciseExplorerManager.categoryFilter.isEmpty ||
         !exerciseExplorerManager.equipmentFilter.isEmpty ||
         !exerciseExplorerManager.forceFilter.isEmpty ||
         !exerciseExplorerManager.levelFilter.isEmpty
     }
-    
+
     // Translation functions
     private func translateCategory(_ category: String) -> String {
         let translations: [String: String] = [
@@ -338,7 +327,7 @@ struct FilterSheet: View {
         ]
         return translations[category.lowercased()] ?? category.capitalized
     }
-    
+
     private func translateLevel(_ level: String) -> String {
         let translations: [String: String] = [
             "beginner": "Principiante",
@@ -347,7 +336,7 @@ struct FilterSheet: View {
         ]
         return translations[level.lowercased()] ?? level.capitalized
     }
-    
+
     private func translateForce(_ force: String) -> String {
         let translations: [String: String] = [
             "push": "Empuje",
@@ -356,7 +345,7 @@ struct FilterSheet: View {
         ]
         return translations[force.lowercased()] ?? force.capitalized
     }
-    
+
     private func translateEquipment(_ equipment: String) -> String {
         let translations: [String: String] = [
             "barbell": "Barra",
@@ -375,4 +364,3 @@ struct FilterSheet: View {
         return translations[equipment.lowercased()] ?? equipment.capitalized
     }
 }
-

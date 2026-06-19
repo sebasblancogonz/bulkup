@@ -11,9 +11,9 @@ struct RMExerciseDetailSheet: View {
     let exercise: RMExerciseFull
     @Environment(\.dismiss) var dismiss
     @State private var selectedImageIndex = 0
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Imágenes del ejercicio
@@ -22,34 +22,35 @@ struct RMExerciseDetailSheet: View {
                     } else {
                         placeholderImage
                     }
-                    
-                    VStack(alignment: .leading, spacing: 16) {
+
+                    VStack(alignment: .leading, spacing: Spacing.lg) {
                         // Nombre y categoría
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
                             Text(exercise.nameEs)
-                                .font(.largeTitle)
+                                .font(BulkUpFont.screenTitle())
                                 .fontWeight(.bold)
+                                .foregroundColor(BulkUpColors.textPrimary)
                         }
-                        
+
                         // Tags principales
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
+                            HStack(spacing: Spacing.sm) {
                                 if let category = exercise.category {
                                     TagView(
                                         text: translateCategory(category),
-                                        color: .blue,
+                                        color: BulkUpColors.training,
                                         icon: "tag.fill"
                                     )
                                 }
-                                
+
                                 if let equipment = exercise.equipment {
                                     TagView(
                                         text: translateEquipment(equipment),
-                                        color: .purple,
+                                        color: BulkUpColors.secondary,
                                         icon: "dumbbell.fill"
                                     )
                                 }
-                                
+
                                 if let level = exercise.level {
                                     TagView(
                                         text: translateLevel(level),
@@ -59,17 +60,17 @@ struct RMExerciseDetailSheet: View {
                                 }
                             }
                         }
-                        
+
                         Divider()
-                        
+
                         // Información de músculos
                         musclesSection
-                        
+
                         Divider()
-                        
+
                         // Detalles técnicos
                         technicalDetailsSection
-                        
+
                         // Instrucciones si están disponibles
                         if let instructions = exercise.instructionsEs, !instructions.isEmpty {
                             Divider()
@@ -79,19 +80,21 @@ struct RMExerciseDetailSheet: View {
                     .padding(.horizontal)
                 }
             }
+            .background(BulkUpColors.background.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Cerrar") {
                         dismiss()
                     }
+                    .foregroundColor(BulkUpColors.accent)
                 }
             }
         }
     }
-    
+
     // MARK: - Components
-    
+
     private func imageCarousel(images: [String]) -> some View {
         TabView(selection: $selectedImageIndex) {
             ForEach(Array(images.enumerated()), id: \.offset) { index, imageUrl in
@@ -101,7 +104,7 @@ struct RMExerciseDetailSheet: View {
                         ProgressView()
                             .frame(height: 300)
                             .frame(maxWidth: .infinity)
-                            .background(Color(.systemGray6))
+                            .background(BulkUpColors.surfaceElevated)
                     case .success(let image):
                         image
                             .resizable()
@@ -111,10 +114,10 @@ struct RMExerciseDetailSheet: View {
                     case .failure(_):
                         Image(systemName: "photo")
                             .font(.system(size: 50))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(BulkUpColors.textSecondary)
                             .frame(height: 300)
                             .frame(maxWidth: .infinity)
-                            .background(Color(.systemGray6))
+                            .background(BulkUpColors.surfaceElevated)
                     @unknown default:
                         EmptyView()
                     }
@@ -124,38 +127,38 @@ struct RMExerciseDetailSheet: View {
         }
         .tabViewStyle(PageTabViewStyle())
         .frame(height: 300)
-        .background(Color(.systemGray6))
+        .background(BulkUpColors.surfaceElevated)
     }
-    
+
     private var placeholderImage: some View {
         ZStack {
-            Color(.systemGray6)
-            
-            VStack(spacing: 12) {
+            BulkUpColors.surfaceElevated
+
+            VStack(spacing: Spacing.md) {
                 Image(systemName: "figure.strengthtraining.traditional")
                     .font(.system(size: 60))
-                    .foregroundColor(.secondary)
-                
+                    .foregroundColor(BulkUpColors.textSecondary)
+
                 Text("Sin imágenes disponibles")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
             }
         }
         .frame(height: 200)
     }
-    
+
     private var musclesSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Músculos trabajados")
-                .font(.headline)
-            
+                .sectionHeader()
+
             // Músculos principales
             if let primaryMuscles = exercise.primaryMuscles, !primaryMuscles.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
                     Label("Principales", systemImage: "figure.strengthtraining.traditional")
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                    
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textPrimary)
+
                     FlowLayout(spacing: 6) {
                         ForEach(primaryMuscles, id: \.self) { muscle in
                             MuscleChip(
@@ -166,14 +169,14 @@ struct RMExerciseDetailSheet: View {
                     }
                 }
             }
-            
+
             // Músculos secundarios
             if let secondaryMuscles = exercise.secondaryMuscles, !secondaryMuscles.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
                     Label("Secundarios", systemImage: "figure.walk")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textSecondary)
+
                     FlowLayout(spacing: 6) {
                         ForEach(secondaryMuscles, id: \.self) { muscle in
                             MuscleChip(
@@ -186,13 +189,13 @@ struct RMExerciseDetailSheet: View {
             }
         }
     }
-    
+
     private var technicalDetailsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Detalles técnicos")
-                .font(.headline)
-            
-            VStack(spacing: 8) {
+                .sectionHeader()
+
+            VStack(spacing: Spacing.sm) {
                 if let force = exercise.force, !force.isEmpty {
                     DetailRow(
                         icon: "arrow.up.arrow.down",
@@ -200,7 +203,7 @@ struct RMExerciseDetailSheet: View {
                         value: translateForce(force)
                     )
                 }
-                
+
                 if let mechanic = exercise.mechanic, !mechanic.isEmpty {
                     DetailRow(
                         icon: "gearshape.2",
@@ -208,7 +211,7 @@ struct RMExerciseDetailSheet: View {
                         value: translateMechanic(mechanic)
                     )
                 }
-                
+
                 if let equipment = exercise.equipment, !equipment.isEmpty {
                     DetailRow(
                         icon: "dumbbell",
@@ -216,7 +219,7 @@ struct RMExerciseDetailSheet: View {
                         value: translateEquipment(equipment)
                     )
                 }
-                
+
                 if let level = exercise.level, !level.isEmpty  {
                     DetailRow(
                         icon: "chart.bar",
@@ -227,47 +230,48 @@ struct RMExerciseDetailSheet: View {
             }
         }
     }
-    
+
     private func instructionsSection(_ instructions: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Instrucciones")
-                .font(.headline)
-            
-            VStack(alignment: .leading, spacing: 8) {
+                .sectionHeader()
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 ForEach(Array(instructions.enumerated()), id: \.offset) { index, instruction in
-                    HStack(alignment: .top, spacing: 12) {
+                    HStack(alignment: .top, spacing: Spacing.md) {
                         Text("\(index + 1)")
-                            .font(.caption)
+                            .font(BulkUpFont.caption())
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                             .frame(width: 24, height: 24)
-                            .background(Color.blue)
+                            .background(BulkUpColors.training)
                             .clipShape(Circle())
-                        
+
                         Text(instruction)
-                            .font(.body)
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
-                        
+
                         Spacer(minLength: 0)
                     }
                 }
             }
         }
     }
-    
+
     // MARK: - Helper Functions
-    
+
     private func levelColor(_ level: String) -> Color {
         switch level.lowercased() {
-        case "beginner": return .green
-        case "intermediate": return .orange
-        case "expert": return .red
-        default: return .gray
+        case "beginner": return BulkUpColors.success
+        case "intermediate": return BulkUpColors.warning
+        case "expert": return BulkUpColors.error
+        default: return BulkUpColors.textTertiary
         }
     }
-    
+
     // MARK: - Translation Functions
-    
+
     private func translateCategory(_ category: String) -> String {
         let translations: [String: String] = [
             "strength": "Fuerza",
@@ -280,7 +284,7 @@ struct RMExerciseDetailSheet: View {
         ]
         return translations[category.lowercased()] ?? category.capitalized
     }
-    
+
     private func translateLevel(_ level: String) -> String {
         let translations: [String: String] = [
             "beginner": "Principiante",
@@ -289,7 +293,7 @@ struct RMExerciseDetailSheet: View {
         ]
         return translations[level.lowercased()] ?? level.capitalized
     }
-    
+
     private func translateForce(_ force: String) -> String {
         let translations: [String: String] = [
             "push": "Empuje",
@@ -298,7 +302,7 @@ struct RMExerciseDetailSheet: View {
         ]
         return translations[force.lowercased()] ?? force.capitalized
     }
-    
+
     private func translateMechanic(_ mechanic: String) -> String {
         let translations: [String: String] = [
             "compound": "Compuesto",
@@ -306,7 +310,7 @@ struct RMExerciseDetailSheet: View {
         ]
         return translations[mechanic.lowercased()] ?? mechanic.capitalized
     }
-    
+
     private func translateEquipment(_ equipment: String) -> String {
         let translations: [String: String] = [
             "barbell": "Barra",
@@ -324,7 +328,7 @@ struct RMExerciseDetailSheet: View {
         ]
         return translations[equipment.lowercased()] ?? equipment.capitalized
     }
-    
+
     private func translateMuscle(_ muscle: String) -> String {
         let translations: [String: String] = [
             "chest": "Pecho",
@@ -355,24 +359,24 @@ struct DetailRow: View {
     let icon: String
     let title: String
     let value: String
-    
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.md) {
             Image(systemName: icon)
                 .font(.system(size: 16))
-                .foregroundColor(.blue)
+                .foregroundColor(BulkUpColors.accent)
                 .frame(width: 24)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+
                 Text(value)
-                    .font(.body)
-                    .fontWeight(.medium)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textPrimary)
             }
-            
+
             Spacer()
         }
         .padding(.vertical, 4)
@@ -382,15 +386,15 @@ struct DetailRow: View {
 struct MuscleChip: View {
     let name: String
     let isPrimary: Bool
-    
+
     var body: some View {
         Text(name)
-            .font(.caption)
+            .font(BulkUpFont.caption())
             .fontWeight(isPrimary ? .semibold : .regular)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(isPrimary ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
-            .foregroundColor(isPrimary ? .blue : .primary)
-            .cornerRadius(12)
+            .background(isPrimary ? BulkUpColors.training.opacity(0.2) : BulkUpColors.surfaceElevated)
+            .foregroundColor(isPrimary ? BulkUpColors.training : BulkUpColors.textPrimary)
+            .cornerRadius(CornerRadius.medium)
     }
 }

@@ -12,49 +12,47 @@ struct ProfileMenuItem: View {
     let title: String
     var subtitle: String? = nil
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 16) {
+            HStack(spacing: Spacing.lg) {
                 // Icon
                 ZStack {
                     Circle()
-                        .fill(Color.blue.opacity(0.1))
+                        .fill(BulkUpColors.accent.opacity(0.15))
                         .frame(width: 44, height: 44)
-                    
+
                     Image(systemName: icon)
                         .font(.system(size: 20))
-                        .foregroundColor(.blue)
+                        .foregroundColor(BulkUpColors.accent)
                 }
-                
+
                 // Text content
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body)
-                        .fontWeight(.medium)
-                        .foregroundColor(.primary)
-                    
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textPrimary)
+
                     if let subtitle = subtitle {
                         Text(subtitle)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
                     }
                 }
-                
+
                 Spacer()
-                
-                // Arrow
+
+                // Chevron
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textTertiary)
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 16)
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
+            .padding(.vertical, Spacing.sm)
+            .padding(.horizontal, Spacing.lg)
+            .background(BulkUpColors.surface)
+            .cornerRadius(CornerRadius.large)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 }
-
