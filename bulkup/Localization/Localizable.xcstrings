@@ -1147,6 +1147,341 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Are you sure you want to delete this plan? This action cannot be undone." } }
       }
+    },
+    "Guardar Plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save Plan" } }
+      }
+    },
+    "Nuevo Plan de Dieta" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Diet Plan" } }
+      }
+    },
+    "Informacion del Plan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Plan Info" } }
+      }
+    },
+    "Dias" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Days" } }
+      }
+    },
+    "No hay dias agregados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No days added" } }
+      }
+    },
+    "Anade tu primer dia para comenzar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add your first day to get started" } }
+      }
+    },
+    "%lld comidas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld meals" } }
+      }
+    },
+    "Agregar comida" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add meal" } }
+      }
+    },
+    "Agregar suplemento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add supplement" } }
+      }
+    },
+    "Eliminar dia" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete day" } }
+      }
+    },
+    "Sin comidas. Toca el menu para agregar." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No meals. Tap the menu to add." } }
+      }
+    },
+    "Agregar Comida" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Meal" } }
+      }
+    },
+    "Suplementos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Supplements" } }
+      }
+    },
+    "%lld opc." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld opt." } }
+      }
+    },
+    "Tipo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Type" } }
+      }
+    },
+    "Hora (ej: 08:00)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Time (e.g. 08:00)" } }
+      }
+    },
+    "Agregar opcion" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add option" } }
+      }
+    },
+    "Eliminar comida" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete meal" } }
+      }
+    },
+    "Opcion %lld" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Option %lld" } }
+      }
+    },
+    "Descripcion (ej: Tortilla de claras con avena)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Description (e.g. Egg-white omelette with oats)" } }
+      }
+    },
+    "Ingredientes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ingredients" } }
+      }
+    },
+    "Ingrediente" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ingredient" } }
+      }
+    },
+    "Instrucciones (opcional)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Instructions (optional)" } }
+      }
+    },
+    "Suplemento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Supplement" } }
+      }
+    },
+    "Agregar Dia" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Day" } }
+      }
+    },
+    "Dia de la semana" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Day of the week" } }
+      }
+    },
+    "Dia" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Day" } }
+      }
+    },
+    "Lunes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Monday" } }
+      }
+    },
+    "Martes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tuesday" } }
+      }
+    },
+    "Miercoles" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Wednesday" } }
+      }
+    },
+    "Jueves" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Thursday" } }
+      }
+    },
+    "Viernes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Friday" } }
+      }
+    },
+    "Sabado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saturday" } }
+      }
+    },
+    "Domingo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sunday" } }
+      }
+    },
+    "Nueva Comida" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Meal" } }
+      }
+    },
+    "Tipo de comida" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Meal type" } }
+      }
+    },
+    "Hora" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Time" } }
+      }
+    },
+    "Descripcion" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Description" } }
+      }
+    },
+    "Agregar ingrediente" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add ingredient" } }
+      }
+    },
+    "Nuevo Suplemento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Supplement" } }
+      }
+    },
+    "Dosis" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dosage" } }
+      }
+    },
+    "Momento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Timing" } }
+      }
+    },
+    "Frecuencia" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Frequency" } }
+      }
+    },
+    "Agregar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add" } }
+      }
+    },
+    "Ej: Creatina" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "E.g. Creatine" } }
+      }
+    },
+    "Ej: 5g" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "E.g. 5g" } }
+      }
+    },
+    "Ej: Post-entreno" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "E.g. Post-workout" } }
+      }
+    },
+    "Ej: Diario" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "E.g. Daily" } }
+      }
+    },
+    "Ej: 08:00" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "E.g. 08:00" } }
+      }
+    },
+    "Dias de entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Training days" } }
+      }
+    },
+    "Dias de descanso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rest days" } }
+      }
+    },
+    "Resumen Nutricional" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Nutrition Summary" } }
+      }
+    },
+    "% Grasa" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "% Fat" } }
+      }
+    },
+    "Masa Magra" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Lean Mass" } }
+      }
+    },
+    "Cumplimiento: %.0f%%" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Compliance: %.0f%%" } }
+      }
+    },
+    "%lld dias seguidos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld days in a row" } }
+      }
+    },
+    "Agrega tus medidas corporales para ver tu resumen" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add your body measurements to see your summary" } }
+      }
+    },
+    "Proyecciones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Projections" } }
+      }
+    },
+    "Faltan %lld dias" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld days left" } }
+      }
+    },
+    "Basado en %lld% de cumplimiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Based on %lld% compliance" } }
+      }
+    },
+    "Necesitas medidas corporales y una fecha de revision para ver proyecciones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "You need body measurements and a review date to see projections" } }
+      }
+    },
+    "Proxima Revision" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Next Review" } }
+      }
+    },
+    "Cambiar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Change" } }
+      }
+    },
+    "Fecha de revision" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Review date" } }
+      }
+    },
+    "Guardar Fecha" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save Date" } }
+      }
+    },
+    "%lld opciones" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld options" } }
+      }
+    },
+    "... y %lld comidas mas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "... and %lld more meals" } }
+      }
     }
   },
   "version" : "1.0"

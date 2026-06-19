@@ -38,7 +38,7 @@ struct NutritionSummaryCard: View {
 
                     HStack {
                         Label(
-                            String(format: "Cumplimiento: %.0f%%", stats.complianceRate * 100),
+                            String(format: String(localized: "Cumplimiento: %.0f%%"), stats.complianceRate * 100),
                             systemImage: "checkmark.circle"
                         )
                         .font(BulkUpFont.caption())
@@ -48,7 +48,7 @@ struct NutritionSummaryCard: View {
 
                         if stats.currentStreak > 0 {
                             Label(
-                                "\(stats.currentStreak) dias seguidos",
+                                String(localized: "\(stats.currentStreak) dias seguidos"),
                                 systemImage: "flame"
                             )
                             .font(BulkUpFont.caption())
