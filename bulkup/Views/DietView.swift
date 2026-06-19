@@ -573,7 +573,7 @@ private struct MacroBar: View {
             }
             .frame(height: 6)
 
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(BulkUpColors.textTertiary)
 

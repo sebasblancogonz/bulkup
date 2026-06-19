@@ -407,7 +407,7 @@ struct RMStatCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
 
@@ -415,7 +415,7 @@ struct RMStatCard: View {
                 .font(BulkUpFont.heroStat())
                 .foregroundColor(color)
 
-            Text(subtitle)
+            Text(LocalizedStringKey(subtitle))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
         }

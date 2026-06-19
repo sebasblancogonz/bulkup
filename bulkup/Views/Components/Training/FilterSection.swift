@@ -84,40 +84,40 @@ struct FilterSection: View {
         // Aquí puedes agregar traducciones según necesites
         let translations: [String: String] = [
             // Categorías
-            "strength": "Fuerza",
-            "stretching": "Estiramiento",
-            "plyometrics": "Pliometría",
-            "strongman": "Strongman",
-            "powerlifting": "Powerlifting",
-            "cardio": "Cardio",
-            "olympic weightlifting": "Halterofilia",
+            "strength": String(localized: "Fuerza"),
+            "stretching": String(localized: "Estiramiento"),
+            "plyometrics": String(localized: "Pliometría"),
+            "strongman": String(localized: "Strongman"),
+            "powerlifting": String(localized: "Powerlifting"),
+            "cardio": String(localized: "Cardio"),
+            "olympic weightlifting": String(localized: "Halterofilia"),
 
             // Niveles
-            "beginner": "Principiante",
-            "intermediate": "Intermedio",
-            "expert": "Experto",
+            "beginner": String(localized: "Principiante"),
+            "intermediate": String(localized: "Intermedio"),
+            "expert": String(localized: "Experto"),
 
             // Fuerza
-            "push": "Empuje",
-            "pull": "Jalón",
-            "static": "Estático",
+            "push": String(localized: "Empuje"),
+            "pull": String(localized: "Jalón"),
+            "static": String(localized: "Estático"),
 
             // Mecánica
-            "compound": "Compuesto",
-            "isolation": "Aislamiento",
+            "compound": String(localized: "Compuesto"),
+            "isolation": String(localized: "Aislamiento"),
 
             // Equipo
-            "barbell": "Barra",
-            "dumbbell": "Mancuerna",
-            "body only": "Peso corporal",
-            "machine": "Máquina",
-            "cable": "Cable",
-            "kettlebells": "Pesas rusas",
-            "bands": "Bandas",
-            "medicine ball": "Balón medicinal",
-            "exercise ball": "Pelota de ejercicio",
-            "e-z curl bar": "Barra Z",
-            "foam roll": "Rodillo de espuma"
+            "barbell": String(localized: "Barra"),
+            "dumbbell": String(localized: "Mancuerna"),
+            "body only": String(localized: "Peso corporal"),
+            "machine": String(localized: "Máquina"),
+            "cable": String(localized: "Cable"),
+            "kettlebells": String(localized: "Pesas rusas"),
+            "bands": String(localized: "Bandas"),
+            "medicine ball": String(localized: "Balón medicinal"),
+            "exercise ball": String(localized: "Pelota de ejercicio"),
+            "e-z curl bar": String(localized: "Barra Z"),
+            "foam roll": String(localized: "Rodillo de espuma")
         ]
 
         return translations[option.lowercased()] ?? option.capitalized

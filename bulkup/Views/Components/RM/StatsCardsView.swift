@@ -61,7 +61,7 @@ struct StatsCard: View {
                     .font(.system(size: 20))
                     .foregroundColor(.white)
 
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white.opacity(0.9))
                     .lineLimit(1)
@@ -74,7 +74,7 @@ struct StatsCard: View {
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(.system(size: 10))
                     .foregroundColor(.white.opacity(0.75))
                     .lineLimit(2)

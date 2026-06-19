@@ -135,26 +135,26 @@ struct CompactExerciseCard: View {
 
     private func levelShortName(_ level: String) -> String {
         switch level.lowercased() {
-        case "beginner": return "Básico"
-        case "intermediate": return "Medio"
-        case "expert": return "Avanzado"
+        case "beginner": return String(localized: "Básico")
+        case "intermediate": return String(localized: "Medio")
+        case "expert": return String(localized: "Avanzado")
         default: return level
         }
     }
 
     private func equipmentShortName(_ equipment: String) -> String {
         let translations: [String: String] = [
-            "barbell": "Barra",
-            "dumbbell": "Mancuerna",
-            "body only": "Corporal",
-            "machine": "Máquina",
-            "cable": "Cable",
-            "kettlebells": "Pesa rusa",
-            "bands": "Banda",
-            "medicine ball": "Balón",
-            "exercise ball": "Pelota",
-            "e-z curl bar": "Barra Z",
-            "foam roll": "Rodillo"
+            "barbell": String(localized: "Barra"),
+            "dumbbell": String(localized: "Mancuerna"),
+            "body only": String(localized: "Corporal"),
+            "machine": String(localized: "Máquina"),
+            "cable": String(localized: "Cable"),
+            "kettlebells": String(localized: "Pesa rusa"),
+            "bands": String(localized: "Banda"),
+            "medicine ball": String(localized: "Balón"),
+            "exercise ball": String(localized: "Pelota"),
+            "e-z curl bar": String(localized: "Barra Z"),
+            "foam roll": String(localized: "Rodillo")
         ]
         return translations[equipment.lowercased()] ?? equipment
     }
@@ -170,23 +170,23 @@ struct CompactExerciseCard: View {
 
     private func translateMuscle(_ muscle: String) -> String {
         let translations: [String: String] = [
-            "chest": "Pecho",
-            "shoulders": "Hombros",
-            "triceps": "Tríceps",
-            "biceps": "Bíceps",
-            "forearms": "Antebrazos",
-            "abdominals": "Abdominales",
-            "quadriceps": "Cuádriceps",
-            "hamstrings": "Isquiotibiales",
-            "calves": "Pantorrillas",
-            "glutes": "Glúteos",
-            "lower back": "Espalda baja",
-            "middle back": "Espalda media",
-            "lats": "Dorsales",
-            "traps": "Trapecios",
-            "neck": "Cuello",
-            "adductors": "Aductores",
-            "abductors": "Abductores"
+            "chest": String(localized: "Pecho"),
+            "shoulders": String(localized: "Hombros"),
+            "triceps": String(localized: "Tríceps"),
+            "biceps": String(localized: "Bíceps"),
+            "forearms": String(localized: "Antebrazos"),
+            "abdominals": String(localized: "Abdominales"),
+            "quadriceps": String(localized: "Cuádriceps"),
+            "hamstrings": String(localized: "Isquiotibiales"),
+            "calves": String(localized: "Pantorrillas"),
+            "glutes": String(localized: "Glúteos"),
+            "lower back": String(localized: "Espalda baja"),
+            "middle back": String(localized: "Espalda media"),
+            "lats": String(localized: "Dorsales"),
+            "traps": String(localized: "Trapecios"),
+            "neck": String(localized: "Cuello"),
+            "adductors": String(localized: "Aductores"),
+            "abductors": String(localized: "Abductores")
         ]
         return translations[muscle.lowercased()] ?? muscle.capitalized
     }
