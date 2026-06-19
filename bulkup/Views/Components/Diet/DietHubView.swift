@@ -108,12 +108,12 @@ struct DietHubView: View {
     private var planHeader: some View {
         HStack(spacing: Spacing.md) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(dietManager.activePlanName ?? "Plan de Dieta")
+                Text(dietManager.activePlanName ?? String(localized: "Plan de Dieta"))
                     .font(BulkUpFont.sectionHeader())
                     .foregroundColor(BulkUpColors.textPrimary)
                     .lineLimit(1)
 
-                Text("\(dietManager.dietData.count) dias · \(totalMealCount) comidas")
+                Text(String(format: String(localized: "%lld dias · %lld comidas"), dietManager.dietData.count, totalMealCount))
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }
@@ -624,7 +624,7 @@ struct DietPlanCard: View {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack {
                     Label(
-                        "\(plan.dietDays.count) dias",
+                        String(format: String(localized: "%lld dias"), plan.dietDays.count),
                         systemImage: "calendar"
                     )
                     .font(BulkUpFont.caption())
@@ -639,7 +639,7 @@ struct DietPlanCard: View {
 
                 if let totalMeals = plan.dietDays.first?.mealCount {
                     Label(
-                        "\(totalMeals) comidas por dia",
+                        String(format: String(localized: "%lld comidas por dia"), totalMeals),
                         systemImage: "fork.knife"
                     )
                     .font(BulkUpFont.caption())

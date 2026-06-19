@@ -47,7 +47,7 @@ struct DietView: View {
         return ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 dayHeader(
-                    title: "Plan Semanal",
+                    title: String(localized: "Plan Semanal"),
                     completedCount: completedCount,
                     totalCount: sortedMeals.count
                 )
@@ -173,7 +173,7 @@ struct DietView: View {
                     title: formatDayName(day.day),
                     completedCount: completedCount,
                     totalCount: sortedMeals.count,
-                    subtitle: "Día \(index + 1) de \(dietManager.dietData.count)"
+                    subtitle: String(format: String(localized: "Día %lld de %lld"), index + 1, dietManager.dietData.count)
                 )
                 .padding(.horizontal, Spacing.screenH)
                 .padding(.top, Spacing.lg)
@@ -229,7 +229,7 @@ struct DietView: View {
                 Spacer()
 
                 if totalCount > 0 {
-                    Text("\(completedCount)/\(totalCount) comidas")
+                    Text(String(format: String(localized: "%lld/%lld comidas"), completedCount, totalCount))
                         .font(.system(size: 13, weight: .bold, design: .monospaced))
                         .foregroundColor(
                             completedCount == totalCount
@@ -402,7 +402,7 @@ struct DietView: View {
                         .tracking(1.5)
                         .foregroundColor(BulkUpColors.textSecondary)
                     Spacer()
-                    PillBadge(text: "Permitida", color: BulkUpColors.success, icon: "checkmark.circle")
+                    PillBadge(text: String(localized: "Permitida"), color: BulkUpColors.success, icon: "checkmark.circle")
                 }
 
                 Text("Registra lo que comiste en tu comida libre")
