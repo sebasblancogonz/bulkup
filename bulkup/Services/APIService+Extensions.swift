@@ -7,6 +7,25 @@
 
 import Foundation
 
+// MARK: - Recipe Chat DTOs
+
+struct RecipeChatMessageDTO: Codable {
+    let role: String
+    let content: String
+}
+
+private struct RecipeChatRequest: Codable {
+    let mealType: String
+    let ingredients: [String]
+    let messages: [RecipeChatMessageDTO]
+}
+
+private struct RecipeChatResponse: Codable {
+    let reply: String
+}
+
+// MARK: - APIService Extensions
+
 extension APIService {
 
     func login(email: String, password: String) async throws -> AuthResponse {
@@ -488,5 +507,25 @@ extension APIService {
             method: .DELETE,
             body: request
         )
+    }
+
+    // MARK: - Recipe Chat
+
+    func recipeChat(mealType: String, ingredients: [String], messages: [RecipeChatMessageDTO]) async throws -> String {
+        guard let url = URL(string: "\(APIConfig.baseURL)/diet/recipe-chat") else {
+            throw APIError.invalidURL
+        }
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = UserDefaults.standard.string(forKey: "auth_token") {
+            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        urlRequest.httpBody = try JSONEncoder().encode(RecipeChatRequest(mealType: mealType, ingredients: ingredients, messages: messages))
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
+        }
+        return try JSONDecoder().decode(RecipeChatResponse.self, from: data).reply
     }
 }
