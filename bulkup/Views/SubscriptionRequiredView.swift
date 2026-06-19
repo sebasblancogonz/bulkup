@@ -8,16 +8,16 @@ import SwiftUI
 
 struct SubscriptionRequiredView: View {
     let onSubscribe: () -> Void
-    var title: String = String(localized: "Funcion Premium")
-    var subtitle: String = String(localized: "Desbloquea el poder de subir y gestionar tus planes personalizados de entrenamiento y dieta")
-    var features: [String] = [
-        String(localized: "Planes ilimitados"),
-        String(localized: "Importacion con IA (PDF y fotos)"),
-        String(localized: "Dashboard de progreso completo"),
-        String(localized: "Records personales (RM)"),
-        String(localized: "Medidas corporales y composicion"),
-        String(localized: "Ranking con amigos"),
-        String(localized: "Compartir e importar planes")
+    var title: LocalizedStringKey = "Funcion Premium"
+    var subtitle: LocalizedStringKey = "Desbloquea el poder de subir y gestionar tus planes personalizados de entrenamiento y dieta"
+    var features: [LocalizedStringKey] = [
+        "Planes ilimitados",
+        "Importacion con IA (PDF y fotos)",
+        "Dashboard de progreso completo",
+        "Records personales (RM)",
+        "Medidas corporales y composicion",
+        "Ranking con amigos",
+        "Compartir e importar planes"
     ]
     var compact: Bool = false
 
@@ -59,11 +59,11 @@ struct SubscriptionRequiredView: View {
             }
 
             VStack(spacing: Spacing.lg) {
-                Text(LocalizedStringKey(title))
+                Text(title)
                     .font(.title.weight(.bold))
                     .foregroundColor(BulkUpColors.textPrimary)
 
-                Text(LocalizedStringKey(subtitle))
+                Text(subtitle)
                     .font(BulkUpFont.body())
                     .foregroundColor(BulkUpColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -73,8 +73,8 @@ struct SubscriptionRequiredView: View {
             VStack(spacing: Spacing.lg) {
                 // Beneficios
                 VStack(alignment: .leading, spacing: Spacing.md) {
-                    ForEach(features, id: \.self) { feature in
-                        FeatureRow(icon: "checkmark.circle.fill", text: feature, color: BulkUpColors.accent)
+                    ForEach(features.indices, id: \.self) { index in
+                        FeatureRow(icon: "checkmark.circle.fill", text: features[index], color: BulkUpColors.accent)
                     }
                 }
                 .padding(.horizontal, 40)
@@ -117,12 +117,12 @@ struct SubscriptionRequiredView: View {
                     )
 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(LocalizedStringKey(title))
+                    Text(title)
                         .font(BulkUpFont.cardTitle())
                         .fontWeight(.bold)
                         .foregroundColor(BulkUpColors.textPrimary)
 
-                    Text(LocalizedStringKey(subtitle))
+                    Text(subtitle)
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                         .lineLimit(2)
@@ -168,8 +168,8 @@ struct SubscriptionRequiredView: View {
 struct PremiumOverlayModifier: ViewModifier {
     let isSubscribed: Bool
     let onSubscribe: () -> Void
-    var title: String = String(localized: "Funcion Premium")
-    var subtitle: String = String(localized: "Esta funcion requiere una suscripcion PRO")
+    var title: LocalizedStringKey = "Funcion Premium"
+    var subtitle: LocalizedStringKey = "Esta funcion requiere una suscripcion PRO"
 
     func body(content: Content) -> some View {
         content
@@ -197,8 +197,8 @@ struct PremiumOverlayModifier: ViewModifier {
 extension View {
     func premiumOverlay(
         isSubscribed: Bool,
-        title: String = String(localized: "Funcion Premium"),
-        subtitle: String = String(localized: "Esta funcion requiere una suscripcion PRO"),
+        title: LocalizedStringKey = "Funcion Premium",
+        subtitle: LocalizedStringKey = "Esta funcion requiere una suscripcion PRO",
         onSubscribe: @escaping () -> Void
     ) -> some View {
         modifier(PremiumOverlayModifier(
@@ -212,7 +212,7 @@ extension View {
 
 struct FeatureRow: View {
     let icon: String
-    let text: String
+    let text: LocalizedStringKey
     let color: Color
 
     var body: some View {
@@ -221,7 +221,7 @@ struct FeatureRow: View {
                 .foregroundColor(color)
                 .font(BulkUpFont.sectionHeader())
 
-            Text(LocalizedStringKey(text))
+            Text(text)
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.textPrimary)
 

@@ -90,24 +90,24 @@ struct OnboardingView: View {
                 valuePropRow(
                     icon: "dumbbell.fill",
                     color: BulkUpColors.training,
-                    text: String(localized: "Planifica tu entrenamiento")
+                    text: "Planifica tu entrenamiento"
                 )
                 valuePropRow(
                     icon: "fork.knife",
                     color: BulkUpColors.diet,
-                    text: String(localized: "Controla tu alimentacion")
+                    text: "Controla tu alimentacion"
                 )
                 valuePropRow(
                     icon: "chart.line.uptrend.xyaxis",
                     color: BulkUpColors.accent,
-                    text: String(localized: "Mide tu progreso")
+                    text: "Mide tu progreso"
                 )
             }
             .padding(.horizontal, 32)
 
             Spacer()
 
-            primaryButton(title: String(localized: "Comenzar")) {
+            primaryButton(title: "Comenzar") {
                 withAnimation(.easeInOut) {
                     currentStep = 1
                 }
@@ -139,27 +139,27 @@ struct OnboardingView: View {
                 goalCard(
                     goal: .gainMuscle,
                     icon: "figure.strengthtraining.traditional",
-                    title: String(localized: "Ganar masa muscular"),
-                    subtitle: String(localized: "Aumentar volumen y fuerza")
+                    title: "Ganar masa muscular",
+                    subtitle: "Aumentar volumen y fuerza"
                 )
                 goalCard(
                     goal: .loseFat,
                     icon: "flame.fill",
-                    title: String(localized: "Perder grasa"),
-                    subtitle: String(localized: "Definicion y perdida de peso")
+                    title: "Perder grasa",
+                    subtitle: "Definicion y perdida de peso"
                 )
                 goalCard(
                     goal: .maintain,
                     icon: "heart.circle.fill",
-                    title: String(localized: "Mantener y mejorar"),
-                    subtitle: String(localized: "Recomposicion corporal")
+                    title: "Mantener y mejorar",
+                    subtitle: "Recomposicion corporal"
                 )
             }
             .padding(.horizontal, 24)
 
             Spacer()
 
-            primaryButton(title: String(localized: "Continuar")) {
+            primaryButton(title: "Continuar") {
                 if let goal = selectedGoal {
                     userGoal = goal.rawValue
                 }
@@ -194,20 +194,20 @@ struct OnboardingView: View {
 
             VStack(spacing: Spacing.lg) {
                 measurementField(
-                    placeholder: String(localized: "Peso"),
-                    unit: String(localized: "kg"),
+                    placeholder: "Peso",
+                    unit: "kg",
                     icon: "scalemass.fill",
                     text: $weightText
                 )
                 measurementField(
-                    placeholder: String(localized: "Altura"),
-                    unit: String(localized: "cm"),
+                    placeholder: "Altura",
+                    unit: "cm",
                     icon: "ruler.fill",
                     text: $heightText
                 )
                 measurementField(
-                    placeholder: String(localized: "Edad"),
-                    unit: String(localized: "anos"),
+                    placeholder: "Edad",
+                    unit: "anos",
                     icon: "calendar",
                     text: $ageText
                 )
@@ -217,7 +217,7 @@ struct OnboardingView: View {
             Spacer()
 
             VStack(spacing: Spacing.md) {
-                primaryButton(title: String(localized: "Guardar y continuar")) {
+                primaryButton(title: "Guardar y continuar") {
                     Task {
                         await saveMeasurementsAndContinue()
                     }
@@ -276,8 +276,8 @@ struct OnboardingView: View {
             VStack(spacing: Spacing.lg) {
                 planCard(
                     icon: "dumbbell.fill",
-                    title: String(localized: "Subir plan de entrenamiento"),
-                    subtitle: String(localized: "Nuestra IA convierte tu plan en un formato interactivo"),
+                    title: "Subir plan de entrenamiento",
+                    subtitle: "Nuestra IA convierte tu plan en un formato interactivo",
                     color: BulkUpColors.training
                 ) {
                     hasCompletedOnboarding = true
@@ -291,8 +291,8 @@ struct OnboardingView: View {
 
                 planCard(
                     icon: "leaf.fill",
-                    title: String(localized: "Subir plan de dieta"),
-                    subtitle: String(localized: "Digitaliza tu dieta y lleva el seguimiento diario"),
+                    title: "Subir plan de dieta",
+                    subtitle: "Digitaliza tu dieta y lleva el seguimiento diario",
                     color: BulkUpColors.diet
                 ) {
                     hasCompletedOnboarding = true
@@ -397,7 +397,7 @@ struct OnboardingView: View {
         .buttonStyle(PlainButtonStyle())
     }
 
-    private func measurementField(placeholder: String, unit: String, icon: String, text: Binding<String>) -> some View {
+    private func measurementField(placeholder: LocalizedStringKey, unit: LocalizedStringKey, icon: String, text: Binding<String>) -> some View {
         HStack(spacing: Spacing.md) {
             Image(systemName: icon)
                 .foregroundColor(BulkUpColors.textTertiary)

@@ -39,8 +39,8 @@ struct SettingsView: View {
                     SettingsToggle(
                         icon: "dumbbell.fill",
                         iconColor: BulkUpColors.training,
-                        title: String(localized: "Recordatorios de Entrenamiento"),
-                        subtitle: String(localized: "Te recordamos tus sesiones programadas"),
+                        title: "Recordatorios de Entrenamiento",
+                        subtitle: "Te recordamos tus sesiones programadas",
                         isOn: $workoutReminders,
                         hapticFeedback: $hapticFeedback
                     )
@@ -48,8 +48,8 @@ struct SettingsView: View {
                     SettingsToggle(
                         icon: "chart.line.uptrend.xyaxis",
                         iconColor: BulkUpColors.success,
-                        title: String(localized: "Recordatorios de Progreso"),
-                        subtitle: String(localized: "Actualiza tus medidas y peso"),
+                        title: "Recordatorios de Progreso",
+                        subtitle: "Actualiza tus medidas y peso",
                         isOn: $progressReminders,
                         hapticFeedback: $hapticFeedback
                     )
@@ -57,8 +57,8 @@ struct SettingsView: View {
                     SettingsToggle(
                         icon: "calendar.badge.clock",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Reportes Semanales"),
-                        subtitle: String(localized: "Resumen de tu semana de entrenamiento"),
+                        title: "Reportes Semanales",
+                        subtitle: "Resumen de tu semana de entrenamiento",
                         isOn: $weeklyReports,
                         hapticFeedback: $hapticFeedback
                     )
@@ -69,8 +69,8 @@ struct SettingsView: View {
                     SettingsToggle(
                         icon: "speaker.wave.2.fill",
                         iconColor: BulkUpColors.secondary,
-                        title: String(localized: "Efectos de Sonido"),
-                        subtitle: String(localized: "Sonidos al completar ejercicios"),
+                        title: "Efectos de Sonido",
+                        subtitle: "Sonidos al completar ejercicios",
                         isOn: $soundEffects,
                         hapticFeedback: $hapticFeedback
                     )
@@ -78,8 +78,8 @@ struct SettingsView: View {
                     SettingsToggle(
                         icon: "iphone.radiowaves.left.and.right",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Vibración Háptica"),
-                        subtitle: String(localized: "Retroalimentación táctil"),
+                        title: "Vibración Háptica",
+                        subtitle: "Retroalimentación táctil",
                         isOn: $hapticFeedback,
                         hapticFeedback: $hapticFeedback
                     )
@@ -87,8 +87,8 @@ struct SettingsView: View {
                     SettingsToggle(
                         icon: "timer",
                         iconColor: BulkUpColors.error,
-                        title: String(localized: "Sonido de Descanso"),
-                        subtitle: String(localized: "Alerta al finalizar tiempo de descanso"),
+                        title: "Sonido de Descanso",
+                        subtitle: "Alerta al finalizar tiempo de descanso",
                         isOn: $restTimerSound,
                         hapticFeedback: $hapticFeedback
                     )
@@ -105,7 +105,7 @@ struct SettingsView: View {
                             set: { languageManager.language = AppLanguage(rawValue: $0) ?? .system }
                         ),
                         options: [
-                            ("system", String(localized: "Sistema / System")),
+                            ("system", "Sistema / System"),
                             ("es", "Español"),
                             ("en", "English"),
                         ]
@@ -114,34 +114,34 @@ struct SettingsView: View {
                     SettingsPicker(
                         icon: "ruler.fill",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Sistema de Unidades"),
+                        title: "Sistema de Unidades",
                         selection: $units,
                         options: [
-                            ("metric", String(localized: "Métrico (kg, cm)")),
-                            ("imperial", String(localized: "Imperial (lbs, ft)")),
+                            ("metric", "Métrico (kg, cm)"),
+                            ("imperial", "Imperial (lbs, ft)"),
                         ]
                     )
 
                     SettingsPicker(
                         icon: "calendar",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Inicio de Semana"),
+                        title: "Inicio de Semana",
                         selection: $weekStart,
                         options: [
-                            ("monday", String(localized: "Lunes")),
-                            ("sunday", String(localized: "Domingo")),
+                            ("monday", "Lunes"),
+                            ("sunday", "Domingo"),
                         ]
                     )
 
                     SettingsPicker(
                         icon: "paintpalette.fill",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Tema de Apariencia"),
+                        title: "Tema de Apariencia",
                         selection: $theme,
                         options: [
-                            ("system", String(localized: "Sistema")),
-                            ("light", String(localized: "Claro")),
-                            ("dark", String(localized: "Oscuro")),
+                            ("system", "Sistema"),
+                            ("light", "Claro"),
+                            ("dark", "Oscuro"),
                         ]
                     )
                 }
@@ -151,8 +151,8 @@ struct SettingsView: View {
                     SettingsToggle(
                         icon: "lock.fill",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Mantener Pantalla Activa"),
-                        subtitle: String(localized: "Durante los entrenamientos"),
+                        title: "Mantener Pantalla Activa",
+                        subtitle: "Durante los entrenamientos",
                         isOn: $keepScreenOn,
                         hapticFeedback: $hapticFeedback
                     )
@@ -160,8 +160,8 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "stopwatch.fill",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Tiempos de Descanso"),
-                        subtitle: String(localized: "Configurar por defecto")
+                        title: "Tiempos de Descanso",
+                        subtitle: "Configurar por defecto"
                     ) {
                         // Navegar a configuración de tiempos
                     }
@@ -172,8 +172,8 @@ struct SettingsView: View {
                     SettingsToggle(
                         icon: "icloud.fill",
                         iconColor: BulkUpColors.training,
-                        title: String(localized: "Respaldo Automático"),
-                        subtitle: String(localized: "Sincronizar con iCloud"),
+                        title: "Respaldo Automático",
+                        subtitle: "Sincronizar con iCloud",
                         isOn: $autoBackup,
                         hapticFeedback: $hapticFeedback
                     )
@@ -181,8 +181,8 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "square.and.arrow.up.fill",
                         iconColor: BulkUpColors.success,
-                        title: String(localized: "Exportar Datos"),
-                        subtitle: String(localized: "Descargar tu información")
+                        title: "Exportar Datos",
+                        subtitle: "Descargar tu información"
                     ) {
                         exportData()
                     }
@@ -190,8 +190,8 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "lock.doc.fill",
                         iconColor: BulkUpColors.textSecondary,
-                        title: String(localized: "Política de Privacidad"),
-                        subtitle: String(localized: "Cómo manejamos tus datos")
+                        title: "Política de Privacidad",
+                        subtitle: "Cómo manejamos tus datos"
                     ) {
                         if let url = URL(string: "https://bulkup.app/privacy") {
                             UIApplication.shared.open(url)
@@ -204,8 +204,8 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "questionmark.circle.fill",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Centro de Ayuda"),
-                        subtitle: String(localized: "Preguntas frecuentes y tutoriales")
+                        title: "Centro de Ayuda",
+                        subtitle: "Preguntas frecuentes y tutoriales"
                     ) {
                         // Navegar a ayuda
                     }
@@ -213,8 +213,8 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "envelope.fill",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Contactar Soporte"),
-                        subtitle: String(localized: "Enviar feedback o reportar problemas")
+                        title: "Contactar Soporte",
+                        subtitle: "Enviar feedback o reportar problemas"
                     ) {
                         let email = "support@bulkup.app"
                         if let url = URL(string: "mailto:\(email)") {
@@ -225,8 +225,8 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "star.fill",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Calificar App"),
-                        subtitle: String(localized: "Déjanos tu opinión en App Store")
+                        title: "Calificar App",
+                        subtitle: "Déjanos tu opinión en App Store"
                     ) {
                         if let url = URL(
                             string:
@@ -242,8 +242,8 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "info.circle.fill",
                         iconColor: BulkUpColors.accent,
-                        title: String(localized: "Acerca de BulkUp"),
-                        subtitle: String(localized: "Versión 1.0.0")
+                        title: "Acerca de BulkUp",
+                        subtitle: "Versión 1.0.0"
                     ) {
                         showingAbout = true
                     }
@@ -251,7 +251,7 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "doc.text.fill",
                         iconColor: BulkUpColors.textSecondary,
-                        title: String(localized: "Términos de Servicio")
+                        title: "Términos de Servicio"
                     ) {
                         if let url = URL(string: "https://bulkup.app/terms") {
                             UIApplication.shared.open(url)
@@ -264,8 +264,8 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "trash.fill",
                         iconColor: BulkUpColors.error,
-                        title: String(localized: "Eliminar Cuenta"),
-                        subtitle: String(localized: "Acción permanente e irreversible")
+                        title: "Eliminar Cuenta",
+                        subtitle: "Acción permanente e irreversible"
                     ) {
                         showingDeleteAccount = true
                     }

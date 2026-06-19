@@ -430,11 +430,11 @@ struct SubscriptionPlanCard: View {
 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(LocalizedStringKey(planTitle))
+                        Text(planTitle)
                             .font(BulkUpFont.cardTitle())
                             .foregroundColor(BulkUpColors.textPrimary)
 
-                        Text(LocalizedStringKey(planDescription))
+                        Text(planDescription)
                             .font(BulkUpFont.caption())
                             .foregroundColor(BulkUpColors.textSecondary)
                     }
@@ -477,23 +477,23 @@ struct SubscriptionPlanCard: View {
         .buttonStyle(PlainButtonStyle())
     }
 
-    private var planTitle: String {
+    private var planTitle: LocalizedStringKey {
         if product.id.contains("monthly") {
-            return String(localized: "Mensual")
+            return "Mensual"
         } else if product.id.contains("yearly") {
-            return String(localized: "Anual")
+            return "Anual"
         } else {
-            return storeManager.periodString(for: product).capitalized
+            return LocalizedStringKey(storeManager.periodString(for: product).capitalized)
         }
     }
 
-    private var planDescription: String {
+    private var planDescription: LocalizedStringKey {
         if product.id.contains("monthly") {
-            return String(localized: "Facturado mensualmente")
+            return "Facturado mensualmente"
         } else if product.id.contains("yearly") {
-            return String(localized: "Facturado anualmente")
+            return "Facturado anualmente"
         } else {
-            return String(localized: "Facturado \(storeManager.periodString(for: product))")
+            return LocalizedStringKey("Facturado \(storeManager.periodString(for: product))")
         }
     }
 
