@@ -823,7 +823,7 @@ struct TrainingView: View {
                     ZStack {
                         Circle()
                             .stroke(
-                                allComplete ? BulkUpColors.accent : Color(hex: "#2A2A2A"),
+                                allComplete ? BulkUpColors.accent : BulkUpColors.muscleDefault,
                                 lineWidth: 2
                             )
                             .frame(width: 28, height: 28)

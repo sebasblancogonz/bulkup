@@ -231,7 +231,7 @@ struct ExerciseDetailView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(BulkUpColors.training)
-                    .foregroundColor(.white)
+                    .foregroundColor(BulkUpColors.onAccent)
                     .cornerRadius(CornerRadius.small)
                 }
             }

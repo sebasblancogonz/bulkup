@@ -55,7 +55,7 @@ struct ExerciseExplorerView: View {
                                     .overlay(
                                         Text("\(activeFilters)")
                                             .font(.system(size: 10, weight: .bold))
-                                            .foregroundColor(.white)
+                                            .foregroundColor(BulkUpColors.onAccent)
                                     )
                                     .offset(x: 8, y: -8)
                             }

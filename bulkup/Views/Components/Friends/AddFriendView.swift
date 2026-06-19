@@ -102,7 +102,7 @@ struct AddFriendView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
                         .background(code.count == 8 && !isLoading ? BulkUpColors.accent : BulkUpColors.textTertiary)
-                        .foregroundColor(.white)
+                        .foregroundColor(BulkUpColors.onAccent)
                         .cornerRadius(CornerRadius.medium)
                     }
                     .disabled(code.count != 8 || isLoading)

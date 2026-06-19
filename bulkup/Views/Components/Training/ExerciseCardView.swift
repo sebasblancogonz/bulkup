@@ -66,7 +66,7 @@ struct ExerciseCardView: View {
                         Circle()
                             .stroke(
                                 isSkipped ? BulkUpColors.textTertiary :
-                                allSetsLogged ? BulkUpColors.accent : Color(hex: "#2A2A2A"),
+                                allSetsLogged ? BulkUpColors.accent : BulkUpColors.muscleDefault,
                                 lineWidth: 2
                             )
                             .frame(width: 28, height: 28)

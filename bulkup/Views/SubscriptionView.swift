@@ -78,19 +78,19 @@ struct SubscriptionView: View {
             .overlay(
                 Group {
                     if isPurchasing {
-                        Color.black.opacity(0.5)
+                        BulkUpColors.shadow.opacity(0.5)
                             .ignoresSafeArea()
                             .overlay(
                                 VStack(spacing: Spacing.lg) {
                                     ProgressView()
                                         .scaleEffect(1.5)
-                                        .tint(.white)
+                                        .tint(BulkUpColors.accent)
                                     Text("Procesando...")
-                                        .foregroundColor(.white)
+                                        .foregroundColor(BulkUpColors.textPrimary)
                                         .font(BulkUpFont.cardTitle())
                                 }
                                 .padding(32)
-                                .background(Color.black.opacity(0.8))
+                                .background(BulkUpColors.surface.opacity(0.95))
                                 .cornerRadius(CornerRadius.large)
                             )
                     }
@@ -218,7 +218,7 @@ struct SubscriptionView: View {
             }) {
                 Text("Gestionar Suscripción")
                     .font(BulkUpFont.body())
-                    .foregroundColor(.white)
+                    .foregroundColor(BulkUpColors.onAccent)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
                     .background(BulkUpColors.accent)
@@ -255,7 +255,7 @@ struct SubscriptionView: View {
             }) {
                 Label("Reintentar", systemImage: "arrow.clockwise")
                     .font(BulkUpFont.body())
-                    .foregroundColor(.white)
+                    .foregroundColor(BulkUpColors.onAccent)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
                     .background(BulkUpColors.accent)
@@ -419,7 +419,7 @@ struct SubscriptionPlanCard: View {
                     Text("MÁS POPULAR")
                         .font(BulkUpFont.caption())
                         .fontWeight(.bold)
-                        .foregroundColor(.white)
+                        .foregroundColor(BulkUpColors.onAccent)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                         .background(

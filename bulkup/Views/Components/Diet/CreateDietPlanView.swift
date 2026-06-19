@@ -254,7 +254,7 @@ struct CreateDietPlanView: View {
     }
 
     private var processingOverlay: some View {
-        Color.black.opacity(0.3)
+        BulkUpColors.shadow.opacity(0.3)
             .ignoresSafeArea()
             .overlay {
                 VStack(spacing: 20) {
@@ -265,24 +265,24 @@ struct CreateDietPlanView: View {
                     VStack(spacing: Spacing.sm) {
                         Text("Procesando con IA...")
                             .font(BulkUpFont.cardTitle())
-                            .foregroundColor(.white)
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         Text(uploadManager.processingProgress)
                             .font(BulkUpFont.body())
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(BulkUpColors.textSecondary)
 
                         if !uploadManager.fileName.isEmpty {
                             HStack {
                                 Image(systemName: "doc.fill")
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .foregroundColor(BulkUpColors.textTertiary)
                                 Text(uploadManager.fileName)
                                     .font(BulkUpFont.caption())
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .foregroundColor(BulkUpColors.textTertiary)
                                     .lineLimit(1)
                             }
                             .padding(.horizontal, Spacing.md)
                             .padding(.vertical, 6)
-                            .background(Color.white.opacity(0.2))
+                            .background(BulkUpColors.textTertiary.opacity(0.2))
                             .cornerRadius(CornerRadius.xl)
                         }
                     }

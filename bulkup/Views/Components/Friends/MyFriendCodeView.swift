@@ -74,7 +74,7 @@ struct MyFriendCodeView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
                             .background(copied ? BulkUpColors.success : BulkUpColors.accent)
-                            .foregroundColor(.white)
+                            .foregroundColor(BulkUpColors.onAccent)
                             .cornerRadius(CornerRadius.medium)
                         }
                         .padding(.horizontal, 24)

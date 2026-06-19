@@ -71,7 +71,7 @@ struct MealCardView: View {
                     ZStack {
                         Circle()
                             .stroke(
-                                isCompleted ? BulkUpColors.accent : Color(hex: "#2A2A2A"),
+                                isCompleted ? BulkUpColors.accent : BulkUpColors.muscleDefault,
                                 lineWidth: 2
                             )
                             .frame(width: 28, height: 28)
@@ -82,7 +82,7 @@ struct MealCardView: View {
                                 .frame(width: 28, height: 28)
                             Image(systemName: "checkmark")
                                 .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(BulkUpColors.onAccent)
                         }
                     }
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isCompleted)
