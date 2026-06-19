@@ -2203,6 +2203,786 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Add" } }
       }
+    },
+    "Agregar Amigo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Friend" } }
+      }
+    },
+    "Ingresa el código de 8 caracteres de tu amigo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter your friend's 8-character code" } }
+      }
+    },
+    "Amigo agregado exitosamente" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Friend added successfully" } }
+      }
+    },
+    "Agregando..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Adding..." } }
+      }
+    },
+    "Error al agregar amigo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error adding friend" } }
+      }
+    },
+    "Amigos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Friends" } }
+      }
+    },
+    "Racha actual" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Current streak" } }
+      }
+    },
+    "Mejor racha" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Best streak" } }
+      }
+    },
+    "Días total" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total days" } }
+      }
+    },
+    "Entrenamiento completado" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Workout completed" } }
+      }
+    },
+    "Marcar entrenamiento de hoy" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mark today's workout" } }
+      }
+    },
+    "Sin amigos todavía" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No friends yet" } }
+      }
+    },
+    "Comparte tu código o agrega el de un amigo para empezar a competir" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share your code or add a friend's to start competing" } }
+      }
+    },
+    "Mi Código" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "My Code" } }
+      }
+    },
+    "Eliminar amigo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove friend" } }
+      }
+    },
+    "(tú)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "(you)" } }
+      }
+    },
+    "Yo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Me" } }
+      }
+    },
+    "Tu Código de Amigo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your Friend Code" } }
+      }
+    },
+    "Comparte este código con tus amigos para que te agreguen" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share this code with your friends so they can add you" } }
+      }
+    },
+    "Toca para cambiar foto" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tap to change photo" } }
+      }
+    },
+    "Tu nombre" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your name" } }
+      }
+    },
+    "Fecha de Nacimiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Date of Birth" } }
+      }
+    },
+    "Editar Perfil" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit Profile" } }
+      }
+    },
+    "Guardar Cambios" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save Changes" } }
+      }
+    },
+    "Eliminar Foto" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Photo" } }
+      }
+    },
+    "¿Estás seguro de que quieres eliminar tu foto de perfil?" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Are you sure you want to delete your profile photo?" } }
+      }
+    },
+    "Error" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error" } }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "OK" } }
+      }
+    },
+    "Seguimiento y composición" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tracking & composition" } }
+      }
+    },
+    "Configuración" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } }
+      }
+    },
+    "Cerrar Sesión" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign Out" } }
+      }
+    },
+    "Usuario" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "User" } }
+      }
+    },
+    "Plan Básico" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Basic Plan" } }
+      }
+    },
+    "Días activo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Active days" } }
+      }
+    },
+    "Entrenamientos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Workouts" } }
+      }
+    },
+    "Mi Suscripción" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "My Subscription" } }
+      }
+    },
+    "Historial de Pagos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Payment History" } }
+      }
+    },
+    "Exportar Datos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Export Data" } }
+      }
+    },
+    "CONFIGURACIÓN" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "SETTINGS" } }
+      }
+    },
+    "Vibración háptica" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Haptic feedback" } }
+      }
+    },
+    "Eliminar Cuenta" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Account" } }
+      }
+    },
+    "¿Estás seguro de que quieres cerrar sesión?" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Are you sure you want to sign out?" } }
+      }
+    },
+    "Esta acción es permanente y no se puede deshacer. Se eliminarán todos tus datos." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This action is permanent and cannot be undone. All your data will be deleted." } }
+      }
+    },
+    "Desbloquea Todo el Potencial" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlock Your Full Potential" } }
+      }
+    },
+    "Accede a todas las funciones premium y lleva tu entrenamiento al siguiente nivel" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Access all premium features and take your training to the next level" } }
+      }
+    },
+    "Todo lo que obtienes:" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Everything you get:" } }
+      }
+    },
+    "Importacion con IA" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "AI Import" } }
+      }
+    },
+    "Sube una foto o PDF y tu plan se digitaliza al instante" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upload a photo or PDF and your plan is digitized instantly" } }
+      }
+    },
+    "Planes Ilimitados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlimited Plans" } }
+      }
+    },
+    "Crea y gestiona todos los planes que necesites" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create and manage as many plans as you need" } }
+      }
+    },
+    "Dashboard de Progreso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Progress Dashboard" } }
+      }
+    },
+    "Medidas corporales, composicion y tendencias" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Body measurements, composition and trends" } }
+      }
+    },
+    "Records Personales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Personal Records" } }
+      }
+    },
+    "Registra y sigue tus PR en los ejercicios principales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Record and track your PRs in the main exercises" } }
+      }
+    },
+    "Ranking y Amigos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ranking & Friends" } }
+      }
+    },
+    "Compite con tus amigos y comparte planes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Compete with your friends and share plans" } }
+      }
+    },
+    "Compartir Planes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share Plans" } }
+      }
+    },
+    "Importa y exporta planes con codigos unicos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import and export plans with unique codes" } }
+      }
+    },
+    "¡Ya eres Premium!" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "You're already Premium!" } }
+      }
+    },
+    "Tienes acceso a todas las funciones premium." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "You have access to all premium features." } }
+      }
+    },
+    "Tu suscripción se renueva el %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your subscription renews on %@" } }
+      }
+    },
+    "Gestionar Suscripción" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Manage Subscription" } }
+      }
+    },
+    "No se pudieron cargar los planes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not load plans" } }
+      }
+    },
+    "Reintentar" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Retry" } }
+      }
+    },
+    "Elige tu plan:" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose your plan:" } }
+      }
+    },
+    "Suscribirse" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Subscribe" } }
+      }
+    },
+    "Procesando..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Processing..." } }
+      }
+    },
+    "Restaurar Compras" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Restore Purchases" } }
+      }
+    },
+    "Terminos de Uso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Terms of Use" } }
+      }
+    },
+    "Politica de Privacidad" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Privacy Policy" } }
+      }
+    },
+    "Las suscripciones se renuevan automáticamente a menos que se cancelen al menos 24 horas antes del final del período actual. Puedes gestionar y cancelar tus suscripciones en la configuración de tu cuenta de App Store." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period. You can manage and cancel your subscriptions in your App Store account settings." } }
+      }
+    },
+    "MÁS POPULAR" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "MOST POPULAR" } }
+      }
+    },
+    "Mensual" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Monthly" } }
+      }
+    },
+    "Anual" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Yearly" } }
+      }
+    },
+    "Facturado mensualmente" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Billed monthly" } }
+      }
+    },
+    "Facturado anualmente" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Billed annually" } }
+      }
+    },
+    "Facturado %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Billed %@" } }
+      }
+    },
+    "Ahorra %lld%%" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save %lld%%" } }
+      }
+    },
+    "Error al procesar la compra: %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error processing purchase: %@" } }
+      }
+    },
+    "No se encontraron compras previas para restaurar." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No previous purchases found to restore." } }
+      }
+    },
+    "Funcion Premium" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Premium Feature" } }
+      }
+    },
+    "Desbloquea el poder de subir y gestionar tus planes personalizados de entrenamiento y dieta" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlock the power to upload and manage your personalized training and diet plans" } }
+      }
+    },
+    "Planes ilimitados" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlimited plans" } }
+      }
+    },
+    "Importacion con IA (PDF y fotos)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "AI import (PDF and photos)" } }
+      }
+    },
+    "Dashboard de progreso completo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Full progress dashboard" } }
+      }
+    },
+    "Medidas corporales y composicion" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Body measurements and composition" } }
+      }
+    },
+    "Ranking con amigos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ranking with friends" } }
+      }
+    },
+    "Compartir e importar planes" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share and import plans" } }
+      }
+    },
+    "Desbloquear PRO" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unlock PRO" } }
+      }
+    },
+    "Cancela en cualquier momento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel anytime" } }
+      }
+    },
+    "Esta funcion requiere una suscripcion PRO" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This feature requires a PRO subscription" } }
+      }
+    },
+    "Recordatorios de Entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Workout Reminders" } }
+      }
+    },
+    "Te recordamos tus sesiones programadas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "We'll remind you of your scheduled sessions" } }
+      }
+    },
+    "Recordatorios de Progreso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Progress Reminders" } }
+      }
+    },
+    "Actualiza tus medidas y peso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Update your measurements and weight" } }
+      }
+    },
+    "Reportes Semanales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Weekly Reports" } }
+      }
+    },
+    "Resumen de tu semana de entrenamiento" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Summary of your training week" } }
+      }
+    },
+    "Audio y Retroalimentación" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Audio & Feedback" } }
+      }
+    },
+    "Efectos de Sonido" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sound Effects" } }
+      }
+    },
+    "Sonidos al completar ejercicios" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sounds when completing exercises" } }
+      }
+    },
+    "Vibración Háptica" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Haptic Vibration" } }
+      }
+    },
+    "Retroalimentación táctil" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tactile feedback" } }
+      }
+    },
+    "Sonido de Descanso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rest Sound" } }
+      }
+    },
+    "Alerta al finalizar tiempo de descanso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Alert when rest time ends" } }
+      }
+    },
+    "Personalización" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Customization" } }
+      }
+    },
+    "Sistema / System" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "System / System" } }
+      }
+    },
+    "Sistema de Unidades" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unit System" } }
+      }
+    },
+    "Métrico (kg, cm)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Metric (kg, cm)" } }
+      }
+    },
+    "Imperial (lbs, ft)" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Imperial (lbs, ft)" } }
+      }
+    },
+    "Inicio de Semana" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Week Start" } }
+      }
+    },
+    "Tema de Apariencia" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Appearance Theme" } }
+      }
+    },
+    "Sistema" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "System" } }
+      }
+    },
+    "Claro" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Light" } }
+      }
+    },
+    "Oscuro" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dark" } }
+      }
+    },
+    "Mantener Pantalla Activa" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep Screen On" } }
+      }
+    },
+    "Durante los entrenamientos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "During workouts" } }
+      }
+    },
+    "Tiempos de Descanso" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rest Times" } }
+      }
+    },
+    "Configurar por defecto" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Set defaults" } }
+      }
+    },
+    "Datos y Privacidad" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Data & Privacy" } }
+      }
+    },
+    "Respaldo Automático" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Automatic Backup" } }
+      }
+    },
+    "Sincronizar con iCloud" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sync with iCloud" } }
+      }
+    },
+    "Descargar tu información" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download your data" } }
+      }
+    },
+    "Política de Privacidad" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Privacy Policy" } }
+      }
+    },
+    "Cómo manejamos tus datos" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "How we handle your data" } }
+      }
+    },
+    "Soporte" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Support" } }
+      }
+    },
+    "Centro de Ayuda" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Help Center" } }
+      }
+    },
+    "Preguntas frecuentes y tutoriales" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "FAQs and tutorials" } }
+      }
+    },
+    "Contactar Soporte" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Contact Support" } }
+      }
+    },
+    "Enviar feedback o reportar problemas" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Send feedback or report issues" } }
+      }
+    },
+    "Calificar App" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rate App" } }
+      }
+    },
+    "Déjanos tu opinión en App Store" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Leave us a review on the App Store" } }
+      }
+    },
+    "Información" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Information" } }
+      }
+    },
+    "Acerca de BulkUp" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About BulkUp" } }
+      }
+    },
+    "Versión 1.0.0" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version 1.0.0" } }
+      }
+    },
+    "Términos de Servicio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Terms of Service" } }
+      }
+    },
+    "Gestión de Cuenta" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Account Management" } }
+      }
+    },
+    "Acción permanente e irreversible" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Permanent and irreversible action" } }
+      }
+    },
+    "Esta acción eliminará permanentemente tu cuenta y todos tus datos. No se puede deshacer." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This action will permanently delete your account and all your data. It cannot be undone." } }
+      }
+    },
+    "Acerca de" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } }
+      }
+    },
+    "Versión %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version %@" } }
+      }
+    },
+    "Tu compañero de entrenamiento y nutrición." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your training and nutrition companion." } }
+      }
+    },
+    "© 2025 BulkUp" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "© 2025 BulkUp" } }
+      }
+    },
+    "Cargando ejercicios..." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading exercises..." } }
+      }
+    },
+    "No se encontraron ejercicios" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No exercises found" } }
+      }
+    },
+    "Prueba con otros términos de búsqueda o ajusta los filtros" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Try other search terms or adjust the filters" } }
+      }
+    },
+    "Limpiar filtros" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Clear filters" } }
+      }
+    },
+    "Mostrando %1$lld de %2$lld ejercicios" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Showing %1$lld of %2$lld exercises" } }
+      }
+    },
+    "Anterior" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Previous" } }
+      }
+    },
+    "Siguiente" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Next" } }
+      }
+    },
+    "Página %1$lld de %2$lld" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Page %1$lld of %2$lld" } }
+      }
+    },
+    "Filtros" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Filters" } }
+      }
+    },
+    "Categoría" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Category" } }
+      }
+    },
+    "Equipo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Equipment" } }
+      }
+    },
+    "Fuerza" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Force" } }
+      }
+    },
+    "Nivel" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Level" } }
+      }
+    },
+    "Limpiar todos los filtros" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Clear all filters" } }
+      }
     }
   },
   "version" : "1.0"

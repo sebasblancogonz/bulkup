@@ -179,7 +179,7 @@ struct FriendsView: View {
                 if let myStreak = friendsManager.myStreak {
                     leaderboardRow(
                         rank: calculateMyRank(),
-                        name: authManager.user?.name ?? "Yo",
+                        name: authManager.user?.name ?? String(localized: "Yo"),
                         imageURL: authManager.user?.safeProfileImageURL,
                         streak: myStreak.currentStreak,
                         isMe: true
@@ -212,13 +212,13 @@ struct FriendsView: View {
     private var emptyFriendsState: some View {
         EmptyStateView(
             icon: "person.2.slash",
-            title: "Sin amigos todavía",
-            subtitle: "Comparte tu código o agrega el de un amigo para empezar a competir",
+            title: String(localized: "Sin amigos todavía"),
+            subtitle: String(localized: "Comparte tu código o agrega el de un amigo para empezar a competir"),
             color: BulkUpColors.accent,
-            actionTitle: "Mi Código",
+            actionTitle: String(localized: "Mi Código"),
             actionIcon: "person.text.rectangle",
             action: { showingMyCode = true },
-            secondaryActionTitle: "Agregar",
+            secondaryActionTitle: String(localized: "Agregar"),
             secondaryActionIcon: "person.badge.plus",
             secondaryAction: { showingAddFriend = true }
         )
@@ -317,7 +317,7 @@ struct FriendsView: View {
     private func todayDateString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE d 'de' MMMM"
-        formatter.locale = Locale(identifier: "es_ES")
+        formatter.locale = LanguageManager.shared.locale
         return formatter.string(from: Date()).capitalized
     }
 }

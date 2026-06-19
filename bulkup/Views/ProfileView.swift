@@ -133,7 +133,7 @@ struct ProfileView: View {
                 VStack(spacing: Spacing.md) {
                     ProfileMenuItem(
                         icon: "person.crop.circle",
-                        title: "Editar Perfil",
+                        title: String(localized: "Editar Perfil"),
                         action: {
                             showingEditProfile = true
                         }
@@ -141,8 +141,8 @@ struct ProfileView: View {
 
                     ProfileMenuItem(
                         icon: "figure.arms.open",
-                        title: "Medidas Corporales",
-                        subtitle: "Seguimiento y composición",
+                        title: String(localized: "Medidas Corporales"),
+                        subtitle: String(localized: "Seguimiento y composición"),
                         action: {
                             showingBodyMeasurements = true
                         }
@@ -150,13 +150,13 @@ struct ProfileView: View {
 
                     ProfileMenuItem(
                         icon: "bell",
-                        title: "Notificaciones",
+                        title: String(localized: "Notificaciones"),
                         action: {}
                     )
 
                     ProfileMenuItem(
                         icon: "gear",
-                        title: "Configuración",
+                        title: String(localized: "Configuración"),
                         action: {
                             showSettings = true
                         }

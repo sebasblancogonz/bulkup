@@ -354,7 +354,7 @@ struct SubscriptionView: View {
             }
         } catch {
             isPurchasing = false
-            errorMessage = "Error al procesar la compra: \(error.localizedDescription)"
+            errorMessage = String(localized: "Error al procesar la compra: \(error.localizedDescription)")
             showingError = true
         }
     }
@@ -368,7 +368,7 @@ struct SubscriptionView: View {
         if storeManager.hasActiveSubscription {
             dismiss()
         } else {
-            errorMessage = "No se encontraron compras previas para restaurar."
+            errorMessage = String(localized: "No se encontraron compras previas para restaurar.")
             showingError = true
         }
     }
@@ -479,9 +479,9 @@ struct SubscriptionPlanCard: View {
 
     private var planTitle: String {
         if product.id.contains("monthly") {
-            return "Mensual"
+            return String(localized: "Mensual")
         } else if product.id.contains("yearly") {
-            return "Anual"
+            return String(localized: "Anual")
         } else {
             return storeManager.periodString(for: product).capitalized
         }
@@ -489,11 +489,11 @@ struct SubscriptionPlanCard: View {
 
     private var planDescription: String {
         if product.id.contains("monthly") {
-            return "Facturado mensualmente"
+            return String(localized: "Facturado mensualmente")
         } else if product.id.contains("yearly") {
-            return "Facturado anualmente"
+            return String(localized: "Facturado anualmente")
         } else {
-            return "Facturado \(storeManager.periodString(for: product))"
+            return String(localized: "Facturado \(storeManager.periodString(for: product))")
         }
     }
 
@@ -511,6 +511,6 @@ struct SubscriptionPlanCard: View {
         guard savings > 0 else { return nil }
 
         let percentage = Int((savings / monthlyCostPerYear) * 100.0)
-        return "Ahorra \(percentage)%"
+        return String(localized: "Ahorra \(percentage)%")
     }
 }
