@@ -2,12 +2,13 @@
 //  DesignSystem.swift
 //  bulkup
 //
-//  Premium fitness design system — Freeletics-inspired dark immersive aesthetic.
+//  Premium fitness design system — adaptive light/dark palette.
 //
 
 import SwiftUI
+import UIKit
 
-// MARK: - Color Hex Initializer
+// MARK: - Color Hex Initializer (SwiftUI)
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -32,43 +33,86 @@ extension Color {
     }
 }
 
+// MARK: - Color Hex Initializer (UIKit)
+extension UIColor {
+    convenience init(hex: String) {
+        let s = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: s).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch s.count {
+        case 6: (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default: (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(red: CGFloat(r) / 255, green: CGFloat(g) / 255, blue: CGFloat(b) / 255, alpha: CGFloat(a) / 255)
+    }
+}
+
+// MARK: - Adaptive Color Helper
+extension Color {
+    static func adaptive(dark: String, light: String) -> Color {
+        Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(hex: dark) : UIColor(hex: light)
+        })
+    }
+}
+
 // MARK: - Color Tokens
 enum BulkUpColors {
     // Brand — Teal/Mint
-    static let accent = Color(hex: "#00E6C3")
-    static let accentGlow = Color(hex: "#00FFD5")
-    static let accentMuted = Color(hex: "#00997F")
+    static let accent = Color.adaptive(dark: "#00E6C3", light: "#00E6C3")
+    static let accentGlow = Color.adaptive(dark: "#00FFD5", light: "#00D9BC")
+    static let accentMuted = Color.adaptive(dark: "#00997F", light: "#00A88F")
+    static let accentText = Color.adaptive(dark: "#00E6C3", light: "#00A88F")
     static let accentGradient = LinearGradient(
         colors: [accent, accentGlow],
         startPoint: .leading, endPoint: .trailing
     )
-    static let secondary = Color(hex: "#7B61FF") // electric violet (sparingly)
+    static let secondary = Color.adaptive(dark: "#7B61FF", light: "#6A4DF0") // electric violet (sparingly)
 
-    // Surfaces — true black feel with subtle elevation
-    static let background = Color(hex: "#0A0A0A")
-    static let surface = Color(hex: "#161616")
-    static let surfaceElevated = Color(hex: "#1E1E1E")
-    static let border = Color.white.opacity(0.06)
+    // Surfaces — adaptive light/dark elevation
+    static let background = Color.adaptive(dark: "#0A0A0A", light: "#FAF9F6")
+    static let surface = Color.adaptive(dark: "#161616", light: "#FFFFFF")
+    static let surfaceElevated = Color.adaptive(dark: "#1E1E1E", light: "#FFFFFF")
+    static let border = Color.adaptive(dark: "#FFFFFF", light: "#000000").opacity(0.08)
 
     // Text
-    static let textPrimary = Color.white
-    static let textSecondary = Color(hex: "#8E8E93")
-    static let textTertiary = Color(hex: "#48484A")
-    static let onAccent = Color(hex: "#000000") // text on bright accent buttons
+    static let textPrimary = Color.adaptive(dark: "#FFFFFF", light: "#1A1A1A")
+    static let textSecondary = Color.adaptive(dark: "#8E8E93", light: "#6E6E73")
+    static let textTertiary = Color.adaptive(dark: "#48484A", light: "#A0A0A5")
+    static let onAccent = Color.adaptive(dark: "#000000", light: "#000000") // text on bright accent buttons
 
     // Semantic
-    static let success = Color(hex: "#30D158")
-    static let warning = Color(hex: "#FFD60A")
-    static let error = Color(hex: "#FF453A")
+    static let success = Color.adaptive(dark: "#30D158", light: "#28B14C")
+    static let warning = Color.adaptive(dark: "#FFD60A", light: "#E6A700")
+    static let error = Color.adaptive(dark: "#FF453A", light: "#E03B30")
 
     // Context — muted versions for backgrounds
-    static let training = Color(hex: "#00D1FF") // cyan for training context
-    static let diet = Color(hex: "#30D158")      // green for diet context
+    static let training = Color.adaptive(dark: "#00D1FF", light: "#0094C9") // cyan for training context
+    static let diet = Color.adaptive(dark: "#30D158", light: "#28B14C")      // green for diet context
 
     // Muscle map states
-    static let muscleDefault = Color(hex: "#2A2A2A")
+    static let muscleDefault = Color.adaptive(dark: "#2A2A2A", light: "#E5E3DD")
     static let muscleActive = accent.opacity(0.9)
+
+    // Shadow
+    static let shadow = Color.adaptive(dark: "#000000", light: "#3A3733")
 }
+
+// MARK: - DEBUG Theme Self-Check
+#if DEBUG
+enum ThemeSelfCheck {
+    static func run() {
+        let d = UIColor(BulkUpColors.background).resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))
+        let l = UIColor(BulkUpColors.background).resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
+        assert(d != l, "theme: background must differ between light and dark")
+        let td = UIColor(BulkUpColors.textPrimary).resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))
+        let tl = UIColor(BulkUpColors.textPrimary).resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
+        assert(td != tl, "theme: textPrimary must differ between light and dark")
+    }
+}
+#endif
 
 // MARK: - Typography
 enum BulkUpFont {

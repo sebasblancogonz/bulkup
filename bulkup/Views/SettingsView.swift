@@ -310,6 +310,7 @@ struct SettingsView: View {
         }
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = keepScreenOn
+            applyTheme(theme)
         }
     }
 
@@ -377,21 +378,11 @@ struct SettingsView: View {
         }
     }
 
-    private func applyTheme(_ theme: String) {
-        guard
-            let windowScene = UIApplication.shared.connectedScenes.first
-                as? UIWindowScene,
-            let window = windowScene.windows.first
-        else { return }
-
-        switch theme {
-        case "light":
-            window.overrideUserInterfaceStyle = .light
-        case "dark":
-            window.overrideUserInterfaceStyle = .dark
-        default:
-            window.overrideUserInterfaceStyle = .unspecified
-        }
+    private func applyTheme(_ value: String) {
+        let style: UIUserInterfaceStyle = value == "light" ? .light : value == "dark" ? .dark : .unspecified
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
+            .forEach { $0.overrideUserInterfaceStyle = style }
     }
 }
 

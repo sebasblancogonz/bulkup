@@ -284,7 +284,6 @@ struct MainAppView: View {
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
                     .fill(.ultraThinMaterial)
-                    .environment(\.colorScheme, .dark)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
