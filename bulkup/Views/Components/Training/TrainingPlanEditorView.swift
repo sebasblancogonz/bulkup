@@ -31,7 +31,7 @@ struct TrainingPlanEditorView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: Spacing.xl) {
                     // Plan Basic Info
                     planInfoSection
 
@@ -41,20 +41,22 @@ struct TrainingPlanEditorView: View {
                     // Error Message
                     if let errorMessage = errorMessage {
                         Text(errorMessage)
-                            .font(.subheadline)
-                            .foregroundColor(.red)
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.error)
                             .padding()
-                            .background(Color.red.opacity(0.1))
-                            .cornerRadius(8)
+                            .background(BulkUpColors.error.opacity(0.1))
+                            .cornerRadius(CornerRadius.small)
                     }
                 }
-                .padding()
+                .padding(Spacing.lg)
             }
+            .background(BulkUpColors.background)
             .navigationTitle(isEditing ? "Editar Plan" : "Nuevo Plan")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancelar") { dismiss() }
+                        .foregroundColor(BulkUpColors.training)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -65,6 +67,7 @@ struct TrainingPlanEditorView: View {
                         isSaving || planName.isEmpty || trainingDays.isEmpty
                     )
                     .fontWeight(.semibold)
+                    .foregroundColor(BulkUpColors.training)
                 }
             }
         }
@@ -79,43 +82,50 @@ struct TrainingPlanEditorView: View {
     }
 
     private var planInfoSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
             Text("Información del Plan")
-                .font(.headline)
-                .fontWeight(.semibold)
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.textPrimary)
 
             TextField("Nombre del plan", text: $planName)
-                .textFieldStyle(.roundedBorder)
+                .padding(Spacing.md)
+                .background(BulkUpColors.surface)
+                .cornerRadius(CornerRadius.small)
+                .foregroundColor(BulkUpColors.textPrimary)
 
             Toggle("Fechas específicas", isOn: $useCustomDates)
+                .tint(BulkUpColors.training)
+                .foregroundColor(BulkUpColors.textPrimary)
 
             if useCustomDates {
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.md) {
                     DatePicker(
                         "Fecha inicio",
                         selection: $planStartDate,
                         displayedComponents: .date
                     )
+                    .foregroundColor(BulkUpColors.textPrimary)
                     DatePicker(
                         "Fecha fin",
                         selection: $planEndDate,
                         displayedComponents: .date
                     )
+                    .foregroundColor(BulkUpColors.textPrimary)
                 }
                 .padding(.leading)
             }
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .padding(Spacing.lg)
+        .background(BulkUpColors.surfaceElevated)
+        .cornerRadius(CornerRadius.medium)
     }
 
     private var trainingDaysSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
             HStack {
                 Text("Días de Entrenamiento")
-                    .font(.headline)
-                    .fontWeight(.semibold)
+                    .font(BulkUpFont.cardTitle())
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                 Spacer()
 
@@ -123,29 +133,29 @@ struct TrainingPlanEditorView: View {
                     showingAddDay = true
                 } label: {
                     Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.blue)
+                        .font(BulkUpFont.sectionHeader())
+                        .foregroundColor(BulkUpColors.accent)
                 }
             }
 
             if trainingDays.isEmpty {
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.md) {
                     Image(systemName: "calendar.badge.plus")
                         .font(.system(size: 40))
-                        .foregroundColor(.gray)
+                        .foregroundColor(BulkUpColors.textTertiary)
 
                     Text("No hay días de entrenamiento")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textSecondary)
 
                     Text("Añade tu primer día para comenzar")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(40)
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .background(BulkUpColors.surfaceElevated)
+                .cornerRadius(CornerRadius.medium)
             } else {
                 ForEach(Array(trainingDays.enumerated()), id: \.element.id) {
                     index,
@@ -171,7 +181,7 @@ struct TrainingPlanEditorView: View {
             if let endDate = existingPlan.endDate {
                 planEndDate = endDate
             }
-            
+
             // Convertir TrainingDay completos a EditableTrainingDay
             trainingDays = existingPlan.trainingDays.map { trainingDay in
                 EditableTrainingDay(
@@ -269,23 +279,23 @@ struct TrainingDayEditorCard: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(day.dayName)
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textPrimary)
 
                     if !day.workoutName.isEmpty {
                         Text(day.workoutName)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
                     }
                 }
 
                 Spacer()
 
                 Text("\(day.exercises.count) ejercicios")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
 
                 Menu {
                     Button("Editar") {
@@ -299,11 +309,11 @@ struct TrainingDayEditorCard: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
-                        .font(.title3)
-                        .foregroundColor(.gray)
+                        .font(BulkUpFont.sectionHeader())
+                        .foregroundColor(BulkUpColors.textTertiary)
                 }
             }
-            .padding()
+            .padding(Spacing.lg)
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation(.spring()) {
@@ -315,17 +325,23 @@ struct TrainingDayEditorCard: View {
             if isExpanded {
                 Divider()
 
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.md) {
                     // Day name and workout name editors
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.sm) {
                         TextField("Nombre del día", text: $day.dayName)
-                            .textFieldStyle(.roundedBorder)
+                            .padding(Spacing.md)
+                            .background(BulkUpColors.surfaceElevated)
+                            .cornerRadius(CornerRadius.small)
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         TextField(
                             "Nombre del entrenamiento (opcional)",
                             text: $day.workoutName
                         )
-                        .textFieldStyle(.roundedBorder)
+                        .padding(Spacing.md)
+                        .background(BulkUpColors.surfaceElevated)
+                        .cornerRadius(CornerRadius.small)
+                        .foregroundColor(BulkUpColors.textPrimary)
                     }
 
                     // Exercises list
@@ -348,19 +364,19 @@ struct TrainingDayEditorCard: View {
                             Text("Añadir Ejercicio")
                         }
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue.opacity(0.1))
-                        .foregroundColor(.blue)
-                        .cornerRadius(8)
+                        .padding(Spacing.lg)
+                        .background(BulkUpColors.training.opacity(0.1))
+                        .foregroundColor(BulkUpColors.training)
+                        .cornerRadius(CornerRadius.small)
                     }
                 }
-                .padding()
+                .padding(Spacing.lg)
                 .transition(.opacity)
             }
         }
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .background(BulkUpColors.surface)
+        .cornerRadius(CornerRadius.medium)
+        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
         .sheet(isPresented: $showingExerciseEditor) {
             ExerciseEditorView { newExercise in
                 day.exercises.append(newExercise)
@@ -377,17 +393,17 @@ struct ExerciseEditorRow: View {
     @State private var isExpanded = false
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             HStack {
                 Text(exercise.name)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                 Spacer()
 
                 Text("\(exercise.sets) × \(exercise.reps)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
 
                 Button {
                     withAnimation(.spring()) {
@@ -397,64 +413,88 @@ struct ExerciseEditorRow: View {
                     Image(
                         systemName: isExpanded ? "chevron.up" : "chevron.down"
                     )
-                    .font(.caption)
-                    .foregroundColor(.blue)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.training)
                 }
             }
 
             if isExpanded {
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.md) {
                     TextField("Nombre del ejercicio", text: $exercise.name)
-                        .textFieldStyle(.roundedBorder)
+                        .padding(Spacing.md)
+                        .background(BulkUpColors.surface)
+                        .cornerRadius(CornerRadius.small)
+                        .foregroundColor(BulkUpColors.textPrimary)
 
                     HStack {
                         VStack(alignment: .leading) {
                             Text("Series")
-                                .font(.caption)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textSecondary)
                             TextField(
                                 "3",
                                 value: $exercise.sets,
                                 format: .number
                             )
-                            .textFieldStyle(.roundedBorder)
+                            .padding(Spacing.md)
+                            .background(BulkUpColors.surface)
+                            .cornerRadius(CornerRadius.small)
                             .keyboardType(.numberPad)
+                            .foregroundColor(BulkUpColors.textPrimary)
                         }
 
                         VStack(alignment: .leading) {
                             Text("Repeticiones")
-                                .font(.caption)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textSecondary)
                             TextField("12", text: $exercise.reps)
-                                .textFieldStyle(.roundedBorder)
+                                .padding(Spacing.md)
+                                .background(BulkUpColors.surface)
+                                .cornerRadius(CornerRadius.small)
+                                .foregroundColor(BulkUpColors.textPrimary)
                         }
 
                         VStack(alignment: .leading) {
                             Text("Descanso (s)")
-                                .font(.caption)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textSecondary)
                             TextField(
                                 "90",
                                 value: $exercise.restSeconds,
                                 format: .number
                             )
-                            .textFieldStyle(.roundedBorder)
+                            .padding(Spacing.md)
+                            .background(BulkUpColors.surface)
+                            .cornerRadius(CornerRadius.small)
                             .keyboardType(.numberPad)
+                            .foregroundColor(BulkUpColors.textPrimary)
                         }
                     }
 
                     TextField("Notas (opcional)", text: $exercise.notes)
-                        .textFieldStyle(.roundedBorder)
+                        .padding(Spacing.md)
+                        .background(BulkUpColors.surface)
+                        .cornerRadius(CornerRadius.small)
+                        .foregroundColor(BulkUpColors.textPrimary)
 
                     HStack {
                         VStack(alignment: .leading) {
                             Text("Tempo")
-                                .font(.caption)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textSecondary)
                             TextField("2-1-1", text: $exercise.tempo)
-                                .textFieldStyle(.roundedBorder)
+                                .padding(Spacing.md)
+                                .background(BulkUpColors.surface)
+                                .cornerRadius(CornerRadius.small)
+                                .foregroundColor(BulkUpColors.textPrimary)
                         }
 
                         VStack(alignment: .leading) {
                             Text("Seguir peso")
-                                .font(.caption)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textSecondary)
                             Toggle("", isOn: $exercise.weightTracking)
+                                .tint(BulkUpColors.training)
                         }
                     }
 
@@ -463,14 +503,15 @@ struct ExerciseEditorRow: View {
                         role: .destructive,
                         action: onDelete
                     )
-                    .font(.caption)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.error)
                 }
-                .padding(.top, 8)
+                .padding(.top, Spacing.sm)
             }
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(8)
+        .padding(Spacing.lg)
+        .background(BulkUpColors.surfaceElevated)
+        .cornerRadius(CornerRadius.small)
     }
 }
 
@@ -492,13 +533,14 @@ struct AddTrainingDayView: View {
         NavigationStack {
             VStack(spacing: 20) {
                 Text("Añadir Día de Entrenamiento")
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(BulkUpFont.sectionHeader())
+                    .foregroundColor(BulkUpColors.textPrimary)
 
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
                     VStack(alignment: .leading) {
                         Text("Día de la semana")
-                            .font(.headline)
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         Picker("Día", selection: $dayName) {
                             ForEach(weekDays, id: \.self) { day in
@@ -511,10 +553,14 @@ struct AddTrainingDayView: View {
 
                     VStack(alignment: .leading) {
                         Text("Nombre del entrenamiento")
-                            .font(.headline)
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         TextField("Ej: Push (Empujes)", text: $workoutName)
-                            .textFieldStyle(.roundedBorder)
+                            .padding(Spacing.md)
+                            .background(BulkUpColors.surfaceElevated)
+                            .cornerRadius(CornerRadius.small)
+                            .foregroundColor(BulkUpColors.textPrimary)
                     }
                 }
 
@@ -529,18 +575,16 @@ struct AddTrainingDayView: View {
                     onAdd(newDay)
                     dismiss()
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(12)
+                .primaryButtonStyle(color: BulkUpColors.training)
                 .disabled(dayName.isEmpty)
             }
-            .padding()
+            .padding(Spacing.lg)
+            .background(BulkUpColors.background)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Cancelar") { dismiss() }
+                        .foregroundColor(BulkUpColors.training)
                 }
             }
         }
@@ -570,68 +614,94 @@ struct ExerciseEditorView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: Spacing.lg) {
                         TextField("Nombre del ejercicio", text: $exercise.name)
-                            .textFieldStyle(.roundedBorder)
+                            .padding(Spacing.md)
+                            .background(BulkUpColors.surfaceElevated)
+                            .cornerRadius(CornerRadius.small)
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         HStack {
                             VStack(alignment: .leading) {
                                 Text("Series")
-                                    .font(.subheadline)
+                                    .font(BulkUpFont.body())
+                                    .foregroundColor(BulkUpColors.textSecondary)
                                 TextField(
                                     "3",
                                     value: $exercise.sets,
                                     format: .number
                                 )
-                                .textFieldStyle(.roundedBorder)
+                                .padding(Spacing.md)
+                                .background(BulkUpColors.surfaceElevated)
+                                .cornerRadius(CornerRadius.small)
                                 .keyboardType(.numberPad)
+                                .foregroundColor(BulkUpColors.textPrimary)
                             }
 
                             VStack(alignment: .leading) {
                                 Text("Repeticiones")
-                                    .font(.subheadline)
+                                    .font(BulkUpFont.body())
+                                    .foregroundColor(BulkUpColors.textSecondary)
                                 TextField("12 o 8-12", text: $exercise.reps)
-                                    .textFieldStyle(.roundedBorder)
+                                    .padding(Spacing.md)
+                                    .background(BulkUpColors.surfaceElevated)
+                                    .cornerRadius(CornerRadius.small)
+                                    .foregroundColor(BulkUpColors.textPrimary)
                             }
                         }
 
                         HStack {
                             VStack(alignment: .leading) {
                                 Text("Descanso (segundos)")
-                                    .font(.subheadline)
+                                    .font(BulkUpFont.body())
+                                    .foregroundColor(BulkUpColors.textSecondary)
                                 TextField(
                                     "90",
                                     value: $exercise.restSeconds,
                                     format: .number
                                 )
-                                .textFieldStyle(.roundedBorder)
+                                .padding(Spacing.md)
+                                .background(BulkUpColors.surfaceElevated)
+                                .cornerRadius(CornerRadius.small)
                                 .keyboardType(.numberPad)
+                                .foregroundColor(BulkUpColors.textPrimary)
                             }
 
                             VStack(alignment: .leading) {
                                 Text("Tempo")
-                                    .font(.subheadline)
+                                    .font(BulkUpFont.body())
+                                    .foregroundColor(BulkUpColors.textSecondary)
                                 TextField("2-1-1", text: $exercise.tempo)
-                                    .textFieldStyle(.roundedBorder)
+                                    .padding(Spacing.md)
+                                    .background(BulkUpColors.surfaceElevated)
+                                    .cornerRadius(CornerRadius.small)
+                                    .foregroundColor(BulkUpColors.textPrimary)
                             }
                         }
 
                         TextField("Notas (opcional)", text: $exercise.notes)
-                            .textFieldStyle(.roundedBorder)
+                            .padding(Spacing.md)
+                            .background(BulkUpColors.surfaceElevated)
+                            .cornerRadius(CornerRadius.small)
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         Toggle(
                             "Seguimiento de peso",
                             isOn: $exercise.weightTracking
                         )
+                        .tint(BulkUpColors.training)
+                        .foregroundColor(BulkUpColors.textPrimary)
                     }
                 }
-                .padding()
+                .padding(Spacing.lg)
             }
+            .background(BulkUpColors.background)
             .navigationTitle("Nuevo Ejercicio")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancelar") { dismiss() }
+                        .foregroundColor(BulkUpColors.training)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -640,6 +710,7 @@ struct ExerciseEditorView: View {
                         dismiss()
                     }
                     .disabled(exercise.name.isEmpty)
+                    .foregroundColor(BulkUpColors.training)
                 }
             }
         }

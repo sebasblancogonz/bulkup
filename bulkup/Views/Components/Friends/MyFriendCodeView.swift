@@ -15,15 +15,15 @@ struct MyFriendCodeView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 32) {
+            VStack(spacing: Spacing.xxl) {
                 Spacer()
 
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.lg) {
                     ZStack {
                         Circle()
                             .fill(
                                 LinearGradient(
-                                    colors: [.orange.opacity(0.2), .orange.opacity(0.05)],
+                                    colors: [BulkUpColors.accent.opacity(0.2), BulkUpColors.accent.opacity(0.05)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -32,30 +32,31 @@ struct MyFriendCodeView: View {
 
                         Image(systemName: "person.2.fill")
                             .font(.system(size: 36))
-                            .foregroundColor(.orange)
+                            .foregroundColor(BulkUpColors.accent)
                     }
 
                     Text("Tu Código de Amigo")
-                        .font(.title2)
-                        .fontWeight(.bold)
+                        .font(BulkUpFont.sectionHeader())
+                        .foregroundColor(BulkUpColors.textPrimary)
 
                     Text("Comparte este código con tus amigos para que te agreguen")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                 }
 
                 if let code = friendsManager.myFriendCode {
-                    VStack(spacing: 16) {
+                    VStack(spacing: Spacing.lg) {
                         Text(code)
                             .font(.system(size: 36, weight: .bold, design: .monospaced))
+                            .foregroundColor(BulkUpColors.textPrimary)
                             .tracking(6)
                             .padding(.vertical, 20)
                             .padding(.horizontal, 32)
                             .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color(.systemGray6))
+                                RoundedRectangle(cornerRadius: CornerRadius.large)
+                                    .fill(BulkUpColors.surface)
                             )
 
                         Button {
@@ -65,16 +66,16 @@ struct MyFriendCodeView: View {
                                 copied = false
                             }
                         } label: {
-                            HStack(spacing: 8) {
+                            HStack(spacing: Spacing.sm) {
                                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
                                 Text(copied ? "Copiado" : "Copiar Código")
                                     .fontWeight(.semibold)
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
-                            .background(copied ? Color.green : Color.orange)
+                            .background(copied ? BulkUpColors.success : BulkUpColors.accent)
                             .foregroundColor(.white)
-                            .cornerRadius(12)
+                            .cornerRadius(CornerRadius.medium)
                         }
                         .padding(.horizontal, 24)
                     }
@@ -86,12 +87,14 @@ struct MyFriendCodeView: View {
                 Spacer()
             }
             .padding()
+            .background(BulkUpColors.background.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Cerrar") {
                         dismiss()
                     }
+                    .foregroundColor(BulkUpColors.accent)
                 }
             }
         }

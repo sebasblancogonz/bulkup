@@ -13,6 +13,9 @@ class StoreKitManager: ObservableObject {
     @Published var hasActiveSubscription = false
     @Published var expirationDate: Date?
     @Published var errorMessage: String?
+
+    /// Convenience alias used by paywall gates throughout the app
+    var isSubscribed: Bool { hasActiveSubscription }
     
     // MARK: - Product IDs
     private let productIds = [

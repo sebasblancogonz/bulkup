@@ -12,14 +12,15 @@ struct ReviewDatePickerView: View {
     @State private var showDatePicker = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
                 Image(systemName: "calendar.badge.clock")
-                    .foregroundColor(.purple)
+                    .foregroundColor(BulkUpColors.secondary)
 
                 Text("Proxima Revision")
-                    .font(.headline)
+                    .font(BulkUpFont.cardTitle())
                     .fontWeight(.bold)
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                 Spacer()
 
@@ -28,8 +29,8 @@ struct ReviewDatePickerView: View {
                         showDatePicker.toggle()
                     } label: {
                         Text(showDatePicker ? "Listo" : "Cambiar")
-                            .font(.caption)
-                            .foregroundColor(.purple)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.secondary)
                     }
                 }
             }
@@ -38,19 +39,19 @@ struct ReviewDatePickerView: View {
                 if !showDatePicker {
                     HStack {
                         Text(reviewDate.formatted(date: .abbreviated, time: .omitted))
-                            .font(.title3)
-                            .fontWeight(.bold)
+                            .font(BulkUpFont.sectionHeader())
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         Spacer()
 
                         let daysRemaining = Calendar.current.dateComponents([.day], from: Date(), to: reviewDate).day ?? 0
                         Text("Faltan \(max(daysRemaining, 0)) dias")
-                            .font(.caption)
-                            .foregroundColor(.purple)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.purple.opacity(0.1))
-                            .cornerRadius(8)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.secondary)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xs)
+                            .background(BulkUpColors.secondary.opacity(0.1))
+                            .cornerRadius(CornerRadius.small)
                     }
                 } else {
                     datePickerSection
@@ -59,9 +60,7 @@ struct ReviewDatePickerView: View {
                 datePickerSection
             }
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .cardStyle()
         .onAppear {
             if let existing = authManager.user?.nextReviewDate {
                 selectedDate = existing
@@ -70,7 +69,7 @@ struct ReviewDatePickerView: View {
     }
 
     private var datePickerSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.md) {
             DatePicker(
                 "Fecha de revision",
                 selection: $selectedDate,
@@ -92,19 +91,19 @@ struct ReviewDatePickerView: View {
                     Text(isSaving ? "Guardando..." : "Guardar Fecha")
                         .fontWeight(.medium)
                 }
-                .font(.subheadline)
+                .font(BulkUpFont.body())
                 .frame(maxWidth: .infinity)
                 .frame(height: 36)
-                .background(Color.purple)
+                .background(BulkUpColors.secondary)
                 .foregroundColor(.white)
-                .cornerRadius(8)
+                .cornerRadius(CornerRadius.small)
             }
             .disabled(isSaving)
         }
     }
 
     private func saveReviewDate() {
-        guard let userId = authManager.user?.id else { return }
+        guard authManager.user?.id != nil else { return }
         isSaving = true
 
         Task {

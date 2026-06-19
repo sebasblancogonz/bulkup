@@ -10,22 +10,23 @@ import SwiftData
 
 struct LoginContentView: View {
     @EnvironmentObject var authManager: AuthManager
+    @Environment(\.colorScheme) private var colorScheme
     @State private var email = ""
     @State private var password = ""
     @State private var name = ""
     @State private var isRegistering = false
     @State private var errorMessage: String?
-    
+
     var body: some View {
         VStack(spacing: 40) {
-            // Header mejorado
+            // Header
             LoginHeaderView()
                 .padding(.top, 60)
-            
-            // Form con mejor diseño
+
+            // Form
             VStack(spacing: 20) {
-                // Campos de entrada
-                VStack(spacing: 16) {
+                // Input fields
+                VStack(spacing: Spacing.lg) {
                     if isRegistering {
                         CustomTextField(
                             placeholder: "Nombre",
@@ -33,14 +34,14 @@ struct LoginContentView: View {
                             icon: "person.fill"
                         )
                     }
-                    
+
                     CustomTextField(
                         placeholder: "Email",
                         text: $email,
                         icon: "envelope.fill",
                         keyboardType: .emailAddress
                     )
-                    
+
                     CustomSecureField(
                         placeholder: "Contraseña",
                         text: $password,
@@ -48,17 +49,17 @@ struct LoginContentView: View {
                     )
                 }
                 .padding(.horizontal, 24)
-                
+
                 // Error message
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
-                        .font(.caption)
-                        .foregroundColor(.red)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.error)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                 }
-                
-                // Botón principal
+
+                // Primary button
                 Button(action: handleAuthAction) {
                     HStack {
                         if authManager.isLoading {
@@ -67,33 +68,21 @@ struct LoginContentView: View {
                                 .scaleEffect(0.9)
                         } else {
                             Text(isRegistering ? "Crear cuenta" : "Iniciar sesión")
-                                .fontWeight(.semibold)
                         }
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(
-                        LinearGradient(
-                            colors: [Color.orange, Color.orange.opacity(0.8)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .foregroundColor(.white)
-                    .cornerRadius(16)
-                    .shadow(color: Color.orange.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .primaryButtonStyle(color: BulkUpColors.accent)
                     .contentShape(Rectangle())
                 }
                 .disabled(authManager.isLoading || email.isEmpty || password.isEmpty || (isRegistering && name.isEmpty))
                 .opacity((email.isEmpty || password.isEmpty || (isRegistering && name.isEmpty)) ? 0.6 : 1)
                 .padding(.horizontal, 24)
-                
+
                 // Toggle mode
                 Button(action: { isRegistering.toggle() }) {
                     Text(isRegistering ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate")
                         .font(.footnote)
                         .fontWeight(.medium)
-                        .foregroundColor(.orange)
+                        .foregroundColor(BulkUpColors.accent)
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity)
                         .contentShape(Rectangle())
@@ -103,13 +92,13 @@ struct LoginContentView: View {
                 HStack {
                     Rectangle()
                         .frame(height: 1)
-                        .foregroundColor(.gray.opacity(0.3))
+                        .foregroundColor(BulkUpColors.textTertiary.opacity(0.5))
                     Text("o")
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textTertiary)
                     Rectangle()
                         .frame(height: 1)
-                        .foregroundColor(.gray.opacity(0.3))
+                        .foregroundColor(BulkUpColors.textTertiary.opacity(0.5))
                 }
                 .padding(.horizontal, 24)
 
@@ -119,25 +108,21 @@ struct LoginContentView: View {
                 } onCompletion: { result in
                     handleAppleSignIn(result: result)
                 }
-                .signInWithAppleButtonStyle(.black)
+                .signInWithAppleButtonStyle(colorScheme == .dark ? .whiteOutline : .black)
                 .frame(height: 56)
-                .cornerRadius(16)
+                .cornerRadius(CornerRadius.medium)
                 .padding(.horizontal, 24)
             }
-            
+
             Spacer()
         }
         .background(
-            LinearGradient(
-                colors: [Color(.systemBackground), Color.orange.opacity(0.05)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            BulkUpColors.background
+                .ignoresSafeArea()
         )
         .navigationBarHidden(true)
     }
-    
+
     private func handleAuthAction() {
         errorMessage = nil
 
@@ -197,85 +182,95 @@ struct LoginContentView: View {
     }
 }
 
-// Campo de texto personalizado
+// Custom text field with design system tokens
 struct CustomTextField: View {
     let placeholder: String
     @Binding var text: String
     let icon: String
     var keyboardType: UIKeyboardType = .default
-    
+    @FocusState private var isFocused: Bool
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.md) {
             Image(systemName: icon)
-                .foregroundColor(.gray)
+                .foregroundColor(BulkUpColors.textTertiary)
                 .frame(width: 20)
-            
+
             TextField(placeholder, text: $text)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
                 .keyboardType(keyboardType)
+                .foregroundColor(BulkUpColors.textPrimary)
+                .focused($isFocused)
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .background(BulkUpColors.surfaceElevated)
+        .cornerRadius(CornerRadius.medium)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .stroke(isFocused ? BulkUpColors.accent.opacity(0.6) : Color.clear, lineWidth: 1.5)
         )
+        .animation(.easeInOut(duration: 0.2), value: isFocused)
     }
 }
 
-// Campo seguro personalizado
+// Custom secure field with design system tokens
 struct CustomSecureField: View {
     let placeholder: String
     @Binding var text: String
     let icon: String
     @State private var isSecure = true
-    
+    @FocusState private var isFocused: Bool
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.md) {
             Image(systemName: icon)
-                .foregroundColor(.gray)
+                .foregroundColor(BulkUpColors.textTertiary)
                 .frame(width: 20)
-            
+
             if isSecure {
                 SecureField(placeholder, text: $text)
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .focused($isFocused)
             } else {
                 TextField(placeholder, text: $text)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .focused($isFocused)
             }
-            
+
             Button(action: { isSecure.toggle() }) {
                 Image(systemName: isSecure ? "eye.slash.fill" : "eye.fill")
-                    .foregroundColor(.gray)
-                    .font(.caption)
+                    .foregroundColor(BulkUpColors.textTertiary)
+                    .font(BulkUpFont.caption())
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .background(BulkUpColors.surfaceElevated)
+        .cornerRadius(CornerRadius.medium)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .stroke(isFocused ? BulkUpColors.accent.opacity(0.6) : Color.clear, lineWidth: 1.5)
         )
+        .animation(.easeInOut(duration: 0.2), value: isFocused)
     }
 }
 
-// Header actualizado
+// Header with design system tokens
 struct LoginHeaderView: View {
     var body: some View {
-        VStack(spacing: 8) {
-            // Logo con animación suave
+        VStack(spacing: Spacing.sm) {
             Image("BulkUp")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200, height: 200)
-            VStack(spacing: 0) {
-                Text("Come, entrena, crece, repite.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
+                .resizable()
+                .scaledToFit()
+                .frame(width: 200, height: 200)
+
+            Text("Come, entrena, crece, repite.")
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
     }
 }

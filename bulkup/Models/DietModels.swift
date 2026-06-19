@@ -15,12 +15,22 @@ class DietDay {
     var day: String
     var meals: [Meal] = []
     var supplements: [Supplement] = []
-    
+
+    // Macros aproximados del día
+    var macroCalories: Int = 0
+    var macroProtein: Int = 0
+    var macroCarbs: Int = 0
+    var macroFat: Int = 0
+    var hasMacros: Bool = false
+
+    // Cheat meal
+    var allowsCheatMeal: Bool = false
+
     // Para sincronización
     var planId: String?
     var needsSync: Bool = false
     var lastSynced: Date?
-    
+
     init(day: String, meals: [Meal] = [], supplements: [Supplement] = []) {
         self.day = day
         self.meals = meals

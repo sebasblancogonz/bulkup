@@ -15,10 +15,10 @@ struct TemplateSelectionView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.lg) {
                     Text("Elige una plantilla para empezar")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textSecondary)
 
                     ForEach(templates) { template in
                         TemplateCard(
@@ -40,8 +40,9 @@ struct TemplateSelectionView: View {
                         )
                     }
                 }
-                .padding()
+                .padding(Spacing.lg)
             }
+            .background(BulkUpColors.background)
             .navigationTitle("Plantillas")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -49,6 +50,7 @@ struct TemplateSelectionView: View {
                     Button("Cancelar") {
                         dismiss()
                     }
+                    .foregroundColor(BulkUpColors.training)
                 }
             }
         }
@@ -70,31 +72,31 @@ private struct TemplateCard: View {
                 HStack(spacing: 14) {
                     ZStack {
                         Circle()
-                            .fill(template.color.opacity(0.15))
+                            .fill(BulkUpColors.training.opacity(0.15))
                             .frame(width: 48, height: 48)
 
                         Image(systemName: template.icon)
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(template.color)
+                            .foregroundColor(BulkUpColors.training)
                     }
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(template.name)
-                            .font(.headline)
-                            .foregroundColor(.primary)
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         Text("\(template.daysPerWeek) días/semana")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
                     }
 
                     Spacer()
 
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
-                .padding()
+                .padding(Spacing.lg)
                 .contentShape(Rectangle())
             }
             .buttonStyle(PlainButtonStyle())
@@ -102,23 +104,24 @@ private struct TemplateCard: View {
             if isExpanded {
                 Divider()
 
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
                     Text(template.description)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textSecondary)
 
                     // Training days preview
                     ForEach(template.trainingDays, id: \.day) { day in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
                                 Text(day.day)
-                                    .font(.subheadline)
+                                    .font(BulkUpFont.body())
                                     .fontWeight(.semibold)
+                                    .foregroundColor(BulkUpColors.textPrimary)
 
                                 if let workoutName = day.workoutName {
                                     Text("— \(workoutName)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                        .font(BulkUpFont.body())
+                                        .foregroundColor(BulkUpColors.textSecondary)
                                 }
                             }
 
@@ -126,20 +129,20 @@ private struct TemplateCard: View {
                                 ForEach(exercises, id: \.name) { exercise in
                                     HStack(spacing: 6) {
                                         Circle()
-                                            .fill(template.color.opacity(0.4))
+                                            .fill(BulkUpColors.training.opacity(0.4))
                                             .frame(width: 5, height: 5)
 
                                         Text(exercise.name)
-                                            .font(.caption)
-                                            .foregroundColor(.primary)
+                                            .font(BulkUpFont.caption())
+                                            .foregroundColor(BulkUpColors.textPrimary)
 
                                         Spacer()
 
                                         Text("\(exercise.sets)×\(exercise.reps)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
+                                            .font(BulkUpFont.caption())
+                                            .foregroundColor(BulkUpColors.textSecondary)
                                     }
-                                    .padding(.leading, 8)
+                                    .padding(.leading, Spacing.sm)
                                 }
                             }
                         }
@@ -151,21 +154,14 @@ private struct TemplateCard: View {
                             Image(systemName: "checkmark.circle.fill")
                             Text("Usar esta plantilla")
                         }
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(template.color)
-                        .cornerRadius(10)
-                        .contentShape(Rectangle())
+                        .primaryButtonStyle(color: BulkUpColors.training)
                     }
                 }
-                .padding()
+                .padding(Spacing.lg)
                 .transition(.opacity)
             }
         }
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .background(BulkUpColors.surfaceElevated)
+        .cornerRadius(CornerRadius.medium)
     }
 }

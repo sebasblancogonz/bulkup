@@ -11,19 +11,21 @@ struct ExerciseDetailSheet: View {
     let exercise: Exercise
     let exerciseIndex: Int
     let dayName: String
-    let currentDate: Date  // ✅ Agregamos el parámetro faltante
+    let currentDate: Date
 
     @EnvironmentObject var trainingManager: TrainingManager
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ExerciseCardView(
                 exercise: exercise,
                 exerciseIndex: exercise.orderIndex,
                 dayName: dayName,
-                currentDate: currentDate  // ✅ Pasamos la fecha actual
+                currentDate: currentDate,
+                isExpanded: true,
+                onToggleExpand: {}
             )
             .environmentObject(trainingManager)
             .environmentObject(authManager)
@@ -34,8 +36,10 @@ struct ExerciseDetailSheet: View {
                     Button("Cerrar") {
                         dismiss()
                     }
+                    .foregroundColor(BulkUpColors.training)
                 }
             }
         }
+        .background(BulkUpColors.background)
     }
 }

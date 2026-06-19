@@ -12,6 +12,7 @@ class MealTrackingManager: ObservableObject {
 
     @Published var todayTracking: [MealTrackingRecord] = []
     @Published var complianceStats: ComplianceStatsResponse?
+    @Published var cheatMealLog: String = ""
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -65,6 +66,8 @@ class MealTrackingManager: ObservableObject {
                         }
                     }
                 }
+                // Load cheat meal log from server
+                cheatMealLog = serverTracking.cheatMealLog ?? ""
                 try? modelContext.save()
             }
         } catch {
@@ -104,6 +107,12 @@ class MealTrackingManager: ObservableObject {
         try? modelContext.save()
 
         await syncToServer(userId: userId, date: record.date)
+    }
+
+    // MARK: - Save cheat meal log
+
+    func saveCheatMealLog(userId: String, date: String) async {
+        await syncToServer(userId: userId, date: date)
     }
 
     // MARK: - Load compliance stats
@@ -167,13 +176,14 @@ class MealTrackingManager: ObservableObject {
             )
         }
 
-        let request = SaveMealTrackingRequest(
+        var request = SaveMealTrackingRequest(
             userId: userId,
             planId: records.first?.planId ?? "",
             date: date,
             dayName: records.first?.dayName ?? "",
             meals: meals
         )
+        request.cheatMealLog = cheatMealLog.isEmpty ? nil : cheatMealLog
 
         do {
             _ = try await apiService.saveMealTracking(request: request)

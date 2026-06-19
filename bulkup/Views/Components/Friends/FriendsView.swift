@@ -25,6 +25,7 @@ struct FriendsView: View {
             }
             .padding()
         }
+        .background(BulkUpColors.background.ignoresSafeArea())
         .navigationTitle("Amigos")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
@@ -33,10 +34,12 @@ struct FriendsView: View {
                     Button(action: { showingMyCode = true }) {
                         Image(systemName: "person.text.rectangle")
                             .font(.system(size: 16))
+                            .foregroundColor(BulkUpColors.accent)
                     }
                     Button(action: { showingAddFriend = true }) {
                         Image(systemName: "person.badge.plus")
                             .font(.system(size: 16))
+                            .foregroundColor(BulkUpColors.accent)
                     }
                 }
             }
@@ -63,19 +66,20 @@ struct FriendsView: View {
     // MARK: - My Streak Banner
 
     private var myStreakBanner: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 24) {
+        VStack(spacing: Spacing.md) {
+            HStack(spacing: Spacing.xl) {
                 VStack(spacing: 4) {
                     HStack(spacing: 6) {
                         Image(systemName: "flame.fill")
-                            .foregroundColor(.orange)
-                            .font(.title2)
+                            .foregroundColor(BulkUpColors.accent)
+                            .font(BulkUpFont.sectionHeader())
                         Text("\(friendsManager.myStreak?.currentStreak ?? 0)")
                             .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .foregroundColor(BulkUpColors.textPrimary)
                     }
                     Text("Racha actual")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
 
                 Divider()
@@ -84,9 +88,10 @@ struct FriendsView: View {
                 VStack(spacing: 4) {
                     Text("\(friendsManager.myStreak?.longestStreak ?? 0)")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundColor(BulkUpColors.textPrimary)
                     Text("Mejor racha")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
 
                 Divider()
@@ -95,28 +100,15 @@ struct FriendsView: View {
                 VStack(spacing: 4) {
                     Text("\(friendsManager.myStreak?.totalDays ?? 0)")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundColor(BulkUpColors.textPrimary)
                     Text("Días total")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(
-                    LinearGradient(
-                        colors: [.orange.opacity(0.15), .orange.opacity(0.05)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-        )
+        .accentCardStyle(color: BulkUpColors.accent)
     }
 
     // MARK: - Today Completion
@@ -132,33 +124,29 @@ struct FriendsView: View {
                 )
             }
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.md) {
                 Image(systemName: friendsManager.todayCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundColor(friendsManager.todayCompleted ? .green : .secondary)
+                    .font(BulkUpFont.sectionHeader())
+                    .foregroundColor(friendsManager.todayCompleted ? BulkUpColors.success : BulkUpColors.textSecondary)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(friendsManager.todayCompleted ? "Entrenamiento completado" : "Marcar entrenamiento de hoy")
-                        .font(.subheadline)
+                        .font(BulkUpFont.body())
                         .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(BulkUpColors.textPrimary)
                     Text(todayDateString())
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
 
                 Spacer()
 
                 if friendsManager.todayCompleted {
                     Image(systemName: "flame.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(BulkUpColors.accent)
                 }
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.systemGray6))
-            )
+            .flatCardStyle()
         }
         .buttonStyle(PlainButtonStyle())
         .contentShape(Rectangle())
@@ -167,12 +155,12 @@ struct FriendsView: View {
     // MARK: - Leaderboard
 
     private var leaderboardSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
                 Image(systemName: "trophy.fill")
-                    .foregroundColor(.yellow)
+                    .foregroundColor(BulkUpColors.accent)
                 Text("Ranking")
-                    .font(.headline)
+                    .sectionHeader()
                 Spacer()
             }
             .padding(.horizontal, 4)
@@ -222,54 +210,26 @@ struct FriendsView: View {
     }
 
     private var emptyFriendsState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "person.2.slash")
-                .font(.system(size: 40))
-                .foregroundColor(.secondary)
-
-            Text("Sin amigos todavía")
-                .font(.headline)
-                .foregroundColor(.secondary)
-
-            Text("Comparte tu código o agrega el de un amigo para empezar a competir")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-
-            HStack(spacing: 12) {
-                Button(action: { showingMyCode = true }) {
-                    Label("Mi Código", systemImage: "person.text.rectangle")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-
-                Button(action: { showingAddFriend = true }) {
-                    Label("Agregar", systemImage: "person.badge.plus")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(Color(.systemGray5))
-                        .foregroundColor(.primary)
-                        .cornerRadius(10)
-                }
-            }
-        }
-        .padding(.vertical, 32)
+        EmptyStateView(
+            icon: "person.2.slash",
+            title: "Sin amigos todavía",
+            subtitle: "Comparte tu código o agrega el de un amigo para empezar a competir",
+            color: BulkUpColors.accent,
+            actionTitle: "Mi Código",
+            actionIcon: "person.text.rectangle",
+            action: { showingMyCode = true },
+            secondaryActionTitle: "Agregar",
+            secondaryActionIcon: "person.badge.plus",
+            secondaryAction: { showingAddFriend = true }
+        )
     }
 
     private func leaderboardRow(rank: Int, name: String, imageURL: String?, streak: Int, isMe: Bool) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.md) {
             // Rank
             Text("#\(rank)")
                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundColor(rank <= 3 ? .orange : .secondary)
+                .foregroundColor(rank <= 3 ? BulkUpColors.accent : BulkUpColors.textSecondary)
                 .frame(width: 32)
 
             // Avatar
@@ -289,14 +249,15 @@ struct FriendsView: View {
 
             // Name
             Text(name)
-                .font(.subheadline)
+                .font(BulkUpFont.body())
                 .fontWeight(isMe ? .bold : .medium)
+                .foregroundColor(BulkUpColors.textPrimary)
                 .lineLimit(1)
 
             if isMe {
                 Text("(tú)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
             }
 
             Spacer()
@@ -304,29 +265,30 @@ struct FriendsView: View {
             // Streak
             HStack(spacing: 4) {
                 Image(systemName: "flame.fill")
-                    .foregroundColor(streak > 0 ? .orange : .gray)
-                    .font(.caption)
+                    .foregroundColor(streak > 0 ? BulkUpColors.accent : BulkUpColors.textTertiary)
+                    .font(BulkUpFont.caption())
                 Text("\(streak)")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(BulkUpColors.textPrimary)
             }
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, Spacing.md)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(isMe ? Color.orange.opacity(0.1) : Color(.systemGray6))
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(isMe ? BulkUpColors.accent.opacity(0.1) : BulkUpColors.surfaceElevated)
         )
     }
 
     private func avatarPlaceholder(name: String) -> some View {
         ZStack {
             Circle()
-                .fill(Color.orange.opacity(0.3))
+                .fill(BulkUpColors.accent.opacity(0.3))
                 .frame(width: 36, height: 36)
 
             Text(name.prefix(1).uppercased())
                 .font(.system(size: 14, weight: .bold))
-                .foregroundColor(.orange)
+                .foregroundColor(BulkUpColors.accent)
         }
     }
 
@@ -343,10 +305,9 @@ struct FriendsView: View {
         let friend = friendsManager.friends[index]
         let myRank = calculateMyRank()
 
-        // Friends are already sorted desc. Count how many are above this friend.
         let friendRank = index + 1
         if friend.currentStreak < myStreak {
-            return friendRank + 1  // Push down by 1 for me
+            return friendRank + 1
         } else if friend.currentStreak == myStreak {
             return friendRank >= myRank ? friendRank + 1 : friendRank
         }

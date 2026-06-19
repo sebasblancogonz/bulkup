@@ -10,26 +10,27 @@ struct ProjectionsCard: View {
     let reviewDate: Date?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
                 Image(systemName: "chart.line.uptrend.xyaxis")
-                    .foregroundColor(.blue)
+                    .foregroundColor(BulkUpColors.training)
 
                 Text("Proyecciones")
-                    .font(.headline)
+                    .font(BulkUpFont.cardTitle())
                     .fontWeight(.bold)
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                 Spacer()
 
                 if let date = reviewDate {
                     let daysRemaining = Calendar.current.dateComponents([.day], from: Date(), to: date).day ?? 0
                     Text("Faltan \(max(daysRemaining, 0)) dias")
-                        .font(.caption)
-                        .foregroundColor(.purple)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.purple.opacity(0.1))
-                        .cornerRadius(6)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.secondary)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, Spacing.xs)
+                        .background(BulkUpColors.secondary.opacity(0.1))
+                        .cornerRadius(CornerRadius.small)
                 }
             }
 
@@ -57,27 +58,25 @@ struct ProjectionsCard: View {
                     )
                 }
 
-                HStack(spacing: 4) {
+                HStack(spacing: Spacing.xs) {
                     Image(systemName: "info.circle")
                     Text("Basado en \(Int(p.complianceRate * 100))% de cumplimiento")
                 }
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
             } else {
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     Image(systemName: "info.circle")
-                        .foregroundColor(.secondary)
-                        .font(.caption)
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .font(BulkUpFont.caption())
 
                     Text("Necesitas medidas corporales y una fecha de revision para ver proyecciones")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
             }
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .cardStyle()
     }
 }
 
@@ -89,9 +88,10 @@ struct ProjectionMetric: View {
     let unit: String
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: Spacing.xs) {
             Text(projected)
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textPrimary)
 
             HStack(spacing: 2) {
                 Image(systemName: change >= 0 ? "arrow.up.right" : "arrow.down.right")
@@ -102,20 +102,20 @@ struct ProjectionMetric: View {
             .foregroundColor(changeColor)
 
             Text(label)
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(Color(.systemGray5).opacity(0.5))
-        .cornerRadius(8)
+        .padding(.vertical, Spacing.sm)
+        .background(BulkUpColors.surfaceElevated)
+        .cornerRadius(CornerRadius.small)
     }
 
     private var changeColor: Color {
         // For body fat, negative is good. For everything else, positive is good
         if label == "% Grasa" {
-            return change <= 0 ? .green : .red
+            return change <= 0 ? BulkUpColors.diet : BulkUpColors.error
         }
-        return change >= 0 ? .green : .red
+        return change >= 0 ? BulkUpColors.diet : BulkUpColors.error
     }
 }

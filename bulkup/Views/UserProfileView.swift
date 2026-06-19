@@ -27,14 +27,14 @@ struct UserProfileView: View {
     @State private var showingExportShare = false
     @State private var exportFileURL: URL?
     @State private var selectedImage: PhotosPickerItem?
+    @State private var animateStats = false
 
     @AppStorage("hapticFeedback") private var hapticFeedback = true
     @AppStorage("notifications") private var notificationsEnabled = true
-    @AppStorage("theme") private var theme = "system"
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.sectionGap) {
                 // Profile Header
                 profileHeaderSection
 
@@ -52,19 +52,19 @@ struct UserProfileView: View {
 
                 // App Version
                 appVersionSection
+
+                // Bottom spacer for floating tab bar
+                Color.clear.frame(height: 80)
             }
-            .padding()
+            .padding(.horizontal, Spacing.screenH)
         }
-        .navigationTitle("Mi Perfil")
-        .navigationBarTitleDisplayMode(.large)
+        .scrollIndicators(.hidden)
+        .background(BulkUpColors.background.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
         .task {
             await friendsManager.loadMyStreak()
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { showingSettings = true }) {
-                    Image(systemName: "gearshape")
-                }
+            withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
+                animateStats = true
             }
         }
         .sheet(isPresented: $showingEditProfile) {
@@ -72,7 +72,7 @@ struct UserProfileView: View {
                 .environmentObject(authManager)
         }
         .sheet(isPresented: $showingBodyMeasurements) {
-            NavigationView {
+            NavigationStack {
                 BodyMeasurementsView()
                     .environmentObject(authManager)
             }
@@ -125,7 +125,21 @@ struct UserProfileView: View {
     // MARK: - Profile Header
 
     private var profileHeaderSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
+            // Top bar: spacer + settings gear
+            HStack {
+                Spacer()
+                Button(action: { showingSettings = true }) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .frame(width: 36, height: 36)
+                        .background(BulkUpColors.surfaceElevated)
+                        .clipShape(Circle())
+                }
+            }
+            .padding(.top, Spacing.sm)
+
             // Avatar
             ZStack(alignment: .bottomTrailing) {
                 if let urlString = authManager.user?.safeProfileImageURL,
@@ -137,24 +151,15 @@ struct UserProfileView: View {
                             image
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 120, height: 120)
+                                .frame(width: 100, height: 100)
                                 .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(BulkUpColors.accentGradient, lineWidth: 2)
+                                )
                         },
                         placeholder: {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [.blue, .blue.opacity(0.7)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 120, height: 120)
-                                .overlay(
-                                    Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
-                                        .font(.system(size: 16, weight: .bold))
-                                        .foregroundColor(.white)
-                                )
+                            avatarPlaceholder
                         }
                     )
                 } else {
@@ -162,54 +167,51 @@ struct UserProfileView: View {
                 }
             }
 
-            // User Info
-            VStack(spacing: 8) {
-                Text(authManager.user?.name ?? "Usuario")
-                    .font(.title2)
-                    .fontWeight(.bold)
+            // Name
+            Text(authManager.user?.name ?? "Usuario")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(BulkUpColors.textPrimary)
 
-                Text(authManager.user?.email ?? "")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+            // Email
+            Text(authManager.user?.email ?? "")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(BulkUpColors.textSecondary)
 
-                // Subscription Status
-                HStack(spacing: 4) {
-                    Image(
-                        systemName: storeKitManager.hasActiveSubscription
-                            ? "checkmark.seal.fill" : "lock.fill"
-                    )
-                    .font(.caption)
-
-                    Text(
-                        storeKitManager.hasActiveSubscription
-                            ? "PRO" : "Plan Básico"
-                    )
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    storeKitManager.hasActiveSubscription
-                        ? Color.green.opacity(0.2)
-                        : Color.gray.opacity(0.2)
+            // Plan badge
+            HStack(spacing: 5) {
+                Image(
+                    systemName: storeKitManager.hasActiveSubscription
+                        ? "checkmark.seal.fill" : "lock.fill"
                 )
-                .foregroundColor(
+                .font(.system(size: 11, weight: .bold))
+
+                Text(
                     storeKitManager.hasActiveSubscription
-                        ? .green
-                        : .secondary
+                        ? "PRO" : "Plan Básico"
                 )
-                .cornerRadius(12)
+                .font(BulkUpFont.badge())
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                storeKitManager.hasActiveSubscription
+                    ? BulkUpColors.accent.opacity(0.12)
+                    : BulkUpColors.surfaceElevated
+            )
+            .foregroundColor(
+                storeKitManager.hasActiveSubscription
+                    ? BulkUpColors.accent
+                    : BulkUpColors.textSecondary
+            )
+            .clipShape(Capsule())
         }
-        .padding(.vertical)
     }
 
     private var avatarPlaceholder: some View {
         Circle()
             .fill(
                 LinearGradient(
-                    colors: [.blue, .blue.opacity(0.7)],
+                    colors: [BulkUpColors.accent, BulkUpColors.accentMuted],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -217,60 +219,71 @@ struct UserProfileView: View {
             .frame(width: 100, height: 100)
             .overlay(
                 Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
-                    .font(.system(size: 40, weight: .bold))
+                    .font(.system(size: 36, weight: .bold))
                     .foregroundColor(.white)
+            )
+            .overlay(
+                Circle()
+                    .stroke(BulkUpColors.accentGradient, lineWidth: 2)
             )
     }
 
     // MARK: - Stats Section
 
     private var statsSection: some View {
-        HStack(spacing: 16) {
-            ProfileStatCard(
-                title: "Días activo",
-                value: "\(calculateDaysActive())",
-                icon: "calendar",
-                color: .blue
-            )
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.md) {
+                ProfileStatCard(
+                    title: "Días activo",
+                    value: calculateDaysActive(),
+                    icon: "calendar",
+                    color: BulkUpColors.accent,
+                    animated: animateStats
+                )
 
-            ProfileStatCard(
-                title: "Entrenamientos",
-                value: "\(calculateWorkouts())",
-                icon: "dumbbell",
-                color: .green
-            )
+                ProfileStatCard(
+                    title: "Entrenamientos",
+                    value: calculateWorkouts(),
+                    icon: "dumbbell",
+                    color: BulkUpColors.accent,
+                    animated: animateStats
+                )
 
-            ProfileStatCard(
-                title: "Racha",
-                value: "\(calculateStreak())",
-                icon: "flame",
-                color: .orange
-            )
+                ProfileStatCard(
+                    title: "Racha",
+                    value: calculateStreak(),
+                    icon: "flame.fill",
+                    color: calculateStreak() > 0 ? BulkUpColors.accent : BulkUpColors.textTertiary,
+                    dimmed: calculateStreak() == 0,
+                    animated: animateStats
+                )
+            }
         }
     }
 
     // MARK: - Menu Section
 
     private var menuSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.sm) {
             MenuRow(
                 title: "Editar Perfil",
                 icon: "person.circle",
-                color: .blue,
+                color: BulkUpColors.accent,
                 action: { showingEditProfile = true }
             )
 
             MenuRow(
                 title: "Medidas Corporales",
                 icon: "figure.arms.open",
-                color: .teal,
+                color: BulkUpColors.accent,
+                showBadge: !storeKitManager.hasActiveSubscription,
                 action: { showingBodyMeasurements = true }
             )
 
             MenuRow(
                 title: "Mi Suscripción",
                 icon: "crown",
-                color: .purple,
+                color: BulkUpColors.accent,
                 showBadge: !storeKitManager.hasActiveSubscription,
                 action: { showingSubscription = true }
             )
@@ -278,7 +291,7 @@ struct UserProfileView: View {
             MenuRow(
                 title: "Historial de Pagos",
                 icon: "creditcard",
-                color: .green,
+                color: BulkUpColors.accent,
                 action: {
                     Task {
                         await storeKitManager.openSubscriptionManagement()
@@ -289,22 +302,22 @@ struct UserProfileView: View {
             MenuRow(
                 title: "Exportar Datos",
                 icon: "square.and.arrow.up",
-                color: .orange,
+                color: BulkUpColors.accent,
                 action: { exportUserData() }
             )
         }
-        .padding(.vertical, 8)
     }
 
     // MARK: - Settings Section
 
     private var settingsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Configuración")
-                .font(.headline)
-                .padding(.horizontal, 4)
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("CONFIGURACIÓN")
+                .font(BulkUpFont.sectionLabel())
+                .tracking(1.5)
+                .foregroundColor(BulkUpColors.textSecondary)
 
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.sm) {
                 SettingRow(
                     title: "Vibración háptica",
                     icon: "iphone.radiowaves.left.and.right",
@@ -324,73 +337,41 @@ struct UserProfileView: View {
                         }
                     )
                 )
-
-                SettingRow(
-                    title: "Modo oscuro",
-                    icon: "moon",
-                    isOn: Binding(
-                        get: { theme == "dark" },
-                        set: { newValue in
-                            theme = newValue ? "dark" : "system"
-                            applyTheme(theme)
-                        }
-                    )
-                )
             }
         }
-        .padding(.vertical, 8)
     }
 
     // MARK: - Account Actions
 
     private var accountActionsSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.md) {
             Button(action: { showingLogoutAlert = true }) {
-                HStack {
-                    Image(systemName: "rectangle.portrait.and.arrow.right")
-                    Text("Cerrar Sesión")
-                    Spacer()
-                }
-                .foregroundColor(.orange)
-                .padding()
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(12)
-                .contentShape(Rectangle())
+                Text("Cerrar Sesión")
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.error)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(BulkUpColors.error.opacity(0.08))
+                    .cornerRadius(CornerRadius.medium)
             }
 
             Button(action: { showingDeleteAccountAlert = true }) {
-                HStack {
-                    Image(systemName: "trash")
-                    Text("Eliminar Cuenta")
-                    Spacer()
-                }
-                .foregroundColor(.red)
-                .padding()
-                .background(Color.red.opacity(0.1))
-                .cornerRadius(12)
-                .contentShape(Rectangle())
+                Text("Eliminar Cuenta")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textTertiary)
             }
         }
-        .padding(.vertical, 8)
     }
 
     // MARK: - App Version
 
     private var appVersionSection: some View {
-        VStack(spacing: 8) {
-            Text("BulkUp")
-                .font(.caption)
-                .fontWeight(.semibold)
-
-            Text("Versión \(Bundle.main.appVersion)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            Text("© 2025 BulkUp")
-                .font(.caption2)
-                .foregroundColor(.secondary)
+        VStack(spacing: Spacing.xs) {
+            Text("BulkUp · v\(Bundle.main.appVersion)")
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textTertiary)
         }
-        .padding(.vertical, 20)
+        .padding(.vertical, Spacing.md)
     }
 
     // MARK: - Helper Functions
@@ -406,7 +387,6 @@ struct UserProfileView: View {
     }
 
     private func calculateDaysActive() -> Int {
-        // Calculate days since account creation
         if let createdAt = authManager.user?.createdAt {
             let days =
                 Calendar.current.dateComponents(
@@ -437,24 +417,6 @@ struct UserProfileView: View {
                     notificationsEnabled = false
                 }
             }
-        }
-    }
-
-    // MARK: - Theme
-
-    private func applyTheme(_ theme: String) {
-        guard
-            let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-            let window = windowScene.windows.first
-        else { return }
-
-        switch theme {
-        case "light":
-            window.overrideUserInterfaceStyle = .light
-        case "dark":
-            window.overrideUserInterfaceStyle = .dark
-        default:
-            window.overrideUserInterfaceStyle = .unspecified
         }
     }
 
@@ -580,34 +542,56 @@ struct UserProfileView: View {
     }
 }
 
-// MARK: - Supporting Views
+// MARK: - Profile Stat Card (120x140, premium)
 
 struct ProfileStatCard: View {
     let title: String
-    let value: String
+    let value: Int
     let icon: String
     let color: Color
+    var dimmed: Bool = false
+    var animated: Bool = false
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.system(size: 24))
                 .foregroundColor(color)
 
-            Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
+            Text("\(animated ? value : 0)")
+                .font(BulkUpFont.heroStatMedium())
+                .foregroundColor(dimmed ? BulkUpColors.textTertiary : BulkUpColors.textPrimary)
+                .contentTransition(.numericText())
+                .animation(.easeOut(duration: 0.6), value: animated)
 
             Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(BulkUpColors.textSecondary)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .frame(width: 120, height: 140)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .fill(BulkUpColors.surface)
+
+                // Subtle inner glow
+                RadialGradient(
+                    colors: [color.opacity(0.03), .clear],
+                    center: .top,
+                    startRadius: 0,
+                    endRadius: 100
+                )
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
+            }
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .stroke(BulkUpColors.border, lineWidth: 0.5)
+        )
     }
 }
+
+// MARK: - Menu Row
 
 struct MenuRow: View {
     let title: String
@@ -618,41 +602,46 @@ struct MenuRow: View {
 
     var body: some View {
         Button(action: action) {
-            HStack {
+            HStack(spacing: Spacing.md) {
                 Image(systemName: icon)
-                    .font(.body)
-                    .foregroundColor(color)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(BulkUpColors.accent)
                     .frame(width: 24)
 
                 Text(title)
-                    .font(.body)
-                    .foregroundColor(.primary)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                 Spacer()
 
                 if showBadge {
                     Text("UPGRADE")
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.purple)
-                        .cornerRadius(4)
+                        .font(BulkUpFont.badge())
+                        .foregroundColor(BulkUpColors.onAccent)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(BulkUpColors.accent)
+                        .clipShape(Capsule())
                 }
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(BulkUpColors.textTertiary)
             }
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
+            .padding(Spacing.md)
+            .background(BulkUpColors.surface)
+            .cornerRadius(CornerRadius.large)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .stroke(BulkUpColors.border, lineWidth: 0.5)
+            )
             .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 }
+
+// MARK: - Setting Row
 
 struct SettingRow: View {
     let title: String
@@ -660,23 +649,29 @@ struct SettingRow: View {
     @Binding var isOn: Bool
 
     var body: some View {
-        HStack {
+        HStack(spacing: Spacing.md) {
             Image(systemName: icon)
-                .font(.body)
-                .foregroundColor(.blue)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(BulkUpColors.accent)
                 .frame(width: 24)
 
             Text(title)
-                .font(.body)
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textPrimary)
 
             Spacer()
 
             Toggle("", isOn: $isOn)
                 .labelsHidden()
+                .tint(BulkUpColors.accent)
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .padding(Spacing.md)
+        .background(BulkUpColors.surface)
+        .cornerRadius(CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .stroke(BulkUpColors.border, lineWidth: 0.5)
+        )
     }
 }
 

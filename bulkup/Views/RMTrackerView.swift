@@ -29,9 +29,11 @@ struct RMTrackerView: View {
     @EnvironmentObject var authManager: AuthManager
     @ObservedObject private var rmManager = RMManager.shared
     @ObservedObject private var notificationManager = RMNotificationManager.shared
+    @ObservedObject private var storeKit = StoreKitManager.shared
 
     @State private var searchTerm = ""
     @State private var showAddForm = false
+    @State private var showingSubscription = false
     @State private var formData = RMFormData()
     @State private var editingRecordId: String?
 
@@ -40,17 +42,31 @@ struct RMTrackerView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
-                if rmManager.isLoading && rmManager.records.isEmpty {
-                    // Solo mostrar loading si no hay datos en caché
+                BulkUpColors.background.ignoresSafeArea()
+
+                if !storeKit.isSubscribed {
+                    SubscriptionRequiredView(
+                        onSubscribe: { showingSubscription = true },
+                        title: "Records Personales",
+                        subtitle: "Registra y sigue tus PR en los ejercicios principales",
+                        features: [
+                            "Registra peso y repeticiones",
+                            "Calculo automatico de RM estimado",
+                            "Historial y progresion por ejercicio",
+                            "Estadisticas de tus levantamientos"
+                        ]
+                    )
+                } else if rmManager.isLoading && rmManager.records.isEmpty {
                     loadingView
                 } else {
                     mainContentWithRefresh
                 }
 
                 VStack {
-                    if let notification = notificationManager.currentNotification {
+                    if storeKit.isSubscribed,
+                       let notification = notificationManager.currentNotification {
                         RMNotificationView(notification: notification)
                             .padding(.horizontal)
                     }
@@ -59,10 +75,13 @@ struct RMTrackerView: View {
                 .zIndex(1)
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showAddRecord() }) {
-                        Image(systemName: "plus")
-                            .font(.title2)
+                if storeKit.isSubscribed {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: { showAddRecord() }) {
+                            Image(systemName: "plus")
+                                .font(BulkUpFont.sectionHeader())
+                                .foregroundColor(BulkUpColors.accent)
+                        }
                     }
                 }
             }
@@ -78,16 +97,19 @@ struct RMTrackerView: View {
                     onCancel: resetForm
                 )
             }
+            .sheet(isPresented: $showingSubscription) {
+                SubscriptionView()
+                    .environmentObject(authManager)
+            }
         }
         .task {
-            if let token = authManager.user?.token {
-                // Cargar con caché al inicio
+            if storeKit.isSubscribed, let token = authManager.user?.token {
                 await rmManager.loadInitialDataWithCache(token: token)
             }
         }
         .environmentObject(notificationManager)
     }
-    
+
     private var mainContentWithRefresh: some View {
             ScrollView {
                 LazyVStack(spacing: 20) {
@@ -104,11 +126,10 @@ struct RMTrackerView: View {
 
                     // Espacio extra para el tab bar
                     Color.clear
-                        .frame(height: 90)
+                        .frame(height: 80)
                 }
             }
             .refreshable {
-                // Pull-to-refresh fuerza recarga desde API
                 if let token = authManager.user?.token {
                     await rmManager.refreshData(token: token, forceRefresh: true)
                 }
@@ -116,20 +137,19 @@ struct RMTrackerView: View {
             .overlay(
                 Group {
                     if rmManager.isLoading && !rmManager.records.isEmpty {
-                        // Mostrar indicador sutil cuando se está refrescando con datos en caché
                         VStack {
                             HStack {
                                 ProgressView()
                                     .scaleEffect(0.8)
                                 Text("Actualizando...")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .font(BulkUpFont.caption())
+                                    .foregroundColor(BulkUpColors.textSecondary)
                             }
                             .padding(8)
-                            .background(Color(.systemBackground))
+                            .background(BulkUpColors.surface)
                             .cornerRadius(20)
-                            .shadow(radius: 2)
-                            
+                            .overlay(RoundedRectangle(cornerRadius: 20).stroke(BulkUpColors.border, lineWidth: 0.5))
+
                             Spacer()
                         }
                         .padding(.top, 8)
@@ -137,7 +157,7 @@ struct RMTrackerView: View {
                 }
             )
         }
-        
+
         private func handleSubmitWithCache() {
             guard let token = authManager.user?.token else { return }
 
@@ -168,7 +188,7 @@ struct RMTrackerView: View {
                 }
             }
         }
-        
+
         private func deleteRecordWithCache(_ record: PersonalRecord) {
             guard let token = authManager.user?.token else { return }
 
@@ -195,7 +215,8 @@ struct RMTrackerView: View {
             ProgressView()
                 .scaleEffect(1.5)
             Text("Cargando datos...")
-                .font(.headline)
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.textSecondary)
                 .padding(.top)
         }
     }
@@ -224,7 +245,7 @@ struct RMTrackerView: View {
         ]
     }
 
-    // MARK: - Actions (sin cambios)
+    // MARK: - Actions
 
     private func showAddRecord() {
         formData = RMFormData()
@@ -284,7 +305,7 @@ struct SearchBar: View {
     var body: some View {
         HStack {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+                .foregroundColor(BulkUpColors.textTertiary)
 
             TextField("Buscar ejercicio...", text: $text)
                 .textFieldStyle(PlainTextFieldStyle())
@@ -292,14 +313,14 @@ struct SearchBar: View {
             if !text.isEmpty {
                 Button(action: { text = "" }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
+                        .foregroundColor(BulkUpColors.textTertiary)
                 }
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .background(BulkUpColors.surfaceElevated)
+        .cornerRadius(CornerRadius.medium)
     }
 }
 
@@ -315,33 +336,35 @@ struct RMExerciseCardView: View {
     @State private var showDeleteConfirmation = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             // Header
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(exercise.nameEs)
-                        .font(.headline)
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textPrimary)
                         .lineLimit(2)
-                        .frame(minHeight: 44)  // Altura mínima para mantener consistencia
+                        .frame(minHeight: 44)
 
                     Text(exercise.category.capitalized)
-                        .font(.caption)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .background(BulkUpColors.surfaceElevated)
+                        .cornerRadius(CornerRadius.small)
                 }
 
                 Spacer()
 
                 if bestRecord != nil {
                     Image(systemName: "trophy.fill")
-                        .foregroundColor(.yellow)
-                        .font(.title3)
+                        .foregroundColor(BulkUpColors.accent)
+                        .font(BulkUpFont.sectionHeader())
                 }
             }
 
-            // Content - añadir altura mínima
+            // Content
             Group {
                 if let bestRecord = bestRecord {
                     bestRecordContent(bestRecord)
@@ -349,7 +372,7 @@ struct RMExerciseCardView: View {
                     noRecordsContent
                 }
             }
-            .frame(minHeight: 120)  // Altura mínima para el contenido
+            .frame(minHeight: 120)
 
             // Navigation Button
             NavigationLink(
@@ -360,55 +383,57 @@ struct RMExerciseCardView: View {
             ) {
                 HStack {
                     Image(systemName: "chart.bar.fill")
-                        .font(.caption)
+                        .font(BulkUpFont.caption())
                     Text("Ver Detalle")
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .font(BulkUpFont.dataLabel())
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
-                .background(Color.blue)
+                .background(BulkUpColors.training)
                 .foregroundColor(.white)
-                .cornerRadius(8)
+                .cornerRadius(CornerRadius.small)
             }
         }
-        .frame(height: 280)  // Altura fija para todas las tarjetas
-        .padding(16)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .frame(height: 280)
+        .padding(Spacing.lg)
+        .background(BulkUpColors.surface)
+        .cornerRadius(CornerRadius.large)
+        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
     }
 
     @ViewBuilder
     private func bestRecordContent(_ record: PersonalRecord) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             // Best RM Display
             VStack(alignment: .leading, spacing: 4) {
                 Text("Mejor PR")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
 
                 HStack {
                     Text(
                         "\(record.weight, specifier: "%.1f") kg × \(record.reps)"
                     )
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .font(BulkUpFont.heroStat())
+                    .foregroundColor(BulkUpColors.textPrimary)
 
                     Spacer()
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: 0) {
                         Button(action: { onEdit(record) }) {
                             Image(systemName: "pencil")
-                                .font(.caption)
-                                .foregroundColor(.blue)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.training)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                         }
 
                         Button(action: { showDeleteConfirmation = true }) {
                             Image(systemName: "trash")
-                                .font(.caption)
-                                .foregroundColor(.red)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.error)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                         }
                     }
                 }
@@ -418,19 +443,19 @@ struct RMExerciseCardView: View {
                     reps: record.reps
                 ) {
                     Text("RM Estimado: \(estimatedRM, specifier: "%.1f") kg")
-                        .font(.caption)
-                        .foregroundColor(.green)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.success)
                         .fontWeight(.medium)
                 }
 
                 Text(formatDate(record.date))
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
 
                 if let notes = record.notes, !notes.isEmpty {
                     Text("\"\(notes)\"")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                         .italic()
                         .lineLimit(2)
                 }
@@ -438,21 +463,21 @@ struct RMExerciseCardView: View {
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.yellow.opacity(0.1))
+                RoundedRectangle(cornerRadius: CornerRadius.small)
+                    .fill(BulkUpColors.accent.opacity(0.1))
             )
 
             // Stats
             HStack {
                 Text("Total registros:")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
 
                 Spacer()
 
                 Text("\(totalRecords)")
-                    .font(.caption)
-                    .fontWeight(.medium)
+                    .font(BulkUpFont.dataLabel())
+                    .foregroundColor(BulkUpColors.textPrimary)
             }
         }
         .confirmationDialog(
@@ -470,18 +495,18 @@ struct RMExerciseCardView: View {
     }
 
     private var noRecordsContent: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             Image(systemName: "dumbbell")
-                .font(.largeTitle)
-                .foregroundColor(.gray.opacity(0.5))
+                .font(BulkUpFont.screenTitle())
+                .foregroundColor(BulkUpColors.textTertiary)
 
             Text("Sin récords registrados")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
 
             Text("¡Registra tu primer RM!")
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
@@ -533,7 +558,7 @@ struct AddRecordFormView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section("Detalles del Ejercicio") {
                     // Exercise Selection
@@ -542,7 +567,7 @@ struct AddRecordFormView: View {
                             Text("Ejercicio")
                             Spacer()
                             Text(selectedExercise?.name ?? "No seleccionado")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BulkUpColors.textSecondary)
                         }
                     } else {
                         Button(action: { showExercisePicker = true }) {
@@ -554,11 +579,11 @@ struct AddRecordFormView: View {
                                         ?? "Seleccionar ejercicio"
                                 )
                                 .foregroundColor(
-                                    selectedExercise == nil ? .blue : .secondary
+                                    selectedExercise == nil ? BulkUpColors.accent : BulkUpColors.textSecondary
                                 )
                                 Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .font(BulkUpFont.caption())
+                                    .foregroundColor(BulkUpColors.textSecondary)
                             }
                         }
                     }
@@ -608,7 +633,7 @@ struct AddRecordFormView: View {
                             Spacer()
                             Text("\(rm, specifier: "%.1f") kg")
                                 .fontWeight(.bold)
-                                .foregroundColor(.green)
+                                .foregroundColor(BulkUpColors.success)
                         }
                     } header: {
                         Text("Cálculo Automático")
@@ -627,6 +652,7 @@ struct AddRecordFormView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(isEditing ? "Actualizar" : "Guardar") { onSubmit() }
                         .disabled(!formData.isValid || isSubmitting)
+                        .foregroundColor(BulkUpColors.accent)
                 }
             }
             .sheet(isPresented: $showExercisePicker) {
@@ -664,7 +690,7 @@ struct ExercisePickerView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 ForEach(filteredExercises) { exercise in
                     Button(action: {
@@ -674,18 +700,18 @@ struct ExercisePickerView: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(exercise.nameEs)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(BulkUpColors.textPrimary)
 
                                 Text(exercise.category.capitalized)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .font(BulkUpFont.caption())
+                                    .foregroundColor(BulkUpColors.textSecondary)
                             }
 
                             Spacer()
 
                             if selectedExerciseId == exercise.id {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(BulkUpColors.accent)
                             }
                         }
                     }
@@ -697,6 +723,7 @@ struct ExercisePickerView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Cerrar") { dismiss() }
+                        .foregroundColor(BulkUpColors.accent)
                 }
             }
         }

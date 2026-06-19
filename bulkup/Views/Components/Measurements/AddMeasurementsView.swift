@@ -12,7 +12,7 @@ struct AddMeasurementsView: View {
     @EnvironmentObject var measurementsManager: BodyMeasurementsManager
     @ObservedObject private var profileManager = ProfileManager.shared
     @Environment(\.dismiss) private var dismiss
-    
+
     // Campos requeridos
     @State private var weight: String = ""
     @State private var height: String = ""
@@ -20,53 +20,54 @@ struct AddMeasurementsView: View {
     @State private var sex: String = "H" // H = Hombre, M = Mujer
     @State private var waist: String = ""
     @State private var neck: String = ""
-    
+
     // Campos opcionales
     @State private var hip: String = ""
     @State private var arm: String = ""
     @State private var thigh: String = ""
     @State private var calf: String = ""
-    
+
     @State private var showingOptionalFields = false
     @State private var isLoading = false
     @State private var hasCalculatedAge = false
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: Spacing.xl) {
                     // Header
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.sm) {
                         Image(systemName: "figure.arms.open")
                             .font(.system(size: 50))
-                            .foregroundColor(.green)
-                        
+                            .foregroundColor(BulkUpColors.accent)
+
                         Text("Nuevas Medidas")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
+                            .font(BulkUpFont.sectionHeader())
+                            .foregroundColor(BulkUpColors.textPrimary)
+
                         Text("Registra tus medidas para calcular tu composición corporal")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.textSecondary)
                             .multilineTextAlignment(.center)
                     }
                     .padding(.top)
-                    
+
                     // Campos requeridos
                     VStack(spacing: 20) {
                         Text("Información Básica")
-                            .font(.headline)
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        VStack(spacing: 16) {
-                            HStack(spacing: 12) {
+
+                        VStack(spacing: Spacing.lg) {
+                            HStack(spacing: Spacing.md) {
                                 MeasurementField(
                                     title: "Peso",
                                     value: $weight,
                                     unit: "kg",
                                     icon: "scalemass"
                                 )
-                                
+
                                 MeasurementField(
                                     title: "Altura",
                                     value: $height,
@@ -74,21 +75,21 @@ struct AddMeasurementsView: View {
                                     icon: "ruler"
                                 )
                             }
-                            
-                            HStack(spacing: 12) {
+
+                            HStack(spacing: Spacing.md) {
                                 MeasurementField(
                                     title: "Edad",
                                     value: $age,
                                     unit: "años",
                                     icon: "calendar"
                                 )
-                                
+
                                 // Selector de sexo
-                                VStack(alignment: .leading, spacing: 8) {
+                                VStack(alignment: .leading, spacing: Spacing.sm) {
                                     Label("Sexo", systemImage: "person.2")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    
+                                        .font(BulkUpFont.caption())
+                                        .foregroundColor(BulkUpColors.textSecondary)
+
                                     Picker("Sexo", selection: $sex) {
                                         Text("Hombre").tag("H")
                                         Text("Mujer").tag("M")
@@ -96,29 +97,29 @@ struct AddMeasurementsView: View {
                                     .pickerStyle(.segmented)
                                 }
                             }
-                            
+
                             // Nota sobre edad calculada automáticamente
                             if hasCalculatedAge {
                                 HStack {
                                     Image(systemName: "info.circle.fill")
-                                        .foregroundColor(.blue)
-                                        .font(.caption)
-                                    
+                                        .foregroundColor(BulkUpColors.training)
+                                        .font(BulkUpFont.caption())
+
                                     Text("Edad calculada desde tu fecha de nacimiento. Puedes modificarla si es necesario.")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                                        .font(BulkUpFont.caption())
+                                        .foregroundColor(BulkUpColors.textSecondary)
                                 }
                                 .padding(.horizontal)
                             }
-                            
-                            HStack(spacing: 12) {
+
+                            HStack(spacing: Spacing.md) {
                                 MeasurementField(
                                     title: "Cintura",
                                     value: $waist,
                                     unit: "cm",
                                     icon: "circle.dashed"
                                 )
-                                
+
                                 MeasurementField(
                                     title: "Cuello",
                                     value: $neck,
@@ -128,7 +129,7 @@ struct AddMeasurementsView: View {
                             }
                         }
                     }
-                    
+
                     // Toggle para campos opcionales
                     Button {
                         withAnimation(.spring()) {
@@ -138,22 +139,22 @@ struct AddMeasurementsView: View {
                         HStack {
                             Text("Medidas Adicionales")
                                 .fontWeight(.medium)
-                            
+
                             Spacer()
-                            
+
                             Image(systemName: showingOptionalFields ? "chevron.up" : "chevron.down")
-                                .font(.caption)
+                                .font(BulkUpFont.caption())
                         }
-                        .foregroundColor(.green)
+                        .foregroundColor(BulkUpColors.accent)
                         .padding()
-                        .background(Color.green.opacity(0.1))
-                        .cornerRadius(8)
+                        .background(BulkUpColors.accent.opacity(0.1))
+                        .cornerRadius(CornerRadius.small)
                     }
-                    
+
                     // Campos opcionales
                     if showingOptionalFields {
-                        VStack(spacing: 16) {
-                            HStack(spacing: 12) {
+                        VStack(spacing: Spacing.lg) {
+                            HStack(spacing: Spacing.md) {
                                 MeasurementField(
                                     title: "Cadera",
                                     value: $hip,
@@ -161,7 +162,7 @@ struct AddMeasurementsView: View {
                                     icon: "circle.dotted",
                                     isOptional: true
                                 )
-                                
+
                                 MeasurementField(
                                     title: "Brazo",
                                     value: $arm,
@@ -170,8 +171,8 @@ struct AddMeasurementsView: View {
                                     isOptional: true
                                 )
                             }
-                            
-                            HStack(spacing: 12) {
+
+                            HStack(spacing: Spacing.md) {
                                 MeasurementField(
                                     title: "Muslo",
                                     value: $thigh,
@@ -179,7 +180,7 @@ struct AddMeasurementsView: View {
                                     icon: "figure.walk",
                                     isOptional: true
                                 )
-                                
+
                                 MeasurementField(
                                     title: "Pantorrilla",
                                     value: $calf,
@@ -191,7 +192,7 @@ struct AddMeasurementsView: View {
                         }
                         .transition(.opacity.combined(with: .slide))
                     }
-                    
+
                     // Botón de guardar
                     Button {
                         saveMeasurements()
@@ -204,19 +205,20 @@ struct AddMeasurementsView: View {
                             } else {
                                 Image(systemName: "checkmark.circle.fill")
                             }
-                            
+
                             Text(isLoading ? "Guardando..." : "Guardar Medidas")
                         }
                     }
-                    .buttonStyle(PrimaryButtonStyle())
+                    .buttonStyle(PrimaryButtonStyle(color: BulkUpColors.accent))
                     .disabled(isLoading || !isFormValid)
                     .opacity(isFormValid ? 1.0 : 0.6)
-                    
+
                     Color.clear
                         .frame(height: 20)
                 }
                 .padding()
             }
+            .background(BulkUpColors.background.ignoresSafeArea())
             .navigationTitle("Agregar Medidas")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -230,9 +232,8 @@ struct AddMeasurementsView: View {
             calculateAgeFromProfile()
         }
     }
-    
+
     // MARK: - Helpers
-    /// Parses a decimal string supporting both comma and dot as decimal separator
     private func parseDecimal(_ text: String) -> Double? {
         let normalized = text.replacingOccurrences(of: ",", with: ".")
         return Double(normalized)
@@ -279,29 +280,27 @@ struct AddMeasurementsView: View {
                 thigh: thigh.isEmpty ? nil : parseDecimal(thigh),
                 calf: calf.isEmpty ? nil : parseDecimal(calf)
             )
-            
+
             isLoading = false
-            
+
             if measurementsManager.errorMessage == nil {
                 dismiss()
             }
         }
     }
-    
+
     // MARK: - Calculate age from profile
     private func calculateAgeFromProfile() {
-        // Solo calcular si el usuario tiene fecha de nacimiento
         if let dateOfBirth = authManager.user?.dateOfBirth {
             let calendar = Calendar.current
             let now = Date()
             let ageComponents = calendar.dateComponents([.year], from: dateOfBirth, to: now)
-            
+
             if let calculatedAge = ageComponents.year {
                 age = String(calculatedAge)
                 hasCalculatedAge = true
             }
         }
-        // Si no tiene fecha de nacimiento, el campo de edad quedará vacío para input manual
     }
 }
 
@@ -313,29 +312,31 @@ struct MeasurementField: View {
     let unit: String
     let icon: String
     var isOptional: Bool = false
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(spacing: 4) {
                 Label(title, systemImage: icon)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+
                 if isOptional {
                     Text("(opcional)")
-                        .font(.caption2)
-                        .foregroundColor(.secondary.opacity(0.7))
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textTertiary)
                 }
             }
-            
+
             HStack {
                 TextField("0", text: $value)
                     .keyboardType(.decimalPad)
-                    .textFieldStyle(.roundedBorder)
-                
+                    .padding(Spacing.sm)
+                    .background(BulkUpColors.surfaceElevated)
+                    .cornerRadius(CornerRadius.small)
+
                 Text(unit)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
                     .frame(width: 30, alignment: .leading)
             }
         }

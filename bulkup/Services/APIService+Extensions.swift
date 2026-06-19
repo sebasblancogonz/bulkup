@@ -413,7 +413,50 @@ extension APIService {
         return imageUrl.replacingOccurrences(of: "http://", with: "https://")
     }
 
+    // MARK: - Workout Sessions
+
+    func saveWorkoutSession(_ request: SaveWorkoutSessionRequest) async throws {
+        let _: APIResponse<EmptyResponse> = try await requestWithBody(
+            endpoint: "workout-sessions",
+            method: .POST,
+            body: request
+        )
+    }
+
+    func getWorkoutSessions(userId: String, limit: Int = 50) async throws -> [WorkoutSessionRecord] {
+        let response: APIResponse<[WorkoutSessionRecord]> = try await request(
+            endpoint: "workout-sessions?userId=\(userId)&limit=\(limit)",
+            method: .GET
+        )
+        return response.data ?? []
+    }
+
     // MARK: - Diet Plan Management
+
+    func createDietPlan(
+        userId: String,
+        filename: String,
+        dietData: [ServerDietDay]
+    ) async throws -> CreateDietPlanResponse {
+        let request = CreateDietPlanRequest(
+            userId: userId,
+            filename: filename,
+            dietData: dietData
+        )
+
+        let response: APIResponse<CreateDietPlanResponse> =
+            try await requestWithBody(
+                endpoint: "diet-plans",
+                method: .POST,
+                body: request
+            )
+
+        guard let data = response.data else {
+            throw APIError.noData
+        }
+
+        return data
+    }
 
     func listDietPlans(userId: String) async throws -> [ServerDietPlan] {
         let request = LoadPlanRequest(userId: userId)

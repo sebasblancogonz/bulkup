@@ -10,7 +10,7 @@ import SwiftUI
 struct NotificationData {
     let type: NotificationType
     let message: String
-    
+
     enum NotificationType {
         case success
         case error
@@ -19,26 +19,33 @@ struct NotificationData {
 
 struct RMNotificationView: View {
     let notification: NotificationData?
-    
+
     var body: some View {
         if let notification = notification {
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.sm) {
                 Image(systemName: notification.type == .success ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                    .foregroundColor(.white)
+                    .foregroundColor(notification.type == .success ? BulkUpColors.success : BulkUpColors.error)
                     .font(.system(size: 20))
-                
+
                 Text(notification.message)
-                    .foregroundColor(.white)
+                    .foregroundColor(BulkUpColors.textPrimary)
                     .font(.system(size: 14, weight: .medium))
                     .multilineTextAlignment(.leading)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(notification.type == .success ? Color.green : Color.red)
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(BulkUpColors.surface)
+                    .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 4)
             )
-            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 2)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .stroke(
+                        notification.type == .success ? BulkUpColors.success.opacity(0.3) : BulkUpColors.error.opacity(0.3),
+                        lineWidth: 1
+                    )
+            )
             .transition(.asymmetric(
                 insertion: .move(edge: .top).combined(with: .opacity),
                 removal: .move(edge: .top).combined(with: .opacity)

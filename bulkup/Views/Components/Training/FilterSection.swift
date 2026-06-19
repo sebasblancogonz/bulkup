@@ -11,34 +11,36 @@ struct FilterSection: View {
     let options: [String]
     let selected: Set<String>
     let onSelectionChange: (Set<String>) -> Void
-    
+
     @State private var isExpanded = false
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             Button(action: { isExpanded.toggle() }) {
                 HStack {
                     Text(title)
-                        .font(.subheadline)
+                        .font(BulkUpFont.body())
                         .fontWeight(.semibold)
+                        .foregroundColor(BulkUpColors.textPrimary)
 
                     if !selected.isEmpty {
                         Text("(\(selected.count))")
-                            .font(.caption)
-                            .foregroundColor(.blue)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.training)
                     }
 
                     Spacer()
 
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
                 .contentShape(Rectangle())
             }
-            .foregroundColor(.primary)
-            
+            .foregroundColor(BulkUpColors.textPrimary)
+
             if isExpanded {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     ForEach(options, id: \.self) { option in
                         Button(action: {
                             var newSelection = selected
@@ -51,32 +53,33 @@ struct FilterSection: View {
                         }) {
                             HStack {
                                 Image(systemName: selected.contains(option) ? "checkmark.square.fill" : "square")
-                                    .foregroundColor(selected.contains(option) ? .blue : .secondary)
+                                    .foregroundColor(selected.contains(option) ? BulkUpColors.training : BulkUpColors.textSecondary)
 
                                 Text(translateOption(option))
-                                    .font(.caption)
+                                    .font(BulkUpFont.caption())
+                                    .foregroundColor(BulkUpColors.textPrimary)
 
                                 Spacer()
                             }
                             .contentShape(Rectangle())
                         }
-                        .foregroundColor(.primary)
+                        .foregroundColor(BulkUpColors.textPrimary)
                     }
-                    
+
                     if !selected.isEmpty {
                         Button(action: { onSelectionChange([]) }) {
                             Text("Limpiar")
-                                .font(.caption)
-                                .foregroundColor(.blue)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.training)
                         }
-                        .padding(.top, 4)
+                        .padding(.top, Spacing.xs)
                     }
                 }
-                .padding(.leading, 4)
+                .padding(.leading, Spacing.xs)
             }
         }
     }
-    
+
     private func translateOption(_ option: String) -> String {
         // Aquí puedes agregar traducciones según necesites
         let translations: [String: String] = [
@@ -88,21 +91,21 @@ struct FilterSection: View {
             "powerlifting": "Powerlifting",
             "cardio": "Cardio",
             "olympic weightlifting": "Halterofilia",
-            
+
             // Niveles
             "beginner": "Principiante",
             "intermediate": "Intermedio",
             "expert": "Experto",
-            
+
             // Fuerza
             "push": "Empuje",
             "pull": "Jalón",
             "static": "Estático",
-            
+
             // Mecánica
             "compound": "Compuesto",
             "isolation": "Aislamiento",
-            
+
             // Equipo
             "barbell": "Barra",
             "dumbbell": "Mancuerna",
@@ -116,7 +119,7 @@ struct FilterSection: View {
             "e-z curl bar": "Barra Z",
             "foam roll": "Rodillo de espuma"
         ]
-        
+
         return translations[option.lowercased()] ?? option.capitalized
     }
 }

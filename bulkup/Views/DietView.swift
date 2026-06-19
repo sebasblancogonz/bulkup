@@ -12,10 +12,8 @@ struct DietView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var dietManager: DietManager
     @ObservedObject private var mealTrackingManager = MealTrackingManager.shared
-    @State private var viewMode: ViewMode = .day
-    @State private var selectedDay = ""
-    @State private var expandedDay = -1
     @State private var currentDayIndex = 0
+    @State private var expandedMeals: Set<Int> = []
 
     private var todayDateString: String {
         let formatter = DateFormatter()
@@ -23,514 +21,461 @@ struct DietView: View {
         return formatter.string(from: Date())
     }
 
-    enum ViewMode: String, CaseIterable {
-        case week = "week"
-        case day = "day"
-
-        var displayName: String {
-            switch self {
-            case .week: return "Semanal"
-            case .day: return "Diario"
-            }
-        }
-
-        var icon: String {
-            switch self {
-            case .week: return "calendar"
-            case .day: return "calendar.day.timeline.left"
-            }
-        }
-    }
-
     var body: some View {
         Group {
-            if dietManager.isLoading {
-                loadingView
-            } else if dietManager.dietData.isEmpty {
-                emptyStateView
-            } else if dietManager.dietData.count == 1
+            if dietManager.dietData.count == 1
                 && dietManager.dietData[0].day == "Dieta Semanal"
             {
-                weeklyPlanViewWithNavigation
-            } else {
-                multiDayPlanViewWithNavigation
+                singleDayContent(dietManager.dietData[0])
+            } else if dietManager.dietData.count > 0 {
+                multiDayContent
             }
         }
         .onAppear {
-            if dietManager.dietData.isEmpty && !dietManager.isLoading {
-                Task {
-                    if let user = authManager.user {
-                        await dietManager.loadActiveDietPlan(userId: user.id)
-                    }
-                }
-            }
+            clampDayIndex()
             loadTrackingForCurrentDay()
         }
     }
 
-    // MARK: - Compliance Summary Bar
-    private var complianceSummaryBar: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.green)
+    // MARK: - Single Day (Weekly Plan)
 
-            Text(mealTrackingManager.todayComplianceSummary)
-                .font(.subheadline)
-                .fontWeight(.medium)
+    private func singleDayContent(_ day: DietDay) -> some View {
+        let sortedMeals = day.meals.sorted { $0.orderIndex < $1.orderIndex }
+        let completedCount = mealTrackingManager.todayTracking.filter { $0.completed }.count
+        let allComplete = completedCount == sortedMeals.count && sortedMeals.count > 0
 
-            Spacer()
-
-            // Progress indicator
-            let rate = mealTrackingManager.todayComplianceRate
-            Text(String(format: "%.0f%%", rate * 100))
-                .font(.subheadline)
-                .fontWeight(.bold)
-                .foregroundColor(rate >= 0.8 ? .green : rate >= 0.5 ? .orange : .secondary)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(Color.green.opacity(0.08))
-        .cornerRadius(10)
-        .padding(.horizontal)
-    }
-
-    // MARK: - Meal Card with Tracking
-    @ViewBuilder
-    private func trackedMealCard(meal: Meal, dayName: String) -> some View {
-        let record = mealTrackingManager.trackingRecord(for: meal.order, date: todayDateString)
-        MealCardView(
-            meal: meal,
-            trackingRecord: record,
-            onToggleCompletion: {
-                if let record = record {
-                    Task {
-                        if let userId = authManager.user?.id {
-                            await mealTrackingManager.toggleMealCompletion(record: record, userId: userId)
-                        }
-                    }
-                }
-            },
-            onNotesChanged: { notes in
-                if let record = record {
-                    Task {
-                        if let userId = authManager.user?.id {
-                            await mealTrackingManager.updateNotes(record: record, notes: notes, userId: userId)
-                        }
-                    }
-                }
-            }
-        )
-        .padding(.horizontal)
-    }
-
-    // MARK: - Loading View
-    private var loadingView: some View {
-        VStack(spacing: 24) {
-            ProgressView()
-                .scaleEffect(1.5)
-                .tint(.green)
-
-            VStack(spacing: 8) {
-                Text("Cargando tu plan...")
-                    .font(.headline)
-                    .fontWeight(.medium)
-
-                Text("Preparando tu alimentacion perfecta")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    // MARK: - Empty State View
-    private var emptyStateView: some View {
-        VStack(spacing: 32) {
-            VStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    .green.opacity(0.2),
-                                    .green.opacity(0.05),
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 120, height: 120)
-
-                    Image(systemName: "leaf.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.green, .green.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                }
-                .shadow(color: .green.opacity(0.2), radius: 20, x: 0, y: 10)
-            }
-
-            VStack(spacing: 16) {
-                Text("Empecemos tu viaje!")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-
-                Text(
-                    "Sube tu plan de alimentacion personalizado y comienza a alcanzar tus objetivos nutricionales"
+        return ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                dayHeader(
+                    title: "Plan Semanal",
+                    completedCount: completedCount,
+                    totalCount: sortedMeals.count
                 )
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
-            }
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.sm)
 
-            Button(action: {
-            }) {
-                HStack(spacing: 12) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title3)
+                // Progress bar
+                progressBar(completed: completedCount, total: sortedMeals.count)
+                    .padding(.horizontal, Spacing.screenH)
+                    .padding(.bottom, Spacing.lg)
 
-                    Text("Subir Plan de Dieta")
-                        .fontWeight(.semibold)
+                // Celebration banner
+                if allComplete {
+                    celebrationBanner
+                        .padding(.horizontal, Spacing.screenH)
+                        .padding(.bottom, Spacing.md)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(
-                    LinearGradient(
-                        colors: [.green, .green.opacity(0.8)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .foregroundColor(.white)
-                .cornerRadius(16)
-                .shadow(color: .green.opacity(0.3), radius: 10, x: 0, y: 5)
-            }
-            .padding(.horizontal, 32)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
 
-    // MARK: - Navigation Title View
-    @ViewBuilder
-    private var navigationTitleView: some View {
-        if dietManager.dietData.count == 1
-            && dietManager.dietData[0].day == "Dieta Semanal"
-        {
-            VStack(spacing: 2) {
-                Text("Plan Semanal")
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                // Daily macros
+                dailyMacrosCard(day)
+                    .padding(.bottom, Spacing.md)
 
-                Text("\(dietManager.dietData[0].meals.count) comidas")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        } else if viewMode == .day && !selectedDay.isEmpty {
-            VStack(spacing: 2) {
-                Text(formatDayName(selectedDay))
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                mealList(meals: sortedMeals, dayName: day.day)
 
-                Text(
-                    "Dia \(currentDayIndex + 1) de \(dietManager.dietData.count)"
-                )
-                .font(.caption)
-                .foregroundColor(.secondary)
-            }
-        } else {
-            VStack(spacing: 2) {
-                Text("Semana")
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                // Cheat meal section
+                cheatMealSection(day)
+                    .padding(.top, Spacing.md)
 
-                Text("\(dietManager.dietData.count) dias")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                if !day.supplements.isEmpty {
+                    supplementsList(day.supplements)
+                        .padding(.top, Spacing.sectionGap)
+                }
+
+                Color.clear.frame(height: 100)
             }
         }
-    }
-
-    // MARK: - Weekly Plan View with Navigation
-    private var weeklyPlanViewWithNavigation: some View {
-        GeometryReader { geometry in
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(spacing: 20) {
-                    // Header grande personalizado
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-
-                            Text("Tu rutina nutricional completa")
-                                .font(.title3)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom)
-
-                    // Compliance summary
-                    if !mealTrackingManager.todayTracking.isEmpty {
-                        complianceSummaryBar
-                    }
-
-                    // Stats card
-                    HStack {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label(
-                                "\(dietManager.dietData[0].meals.count) comidas",
-                                systemImage: "fork.knife"
-                            )
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-
-                            if !dietManager.dietData[0].supplements.isEmpty {
-                                Label(
-                                    "\(dietManager.dietData[0].supplements.count) suplementos",
-                                    systemImage: "pills.fill"
-                                )
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            }
-                        }
-                        Spacer()
-                    }
-                    .padding()
-                    .background(Color.green.opacity(0.1))
-                    .cornerRadius(12)
-                    .padding(.horizontal)
-
-                    // Comidas
-                    let sortedMeals = dietManager.dietData[0].meals.sorted(by: {
-                        $0.orderIndex < $1.orderIndex
-                    })
-                    ForEach(sortedMeals.indices, id: \.self) { index in
-                        trackedMealCard(
-                            meal: sortedMeals[index],
-                            dayName: dietManager.dietData[0].day
-                        )
-                    }
-
-                    // Suplementos
-                    if !dietManager.dietData[0].supplements.isEmpty {
-                        SupplementsView(
-                            supplements: dietManager.dietData[0].supplements
-                        )
-                        .padding(.horizontal)
-                    }
-
-                    Color.clear
-                        .frame(height: 50)
-                }
-                .padding(.top, 20)
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    navigationTitleView
-                }
-            }.navigationTitle("Dieta")
-                .navigationBarTitleDisplayMode(.large)
-            .refreshable {
-                if let user = authManager.user {
-                    await dietManager.loadActiveDietPlan(userId: user.id)
-                    loadTrackingForCurrentDay()
-                }
-            }
-        }
-    }
-
-    // MARK: - Multi-Day Plan View with Navigation
-    private var multiDayPlanViewWithNavigation: some View {
-        ScrollView(.vertical, showsIndicators: true) {
-            VStack(spacing: 20) {
-                // Header grande personalizado segun el modo
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        if viewMode == .day {
-                            if dietManager.dietData.count > 1 {
-                                HStack(spacing: 12) {
-                                    Text(
-                                        "Dia \(currentDayIndex + 1) de \(dietManager.dietData.count)"
-                                    )
-                                    .font(.title3)
-                                    .foregroundColor(.secondary)
-
-                                    // Indicador de progreso
-                                    HStack(spacing: 2) {
-                                        ForEach(
-                                            0..<min(
-                                                dietManager.dietData.count,
-                                                7
-                                            ),
-                                            id: \.self
-                                        ) { index in
-                                            Circle()
-                                                .fill(
-                                                    index == currentDayIndex
-                                                        ? Color.green
-                                                        : Color.green.opacity(
-                                                            0.3
-                                                        )
-                                                )
-                                                .frame(width: 6, height: 6)
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            Text("Plan Semanal")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-
-                            Text(
-                                "\(dietManager.dietData.count) dias programados"
-                            )
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                        }
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.bottom)
-
-                // Compliance summary (day mode)
-                if viewMode == .day && !mealTrackingManager.todayTracking.isEmpty {
-                    complianceSummaryBar
-                }
-
-                // Contenido segun el modo de vista
-                if viewMode == .week {
-                    ForEach(0..<dietManager.dietData.count, id: \.self) {
-                        dayIndex in
-                        DayCardView(
-                            day: dietManager.dietData[dayIndex],
-                            dayIndex: dayIndex,
-                            isExpanded: expandedDay == dayIndex,
-                            onToggleExpand: {
-                                withAnimation(
-                                    .spring(
-                                        response: 0.3,
-                                        dampingFraction: 0.8
-                                    )
-                                ) {
-                                    expandedDay =
-                                        expandedDay == dayIndex
-                                        ? -1 : dayIndex
-                                }
-                            }
-                        )
-                        .padding(.horizontal)
-                    }
-                } else {
-                    if let selectedDayData = dietManager.dietData.first(
-                        where: { $0.day == selectedDay })
-                    {
-                        let sortedMeals = selectedDayData.meals.sorted(by: {
-                            $0.orderIndex < $1.orderIndex
-                        })
-
-                        ForEach(sortedMeals, id: \.id) { meal in
-                            trackedMealCard(
-                                meal: meal,
-                                dayName: selectedDayData.day
-                            )
-                        }
-
-                        if !selectedDayData.supplements.isEmpty {
-                            SupplementsView(
-                                supplements: selectedDayData.supplements
-                            )
-                            .padding(.horizontal)
-                        }
-                    }
-                }
-
-                Color.clear
-                    .frame(height: 50)
-            }
-            .padding(.top, 20)
-        }
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                navigationTitleView
-            }
-
-            // Selector de vista (solo si hay multiples dias)
-            if dietManager.dietData.count > 1 {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Picker("Vista", selection: $viewMode) {
-                        ForEach(ViewMode.allCases, id: \.self) { mode in
-                            Label(mode.displayName, systemImage: mode.icon)
-                                .tag(mode)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                }
-            }
-
-            // Navegacion de dias (solo en vista diaria)
-            if viewMode == .day && dietManager.dietData.count > 1 {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        navigateToPreviousDay()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                    }
-                    .disabled(currentDayIndex == 0)
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        navigateToNextDay()
-                    } label: {
-                        Image(systemName: "chevron.right")
-                    }
-                    .disabled(
-                        currentDayIndex == dietManager.dietData.count - 1
-                    )
-                }
-            }
-        }.navigationTitle("Dieta")
-            .navigationBarTitleDisplayMode(.large)
         .refreshable {
             if let user = authManager.user {
                 await dietManager.loadActiveDietPlan(userId: user.id)
                 loadTrackingForCurrentDay()
             }
         }
-        .onAppear {
-            if selectedDay.isEmpty && !dietManager.dietData.isEmpty {
-                selectedDay = dietManager.dietData[0].day
-                currentDayIndex = 0
+    }
+
+    // MARK: - Multi Day Content
+
+    private var multiDayContent: some View {
+        VStack(spacing: 0) {
+            dayPillStrip
+
+            TabView(selection: $currentDayIndex) {
+                ForEach(Array(dietManager.dietData.enumerated()), id: \.offset) { index, day in
+                    dayPageContent(day, index: index)
+                        .tag(index)
+                }
             }
-            loadTrackingForCurrentDay()
-        }
-        .onChange(of: dietManager.dietData) { _, _ in
-            expandedDay = -1
-        }
-        .onChange(of: selectedDay) { _, _ in
-            loadTrackingForCurrentDay()
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .onChange(of: currentDayIndex) { _, newIndex in
+                guard !dietManager.dietData.isEmpty else { return }
+                let clamped = min(max(newIndex, 0), dietManager.dietData.count - 1)
+                if clamped != newIndex { currentDayIndex = clamped }
+                expandedMeals = []
+                loadTrackingForCurrentDay()
+            }
+            .onChange(of: dietManager.dietData) { _, _ in
+                clampDayIndex()
+                expandedMeals = []
+            }
         }
     }
 
-    // MARK: - Helper Functions
+    // MARK: - Day Pill Strip
+
+    private var dayPillStrip: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.sm) {
+                    ForEach(Array(dietManager.dietData.enumerated()), id: \.offset) { index, day in
+                        let isSelected = index == currentDayIndex
+
+                        Button {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
+                                currentDayIndex = index
+                            }
+                        } label: {
+                            Text(abbreviatedDayName(day.day))
+                                .font(BulkUpFont.dataLabel())
+                                .foregroundColor(isSelected ? BulkUpColors.onAccent : BulkUpColors.textSecondary)
+                                .padding(.horizontal, Spacing.md)
+                                .padding(.vertical, Spacing.sm)
+                                .background(
+                                    Capsule()
+                                        .fill(isSelected ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .id(index)
+                    }
+                }
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.vertical, Spacing.sm)
+            }
+            .onChange(of: currentDayIndex) { _, newIndex in
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    proxy.scrollTo(newIndex, anchor: .center)
+                }
+            }
+        }
+        .background(BulkUpColors.background)
+    }
+
+    // MARK: - Day Page Content
+
+    private func dayPageContent(_ day: DietDay, index: Int) -> some View {
+        let sortedMeals = day.meals.sorted { $0.orderIndex < $1.orderIndex }
+        let completedCount = mealTrackingManager.todayTracking.filter { $0.completed }.count
+        let allComplete = completedCount == sortedMeals.count && sortedMeals.count > 0
+
+        return ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                dayHeader(
+                    title: formatDayName(day.day),
+                    completedCount: completedCount,
+                    totalCount: sortedMeals.count,
+                    subtitle: "Día \(index + 1) de \(dietManager.dietData.count)"
+                )
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.sm)
+
+                // Progress bar
+                progressBar(completed: completedCount, total: sortedMeals.count)
+                    .padding(.horizontal, Spacing.screenH)
+                    .padding(.bottom, Spacing.lg)
+
+                // Celebration banner
+                if allComplete {
+                    celebrationBanner
+                        .padding(.horizontal, Spacing.screenH)
+                        .padding(.bottom, Spacing.md)
+                }
+
+                // Daily macros
+                dailyMacrosCard(day)
+                    .padding(.bottom, Spacing.md)
+
+                mealList(meals: sortedMeals, dayName: day.day)
+
+                // Cheat meal section
+                cheatMealSection(day)
+                    .padding(.top, Spacing.md)
+
+                if !day.supplements.isEmpty {
+                    supplementsList(day.supplements)
+                        .padding(.top, Spacing.sectionGap)
+                }
+
+                Color.clear.frame(height: 100)
+            }
+        }
+        .refreshable {
+            if let user = authManager.user {
+                await dietManager.loadActiveDietPlan(userId: user.id)
+                loadTrackingForCurrentDay()
+            }
+        }
+    }
+
+    // MARK: - Day Header
+
+    private func dayHeader(title: String, completedCount: Int, totalCount: Int, subtitle: String? = nil) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(title)
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(BulkUpColors.textPrimary)
+
+                Spacer()
+
+                if totalCount > 0 {
+                    Text("\(completedCount)/\(totalCount) comidas")
+                        .font(.system(size: 13, weight: .bold, design: .monospaced))
+                        .foregroundColor(
+                            completedCount == totalCount
+                                ? BulkUpColors.accent
+                                : BulkUpColors.textSecondary
+                        )
+                }
+            }
+
+            if let subtitle = subtitle {
+                Text(subtitle)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textTertiary)
+            }
+        }
+    }
+
+    // MARK: - Progress Bar
+
+    private func progressBar(completed: Int, total: Int) -> some View {
+        let progress: CGFloat = total > 0 ? CGFloat(completed) / CGFloat(total) : 0
+
+        return GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(BulkUpColors.surfaceElevated)
+                    .frame(height: 4)
+
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(BulkUpColors.accent)
+                    .frame(width: geo.size.width * progress, height: 4)
+                    .animation(.easeOut(duration: 0.5), value: progress)
+            }
+        }
+        .frame(height: 4)
+    }
+
+    // MARK: - Celebration Banner
+
+    private var celebrationBanner: some View {
+        HStack(spacing: Spacing.sm) {
+            Text("🎯")
+                .font(.system(size: 20))
+            Text("¡Dieta completada hoy!")
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.onAccent)
+            Spacer()
+        }
+        .padding(Spacing.md)
+        .background(BulkUpColors.accentGradient)
+        .cornerRadius(CornerRadius.medium)
+        .transition(.scale.combined(with: .opacity))
+    }
+
+    // MARK: - Meal List
+
+    private func mealList(meals: [Meal], dayName: String) -> some View {
+        VStack(spacing: Spacing.sm) {
+            ForEach(meals, id: \.id) { meal in
+                let record = mealTrackingManager.trackingRecord(for: meal.order, date: todayDateString)
+                let isExpanded = expandedMeals.contains(meal.order)
+
+                MealCardView(
+                    meal: meal,
+                    trackingRecord: record,
+                    isExpanded: isExpanded,
+                    onToggleExpand: {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            if expandedMeals.contains(meal.order) {
+                                expandedMeals.remove(meal.order)
+                            } else {
+                                expandedMeals.insert(meal.order)
+                            }
+                        }
+                    },
+                    onToggleCompletion: {
+                        if let record = record {
+                            Task {
+                                if let userId = authManager.user?.id {
+                                    await mealTrackingManager.toggleMealCompletion(record: record, userId: userId)
+                                }
+                            }
+                        }
+                    },
+                    onNotesChanged: { notes in
+                        if let record = record {
+                            Task {
+                                if let userId = authManager.user?.id {
+                                    await mealTrackingManager.updateNotes(record: record, notes: notes, userId: userId)
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    }
+
+    // MARK: - Supplements List
+
+    private func supplementsList(_ supplements: [Supplement]) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("SUPLEMENTOS")
+                .font(BulkUpFont.sectionLabel())
+                .tracking(1.5)
+                .foregroundColor(BulkUpColors.textSecondary)
+                .padding(.horizontal, Spacing.screenH)
+
+            SupplementsView(supplements: supplements)
+                .padding(.horizontal, Spacing.screenH)
+        }
+    }
+
+    // MARK: - Daily Macros Card
+
+    @ViewBuilder
+    private func dailyMacrosCard(_ day: DietDay) -> some View {
+        if day.hasMacros {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "flame.fill")
+                        .foregroundColor(BulkUpColors.warning)
+                        .font(.system(size: 14))
+                    Text("MACROS DIARIOS")
+                        .font(BulkUpFont.sectionLabel())
+                        .tracking(1.5)
+                        .foregroundColor(BulkUpColors.textSecondary)
+                }
+
+                // Calories hero
+                HStack {
+                    Text("\(day.macroCalories)")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundColor(BulkUpColors.textPrimary)
+                    Text("kcal")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(BulkUpColors.textTertiary)
+                    Spacer()
+                }
+
+                // Macro bars
+                HStack(spacing: Spacing.sm) {
+                    MacroBar(label: "Proteína", grams: day.macroProtein, color: BulkUpColors.accent, total: day.macroCalories)
+                    MacroBar(label: "Carbos", grams: day.macroCarbs, color: BulkUpColors.training, total: day.macroCalories)
+                    MacroBar(label: "Grasas", grams: day.macroFat, color: BulkUpColors.warning, total: day.macroCalories)
+                }
+            }
+            .padding(Spacing.md)
+            .background(BulkUpColors.surface)
+            .cornerRadius(CornerRadius.large)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .stroke(BulkUpColors.border, lineWidth: 0.5)
+            )
+            .padding(.horizontal, Spacing.screenH)
+        }
+    }
+
+    // MARK: - Cheat Meal Section
+
+    @ViewBuilder
+    private func cheatMealSection(_ day: DietDay) -> some View {
+        if day.allowsCheatMeal {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                HStack(spacing: Spacing.sm) {
+                    Text("🍕")
+                        .font(.system(size: 16))
+                    Text("COMIDA LIBRE")
+                        .font(BulkUpFont.sectionLabel())
+                        .tracking(1.5)
+                        .foregroundColor(BulkUpColors.textSecondary)
+                    Spacer()
+                    PillBadge(text: "Permitida", color: BulkUpColors.success, icon: "checkmark.circle")
+                }
+
+                Text("Registra lo que comiste en tu comida libre")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textTertiary)
+
+                TextEditor(text: $mealTrackingManager.cheatMealLog)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 60, maxHeight: 120)
+                    .padding(Spacing.sm)
+                    .background(BulkUpColors.surfaceElevated)
+                    .cornerRadius(CornerRadius.small)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.small)
+                            .stroke(BulkUpColors.textTertiary.opacity(0.15), lineWidth: 1)
+                    )
+
+                // Save button
+                HStack {
+                    Spacer()
+                    Button {
+                        if let userId = authManager.user?.id {
+                            Task {
+                                await mealTrackingManager.saveCheatMealLog(userId: userId, date: todayDateString)
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "square.and.arrow.down")
+                                .font(.system(size: 11, weight: .medium))
+                            Text("Guardar")
+                                .font(.system(size: 12, weight: .medium))
+                        }
+                        .foregroundColor(BulkUpColors.accent)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.vertical, Spacing.sm)
+                        .background(BulkUpColors.accent.opacity(0.1))
+                        .cornerRadius(CornerRadius.small)
+                    }
+                    .disabled(mealTrackingManager.cheatMealLog.isEmpty)
+                }
+            }
+            .padding(Spacing.md)
+            .background(BulkUpColors.surface)
+            .cornerRadius(CornerRadius.large)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .stroke(BulkUpColors.border, lineWidth: 0.5)
+            )
+            .padding(.horizontal, Spacing.screenH)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func clampDayIndex() {
+        guard !dietManager.dietData.isEmpty else {
+            currentDayIndex = 0
+            return
+        }
+        currentDayIndex = min(currentDayIndex, dietManager.dietData.count - 1)
+    }
 
     private func loadTrackingForCurrentDay() {
         guard let userId = authManager.user?.id else { return }
 
-        // Determine which day's meals to load tracking for
         let dayData: DietDay?
         if dietManager.dietData.count == 1 && dietManager.dietData[0].day == "Dieta Semanal" {
             dayData = dietManager.dietData.first
-        } else if !selectedDay.isEmpty {
-            dayData = dietManager.dietData.first(where: { $0.day == selectedDay })
+        } else if currentDayIndex < dietManager.dietData.count {
+            dayData = dietManager.dietData[currentDayIndex]
         } else {
             dayData = dietManager.dietData.first
         }
@@ -548,35 +493,94 @@ struct DietView: View {
         }
     }
 
-    private func navigateToPreviousDay() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-            guard
-                let currentIndex = dietManager.dietData.firstIndex(where: {
-                    $0.day == selectedDay
-                })
-            else { return }
-            let newIndex = max(0, currentIndex - 1)
-            selectedDay = dietManager.dietData[newIndex].day
-            currentDayIndex = newIndex
-        }
-    }
+    private func abbreviatedDayName(_ day: String) -> String {
+        let formatted = day.capitalized
+            .replacingOccurrences(of: "_", with: " ")
 
-    private func navigateToNextDay() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-            guard
-                let currentIndex = dietManager.dietData.firstIndex(where: {
-                    $0.day == selectedDay
-                })
-            else { return }
-            let newIndex = min(dietManager.dietData.count - 1, currentIndex + 1)
-            selectedDay = dietManager.dietData[newIndex].day
-            currentDayIndex = newIndex
+        if formatted.lowercased().hasPrefix("dia") {
+            let number = formatted.filter { $0.isNumber }
+            if !number.isEmpty {
+                return "D\(number)"
+            }
         }
+
+        let dayMap: [String: String] = [
+            "lunes": "Lun",
+            "martes": "Mar",
+            "miercoles": "Mié",
+            "miércoles": "Mié",
+            "jueves": "Jue",
+            "viernes": "Vie",
+            "sabado": "Sáb",
+            "sábado": "Sáb",
+            "domingo": "Dom",
+        ]
+
+        let lower = day.lowercased()
+            .replacingOccurrences(of: "_", with: "")
+            .trimmingCharacters(in: .whitespaces)
+
+        if let mapped = dayMap[lower] {
+            return mapped
+        }
+
+        let clean = formatted.trimmingCharacters(in: .whitespaces)
+        return String(clean.prefix(3))
     }
 
     private func formatDayName(_ day: String) -> String {
         return day.capitalized
             .replacingOccurrences(of: "_", with: " ")
-            .replacingOccurrences(of: "dia", with: "Dia")
+            .replacingOccurrences(of: "dia", with: "Día")
+    }
+}
+
+// MARK: - Macro Bar
+
+private struct MacroBar: View {
+    let label: String
+    let grams: Int
+    let color: Color
+    let total: Int
+
+    private var caloriesFromMacro: Int {
+        switch label {
+        case "Grasas": return grams * 9
+        default: return grams * 4
+        }
+    }
+
+    private var percentage: CGFloat {
+        guard total > 0 else { return 0 }
+        return CGFloat(caloriesFromMacro) / CGFloat(total)
+    }
+
+    var body: some View {
+        VStack(spacing: Spacing.xs) {
+            Text("\(grams)g")
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .foregroundColor(BulkUpColors.textPrimary)
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(color.opacity(0.15))
+                        .frame(height: 6)
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(color)
+                        .frame(width: geo.size.width * min(percentage, 1.0), height: 6)
+                }
+            }
+            .frame(height: 6)
+
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(BulkUpColors.textTertiary)
+
+            Text("\(Int(percentage * 100))%")
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundColor(color)
+        }
+        .frame(maxWidth: .infinity)
     }
 }

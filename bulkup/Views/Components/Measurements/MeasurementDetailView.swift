@@ -10,36 +10,36 @@ import SwiftUI
 struct MeasurementDetailView: View {
     let measurement: BodyMeasurements
     let previousMeasurement: BodyMeasurements?
-    
+
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var measurementsManager: BodyMeasurementsManager
     @Environment(\.dismiss) private var dismiss
-    
+
     @State private var bodyComposition: BodyComposition?
     @State private var isCalculatingComposition = false
     @State private var showingDeleteConfirmation = false
     @State private var showingBodyFatOverride = false
     @State private var bodyFatOverrideText = ""
     @State private var isSavingOverride = false
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
                     // Encabezado con fecha
                     headerView
-                    
+
                     // Medidas principales
                     measurementsSection
-                    
+
                     // Comparación con medición anterior
                     if previousMeasurement != nil {
                         comparisonSection
                     }
-                    
+
                     // Composición corporal
                     bodyCompositionSection
-                    
+
                     // Medidas adicionales
                     if hasAdditionalMeasurements {
                         additionalMeasurementsSection
@@ -47,6 +47,7 @@ struct MeasurementDetailView: View {
                 }
                 .padding()
             }
+            .background(BulkUpColors.background.ignoresSafeArea())
             .navigationTitle("Detalle de Medición")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -55,13 +56,13 @@ struct MeasurementDetailView: View {
                         dismiss()
                     }
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingDeleteConfirmation = true
                     } label: {
                         Image(systemName: "trash")
-                            .foregroundColor(.red)
+                            .foregroundColor(BulkUpColors.error)
                     }
                 }
             }
@@ -78,51 +79,50 @@ struct MeasurementDetailView: View {
             Text("Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar esta medición?")
         }
     }
-    
+
     // MARK: - Header View
     private var headerView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             Text(measurement.fecha.formatted(date: .complete, time: .omitted))
-                .font(.title2)
-                .fontWeight(.bold)
-            
+                .font(BulkUpFont.sectionHeader())
+                .foregroundColor(BulkUpColors.textPrimary)
+
             Text("Hace \(daysAgo) días")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .background(BulkUpColors.surfaceElevated)
+        .cornerRadius(CornerRadius.medium)
     }
-    
+
     // MARK: - Measurements Section
     private var measurementsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
             Text("Medidas Principales")
-                .font(.headline)
-                .fontWeight(.bold)
-            
+                .sectionHeader()
+
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible())
-            ], spacing: 16) {
+            ], spacing: Spacing.lg) {
                 DetailMetricCard(
                     title: "Peso",
                     value: String(format: "%.1f", measurement.peso),
                     unit: "kg",
                     icon: "scalemass",
-                    color: .blue
+                    color: BulkUpColors.training
                 )
-                
+
                 DetailMetricCard(
                     title: "Altura",
                     value: String(format: "%.0f", measurement.altura),
                     unit: "cm",
                     icon: "ruler",
-                    color: .purple
+                    color: BulkUpColors.secondary
                 )
-                
+
                 DetailMetricCard(
                     title: "IMC",
                     value: String(format: "%.1f", imc),
@@ -130,43 +130,42 @@ struct MeasurementDetailView: View {
                     icon: "person.fill",
                     color: imcColor
                 )
-                
+
                 DetailMetricCard(
                     title: "Edad",
                     value: String(measurement.edad),
                     unit: "años",
                     icon: "calendar",
-                    color: .orange
+                    color: BulkUpColors.accent
                 )
-                
+
                 DetailMetricCard(
                     title: "Cintura",
                     value: String(format: "%.1f", measurement.cintura),
                     unit: "cm",
                     icon: "circle.dashed",
-                    color: .green
+                    color: BulkUpColors.success
                 )
-                
+
                 DetailMetricCard(
                     title: "Cuello",
                     value: String(format: "%.1f", measurement.cuello),
                     unit: "cm",
                     icon: "circle",
-                    color: .teal
+                    color: BulkUpColors.accent
                 )
             }
         }
     }
-    
+
     // MARK: - Comparison Section
     private var comparisonSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
             Text("Cambios desde la medición anterior")
-                .font(.headline)
-                .fontWeight(.bold)
-            
+                .sectionHeader()
+
             if let previous = previousMeasurement {
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.md) {
                     ComparisonRow(
                         title: "Peso",
                         current: measurement.peso,
@@ -175,7 +174,7 @@ struct MeasurementDetailView: View {
                         format: "%.1f",
                         inverseColors: false
                     )
-                    
+
                     ComparisonRow(
                         title: "Cintura",
                         current: measurement.cintura,
@@ -184,7 +183,7 @@ struct MeasurementDetailView: View {
                         format: "%.1f",
                         inverseColors: false
                     )
-                    
+
                     ComparisonRow(
                         title: "Cuello",
                         current: measurement.cuello,
@@ -193,7 +192,7 @@ struct MeasurementDetailView: View {
                         format: "%.1f",
                         inverseColors: true
                     )
-                    
+
                     if let currentHip = measurement.cadera, let previousHip = previous.cadera {
                         ComparisonRow(
                             title: "Cadera",
@@ -206,19 +205,18 @@ struct MeasurementDetailView: View {
                     }
                 }
                 .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .background(BulkUpColors.surfaceElevated)
+                .cornerRadius(CornerRadius.medium)
             }
         }
     }
-    
+
     // MARK: - Body Composition Section
     private var bodyCompositionSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
             HStack {
                 Text("Composición Corporal")
-                    .font(.headline)
-                    .fontWeight(.bold)
+                    .sectionHeader()
 
                 Spacer()
 
@@ -232,32 +230,31 @@ struct MeasurementDetailView: View {
                 LazyVGrid(columns: [
                     GridItem(.flexible()),
                     GridItem(.flexible())
-                ], spacing: 12) {
+                ], spacing: Spacing.md) {
                     // Body fat card with edit button
                     Button {
                         bodyFatOverrideText = String(format: "%.1f", composition.porcentajeGrasa)
                         showingBodyFatOverride = true
                     } label: {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
                             HStack {
                                 Text("% Grasa")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .font(BulkUpFont.caption())
+                                    .foregroundColor(BulkUpColors.textSecondary)
                                 Spacer()
                                 Image(systemName: "pencil")
-                                    .font(.caption2)
-                                    .foregroundColor(.orange)
+                                    .font(BulkUpFont.caption())
+                                    .foregroundColor(BulkUpColors.accent)
                             }
 
                             Text(String(format: "%.1f%%", composition.porcentajeGrasa))
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(.orange)
+                                .font(BulkUpFont.sectionHeader())
+                                .foregroundColor(BulkUpColors.accent)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                        .background(Color.orange.opacity(0.1))
-                        .cornerRadius(10)
+                        .background(BulkUpColors.accent.opacity(0.1))
+                        .cornerRadius(CornerRadius.medium)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -265,25 +262,25 @@ struct MeasurementDetailView: View {
                     CompositionCard(
                         title: "Masa Muscular",
                         value: String(format: "%.1f kg", composition.masaMuscular),
-                        color: .green
+                        color: BulkUpColors.success
                     )
 
                     CompositionCard(
                         title: "Masa Magra",
                         value: String(format: "%.1f kg", composition.masaMagra),
-                        color: .blue
+                        color: BulkUpColors.training
                     )
 
                     CompositionCard(
                         title: "Agua Corporal",
                         value: String(format: "%.1f kg", composition.aguaCorporal),
-                        color: .cyan
+                        color: BulkUpColors.secondary
                     )
                 }
 
                 Text("Pulsa en % Grasa para corregirlo con tu dato real")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
             } else if !isCalculatingComposition {
                 Button("Calcular Composición Corporal") {
                     Task {
@@ -304,75 +301,74 @@ struct MeasurementDetailView: View {
             Text("Introduce el porcentaje de grasa proporcionado por tu nutricionista")
         }
     }
-    
+
     // MARK: - Additional Measurements Section
     private var additionalMeasurementsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
             Text("Medidas Adicionales")
-                .font(.headline)
-                .fontWeight(.bold)
-            
+                .sectionHeader()
+
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible())
-            ], spacing: 16) {
+            ], spacing: Spacing.lg) {
                 if let cadera = measurement.cadera {
                     DetailMetricCard(
                         title: "Cadera",
                         value: String(format: "%.1f", cadera),
                         unit: "cm",
                         icon: "circle.dotted",
-                        color: .indigo
+                        color: BulkUpColors.secondary
                     )
                 }
-                
+
                 if let brazo = measurement.brazo {
                     DetailMetricCard(
                         title: "Brazo",
                         value: String(format: "%.1f", brazo),
                         unit: "cm",
                         icon: "figure.arms.open",
-                        color: .pink
+                        color: BulkUpColors.secondary
                     )
                 }
-                
+
                 if let muslo = measurement.muslo {
                     DetailMetricCard(
                         title: "Muslo",
                         value: String(format: "%.1f", muslo),
                         unit: "cm",
                         icon: "figure.walk",
-                        color: .brown
+                        color: BulkUpColors.accent
                     )
                 }
-                
+
                 if let pantorrilla = measurement.pantorrilla {
                     DetailMetricCard(
                         title: "Pantorrilla",
                         value: String(format: "%.1f", pantorrilla),
                         unit: "cm",
                         icon: "figure.run",
-                        color: .mint
+                        color: BulkUpColors.success
                     )
                 }
             }
         }
     }
-    
+
     // MARK: - Helper Properties
     private var daysAgo: Int {
         Calendar.current.dateComponents([.day], from: measurement.fecha, to: Date()).day ?? 0
     }
-    
+
     private var hasAdditionalMeasurements: Bool {
         measurement.cadera != nil || measurement.brazo != nil ||
         measurement.muslo != nil || measurement.pantorrilla != nil
     }
-    
+
     private var imc: Double {
         measurement.peso / pow(measurement.altura / 100, 2)
     }
-    
+
     private var imcCategory: String {
         switch imc {
         case ..<18.5: return "Bajo peso"
@@ -381,16 +377,16 @@ struct MeasurementDetailView: View {
         default: return "Obesidad"
         }
     }
-    
+
     private var imcColor: Color {
         switch imc {
-        case ..<18.5: return .blue
-        case 18.5..<25: return .green
-        case 25..<30: return .orange
-        default: return .red
+        case ..<18.5: return BulkUpColors.training
+        case 18.5..<25: return BulkUpColors.success
+        case 25..<30: return BulkUpColors.warning
+        default: return BulkUpColors.error
         }
     }
-    
+
     // MARK: - Functions
     private func calculateComposition() async {
         guard let measurementId = measurement.id, bodyComposition == nil else { return }
@@ -418,13 +414,13 @@ struct MeasurementDetailView: View {
             isSavingOverride = false
         }
     }
-    
+
     private func deleteMeasurement() {
         guard let measurementId = measurement.id,
               let userId = authManager.user?.id else { return }
-        
+
         Task {
-            await measurementsManager.deleteMeasurement(measurementId: measurementId, userId: userId)
+            _ = await measurementsManager.deleteMeasurement(measurementId: measurementId, userId: userId)
             dismiss()
         }
     }
@@ -437,33 +433,33 @@ struct DetailMetricCard: View {
     let unit: String
     let icon: String
     let color: Color
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
                 Image(systemName: icon)
-                    .font(.caption)
+                    .font(BulkUpFont.caption())
                     .foregroundColor(color)
-                
+
                 Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
             }
-            
+
             HStack(alignment: .lastTextBaseline, spacing: 4) {
                 Text(value)
-                    .font(.title3)
-                    .fontWeight(.bold)
-                
+                    .font(BulkUpFont.sectionHeader())
+                    .foregroundColor(BulkUpColors.textPrimary)
+
                 Text(unit)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(color.opacity(0.1))
-        .cornerRadius(10)
+        .cornerRadius(CornerRadius.medium)
     }
 }
 
@@ -474,43 +470,44 @@ struct ComparisonRow: View {
     let unit: String
     let format: String
     let inverseColors: Bool
-    
+
     private var difference: Double { current - previous }
     private var percentChange: Double { ((current - previous) / previous) * 100 }
-    
+
     private var changeColor: Color {
-        if difference == 0 { return .secondary }
+        if difference == 0 { return BulkUpColors.textSecondary }
         let isPositive = difference > 0
         if inverseColors {
-            return isPositive ? .green : .red
+            return isPositive ? BulkUpColors.success : BulkUpColors.error
         } else {
-            return isPositive ? .red : .green
+            return isPositive ? BulkUpColors.error : BulkUpColors.success
         }
     }
-    
+
     var body: some View {
         HStack {
             Text(title)
-                .font(.subheadline)
-            
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textPrimary)
+
             Spacer()
-            
+
             VStack(alignment: .trailing, spacing: 2) {
                 HStack(spacing: 4) {
                     Text(String(format: format + " %@", current, unit))
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textPrimary)
+
                     if difference != 0 {
                         Image(systemName: difference > 0 ? "arrow.up" : "arrow.down")
-                            .font(.caption)
+                            .font(BulkUpFont.caption())
                             .foregroundColor(changeColor)
                     }
                 }
-                
+
                 if abs(difference) > 0.01 {
                     Text(String(format: "%+.1f %@ (%.1f%%)", difference, unit, percentChange))
-                        .font(.caption)
+                        .font(BulkUpFont.caption())
                         .foregroundColor(changeColor)
                 }
             }
@@ -522,22 +519,21 @@ struct CompositionCard: View {
     let title: String
     let value: String
     let color: Color
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
+
             Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
+                .font(BulkUpFont.sectionHeader())
                 .foregroundColor(color)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(color.opacity(0.1))
-        .cornerRadius(10)
+        .cornerRadius(CornerRadius.medium)
     }
 }
 
@@ -546,9 +542,9 @@ struct SecondaryButtonStyle: ButtonStyle {
         configuration.label
             .frame(maxWidth: .infinity)
             .frame(height: 44)
-            .background(Color.green.opacity(0.1))
-            .foregroundColor(.green)
-            .cornerRadius(12)
+            .background(BulkUpColors.accent.opacity(0.1))
+            .foregroundColor(BulkUpColors.accent)
+            .cornerRadius(CornerRadius.medium)
             .fontWeight(.medium)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
     }

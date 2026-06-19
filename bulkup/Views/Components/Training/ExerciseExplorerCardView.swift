@@ -8,75 +8,74 @@ import SwiftUI
 
 struct ExerciseExplorerCardView: View {
     let exercise: RMExerciseFull
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             // Nombre del ejercicio
             Text(exercise.nameEs)
-                .font(.headline)
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.textPrimary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
-            
+
             // Tags
-            FlowLayout(spacing: 4) {
+            FlowLayout(spacing: Spacing.xs) {
                 if let category = exercise.category {
-                    TagView(text: translateCategory(category), color: .gray)
+                    TagView(text: translateCategory(category), color: BulkUpColors.textTertiary)
                 }
-                
+
                 if let level = exercise.level {
-                    TagView(text: "Nivel: \(translateLevel(level))", color: .blue)
+                    TagView(text: "Nivel: \(translateLevel(level))", color: BulkUpColors.training)
                 }
-                
+
                 if let force = exercise.force {
-                    TagView(text: "Fuerza: \(translateForce(force))", color: .green)
+                    TagView(text: "Fuerza: \(translateForce(force))", color: BulkUpColors.success)
                 }
-                
+
                 if let mechanic = exercise.mechanic {
-                    TagView(text: "Mecánica: \(translateMechanic(mechanic))", color: .yellow)
+                    TagView(text: "Mecánica: \(translateMechanic(mechanic))", color: BulkUpColors.warning)
                 }
-                
+
                 if let equipment = exercise.equipment {
-                    TagView(text: "Equipo: \(translateEquipment(equipment))", color: .purple)
+                    TagView(text: "Equipo: \(translateEquipment(equipment))", color: BulkUpColors.secondary)
                 }
             }
-            
+
             // Músculos principales
             if let primaryMuscles = exercise.primaryMuscles, !primaryMuscles.isEmpty {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Músculos principales:")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                    
+                        .font(BulkUpFont.dataLabel())
+                        .foregroundColor(BulkUpColors.textSecondary)
+
                     Text(primaryMuscles.map { translateMuscle($0) }.joined(separator: ", "))
-                        .font(.caption)
-                        .foregroundColor(.primary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textPrimary)
                 }
             }
-            
+
             // Músculos secundarios
             if let secondaryMuscles = exercise.secondaryMuscles, !secondaryMuscles.isEmpty {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Músculos secundarios:")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                    
+                        .font(BulkUpFont.dataLabel())
+                        .foregroundColor(BulkUpColors.textSecondary)
+
                     Text(secondaryMuscles.map { translateMuscle($0) }.joined(separator: ", "))
-                        .font(.caption)
-                        .foregroundColor(.primary)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textPrimary)
                 }
             }
-            
+
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .padding(Spacing.lg)
+        .background(BulkUpColors.surface)
+        .cornerRadius(CornerRadius.medium)
+        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
     }
-    
+
     // Funciones de traducción
     private func translateCategory(_ category: String) -> String {
         let translations: [String: String] = [
@@ -90,7 +89,7 @@ struct ExerciseExplorerCardView: View {
         ]
         return translations[category.lowercased()] ?? category.capitalized
     }
-    
+
     private func translateLevel(_ level: String) -> String {
         let translations: [String: String] = [
             "beginner": "Principiante",
@@ -99,7 +98,7 @@ struct ExerciseExplorerCardView: View {
         ]
         return translations[level.lowercased()] ?? level.capitalized
     }
-    
+
     private func translateForce(_ force: String) -> String {
         let translations: [String: String] = [
             "push": "Empuje",
@@ -108,7 +107,7 @@ struct ExerciseExplorerCardView: View {
         ]
         return translations[force.lowercased()] ?? force.capitalized
     }
-    
+
     private func translateMechanic(_ mechanic: String) -> String {
         let translations: [String: String] = [
             "compound": "Compuesto",
@@ -116,7 +115,7 @@ struct ExerciseExplorerCardView: View {
         ]
         return translations[mechanic.lowercased()] ?? mechanic.capitalized
     }
-    
+
     private func translateEquipment(_ equipment: String) -> String {
         let translations: [String: String] = [
             "barbell": "Barra",
@@ -133,7 +132,7 @@ struct ExerciseExplorerCardView: View {
         ]
         return translations[equipment.lowercased()] ?? equipment.capitalized
     }
-    
+
     private func translateMuscle(_ muscle: String) -> String {
         let translations: [String: String] = [
             "chest": "Pecho",

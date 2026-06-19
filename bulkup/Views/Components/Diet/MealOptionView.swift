@@ -8,93 +8,53 @@
 import SwiftUI
 import SwiftData
 
-
+// MARK: - Meal option — indented text block, no card wrapper
 struct MealOptionView: View {
     let option: MealOption
     let mealType: String
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            // Option description
             Text(option.optionDescription)
-                .font(.subheadline)
-                .fontWeight(.medium)
-            
-            let instructions = option.instructions
-            if !option.ingredients.isEmpty || !instructions.isEmpty {
-                HStack(alignment: .top, spacing: 16) {
-                    // Ingredientes
-                    if !option.ingredients.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label("Ingredientes", systemImage: "list.bullet")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                ForEach(option.ingredients.indices, id: \.self) { index in
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Circle()
-                                            .fill(Color.green)
-                                            .frame(width: 6, height: 6)
-                                        
-                                        Text(option.ingredients[index])
-                                            .font(.caption)
-                                            .foregroundColor(.primary)
-                                    }
-                                }
-                            }
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textPrimary)
+
+            // Ingredients as bullet list
+            if !option.ingredients.isEmpty {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    ForEach(option.ingredients.indices, id: \.self) { index in
+                        HStack(alignment: .top, spacing: Spacing.sm) {
+                            Text("\u{2022}")
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textTertiary)
+
+                            Text(option.ingredients[index])
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textSecondary)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    
-                    // Instrucciones
-                    if !instructions.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label("Preparación", systemImage: "arrow.right")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                ForEach(instructions.indices, id: \.self) { index in
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("\(index + 1)")
-                                            .font(.caption)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.white)
-                                            .frame(width: 20, height: 20)
-                                            .background(Color.blue)
-                                            .clipShape(Circle())
-                                        
-                                        Text(instructions[index])
-                                            .font(.caption)
-                                            .foregroundColor(.primary)
-                                    }
-                                }
-                            }
+                }
+            }
+
+            // Instructions below ingredients
+            let instructions = option.instructions
+            if !instructions.isEmpty {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    ForEach(instructions.indices, id: \.self) { index in
+                        HStack(alignment: .top, spacing: Spacing.sm) {
+                            Text("\(index + 1).")
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textTertiary)
+
+                            Text(instructions[index])
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textTertiary)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
             }
         }
-        .padding()
-        .background(mealBackgroundColor.opacity(0.1))
-        .cornerRadius(8)
-    }
-    
-    private var mealBackgroundColor: Color {
-        switch mealType.lowercased() {
-        case let type where type.contains("desayuno") || type.contains("breakfast"):
-            return .orange
-        case let type where type.contains("almuerzo") || type.contains("comida") || type.contains("lunch"):
-            return .yellow
-        case let type where type.contains("merienda") || type.contains("snack"):
-            return .purple
-        case let type where type.contains("cena") || type.contains("dinner"):
-            return .blue
-        default:
-            return .green
-        }
+        .padding(.leading, Spacing.sm)
     }
 }

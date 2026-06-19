@@ -12,35 +12,35 @@ struct SubscriptionView: View {
     @EnvironmentObject var authManager: AuthManager
     @ObservedObject private var storeManager = StoreKitManager.shared
     @Environment(\.dismiss) var dismiss
-    
+
     @State private var selectedProduct: Product?
     @State private var isPurchasing = false
     @State private var showingError = false
     @State private var errorMessage = ""
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 // Fondo con gradiente
                 LinearGradient(
                     colors: [
-                        Color.purple.opacity(0.05),
-                        Color.purple.opacity(0.02),
-                        Color.clear
+                        BulkUpColors.accent.opacity(0.05),
+                        BulkUpColors.accent.opacity(0.02),
+                        BulkUpColors.background
                     ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                
+
                 ScrollView {
-                    VStack(spacing: 32) {
+                    VStack(spacing: Spacing.xxl) {
                         // Header
                         headerView
-                        
+
                         // Beneficios
                         benefitsSection
-                        
+
                         // Planes
                         if storeManager.hasActiveSubscription {
                             activeSubscriptionSection
@@ -53,7 +53,7 @@ struct SubscriptionView: View {
                         } else {
                             plansSection
                         }
-                        
+
                         // Footer
                         footerSection
                     }
@@ -67,6 +67,7 @@ struct SubscriptionView: View {
                     Button("Cerrar") {
                         dismiss()
                     }
+                    .foregroundColor(BulkUpColors.accent)
                 }
             }
             .alert("Error", isPresented: $showingError) {
@@ -80,32 +81,32 @@ struct SubscriptionView: View {
                         Color.black.opacity(0.5)
                             .ignoresSafeArea()
                             .overlay(
-                                VStack(spacing: 16) {
+                                VStack(spacing: Spacing.lg) {
                                     ProgressView()
                                         .scaleEffect(1.5)
                                         .tint(.white)
                                     Text("Procesando...")
                                         .foregroundColor(.white)
-                                        .font(.headline)
+                                        .font(BulkUpFont.cardTitle())
                                 }
                                 .padding(32)
                                 .background(Color.black.opacity(0.8))
-                                .cornerRadius(16)
+                                .cornerRadius(CornerRadius.large)
                             )
                     }
                 }
             )
         }
     }
-    
+
     // MARK: - Header View
     private var headerView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             Image(systemName: "crown.fill")
                 .font(.system(size: 60))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [.purple, .purple.opacity(0.7)],
+                        colors: [BulkUpColors.accent, BulkUpColors.accent.opacity(0.7)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -115,92 +116,99 @@ struct SubscriptionView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [.purple.opacity(0.2), .purple.opacity(0.05)],
+                                colors: [BulkUpColors.accent.opacity(0.2), BulkUpColors.accent.opacity(0.05)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                 )
-            
+
             Text("Desbloquea Todo el Potencial")
-                .font(.title2)
-                .fontWeight(.bold)
-            
+                .font(BulkUpFont.sectionHeader())
+                .foregroundColor(BulkUpColors.textPrimary)
+
             Text("Accede a todas las funciones premium y lleva tu entrenamiento al siguiente nivel")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textSecondary)
                 .multilineTextAlignment(.center)
         }
     }
-    
+
     // MARK: - Benefits Section
     private var benefitsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
             Text("Todo lo que obtienes:")
-                .font(.headline)
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.textPrimary)
                 .padding(.horizontal)
-            
-            VStack(spacing: 12) {
+
+            VStack(spacing: Spacing.md) {
+                BenefitRow(
+                    icon: "sparkles",
+                    title: "Importacion con IA",
+                    description: "Sube una foto o PDF y tu plan se digitaliza al instante"
+                )
+
                 BenefitRow(
                     icon: "doc.badge.plus",
                     title: "Planes Ilimitados",
-                    description: "Sube y gestiona todos los planes que necesites"
+                    description: "Crea y gestiona todos los planes que necesites"
                 )
-                
+
                 BenefitRow(
                     icon: "chart.line.uptrend.xyaxis",
-                    title: "Análisis Avanzado",
-                    description: "Seguimiento detallado de tu progreso"
+                    title: "Dashboard de Progreso",
+                    description: "Medidas corporales, composicion y tendencias"
                 )
-                
+
                 BenefitRow(
-                    icon: "icloud.and.arrow.up",
-                    title: "Sincronización en la Nube",
-                    description: "Accede a tus datos desde cualquier dispositivo"
+                    icon: "trophy.fill",
+                    title: "Records Personales",
+                    description: "Registra y sigue tus PR en los ejercicios principales"
                 )
-                
-                BenefitRow(
-                    icon: "bell.badge",
-                    title: "Notificaciones Inteligentes",
-                    description: "Recordatorios personalizados para tus entrenamientos"
-                )
-                
+
                 BenefitRow(
                     icon: "person.2.fill",
-                    title: "Soporte Prioritario",
-                    description: "Atención personalizada y respuesta rápida"
+                    title: "Ranking y Amigos",
+                    description: "Compite con tus amigos y comparte planes"
+                )
+
+                BenefitRow(
+                    icon: "square.and.arrow.up",
+                    title: "Compartir Planes",
+                    description: "Importa y exporta planes con codigos unicos"
                 )
             }
             .padding(.horizontal)
         }
     }
-    
+
     // MARK: - Active Subscription Section
     private var activeSubscriptionSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             Image(systemName: "checkmark.seal.fill")
                 .font(.system(size: 50))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [.green, .green.opacity(0.7)],
+                        colors: [BulkUpColors.success, BulkUpColors.success.opacity(0.7)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
 
             Text("¡Ya eres Premium!")
-                .font(.title3)
-                .fontWeight(.bold)
+                .font(BulkUpFont.sectionHeader())
+                .foregroundColor(BulkUpColors.textPrimary)
 
             Text("Tienes acceso a todas las funciones premium.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textSecondary)
                 .multilineTextAlignment(.center)
 
             if let expirationDate = storeManager.expirationDate {
                 Text("Tu suscripción se renueva el \(expirationDate.formatted(date: .abbreviated, time: .omitted))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
             }
 
             Button(action: {
@@ -209,34 +217,34 @@ struct SubscriptionView: View {
                 }
             }) {
                 Text("Gestionar Suscripción")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(BulkUpFont.body())
                     .foregroundColor(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
-                    .background(Color.purple)
-                    .cornerRadius(12)
+                    .background(BulkUpColors.accent)
+                    .cornerRadius(CornerRadius.medium)
             }
         }
-        .padding(24)
-        .background(Color.green.opacity(0.08))
-        .cornerRadius(16)
+        .padding(Spacing.xl)
+        .background(BulkUpColors.success.opacity(0.08))
+        .cornerRadius(CornerRadius.large)
     }
 
     // MARK: - Empty Products Section
     private var emptyProductsSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 40))
-                .foregroundColor(.orange)
+                .foregroundColor(BulkUpColors.warning)
 
             Text("No se pudieron cargar los planes")
-                .font(.headline)
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.textPrimary)
 
             if let error = storeManager.errorMessage {
                 Text(error)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
                     .multilineTextAlignment(.center)
             }
 
@@ -246,26 +254,26 @@ struct SubscriptionView: View {
                 }
             }) {
                 Label("Reintentar", systemImage: "arrow.clockwise")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(BulkUpFont.body())
                     .foregroundColor(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
-                    .background(Color.purple)
-                    .cornerRadius(12)
+                    .background(BulkUpColors.accent)
+                    .cornerRadius(CornerRadius.medium)
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(16)
+        .background(BulkUpColors.surfaceElevated)
+        .cornerRadius(CornerRadius.large)
     }
 
     // MARK: - Plans Section
     private var plansSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             Text("Elige tu plan:")
-                .font(.headline)
-            
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.textPrimary)
+
             ForEach(storeManager.products.sorted(by: { $0.price < $1.price }), id: \.id) { product in
                 SubscriptionPlanCard(
                     product: product,
@@ -276,7 +284,7 @@ struct SubscriptionView: View {
                     }
                 )
             }
-            
+
             // Botón de compra
             if let selectedProduct = selectedProduct {
                 Button(action: {
@@ -289,28 +297,15 @@ struct SubscriptionView: View {
                         Text("•")
                         Text(storeManager.priceString(for: selectedProduct))
                     }
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(
-                        LinearGradient(
-                            colors: [.purple, .purple.opacity(0.8)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .cornerRadius(16)
-                    .shadow(color: .purple.opacity(0.3), radius: 10, x: 0, y: 5)
-                    .contentShape(Rectangle())
                 }
+                .primaryButtonStyle(color: BulkUpColors.accent)
             }
         }
     }
-    
+
     // MARK: - Footer Section
     private var footerSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             // Restaurar compras
             Button(action: {
                 Task {
@@ -318,38 +313,38 @@ struct SubscriptionView: View {
                 }
             }) {
                 Text("Restaurar Compras")
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.accent)
             }
-            
+
             // Términos y privacidad
-            HStack(spacing: 16) {
-                Link("Términos de Uso", destination: URL(string: "https://tuapp.com/terms")!)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
+            HStack(spacing: Spacing.lg) {
+                Link("Terminos de Uso", destination: URL(string: "https://getbulkup.com/terms")!)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+
                 Text("•")
-                    .foregroundColor(.secondary)
-                
-                Link("Política de Privacidad", destination: URL(string: "https://tuapp.com/privacy")!)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(BulkUpColors.textSecondary)
+
+                Link("Politica de Privacidad", destination: URL(string: "https://getbulkup.com/privacy")!)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
             }
-            
+
             // Información de suscripción
             Text("Las suscripciones se renuevan automáticamente a menos que se cancelen al menos 24 horas antes del final del período actual. Puedes gestionar y cancelar tus suscripciones en la configuración de tu cuenta de App Store.")
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            
+
         }
     }
-    
+
     // MARK: - Purchase Product
     private func purchaseProduct(_ product: Product) async {
         isPurchasing = true
-        
+
         do {
             if (try await storeManager.purchase(product)) != nil {
                 isPurchasing = false
@@ -363,13 +358,13 @@ struct SubscriptionView: View {
             showingError = true
         }
     }
-    
+
     // MARK: - Restore Purchases
     private func restorePurchases() async {
         isPurchasing = true
         await storeManager.restorePurchases()
         isPurchasing = false
-        
+
         if storeManager.hasActiveSubscription {
             dismiss()
         } else {
@@ -384,24 +379,25 @@ struct BenefitRow: View {
     let icon: String
     let title: String
     let description: String
-    
+
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: Spacing.md) {
             Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(.purple)
+                .font(BulkUpFont.sectionHeader())
+                .foregroundColor(BulkUpColors.accent)
                 .frame(width: 24)
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.subheadline)
+                    .font(BulkUpFont.body())
                     .fontWeight(.semibold)
-                
+                    .foregroundColor(BulkUpColors.textPrimary)
+
                 Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
             }
-            
+
             Spacer()
         }
     }
@@ -413,72 +409,65 @@ struct SubscriptionPlanCard: View {
     let isSelected: Bool
     let isPopular: Bool
     let onSelect: () -> Void
-    
+
     @ObservedObject private var storeManager = StoreKitManager.shared
-    
+
     var body: some View {
         Button(action: onSelect) {
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.md) {
                 if isPopular {
                     Text("MÁS POPULAR")
-                        .font(.caption)
+                        .font(BulkUpFont.caption())
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                         .background(
                             Capsule()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [.orange, .orange.opacity(0.8)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
+                                .fill(BulkUpColors.accentGradient)
                         )
                 }
-                
+
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(planTitle)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
+
                         Text(planDescription)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
                     }
-                    
+
                     Spacer()
-                    
+
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(storeManager.priceString(for: product))
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        
+                            .font(BulkUpFont.sectionHeader())
+                            .foregroundColor(BulkUpColors.textPrimary)
+
                         if let savings = calculateSavings() {
                             Text(savings)
-                                .font(.caption)
-                                .foregroundColor(.green)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.success)
                         }
                     }
                 }
                 .padding()
             }
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .fill(BulkUpColors.surface)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: CornerRadius.large)
                             .stroke(
-                                isSelected ? Color.purple : Color.gray.opacity(0.3),
+                                isSelected ? BulkUpColors.accent : BulkUpColors.textTertiary.opacity(0.3),
                                 lineWidth: isSelected ? 2 : 1
                             )
                     )
             )
             .shadow(
-                color: isSelected ? .purple.opacity(0.2) : .clear,
+                color: isSelected ? BulkUpColors.accent.opacity(0.2) : .clear,
                 radius: 10,
                 x: 0,
                 y: 5
@@ -487,7 +476,7 @@ struct SubscriptionPlanCard: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
-    
+
     private var planTitle: String {
         if product.id.contains("monthly") {
             return "Mensual"
@@ -497,7 +486,7 @@ struct SubscriptionPlanCard: View {
             return storeManager.periodString(for: product).capitalized
         }
     }
-    
+
     private var planDescription: String {
         if product.id.contains("monthly") {
             return "Facturado mensualmente"
@@ -507,20 +496,20 @@ struct SubscriptionPlanCard: View {
             return "Facturado \(storeManager.periodString(for: product))"
         }
     }
-    
+
     private func calculateSavings() -> String? {
         guard product.id.contains("yearly"),
               let monthlyProduct = storeManager.products.first(where: { $0.id.contains("monthly") }) else {
             return nil
         }
-        
+
         let yearlyCost = NSDecimalNumber(decimal: product.price).doubleValue
         let monthlyCost = NSDecimalNumber(decimal: monthlyProduct.price).doubleValue
         let monthlyCostPerYear = monthlyCost * 12.0
         let savings = monthlyCostPerYear - yearlyCost
-        
+
         guard savings > 0 else { return nil }
-        
+
         let percentage = Int((savings / monthlyCostPerYear) * 100.0)
         return "Ahorra \(percentage)%"
     }

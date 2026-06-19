@@ -10,21 +10,20 @@ struct TagView: View {
     let text: String
     let color: Color
     var icon: String? = nil
-    
+
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Spacing.xs) {
             if let icon = icon {
                 Image(systemName: icon)
-                    .font(.caption)
+                    .font(BulkUpFont.caption())
             }
             Text(text)
-                .font(.caption)
-                .fontWeight(.medium)
+                .font(BulkUpFont.dataLabel())
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(color.opacity(0.15))
         .foregroundColor(color)
-        .cornerRadius(8)
+        .cornerRadius(CornerRadius.small)
     }
 }
