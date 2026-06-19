@@ -135,7 +135,7 @@ struct WorkoutSummaryView: View {
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundColor(BulkUpColors.textPrimary)
 
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
         }

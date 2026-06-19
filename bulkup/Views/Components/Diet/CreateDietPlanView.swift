@@ -247,7 +247,7 @@ struct CreateDietPlanView: View {
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.diet)
                 .frame(width: 24)
-            Text(text)
+            Text(LocalizedStringKey(text))
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.textSecondary)
         }

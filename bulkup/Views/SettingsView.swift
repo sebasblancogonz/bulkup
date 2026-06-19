@@ -427,12 +427,12 @@ struct SettingsToggle: View {
                 .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.body())
                     .foregroundColor(BulkUpColors.textPrimary)
 
                 if let subtitle = subtitle {
-                    Text(subtitle)
+                    Text(LocalizedStringKey(subtitle))
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
@@ -462,14 +462,14 @@ struct SettingsPicker: View {
                 .foregroundColor(iconColor)
                 .frame(width: 24, height: 24)
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .foregroundColor(BulkUpColors.textPrimary)
 
             Spacer()
 
             Picker(title, selection: $selection) {
                 ForEach(options, id: \.0) { option in
-                    Text(option.1).tag(option.0)
+                    Text(LocalizedStringKey(option.1)).tag(option.0)
                 }
             }
             .pickerStyle(.menu)
@@ -507,12 +507,12 @@ struct SettingsRow: View {
                     .frame(width: 24, height: 24)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textPrimary)
 
                     if let subtitle = subtitle {
-                        Text(subtitle)
+                        Text(LocalizedStringKey(subtitle))
                             .font(BulkUpFont.caption())
                             .foregroundColor(BulkUpColors.textSecondary)
                     }

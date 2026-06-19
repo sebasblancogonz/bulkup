@@ -22,7 +22,7 @@ struct TabButton: View {
                 Image(systemName: isSelected ? tab.selectedIcon : tab.icon)
                     .font(BulkUpFont.sectionHeader())
 
-                Text(tab.label)
+                Text(LocalizedStringKey(tab.label))
                     .font(BulkUpFont.body())
                     .fontWeight(.semibold)
 

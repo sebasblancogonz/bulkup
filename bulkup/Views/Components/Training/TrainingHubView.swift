@@ -440,12 +440,12 @@ struct TrainingHubView: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.body())
                     .fontWeight(.semibold)
                     .foregroundColor(BulkUpColors.textPrimary)
 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }

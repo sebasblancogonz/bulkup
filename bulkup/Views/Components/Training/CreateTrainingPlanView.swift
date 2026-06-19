@@ -575,11 +575,11 @@ struct CreationMethodCard: View {
                 }
 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(method.displayName)
+                    Text(LocalizedStringKey(method.displayName))
                         .font(BulkUpFont.cardTitle())
                         .foregroundColor(BulkUpColors.textPrimary)
 
-                    Text(method.description)
+                    Text(LocalizedStringKey(method.description))
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textSecondary)
                 }

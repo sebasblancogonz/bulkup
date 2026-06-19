@@ -51,11 +51,11 @@ struct EmptyStateView: View {
             }
 
             VStack(spacing: Spacing.lg) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.sectionHeader())
                     .foregroundColor(BulkUpColors.textPrimary)
 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(BulkUpFont.body())
                     .foregroundColor(BulkUpColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -74,7 +74,7 @@ struct EmptyStateView: View {
                                         .font(BulkUpFont.sectionHeader())
                                 }
 
-                                Text(actionTitle)
+                                Text(LocalizedStringKey(actionTitle))
                             }
                             .primaryButtonStyle(color: color)
                         }
@@ -89,7 +89,7 @@ struct EmptyStateView: View {
                                         .font(BulkUpFont.body())
                                 }
 
-                                Text(secondaryTitle)
+                                Text(LocalizedStringKey(secondaryTitle))
                                     .fontWeight(.semibold)
                             }
                             .secondaryButtonStyle()

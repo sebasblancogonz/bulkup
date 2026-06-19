@@ -316,7 +316,7 @@ struct MeasurementField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(spacing: 4) {
-                Label(title, systemImage: icon)
+                Label(LocalizedStringKey(title), systemImage: icon)
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
 

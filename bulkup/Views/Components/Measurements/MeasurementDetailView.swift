@@ -441,7 +441,7 @@ struct DetailMetricCard: View {
                     .font(BulkUpFont.caption())
                     .foregroundColor(color)
 
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }
@@ -486,7 +486,7 @@ struct ComparisonRow: View {
 
     var body: some View {
         HStack {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.textPrimary)
 
@@ -522,7 +522,7 @@ struct CompositionCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
 

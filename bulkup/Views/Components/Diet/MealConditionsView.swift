@@ -76,7 +76,7 @@ struct MealConditionsView: View {
                 action()
             }
         }) {
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(BulkUpFont.dataLabel())
                 .foregroundColor(isSelected ? BulkUpColors.textPrimary : BulkUpColors.textTertiary)
                 .padding(.horizontal, Spacing.md)

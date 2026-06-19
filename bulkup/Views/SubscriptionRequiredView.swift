@@ -59,11 +59,11 @@ struct SubscriptionRequiredView: View {
             }
 
             VStack(spacing: Spacing.lg) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.title.weight(.bold))
                     .foregroundColor(BulkUpColors.textPrimary)
 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(BulkUpFont.body())
                     .foregroundColor(BulkUpColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -117,12 +117,12 @@ struct SubscriptionRequiredView: View {
                     )
 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(BulkUpFont.cardTitle())
                         .fontWeight(.bold)
                         .foregroundColor(BulkUpColors.textPrimary)
 
-                    Text(subtitle)
+                    Text(LocalizedStringKey(subtitle))
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                         .lineLimit(2)
@@ -221,7 +221,7 @@ struct FeatureRow: View {
                 .foregroundColor(color)
                 .font(BulkUpFont.sectionHeader())
 
-            Text(text)
+            Text(LocalizedStringKey(text))
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.textPrimary)
 

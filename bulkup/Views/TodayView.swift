@@ -648,7 +648,7 @@ struct TodayView: View {
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(text)
+                    Text(LocalizedStringKey(text))
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textSecondary)
                     Text("Toca para empezar")

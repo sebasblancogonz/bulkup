@@ -18,7 +18,7 @@ struct FilterSection: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Button(action: { isExpanded.toggle() }) {
                 HStack {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(BulkUpFont.body())
                         .fontWeight(.semibold)
                         .foregroundColor(BulkUpColors.textPrimary)

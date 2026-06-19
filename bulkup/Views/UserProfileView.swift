@@ -564,7 +564,7 @@ struct ProfileStatCard: View {
                 .contentTransition(.numericText())
                 .animation(.easeOut(duration: 0.6), value: animated)
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(BulkUpColors.textSecondary)
         }
@@ -608,7 +608,7 @@ struct MenuRow: View {
                     .foregroundColor(BulkUpColors.accent)
                     .frame(width: 24)
 
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.body())
                     .foregroundColor(BulkUpColors.textPrimary)
 
@@ -655,7 +655,7 @@ struct SettingRow: View {
                 .foregroundColor(BulkUpColors.accent)
                 .frame(width: 24)
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.textPrimary)
 

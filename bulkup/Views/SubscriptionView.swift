@@ -388,12 +388,12 @@ struct BenefitRow: View {
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(BulkUpFont.body())
                     .fontWeight(.semibold)
                     .foregroundColor(BulkUpColors.textPrimary)
 
-                Text(description)
+                Text(LocalizedStringKey(description))
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }
@@ -430,11 +430,11 @@ struct SubscriptionPlanCard: View {
 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(planTitle)
+                        Text(LocalizedStringKey(planTitle))
                             .font(BulkUpFont.cardTitle())
                             .foregroundColor(BulkUpColors.textPrimary)
 
-                        Text(planDescription)
+                        Text(LocalizedStringKey(planDescription))
                             .font(BulkUpFont.caption())
                             .foregroundColor(BulkUpColors.textSecondary)
                     }

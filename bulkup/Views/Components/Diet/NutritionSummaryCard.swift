@@ -84,7 +84,7 @@ struct MetricPill: View {
                 .font(BulkUpFont.sectionHeader())
                 .foregroundColor(BulkUpColors.textPrimary)
 
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
         }
