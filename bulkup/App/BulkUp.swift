@@ -15,6 +15,7 @@ struct BulkUp: App {
         APIConfig.validateConfiguration()
 #if DEBUG
         LanguageManager.runSelfCheck()
+        SharedWorkoutStore.runSelfCheck()
 #endif
 
         NotificationCenter.default.addObserver(

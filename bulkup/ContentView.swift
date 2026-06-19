@@ -11,6 +11,7 @@ import SwiftUI
 // MARK: - Vista de Contenido Principal
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var authManager = AuthManager.shared
     @StateObject private var languageManager = LanguageManager.shared
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
@@ -39,6 +40,14 @@ struct ContentView: View {
                 authManager.loadStoredUser()
             }
             forceDarkMode()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // Reconcile any widget-side mutations when returning to foreground.
+            if newPhase == .active, WorkoutSessionManager.shared.isActive {
+                WorkoutSessionManager.shared.reconcileFromStore(
+                    trainingManager: .shared
+                )
+            }
         }
         .animation(.easeInOut(duration: 0.3), value: authManager.isAuthenticated)
         .animation(.easeInOut(duration: 0.3), value: hasCompletedOnboarding)

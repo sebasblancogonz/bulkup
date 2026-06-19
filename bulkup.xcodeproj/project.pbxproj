@@ -7,11 +7,42 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		16B2C0C02FE59083000B7A44 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16B2C0BF2FE59083000B7A44 /* WidgetKit.framework */; };
+		16B2C0C22FE59083000B7A44 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16B2C0C12FE59083000B7A44 /* SwiftUI.framework */; };
+		16B2C0D12FE59086000B7A44 /* BulkUpWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 16B2C0BE2FE59083000B7A44 /* BulkUpWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		16C54BF92E571CA2006FEF86 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16C54BF82E571CA2006FEF86 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		16B2C0CF2FE59086000B7A44 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 163617952E51E66800B05DFA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 16B2C0BD2FE59083000B7A44;
+			remoteInfo = BulkUpWidgetsExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		16B2C0D62FE59086000B7A44 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				16B2C0D12FE59086000B7A44 /* BulkUpWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		1636179D2E51E66800B05DFA /* bulkup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bulkup.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		16B2C0BE2FE59083000B7A44 /* BulkUpWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BulkUpWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		16B2C0BF2FE59083000B7A44 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		16B2C0C12FE59083000B7A44 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		16B2C0D72FE59127000B7A44 /* BulkUpWidgetsExtensionDevelopment.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BulkUpWidgetsExtensionDevelopment.entitlements; sourceTree = "<group>"; };
 		16C54BF82E571CA2006FEF86 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -24,6 +55,22 @@
 			);
 			target = 1636179C2E51E66800B05DFA /* bulkup */;
 		};
+		16B2C0D52FE59086000B7A44 /* Exceptions for "BulkUpWidgets" folder in "BulkUpWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 16B2C0BD2FE59083000B7A44 /* BulkUpWidgetsExtension */;
+		};
+		16B2C0E22FE59389000B7A44 /* Exceptions for "bulkup" folder in "BulkUpWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Shared/SharedWorkoutStore.swift,
+				Shared/WorkoutActivityAttributes.swift,
+				Shared/WorkoutLiveActivityIntents.swift,
+			);
+			target = 16B2C0BD2FE59083000B7A44 /* BulkUpWidgetsExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -31,8 +78,17 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				160B35082E5548A600978545 /* Exceptions for "bulkup" folder in "bulkup" target */,
+				16B2C0E22FE59389000B7A44 /* Exceptions for "bulkup" folder in "BulkUpWidgetsExtension" target */,
 			);
 			path = bulkup;
+			sourceTree = "<group>";
+		};
+		16B2C0C32FE59083000B7A44 /* BulkUpWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				16B2C0D52FE59086000B7A44 /* Exceptions for "BulkUpWidgets" folder in "BulkUpWidgetsExtension" target */,
+			);
+			path = BulkUpWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -46,13 +102,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		16B2C0BB2FE59083000B7A44 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				16B2C0C22FE59083000B7A44 /* SwiftUI.framework in Frameworks */,
+				16B2C0C02FE59083000B7A44 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		163617942E51E66800B05DFA = {
 			isa = PBXGroup;
 			children = (
+				16B2C0D72FE59127000B7A44 /* BulkUpWidgetsExtensionDevelopment.entitlements */,
 				1636179F2E51E66800B05DFA /* bulkup */,
+				16B2C0C32FE59083000B7A44 /* BulkUpWidgets */,
 				16C54BF72E571CA2006FEF86 /* Frameworks */,
 				1636179E2E51E66800B05DFA /* Products */,
 			);
@@ -62,6 +129,7 @@
 			isa = PBXGroup;
 			children = (
 				1636179D2E51E66800B05DFA /* bulkup.app */,
+				16B2C0BE2FE59083000B7A44 /* BulkUpWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +138,8 @@
 			isa = PBXGroup;
 			children = (
 				16C54BF82E571CA2006FEF86 /* StoreKit.framework */,
+				16B2C0BF2FE59083000B7A44 /* WidgetKit.framework */,
+				16B2C0C12FE59083000B7A44 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -84,10 +154,12 @@
 				163617992E51E66800B05DFA /* Sources */,
 				1636179A2E51E66800B05DFA /* Frameworks */,
 				1636179B2E51E66800B05DFA /* Resources */,
+				16B2C0D62FE59086000B7A44 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				16B2C0D02FE59086000B7A44 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1636179F2E51E66800B05DFA /* bulkup */,
@@ -99,6 +171,28 @@
 			productReference = 1636179D2E51E66800B05DFA /* bulkup.app */;
 			productType = "com.apple.product-type.application";
 		};
+		16B2C0BD2FE59083000B7A44 /* BulkUpWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 16B2C0D22FE59086000B7A44 /* Build configuration list for PBXNativeTarget "BulkUpWidgetsExtension" */;
+			buildPhases = (
+				16B2C0BA2FE59083000B7A44 /* Sources */,
+				16B2C0BB2FE59083000B7A44 /* Frameworks */,
+				16B2C0BC2FE59083000B7A44 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				16B2C0C32FE59083000B7A44 /* BulkUpWidgets */,
+			);
+			name = BulkUpWidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = BulkUpWidgetsExtension;
+			productReference = 16B2C0BE2FE59083000B7A44 /* BulkUpWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -106,11 +200,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 2650;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					1636179C2E51E66800B05DFA = {
 						CreatedOnToolsVersion = 16.4;
+					};
+					16B2C0BD2FE59083000B7A44 = {
+						CreatedOnToolsVersion = 26.5;
 					};
 				};
 			};
@@ -130,12 +227,20 @@
 			projectRoot = "";
 			targets = (
 				1636179C2E51E66800B05DFA /* bulkup */,
+				16B2C0BD2FE59083000B7A44 /* BulkUpWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1636179B2E51E66800B05DFA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		16B2C0BC2FE59083000B7A44 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -152,7 +257,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		16B2C0BA2FE59083000B7A44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		16B2C0D02FE59086000B7A44 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 16B2C0BD2FE59083000B7A44 /* BulkUpWidgetsExtension */;
+			targetProxy = 16B2C0CF2FE59086000B7A44 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		163617A82E51E66B00B05DFA /* Development */ = {
@@ -372,6 +492,176 @@
 			};
 			name = Production;
 		};
+		16B2C0D32FE59086000B7A44 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = BulkUpWidgetsExtensionDevelopment.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = B7QM936873;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BulkUpWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BulkUpWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.whitesolutions.bulkup.BulkUpWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Development;
+		};
+		16B2C0D42FE59086000B7A44 /* Production */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = B7QM936873;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BulkUpWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BulkUpWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.whitesolutions.bulkup.BulkUpWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Production;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -389,6 +679,15 @@
 			buildConfigurations = (
 				163617AB2E51E66B00B05DFA /* Development */,
 				163617AC2E51E66B00B05DFA /* Production */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Production;
+		};
+		16B2C0D22FE59086000B7A44 /* Build configuration list for PBXNativeTarget "BulkUpWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				16B2C0D32FE59086000B7A44 /* Development */,
+				16B2C0D42FE59086000B7A44 /* Production */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Production;

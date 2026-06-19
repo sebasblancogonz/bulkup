@@ -1,0 +1,110 @@
+import Foundation
+
+/// Single source of truth for the live workout, shared between app and widget
+/// via the App Group. All live-session mutations go through here.
+struct LiveWorkout: Codable, Equatable {
+    var dayName: String
+    var workoutName: String
+    var startDate: Date
+    var isPaused: Bool
+    var weightUnit: String
+    var weightStep: Double
+    var repStep: Int
+
+    var sets: [LiveSet]
+    var cursor: Int           // index into `sets` of the current (first incomplete) set
+    var restEndDate: Date?
+
+    struct LiveSet: Codable, Equatable {
+        var exerciseIndex: Int
+        var exerciseName: String
+        var setIndex: Int
+        var setsTotalForExercise: Int
+        var weight: Double
+        var reps: Int
+        var restSeconds: Int
+        var completed: Bool
+    }
+
+    var completedCount: Int { sets.filter(\.completed).count }
+    var isFinished: Bool { cursor >= sets.count }
+    var current: LiveSet? { sets.indices.contains(cursor) ? sets[cursor] : nil }
+
+    mutating func advanceCursor() {
+        var i = cursor
+        while i < sets.count && sets[i].completed { i += 1 }
+        cursor = i
+    }
+}
+
+enum SharedWorkoutStore {
+    static let suite = "group.com.whitesolutions.bulkup"
+    private static let key = "live_workout"
+    static let darwinName = "com.whitesolutions.bulkup.liveWorkoutChanged"
+
+    private static var defaults: UserDefaults { UserDefaults(suiteName: suite)! }
+
+    static func load() -> LiveWorkout? {
+        guard let data = defaults.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(LiveWorkout.self, from: data)
+    }
+
+    static func save(_ w: LiveWorkout?) {
+        if let w, let data = try? JSONEncoder().encode(w) {
+            defaults.set(data, forKey: key)
+        } else {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
+    // MARK: Pure mutations (used by intents AND the app)
+    static func completeCurrentSet() {
+        guard var w = load(), let s0 = w.current else { return }
+        var s = s0
+        s.completed = true
+        w.sets[w.cursor] = s
+        w.restEndDate = s.restSeconds > 0 ? Date().addingTimeInterval(TimeInterval(s.restSeconds)) : nil
+        w.advanceCursor()
+        save(w)
+    }
+    static func adjustWeight(_ delta: Double) {
+        guard var w = load(), w.current != nil else { return }
+        w.sets[w.cursor].weight = max(0, w.sets[w.cursor].weight + delta)
+        save(w)
+    }
+    static func adjustReps(_ delta: Int) {
+        guard var w = load(), w.current != nil else { return }
+        w.sets[w.cursor].reps = max(0, w.sets[w.cursor].reps + delta)
+        save(w)
+    }
+    static func skipRest() { guard var w = load() else { return }; w.restEndDate = nil; save(w) }
+    static func addRest(_ seconds: Int) {
+        guard var w = load() else { return }
+        w.restEndDate = (w.restEndDate ?? Date()).addingTimeInterval(TimeInterval(seconds))
+        save(w)
+    }
+}
+
+#if DEBUG
+extension SharedWorkoutStore {
+    static func runSelfCheck() {
+        var w = LiveWorkout(
+            dayName: "Lunes", workoutName: "Push", startDate: Date(), isPaused: false,
+            weightUnit: "kg", weightStep: 2.5, repStep: 1,
+            sets: [
+                .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 2,
+                      weight: 40, reps: 10, restSeconds: 60, completed: false),
+                .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 1, setsTotalForExercise: 2,
+                      weight: 40, reps: 10, restSeconds: 60, completed: false),
+            ],
+            cursor: 0, restEndDate: nil
+        )
+        assert(w.current?.setIndex == 0 && !w.isFinished)
+        w.sets[0].completed = true; w.advanceCursor()
+        assert(w.cursor == 1, "cursor should skip completed set")
+        w.sets[1].completed = true; w.advanceCursor()
+        assert(w.isFinished, "all sets done -> finished")
+        assert(w.completedCount == 2)
+    }
+}
+#endif
