@@ -25,19 +25,19 @@ struct ExerciseExplorerCardView: View {
                 }
 
                 if let level = exercise.level {
-                    TagView(text: String(localized: "Nivel: \(translateLevel(level))"), color: BulkUpColors.training)
+                    TagView(text: translateLevel(level), color: BulkUpColors.training, prefixKey: "Nivel")
                 }
 
                 if let force = exercise.force {
-                    TagView(text: String(localized: "Fuerza: \(translateForce(force))"), color: BulkUpColors.success)
+                    TagView(text: translateForce(force), color: BulkUpColors.success, prefixKey: "Fuerza")
                 }
 
                 if let mechanic = exercise.mechanic {
-                    TagView(text: String(localized: "Mecánica: \(translateMechanic(mechanic))"), color: BulkUpColors.warning)
+                    TagView(text: translateMechanic(mechanic), color: BulkUpColors.warning, prefixKey: "Mecánica")
                 }
 
                 if let equipment = exercise.equipment {
-                    TagView(text: String(localized: "Equipo: \(translateEquipment(equipment))"), color: BulkUpColors.secondary)
+                    TagView(text: translateEquipment(equipment), color: BulkUpColors.secondary, prefixKey: "Equipo")
                 }
             }
 
@@ -48,7 +48,7 @@ struct ExerciseExplorerCardView: View {
                         .font(BulkUpFont.dataLabel())
                         .foregroundColor(BulkUpColors.textSecondary)
 
-                    Text(primaryMuscles.map { translateMuscle($0) }.joined(separator: ", "))
+                    localizedMuscleList(primaryMuscles)
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textPrimary)
                 }
@@ -61,7 +61,7 @@ struct ExerciseExplorerCardView: View {
                         .font(BulkUpFont.dataLabel())
                         .foregroundColor(BulkUpColors.textSecondary)
 
-                    Text(secondaryMuscles.map { translateMuscle($0) }.joined(separator: ", "))
+                    localizedMuscleList(secondaryMuscles)
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textPrimary)
                 }
@@ -76,82 +76,95 @@ struct ExerciseExplorerCardView: View {
         .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
     }
 
+    // Builds a single Text where each muscle is localized live (via LocalizedStringKey)
+    // and joined with ", " — avoids pre-joining into one non-key string.
+    private func localizedMuscleList(_ muscles: [String]) -> Text {
+        var result = Text("")
+        for (index, muscle) in muscles.enumerated() {
+            if index > 0 {
+                result = result + Text(", ")
+            }
+            result = result + Text(LocalizedStringKey(translateMuscle(muscle)))
+        }
+        return result
+    }
+
     // Funciones de traducción
     private func translateCategory(_ category: String) -> String {
         let translations: [String: String] = [
-            "strength": String(localized: "Fuerza"),
-            "stretching": String(localized: "Estiramiento"),
-            "plyometrics": String(localized: "Pliometría"),
-            "strongman": String(localized: "Strongman"),
-            "powerlifting": String(localized: "Powerlifting"),
-            "cardio": String(localized: "Cardio"),
-            "olympic weightlifting": String(localized: "Halterofilia")
+            "strength": "Fuerza",
+            "stretching": "Estiramiento",
+            "plyometrics": "Pliometría",
+            "strongman": "Strongman",
+            "powerlifting": "Powerlifting",
+            "cardio": "Cardio",
+            "olympic weightlifting": "Halterofilia"
         ]
         return translations[category.lowercased()] ?? category.capitalized
     }
 
     private func translateLevel(_ level: String) -> String {
         let translations: [String: String] = [
-            "beginner": String(localized: "Principiante"),
-            "intermediate": String(localized: "Intermedio"),
-            "expert": String(localized: "Experto")
+            "beginner": "Principiante",
+            "intermediate": "Intermedio",
+            "expert": "Experto"
         ]
         return translations[level.lowercased()] ?? level.capitalized
     }
 
     private func translateForce(_ force: String) -> String {
         let translations: [String: String] = [
-            "push": String(localized: "Empuje"),
-            "pull": String(localized: "Jalón"),
-            "static": String(localized: "Estático")
+            "push": "Empuje",
+            "pull": "Jalón",
+            "static": "Estático"
         ]
         return translations[force.lowercased()] ?? force.capitalized
     }
 
     private func translateMechanic(_ mechanic: String) -> String {
         let translations: [String: String] = [
-            "compound": String(localized: "Compuesto"),
-            "isolation": String(localized: "Aislamiento")
+            "compound": "Compuesto",
+            "isolation": "Aislamiento"
         ]
         return translations[mechanic.lowercased()] ?? mechanic.capitalized
     }
 
     private func translateEquipment(_ equipment: String) -> String {
         let translations: [String: String] = [
-            "barbell": String(localized: "Barra"),
-            "dumbbell": String(localized: "Mancuerna"),
-            "body only": String(localized: "Peso corporal"),
-            "machine": String(localized: "Máquina"),
-            "cable": String(localized: "Cable"),
-            "kettlebells": String(localized: "Pesas rusas"),
-            "bands": String(localized: "Bandas"),
-            "medicine ball": String(localized: "Balón medicinal"),
-            "exercise ball": String(localized: "Pelota de ejercicio"),
-            "e-z curl bar": String(localized: "Barra Z"),
-            "foam roll": String(localized: "Rodillo de espuma")
+            "barbell": "Barra",
+            "dumbbell": "Mancuerna",
+            "body only": "Peso corporal",
+            "machine": "Máquina",
+            "cable": "Cable",
+            "kettlebells": "Pesas rusas",
+            "bands": "Bandas",
+            "medicine ball": "Balón medicinal",
+            "exercise ball": "Pelota de ejercicio",
+            "e-z curl bar": "Barra Z",
+            "foam roll": "Rodillo de espuma"
         ]
         return translations[equipment.lowercased()] ?? equipment.capitalized
     }
 
     private func translateMuscle(_ muscle: String) -> String {
         let translations: [String: String] = [
-            "chest": String(localized: "Pecho"),
-            "shoulders": String(localized: "Hombros"),
-            "triceps": String(localized: "Tríceps"),
-            "biceps": String(localized: "Bíceps"),
-            "forearms": String(localized: "Antebrazos"),
-            "abdominals": String(localized: "Abdominales"),
-            "quadriceps": String(localized: "Cuádriceps"),
-            "hamstrings": String(localized: "Isquiotibiales"),
-            "calves": String(localized: "Pantorrillas"),
-            "glutes": String(localized: "Glúteos"),
-            "lower back": String(localized: "Espalda baja"),
-            "middle back": String(localized: "Espalda media"),
-            "lats": String(localized: "Dorsales"),
-            "traps": String(localized: "Trapecios"),
-            "neck": String(localized: "Cuello"),
-            "adductors": String(localized: "Aductores"),
-            "abductors": String(localized: "Abductores")
+            "chest": "Pecho",
+            "shoulders": "Hombros",
+            "triceps": "Tríceps",
+            "biceps": "Bíceps",
+            "forearms": "Antebrazos",
+            "abdominals": "Abdominales",
+            "quadriceps": "Cuádriceps",
+            "hamstrings": "Isquiotibiales",
+            "calves": "Pantorrillas",
+            "glutes": "Glúteos",
+            "lower back": "Espalda baja",
+            "middle back": "Espalda media",
+            "lats": "Dorsales",
+            "traps": "Trapecios",
+            "neck": "Cuello",
+            "adductors": "Aductores",
+            "abductors": "Abductores"
         ]
         return translations[muscle.lowercased()] ?? muscle.capitalized
     }

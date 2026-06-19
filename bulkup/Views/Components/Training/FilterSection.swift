@@ -55,7 +55,7 @@ struct FilterSection: View {
                                 Image(systemName: selected.contains(option) ? "checkmark.square.fill" : "square")
                                     .foregroundColor(selected.contains(option) ? BulkUpColors.training : BulkUpColors.textSecondary)
 
-                                Text(translateOption(option))
+                                Text(LocalizedStringKey(translateOption(option)))
                                     .font(BulkUpFont.caption())
                                     .foregroundColor(BulkUpColors.textPrimary)
 
@@ -84,40 +84,40 @@ struct FilterSection: View {
         // Aquí puedes agregar traducciones según necesites
         let translations: [String: String] = [
             // Categorías
-            "strength": String(localized: "Fuerza"),
-            "stretching": String(localized: "Estiramiento"),
-            "plyometrics": String(localized: "Pliometría"),
-            "strongman": String(localized: "Strongman"),
-            "powerlifting": String(localized: "Powerlifting"),
-            "cardio": String(localized: "Cardio"),
-            "olympic weightlifting": String(localized: "Halterofilia"),
+            "strength": "Fuerza",
+            "stretching": "Estiramiento",
+            "plyometrics": "Pliometría",
+            "strongman": "Strongman",
+            "powerlifting": "Powerlifting",
+            "cardio": "Cardio",
+            "olympic weightlifting": "Halterofilia",
 
             // Niveles
-            "beginner": String(localized: "Principiante"),
-            "intermediate": String(localized: "Intermedio"),
-            "expert": String(localized: "Experto"),
+            "beginner": "Principiante",
+            "intermediate": "Intermedio",
+            "expert": "Experto",
 
             // Fuerza
-            "push": String(localized: "Empuje"),
-            "pull": String(localized: "Jalón"),
-            "static": String(localized: "Estático"),
+            "push": "Empuje",
+            "pull": "Jalón",
+            "static": "Estático",
 
             // Mecánica
-            "compound": String(localized: "Compuesto"),
-            "isolation": String(localized: "Aislamiento"),
+            "compound": "Compuesto",
+            "isolation": "Aislamiento",
 
             // Equipo
-            "barbell": String(localized: "Barra"),
-            "dumbbell": String(localized: "Mancuerna"),
-            "body only": String(localized: "Peso corporal"),
-            "machine": String(localized: "Máquina"),
-            "cable": String(localized: "Cable"),
-            "kettlebells": String(localized: "Pesas rusas"),
-            "bands": String(localized: "Bandas"),
-            "medicine ball": String(localized: "Balón medicinal"),
-            "exercise ball": String(localized: "Pelota de ejercicio"),
-            "e-z curl bar": String(localized: "Barra Z"),
-            "foam roll": String(localized: "Rodillo de espuma")
+            "barbell": "Barra",
+            "dumbbell": "Mancuerna",
+            "body only": "Peso corporal",
+            "machine": "Máquina",
+            "cable": "Cable",
+            "kettlebells": "Pesas rusas",
+            "bands": "Bandas",
+            "medicine ball": "Balón medicinal",
+            "exercise ball": "Pelota de ejercicio",
+            "e-z curl bar": "Barra Z",
+            "foam roll": "Rodillo de espuma"
         ]
 
         return translations[option.lowercased()] ?? option.capitalized
