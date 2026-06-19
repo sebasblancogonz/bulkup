@@ -125,7 +125,8 @@ class User {
     var createdAt: Date
     var updatedAt: Date
     var token: String?
-    
+    var nextReviewDate: Date?
+
     init(
         id: String,
         email: String,
@@ -153,6 +154,7 @@ class User {
         self.name = profile.name
         self.dateOfBirth = profile.dateOfBirth
         self.profileImageURL = profile.profileImageURL?.replacingOccurrences(of: "http://", with: "https://")
+        self.nextReviewDate = profile.nextReviewDate
         self.updatedAt = profile.updatedAt
     }
 
@@ -163,5 +165,30 @@ class User {
         self.profileImageURL = auth.profileImageURL?.replacingOccurrences(of: "http://", with: "https://")
         self.token = auth.token
         self.updatedAt = Date()
+    }
+}
+
+// MARK: - Meal Tracking
+
+@Model
+class MealTrackingRecord {
+    @Attribute(.unique) var id: String
+    var date: String
+    var dayName: String
+    var planId: String?
+    var mealType: String
+    var mealOrder: Int
+    var completed: Bool = false
+    var notes: String?
+    var completedAt: Date?
+    var needsSync: Bool = false
+
+    init(date: String, dayName: String, planId: String?, mealType: String, mealOrder: Int) {
+        self.id = "\(date)_\(mealOrder)"
+        self.date = date
+        self.dayName = dayName
+        self.planId = planId
+        self.mealType = mealType
+        self.mealOrder = mealOrder
     }
 }

@@ -31,6 +31,7 @@ struct MainAppView: View {
     enum AppTab: String, CaseIterable, Identifiable {
         case diet = "diet"
         case training = "training"
+        case friends = "friends"
         case rm = "rm"
         case exercises = "exercises"
         case profile = "perfil"
@@ -42,6 +43,7 @@ struct MainAppView: View {
             case .profile: return "Perfil"
             case .diet: return "Dieta"
             case .training: return "Entrenamiento"
+            case .friends: return "Amigos"
             case .rm: return "Mis RM"
             case .exercises: return "Ejercicios"
             }
@@ -52,6 +54,7 @@ struct MainAppView: View {
             case .profile: return "Perfil"
             case .diet: return "Dieta"
             case .training: return "Entreno"
+            case .friends: return "Amigos"
             case .rm: return "RM"
             case .exercises: return "Ejercicios"
             }
@@ -61,6 +64,7 @@ struct MainAppView: View {
             switch self {
             case .diet: return "fork.knife"
             case .training: return "dumbbell.fill"
+            case .friends: return "person.2.fill"
             case .rm: return "chart.bar.fill"
             case .exercises: return "list.bullet"
             case .profile: return "person.circle.fill"
@@ -69,7 +73,7 @@ struct MainAppView: View {
 
         var gradient: LinearGradient {
             switch self {
-            
+
             case .diet:
                 return LinearGradient(
                     colors: [.green, .green.opacity(0.8)],
@@ -79,6 +83,12 @@ struct MainAppView: View {
             case .training:
                 return LinearGradient(
                     colors: [.blue, .blue.opacity(0.8)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            case .friends:
+                return LinearGradient(
+                    colors: [.orange, .orange.opacity(0.8)],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
@@ -107,6 +117,7 @@ struct MainAppView: View {
             switch self {
             case .diet: return .green
             case .training: return .blue
+            case .friends: return .orange
             case .rm: return .orange
             case .exercises: return .pink
             case .profile: return .teal
@@ -115,7 +126,7 @@ struct MainAppView: View {
 
         var isDisabled: Bool {
             switch self {
-            case .rm, .exercises, .profile:
+            case .rm, .exercises, .profile, .friends:
                 return false
             case .diet, .training:
                 return false  // Se evaluará dinámicamente en la vista
@@ -357,6 +368,11 @@ struct MainAppView: View {
                 TrainingHubView()
                     .environmentObject(authManager)
                     .environmentObject(trainingManager)
+            }
+        case .friends:
+            NavigationStack {
+                FriendsView()
+                    .environmentObject(authManager)
             }
         case .profile:
             NavigationStack {

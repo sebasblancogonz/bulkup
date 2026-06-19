@@ -304,6 +304,43 @@ class TrainingManager: ObservableObject {
         return completed
     }
 
+    /// Checks if all weight-tracking exercises for a given day have at least one set completed this week.
+    /// Returns a tuple: (allComplete, exerciseCount, totalSetsCompleted)
+    func getDayCompletionStatus(dayName: String) -> (allComplete: Bool, exerciseCount: Int, totalSetsCompleted: Int) {
+        let normalizedDay = dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+
+        guard let dayData = trainingData.first(where: {
+            $0.day.lowercased()
+                .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
+        }) else {
+            return (false, 0, 0)
+        }
+
+        let trackableExercises = dayData.exercises.filter { $0.weightTracking }
+        guard !trackableExercises.isEmpty else {
+            return (false, 0, 0)
+        }
+
+        var totalSetsCompleted = 0
+        var allComplete = true
+
+        for exercise in trackableExercises {
+            let completed = getCompletedSets(
+                day: normalizedDay,
+                exerciseIndex: exercise.orderIndex,
+                exerciseName: exercise.name,
+                totalSets: exercise.sets
+            )
+            totalSetsCompleted += completed
+            if completed == 0 {
+                allComplete = false
+            }
+        }
+
+        return (allComplete, trackableExercises.count, totalSetsCompleted)
+    }
+
     func hasWeightForExercise(exerciseName: String, day: String, week: Date)
         -> Bool
     {
@@ -318,8 +355,13 @@ class TrainingManager: ObservableObject {
             return false
         }
 
+        // Weights are stored under diacritic-folded, lowercased day keys.
+        // Pass the raw "Lunes"/"Miércoles" through and getCompletedSets never matches.
+        let normalizedDay = day.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+
         return getCompletedSets(
-            day: day,
+            day: normalizedDay,
             exerciseIndex: exercise.orderIndex,
             exerciseName: exerciseName,
             totalSets: exercise.sets
@@ -338,9 +380,6 @@ class TrainingManager: ObservableObject {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let weekStartString = dateFormatter.string(from: weekStartDate)
             
-            // También cargar la semana anterior para referencias
-            let previousWeekDate = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: weekStartDate) ?? weekStartDate
-
             // Cargar hasta 4 semanas anteriores para tener suficiente historial
             var weeksToLoad = [weekStartString]
             var checkWeek = weekStartDate
@@ -565,9 +604,15 @@ class TrainingManager: ObservableObject {
                 throw TrainingError.noPlanId
             }
 
+            // Callers pass a diacritic-folded day (e.g. "miercoles"), but the
+            // plan stores it with accents ("Miércoles"). Fold both sides or
+            // Wednesday/Saturday workouts fail to match and never persist.
+            let foldedDay = day.lowercased()
+                .folding(options: .diacriticInsensitive, locale: .current)
             guard
                 let dayData = trainingData.first(where: {
-                    $0.day.lowercased() == day.lowercased()
+                    $0.day.lowercased()
+                        .folding(options: .diacriticInsensitive, locale: .current) == foldedDay
                 }),
                 let exercise = dayData.exercises.first(where: {
                     $0.name.lowercased() == exerciseName.lowercased()

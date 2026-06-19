@@ -146,18 +146,34 @@ extension APIService {
     }
     
     // MARK: - Body Composition
-        func calculateBodyComposition(measurementId: String) async throws -> BodyComposition {
-            print("Calculating by measurementId", measurementId)
-            let response: APIResponse<BodyComposition> = try await request(
-                endpoint: "body/measurements/\(measurementId)/composition",
-                method: .POST
-            )
-            
-            guard let composition = response.data else {
-                throw APIError.noData
-            }
-            
-            return composition
+    func calculateBodyComposition(measurementId: String) async throws -> BodyComposition {
+        let response: APIResponse<BodyComposition> = try await request(
+            endpoint: "body/measurements/\(measurementId)/composition",
+            method: .POST
+        )
+
+        guard let composition = response.data else {
+            throw APIError.noData
         }
 
+        return composition
+    }
+
+    func overrideBodyFat(measurementId: String, bodyFatPercentage: Double) async throws -> BodyComposition {
+        struct OverrideRequest: Codable {
+            let bodyFatPercentage: Double
+        }
+
+        let response: APIResponse<BodyComposition> = try await requestWithBody(
+            endpoint: "body/measurements/\(measurementId)/override-bodyfat",
+            method: .PUT,
+            body: OverrideRequest(bodyFatPercentage: bodyFatPercentage)
+        )
+
+        guard let composition = response.data else {
+            throw APIError.noData
+        }
+
+        return composition
+    }
 }

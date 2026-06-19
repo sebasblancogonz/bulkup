@@ -11,9 +11,12 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var measurementsManager = BodyMeasurementsManager.shared
+    @ObservedObject private var mealTrackingManager = MealTrackingManager.shared
     @State private var showingBodyMeasurements = false
     @State private var showingEditProfile = false
     @State private var showSettings = false
+    @State private var projection: NutritionProjection?
 
     var body: some View {
         NavigationView {
@@ -160,6 +163,21 @@ struct ProfileView: View {
                 }
                 .padding()
 
+                // Nutrition Summary
+                NutritionSummaryCard(
+                    measurements: measurementsManager.currentMeasurements,
+                    composition: measurementsManager.bodyComposition,
+                    complianceStats: mealTrackingManager.complianceStats
+                )
+                .padding(.horizontal)
+
+                // Projections
+                ProjectionsCard(
+                    projection: projection,
+                    reviewDate: authManager.user?.nextReviewDate
+                )
+                .padding(.horizontal)
+
                 Spacer()
 
                 // Cerrar sesión
@@ -186,6 +204,9 @@ struct ProfileView: View {
                     }
                 }
             }
+            .onAppear {
+                loadProfileMetrics()
+            }
         }
         .sheet(isPresented: $showingBodyMeasurements) {
             NavigationView {
@@ -205,5 +226,46 @@ struct ProfileView: View {
                     .environmentObject(authManager)
             }
         }
+    }
+
+    private func loadProfileMetrics() {
+        guard let userId = authManager.user?.id else { return }
+        Task {
+            async let loadMeasurements: () = measurementsManager.loadLatestMeasurements(userId: userId)
+            async let loadStats: () = mealTrackingManager.loadComplianceStats(userId: userId)
+            _ = await (loadMeasurements, loadStats)
+
+            if let measurementId = measurementsManager.currentMeasurements?.id {
+                _ = await measurementsManager.calculateBodyComposition(measurementId: measurementId)
+            }
+
+            computeProjection()
+        }
+    }
+
+    private func computeProjection() {
+        guard let composition = measurementsManager.bodyComposition,
+              let measurements = measurementsManager.currentMeasurements,
+              let reviewDate = authManager.user?.nextReviewDate else {
+            projection = nil
+            return
+        }
+
+        let daysToReview = Calendar.current.dateComponents([.day], from: Date(), to: reviewDate).day ?? 0
+        guard daysToReview > 0 else {
+            projection = nil
+            return
+        }
+
+        let complianceRate = mealTrackingManager.complianceStats?.complianceRate ?? 0.0
+
+        projection = ProjectionCalculator.calculate(
+            currentWeight: measurements.peso,
+            currentBodyFatPercentage: composition.bodyFatPercentage,
+            currentLeanMass: composition.leanMass,
+            complianceRate: complianceRate,
+            daysToReview: daysToReview,
+            sex: measurements.sexo
+        )
     }
 }

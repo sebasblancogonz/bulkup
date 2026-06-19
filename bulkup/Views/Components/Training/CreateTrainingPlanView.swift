@@ -71,60 +71,66 @@ struct CreateTrainingPlanView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: Spacing.xl) {
                     // Plan Name Section
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: Spacing.md) {
                         Text("Nombre del Plan")
-                            .font(.headline)
-                            .fontWeight(.semibold)
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
 
                         TextField("Ej: Fuerza Primavera 2024", text: $planName)
-                            .textFieldStyle(.roundedBorder)
+                            .padding(Spacing.md)
+                            .background(BulkUpColors.surfaceElevated)
+                            .cornerRadius(CornerRadius.small)
+                            .foregroundColor(BulkUpColors.textPrimary)
                             .submitLabel(.done)
                     }
 
                     // Date Range Section
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: Spacing.md) {
                         HStack {
                             Text("Duración del Plan")
-                                .font(.headline)
-                                .fontWeight(.semibold)
+                                .font(BulkUpFont.cardTitle())
+                                .foregroundColor(BulkUpColors.textPrimary)
 
                             Spacer()
 
                             Toggle("Fechas específicas", isOn: $useCustomDates)
                                 .toggleStyle(.switch)
+                                .tint(BulkUpColors.training)
                         }
 
                         if useCustomDates {
-                            VStack(spacing: 12) {
+                            VStack(spacing: Spacing.md) {
                                 DatePicker(
                                     "Fecha de inicio",
                                     selection: $startDate,
                                     displayedComponents: .date
                                 )
+                                .foregroundColor(BulkUpColors.textPrimary)
                                 DatePicker(
                                     "Fecha de fin",
                                     selection: $endDate,
                                     displayedComponents: .date
                                 )
+                                .foregroundColor(BulkUpColors.textPrimary)
                             }
                             .padding(.leading)
                         } else {
                             Text("Sin fechas específicas - plan indefinido")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .font(BulkUpFont.body())
+                                .foregroundColor(BulkUpColors.textSecondary)
                                 .padding(.leading)
                         }
                     }
 
                     // Creation Method Section
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: Spacing.lg) {
                         Text("Método de Creación")
-                            .font(.headline)
-                            .fontWeight(.semibold)
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
 
-                        VStack(spacing: 12) {
+                        VStack(spacing: Spacing.md) {
                             ForEach(CreationMethod.allCases, id: \.self) {
                                 method in
                                 CreationMethodCard(
@@ -140,14 +146,15 @@ struct CreateTrainingPlanView: View {
                     // Error Message
                     if let errorMessage = errorMessage {
                         Text(errorMessage)
-                            .font(.subheadline)
-                            .foregroundColor(.red)
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.error)
                             .padding(.horizontal)
                             .multilineTextAlignment(.center)
                     }
                 }
-                .padding()
+                .padding(Spacing.lg)
             }
+            .background(BulkUpColors.background)
             .navigationTitle("Nuevo Plan")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -155,6 +162,7 @@ struct CreateTrainingPlanView: View {
                     Button("Cancelar") {
                         dismiss()
                     }
+                    .foregroundColor(BulkUpColors.training)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -163,6 +171,7 @@ struct CreateTrainingPlanView: View {
                     }
                     .disabled(planName.isEmpty || isCreating)
                     .fontWeight(.semibold)
+                    .foregroundColor(BulkUpColors.training)
                 }
             }
             .disabled(isCreating || isProcessingFile)
@@ -193,7 +202,10 @@ struct CreateTrainingPlanView: View {
             guard let newItem else { return }
             Task {
                 if let data = try? await newItem.loadTransferable(type: Data.self) {
-                    await processTrainingPlanImage(data)
+                    // Library photos are usually HEIC; re-encode to real JPEG so
+                    // the bytes match the image/jpeg content-type the server expects.
+                    let jpeg = UIImage(data: data)?.jpegData(compressionQuality: 0.85) ?? data
+                    processTrainingPlanImage(jpeg)
                 }
             }
         }
@@ -201,6 +213,14 @@ struct CreateTrainingPlanView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(errorMessage ?? "Error desconocido")
+        }
+        .onChange(of: uploadManager.timedOut) { _, timedOut in
+            if timedOut {
+                isProcessingFile = false
+                errorMessage = "El procesamiento tardó demasiado. Intenta de nuevo."
+                showingErrorAlert = true
+                uploadManager.reset()
+            }
         }
         .onAppear {
             setupNotificationObserver()
@@ -225,14 +245,14 @@ struct CreateTrainingPlanView: View {
                         .scaleEffect(1.5)
                         .tint(.white)
 
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.sm) {
                         if isProcessingFile {
-                            Text("🧠 Procesando con IA...")
-                                .font(.headline)
+                            Text("Procesando con IA...")
+                                .font(BulkUpFont.cardTitle())
                                 .foregroundColor(.white)
 
                             Text(uploadManager.processingProgress)
-                                .font(.subheadline)
+                                .font(BulkUpFont.body())
                                 .foregroundColor(.white.opacity(0.8))
 
                             if !uploadManager.fileName.isEmpty {
@@ -240,25 +260,25 @@ struct CreateTrainingPlanView: View {
                                     Image(systemName: "doc.fill")
                                         .foregroundColor(.white.opacity(0.7))
                                     Text(uploadManager.fileName)
-                                        .font(.caption)
+                                        .font(BulkUpFont.caption())
                                         .foregroundColor(.white.opacity(0.7))
                                         .lineLimit(1)
                                 }
-                                .padding(.horizontal, 12)
+                                .padding(.horizontal, Spacing.md)
                                 .padding(.vertical, 6)
                                 .background(Color.white.opacity(0.2))
                                 .cornerRadius(20)
                             }
                         } else {
                             Text("Creando plan...")
-                                .font(.headline)
+                                .font(BulkUpFont.cardTitle())
                                 .foregroundColor(.white)
                         }
                     }
                 }
-                .padding(24)
+                .padding(Spacing.xl)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: CornerRadius.large)
                         .fill(Color.black.opacity(0.5))
                 )
             }
@@ -304,13 +324,22 @@ struct CreateTrainingPlanView: View {
                     ),
                 ]
 
-                let _ = try await APIService.shared.createTrainingPlan(
+                let response = try await APIService.shared.createTrainingPlan(
                     userId: userId,
                     filename: planName,
                     trainingData: emptyTrainingData,
                     planStartDate: useCustomDates ? startDate : nil,
                     planEndDate: useCustomDates ? endDate : nil
                 )
+
+                // Auto-activate the newly created plan
+                try await APIService.shared.activateTrainingPlan(
+                    userId: userId,
+                    planId: response.planId
+                )
+
+                // Reload active plan so the hub shows it immediately
+                await trainingManager.loadActiveTrainingPlan(userId: userId)
 
                 await MainActor.run {
                     isCreating = false
@@ -333,13 +362,22 @@ struct CreateTrainingPlanView: View {
 
         Task {
             do {
-                let _ = try await APIService.shared.createTrainingPlan(
+                let response = try await APIService.shared.createTrainingPlan(
                     userId: userId,
                     filename: planName,
                     trainingData: template.trainingDays,
                     planStartDate: useCustomDates ? startDate : nil,
                     planEndDate: useCustomDates ? endDate : nil
                 )
+
+                // Auto-activate the newly created plan
+                try await APIService.shared.activateTrainingPlan(
+                    userId: userId,
+                    planId: response.planId
+                )
+
+                // Reload active plan so the hub shows it immediately
+                await trainingManager.loadActiveTrainingPlan(userId: userId)
 
                 await MainActor.run {
                     isCreating = false
@@ -377,14 +415,17 @@ struct CreateTrainingPlanView: View {
         errorMessage = nil
         uploadManager.processingProgress = "Subiendo archivo..."
         uploadManager.fileName = url.lastPathComponent
+        uploadManager.startTimeout()
 
         Task {
             do {
-                let response = try await uploadFileToServer(
-                    fileURL: url,
+                let response = try await uploadManager.uploadFile(
+                    at: url,
                     fileName: planName.isEmpty
                         ? url.lastPathComponent : "\(planName).pdf",
-                    userId: userId
+                    userId: userId,
+                    startDate: useCustomDates ? startDate : nil,
+                    endDate: useCustomDates ? endDate : nil
                 )
 
                 processId = response.processId
@@ -396,116 +437,6 @@ struct CreateTrainingPlanView: View {
                 }
             }
         }
-    }
-
-    private func uploadFileToServer(
-        fileURL: URL,
-        fileName: String,
-        userId: String
-    ) async throws -> FileProcessingResponse {
-        guard fileURL.startAccessingSecurityScopedResource() else {
-            throw FileUploadError.accessDenied
-        }
-
-        defer {
-            fileURL.stopAccessingSecurityScopedResource()
-        }
-
-        let fileData = try Data(contentsOf: fileURL)
-
-        guard let url = URL(string: "\(APIConfig.baseURL)/process-file-smart")
-        else {
-            throw FileUploadError.invalidURL
-        }
-
-        // Crear multipart form data
-        let boundary = UUID().uuidString
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue(
-            "multipart/form-data; boundary=\(boundary)",
-            forHTTPHeaderField: "Content-Type"
-        )
-
-        var data = Data()
-
-        // userId
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"userId\"\r\n\r\n".data(
-                using: .utf8
-            )!
-        )
-        data.append("\(userId)\r\n".data(using: .utf8)!)
-
-        // planName
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"planName\"\r\n\r\n".data(
-                using: .utf8
-            )!
-        )
-        data.append("\(fileName)\r\n".data(using: .utf8)!)
-
-        // dates if needed
-        if useCustomDates {
-            let formatter = ISO8601DateFormatter()
-
-            data.append("--\(boundary)\r\n".data(using: .utf8)!)
-            data.append(
-                "Content-Disposition: form-data; name=\"startDate\"\r\n\r\n"
-                    .data(using: .utf8)!
-            )
-            data.append(
-                "\(formatter.string(from: startDate))\r\n".data(using: .utf8)!
-            )
-
-            data.append("--\(boundary)\r\n".data(using: .utf8)!)
-            data.append(
-                "Content-Disposition: form-data; name=\"endDate\"\r\n\r\n".data(
-                    using: .utf8
-                )!
-            )
-            data.append(
-                "\(formatter.string(from: endDate))\r\n".data(using: .utf8)!
-            )
-        }
-
-        // file
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n"
-                .data(using: .utf8)!
-        )
-        data.append("Content-Type: application/pdf\r\n\r\n".data(using: .utf8)!)
-        data.append(fileData)
-        data.append("\r\n".data(using: .utf8)!)
-        data.append("--\(boundary)--\r\n".data(using: .utf8)!)
-
-        request.httpBody = data
-
-        let (responseData, response) = try await URLSession.shared.data(
-            for: request
-        )
-
-        guard let httpResponse = response as? HTTPURLResponse,
-            httpResponse.statusCode == 200
-        else {
-            throw FileUploadError.serverError(
-                (response as? HTTPURLResponse)?.statusCode ?? 0
-            )
-        }
-
-        let uploadResponse = try JSONDecoder().decode(
-            FileProcessingResponse.self,
-            from: responseData
-        )
-
-        guard uploadResponse.success else {
-            throw FileUploadError.uploadFailed(uploadResponse.message)
-        }
-
-        return uploadResponse
     }
 
     @MainActor
@@ -519,14 +450,17 @@ struct CreateTrainingPlanView: View {
         errorMessage = nil
         uploadManager.processingProgress = "Subiendo imagen..."
         uploadManager.fileName = planName.isEmpty ? "training_plan.jpg" : "\(planName).jpg"
+        uploadManager.startTimeout()
 
         Task {
             do {
                 let fileName = planName.isEmpty ? "training_plan.jpg" : "\(planName).jpg"
-                let response = try await uploadImageToServer(
-                    imageData: imageData,
+                let response = try await uploadManager.uploadImage(
+                    imageData,
                     fileName: fileName,
-                    userId: userId
+                    userId: userId,
+                    startDate: useCustomDates ? startDate : nil,
+                    endDate: useCustomDates ? endDate : nil
                 )
                 processId = response.processId
             } catch {
@@ -538,108 +472,26 @@ struct CreateTrainingPlanView: View {
         }
     }
 
-    private func uploadImageToServer(
-        imageData: Data,
-        fileName: String,
-        userId: String
-    ) async throws -> FileProcessingResponse {
-        guard let url = URL(string: "\(APIConfig.baseURL)/process-file-smart") else {
-            throw FileUploadError.invalidURL
-        }
-
-        let boundary = UUID().uuidString
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue(
-            "multipart/form-data; boundary=\(boundary)",
-            forHTTPHeaderField: "Content-Type"
-        )
-
-        var data = Data()
-
-        // userId
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"userId\"\r\n\r\n".data(using: .utf8)!
-        )
-        data.append("\(userId)\r\n".data(using: .utf8)!)
-
-        // planName
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"planName\"\r\n\r\n".data(using: .utf8)!
-        )
-        data.append("\(fileName)\r\n".data(using: .utf8)!)
-
-        // dates if needed
-        if useCustomDates {
-            let formatter = ISO8601DateFormatter()
-
-            data.append("--\(boundary)\r\n".data(using: .utf8)!)
-            data.append(
-                "Content-Disposition: form-data; name=\"startDate\"\r\n\r\n".data(using: .utf8)!
-            )
-            data.append("\(formatter.string(from: startDate))\r\n".data(using: .utf8)!)
-
-            data.append("--\(boundary)\r\n".data(using: .utf8)!)
-            data.append(
-                "Content-Disposition: form-data; name=\"endDate\"\r\n\r\n".data(using: .utf8)!
-            )
-            data.append("\(formatter.string(from: endDate))\r\n".data(using: .utf8)!)
-        }
-
-        // image file
-        data.append("--\(boundary)\r\n".data(using: .utf8)!)
-        data.append(
-            "Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n"
-                .data(using: .utf8)!
-        )
-        data.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
-        data.append(imageData)
-        data.append("\r\n".data(using: .utf8)!)
-        data.append("--\(boundary)--\r\n".data(using: .utf8)!)
-
-        request.httpBody = data
-
-        let (responseData, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-            httpResponse.statusCode == 200
-        else {
-            throw FileUploadError.serverError(
-                (response as? HTTPURLResponse)?.statusCode ?? 0
-            )
-        }
-
-        let uploadResponse = try JSONDecoder().decode(
-            FileProcessingResponse.self,
-            from: responseData
-        )
-
-        guard uploadResponse.success else {
-            throw FileUploadError.uploadFailed(uploadResponse.message)
-        }
-
-        return uploadResponse
-    }
-
     private func setupNotificationObserver() {
         notificationObserver = NotificationCenter.default.addObserver(
             forName: NSNotification.Name("GotifyNotificationReceived"),
             object: nil,
             queue: .main
         ) { [self] notification in
-            guard
-                let gotifyNotification = notification.object
-                    as? GotifyNotification,
-                let extras = gotifyNotification.extras,
-                let notificationProcessId = extras.processId,
-                notificationProcessId == self.processId
+            guard let gotifyNotification = notification.object
+                as? GotifyNotification
             else {
                 return
             }
 
-            handleProcessingNotification(extras: extras)
+            // @State (processId) is frozen at nil inside this escaping closure
+            // (struct capture), so we can't filter by it — react by status like
+            // the diet flow does. Otherwise completion never fires: stuck spinner.
+            if let extras = gotifyNotification.extras, extras.status != nil {
+                handleProcessingNotification(extras: extras)
+            } else if gotifyNotification.title.contains("completado") {
+                handleProcessingCompleted(extras: GotifyExtras.empty)
+            }
         }
     }
 
@@ -665,6 +517,7 @@ struct CreateTrainingPlanView: View {
     }
 
     private func handleProcessingCompleted(extras: GotifyExtras) {
+        uploadManager.cancelTimeout()
         Task {
             // Recargar los planes de entrenamiento
             if let userId = authManager.user?.id {
@@ -682,6 +535,7 @@ struct CreateTrainingPlanView: View {
     }
 
     private func handleProcessingFailed(error: String?) {
+        uploadManager.cancelTimeout()
         isProcessingFile = false
         errorMessage = error ?? "Error al procesar el archivo"
         showingErrorAlert = true
@@ -705,50 +559,49 @@ struct CreationMethodCard: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 16) {
+            HStack(spacing: Spacing.lg) {
                 ZStack {
                     Circle()
                         .fill(
                             isSelected
-                                ? Color.blue.opacity(0.1)
-                                : Color.gray.opacity(0.1)
+                                ? BulkUpColors.training.opacity(0.1)
+                                : BulkUpColors.surfaceElevated
                         )
                         .frame(width: 50, height: 50)
 
                     Image(systemName: method.icon)
                         .font(.system(size: 24, weight: .medium))
-                        .foregroundColor(isSelected ? .blue : .gray)
+                        .foregroundColor(isSelected ? BulkUpColors.training : BulkUpColors.textTertiary)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(method.displayName)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textPrimary)
 
                     Text(method.description)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
 
                 Spacer()
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.blue)
+                        .font(BulkUpFont.sectionHeader())
+                        .foregroundColor(BulkUpColors.training)
                 }
             }
-            .padding()
+            .padding(Spacing.lg)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
                     .stroke(
-                        isSelected ? Color.blue : Color.gray.opacity(0.3),
-                        lineWidth: 2
+                        isSelected ? BulkUpColors.training : BulkUpColors.textTertiary.opacity(0.3),
+                        lineWidth: isSelected ? 2 : 1
                     )
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.systemBackground))
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .fill(BulkUpColors.surface)
                     )
             )
             .contentShape(Rectangle())

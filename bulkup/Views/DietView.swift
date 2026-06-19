@@ -11,10 +11,17 @@ import SwiftUI
 struct DietView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var dietManager: DietManager
+    @ObservedObject private var mealTrackingManager = MealTrackingManager.shared
     @State private var viewMode: ViewMode = .day
     @State private var selectedDay = ""
     @State private var expandedDay = -1
     @State private var currentDayIndex = 0
+
+    private var todayDateString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
+    }
 
     enum ViewMode: String, CaseIterable {
         case week = "week"
@@ -57,7 +64,63 @@ struct DietView: View {
                     }
                 }
             }
+            loadTrackingForCurrentDay()
         }
+    }
+
+    // MARK: - Compliance Summary Bar
+    private var complianceSummaryBar: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(.green)
+
+            Text(mealTrackingManager.todayComplianceSummary)
+                .font(.subheadline)
+                .fontWeight(.medium)
+
+            Spacer()
+
+            // Progress indicator
+            let rate = mealTrackingManager.todayComplianceRate
+            Text(String(format: "%.0f%%", rate * 100))
+                .font(.subheadline)
+                .fontWeight(.bold)
+                .foregroundColor(rate >= 0.8 ? .green : rate >= 0.5 ? .orange : .secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color.green.opacity(0.08))
+        .cornerRadius(10)
+        .padding(.horizontal)
+    }
+
+    // MARK: - Meal Card with Tracking
+    @ViewBuilder
+    private func trackedMealCard(meal: Meal, dayName: String) -> some View {
+        let record = mealTrackingManager.trackingRecord(for: meal.order, date: todayDateString)
+        MealCardView(
+            meal: meal,
+            trackingRecord: record,
+            onToggleCompletion: {
+                if let record = record {
+                    Task {
+                        if let userId = authManager.user?.id {
+                            await mealTrackingManager.toggleMealCompletion(record: record, userId: userId)
+                        }
+                    }
+                }
+            },
+            onNotesChanged: { notes in
+                if let record = record {
+                    Task {
+                        if let userId = authManager.user?.id {
+                            await mealTrackingManager.updateNotes(record: record, notes: notes, userId: userId)
+                        }
+                    }
+                }
+            }
+        )
+        .padding(.horizontal)
     }
 
     // MARK: - Loading View
@@ -72,7 +135,7 @@ struct DietView: View {
                     .font(.headline)
                     .fontWeight(.medium)
 
-                Text("Preparando tu alimentación perfecta")
+                Text("Preparando tu alimentacion perfecta")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -112,13 +175,13 @@ struct DietView: View {
             }
 
             VStack(spacing: 16) {
-                Text("¡Empecemos tu viaje!")
+                Text("Empecemos tu viaje!")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
 
                 Text(
-                    "Sube tu plan de alimentación personalizado y comienza a alcanzar tus objetivos nutricionales"
+                    "Sube tu plan de alimentacion personalizado y comienza a alcanzar tus objetivos nutricionales"
                 )
                 .font(.body)
                 .foregroundColor(.secondary)
@@ -127,7 +190,6 @@ struct DietView: View {
             }
 
             Button(action: {
-                // Acción para subir plan - se manejará desde MainAppView
             }) {
                 HStack(spacing: 12) {
                     Image(systemName: "plus.circle.fill")
@@ -176,7 +238,7 @@ struct DietView: View {
                     .foregroundColor(.primary)
 
                 Text(
-                    "Día \(currentDayIndex + 1) de \(dietManager.dietData.count)"
+                    "Dia \(currentDayIndex + 1) de \(dietManager.dietData.count)"
                 )
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -187,7 +249,7 @@ struct DietView: View {
                     .font(.headline)
                     .foregroundColor(.primary)
 
-                Text("\(dietManager.dietData.count) días")
+                Text("\(dietManager.dietData.count) dias")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -211,6 +273,11 @@ struct DietView: View {
                     }
                     .padding(.horizontal)
                     .padding(.bottom)
+
+                    // Compliance summary
+                    if !mealTrackingManager.todayTracking.isEmpty {
+                        complianceSummaryBar
+                    }
 
                     // Stats card
                     HStack {
@@ -243,8 +310,10 @@ struct DietView: View {
                         $0.orderIndex < $1.orderIndex
                     })
                     ForEach(sortedMeals.indices, id: \.self) { index in
-                        MealCardView(meal: sortedMeals[index])
-                            .padding(.horizontal)
+                        trackedMealCard(
+                            meal: sortedMeals[index],
+                            dayName: dietManager.dietData[0].day
+                        )
                     }
 
                     // Suplementos
@@ -270,6 +339,7 @@ struct DietView: View {
             .refreshable {
                 if let user = authManager.user {
                     await dietManager.loadActiveDietPlan(userId: user.id)
+                    loadTrackingForCurrentDay()
                 }
             }
         }
@@ -279,14 +349,14 @@ struct DietView: View {
     private var multiDayPlanViewWithNavigation: some View {
         ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: 20) {
-                // Header grande personalizado según el modo
+                // Header grande personalizado segun el modo
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         if viewMode == .day {
                             if dietManager.dietData.count > 1 {
                                 HStack(spacing: 12) {
                                     Text(
-                                        "Día \(currentDayIndex + 1) de \(dietManager.dietData.count)"
+                                        "Dia \(currentDayIndex + 1) de \(dietManager.dietData.count)"
                                     )
                                     .font(.title3)
                                     .foregroundColor(.secondary)
@@ -319,7 +389,7 @@ struct DietView: View {
                                 .fontWeight(.bold)
 
                             Text(
-                                "\(dietManager.dietData.count) días programados"
+                                "\(dietManager.dietData.count) dias programados"
                             )
                             .font(.title3)
                             .foregroundColor(.secondary)
@@ -330,7 +400,12 @@ struct DietView: View {
                 .padding(.horizontal)
                 .padding(.bottom)
 
-                // Contenido según el modo de vista
+                // Compliance summary (day mode)
+                if viewMode == .day && !mealTrackingManager.todayTracking.isEmpty {
+                    complianceSummaryBar
+                }
+
+                // Contenido segun el modo de vista
                 if viewMode == .week {
                     ForEach(0..<dietManager.dietData.count, id: \.self) {
                         dayIndex in
@@ -362,8 +437,10 @@ struct DietView: View {
                         })
 
                         ForEach(sortedMeals, id: \.id) { meal in
-                            MealCardView(meal: meal)
-                                .padding(.horizontal)
+                            trackedMealCard(
+                                meal: meal,
+                                dayName: selectedDayData.day
+                            )
                         }
 
                         if !selectedDayData.supplements.isEmpty {
@@ -385,7 +462,7 @@ struct DietView: View {
                 navigationTitleView
             }
 
-            // Selector de vista (solo si hay múltiples días)
+            // Selector de vista (solo si hay multiples dias)
             if dietManager.dietData.count > 1 {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Picker("Vista", selection: $viewMode) {
@@ -398,7 +475,7 @@ struct DietView: View {
                 }
             }
 
-            // Navegación de días (solo en vista diaria)
+            // Navegacion de dias (solo en vista diaria)
             if viewMode == .day && dietManager.dietData.count > 1 {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
@@ -425,6 +502,7 @@ struct DietView: View {
         .refreshable {
             if let user = authManager.user {
                 await dietManager.loadActiveDietPlan(userId: user.id)
+                loadTrackingForCurrentDay()
             }
         }
         .onAppear {
@@ -432,13 +510,44 @@ struct DietView: View {
                 selectedDay = dietManager.dietData[0].day
                 currentDayIndex = 0
             }
+            loadTrackingForCurrentDay()
         }
         .onChange(of: dietManager.dietData) { _, _ in
             expandedDay = -1
         }
+        .onChange(of: selectedDay) { _, _ in
+            loadTrackingForCurrentDay()
+        }
     }
 
     // MARK: - Helper Functions
+
+    private func loadTrackingForCurrentDay() {
+        guard let userId = authManager.user?.id else { return }
+
+        // Determine which day's meals to load tracking for
+        let dayData: DietDay?
+        if dietManager.dietData.count == 1 && dietManager.dietData[0].day == "Dieta Semanal" {
+            dayData = dietManager.dietData.first
+        } else if !selectedDay.isEmpty {
+            dayData = dietManager.dietData.first(where: { $0.day == selectedDay })
+        } else {
+            dayData = dietManager.dietData.first
+        }
+
+        guard let day = dayData else { return }
+
+        Task {
+            await mealTrackingManager.loadTracking(
+                userId: userId,
+                date: todayDateString,
+                dayName: day.day,
+                planId: dietManager.dietPlanId,
+                meals: day.meals
+            )
+        }
+    }
+
     private func navigateToPreviousDay() {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             guard
@@ -468,6 +577,6 @@ struct DietView: View {
     private func formatDayName(_ day: String) -> String {
         return day.capitalized
             .replacingOccurrences(of: "_", with: " ")
-            .replacingOccurrences(of: "dia", with: "Día")
+            .replacingOccurrences(of: "dia", with: "Dia")
     }
 }
