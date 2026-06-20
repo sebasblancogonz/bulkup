@@ -3852,6 +3852,12 @@
         }
       }
     },
+    "Genera una receta con foto a partir de los ingredientes de tu dieta." : {
+
+    },
+    "Generando receta…" : {
+
+    },
     "Gestión de Cuenta" : {
       "localizations" : {
         "en" : {
@@ -5561,9 +5567,6 @@
         }
       }
     },
-    "Pensando…" : {
-
-    },
     "Perder grasa" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5864,9 +5867,6 @@
           }
         }
       }
-    },
-    "Pregunta sobre tu receta…" : {
-
     },
     "Preguntas frecuentes y tutoriales" : {
       "extractionState" : "stale",
@@ -7044,9 +7044,6 @@
           }
         }
       }
-    },
-    "Sugerencias de recetas con los ingredientes de tu dieta." : {
-
     },
     "Suplemento" : {
       "extractionState" : "stale",

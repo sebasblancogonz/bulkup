@@ -7,21 +7,25 @@
 
 import Foundation
 
-// MARK: - Recipe Chat DTOs
+// MARK: - Recipe DTOs
 
-struct RecipeChatMessageDTO: Codable {
-    let role: String
-    let content: String
-}
-
-private struct RecipeChatRequest: Codable {
+private struct RecipeRequest: Codable {
     let mealType: String
     let ingredients: [String]
-    let messages: [RecipeChatMessageDTO]
+    let complexity: String
 }
 
-private struct RecipeChatResponse: Codable {
-    let reply: String
+struct RecipeResponse: Codable {
+    let recipe: String
+    let dish: String
+}
+
+private struct RecipeImageRequest: Codable {
+    let dish: String
+}
+
+private struct RecipeImageResponse: Codable {
+    let imageBase64: String
 }
 
 // MARK: - APIService Extensions
@@ -509,10 +513,10 @@ extension APIService {
         )
     }
 
-    // MARK: - Recipe Chat
+    // MARK: - Recipe (one-shot) + AI image
 
-    func recipeChat(mealType: String, ingredients: [String], messages: [RecipeChatMessageDTO]) async throws -> String {
-        guard let url = URL(string: "\(APIConfig.baseURL)/diet/recipe-chat") else {
+    func generateRecipe(mealType: String, ingredients: [String], complexity: String) async throws -> RecipeResponse {
+        guard let url = URL(string: "\(APIConfig.baseURL)/diet/recipe") else {
             throw APIError.invalidURL
         }
         var urlRequest = URLRequest(url: url)
@@ -521,12 +525,35 @@ extension APIService {
         if let token = UserDefaults.standard.string(forKey: "auth_token") {
             urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        urlRequest.httpBody = try JSONEncoder().encode(RecipeChatRequest(mealType: mealType, ingredients: ingredients, messages: messages))
+        urlRequest.httpBody = try JSONEncoder().encode(RecipeRequest(mealType: mealType, ingredients: ingredients, complexity: complexity))
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
-        return try JSONDecoder().decode(RecipeChatResponse.self, from: data).reply
+        return try JSONDecoder().decode(RecipeResponse.self, from: data)
+    }
+
+    /// Returns decoded image bytes for the dish (backend sends base64).
+    func generateRecipeImage(dish: String) async throws -> Data {
+        guard let url = URL(string: "\(APIConfig.baseURL)/diet/recipe-image") else {
+            throw APIError.invalidURL
+        }
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = UserDefaults.standard.string(forKey: "auth_token") {
+            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        urlRequest.httpBody = try JSONEncoder().encode(RecipeImageRequest(dish: dish))
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
+        }
+        let base64 = try JSONDecoder().decode(RecipeImageResponse.self, from: data).imageBase64
+        guard let imageData = Data(base64Encoded: base64) else {
+            throw APIError.serverError(0)
+        }
+        return imageData
     }
 
     // MARK: - Diet Fidelity (skipped days)

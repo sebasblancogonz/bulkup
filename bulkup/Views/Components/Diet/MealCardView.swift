@@ -18,7 +18,7 @@ struct MealCardView: View {
     var onNotesChanged: ((String) -> Void)?
 
     @State private var trackingNotes: String = ""
-    @State private var showingRecipeChat = false
+    @State private var showingRecipe = false
 
     private var isCompleted: Bool {
         trackingRecord?.completed ?? false
@@ -57,10 +57,16 @@ struct MealCardView: View {
         .clipped()
         .opacity(isCompleted ? 0.85 : 1.0)
         .padding(.horizontal, Spacing.screenH)
-        .sheet(isPresented: $showingRecipeChat) {
-            RecipeChatView(
+        .sheet(isPresented: $showingRecipe) {
+            RecipeView(
                 mealType: meal.type,
-                ingredients: Array(Set(meal.options.flatMap { $0.ingredients })).sorted()
+                options: meal.options.enumerated().map { index, option in
+                    RecipeOptionChoice(
+                        id: "\(index)",
+                        label: option.optionDescription.isEmpty ? "Opción \(index + 1)" : option.optionDescription,
+                        ingredients: option.ingredients
+                    )
+                }
             )
         }
     }
@@ -155,9 +161,9 @@ struct MealCardView: View {
                 MealConditionsView(conditions: conditions, mealType: meal.type)
             }
 
-            // Recipe chat button
+            // AI recipe button
             Button {
-                showingRecipeChat = true
+                showingRecipe = true
             } label: {
                 Label("Receta con IA", systemImage: "sparkles")
                     .font(BulkUpFont.caption())

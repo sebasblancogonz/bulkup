@@ -18,7 +18,6 @@ struct BulkUp: App {
         SharedWorkoutStore.runSelfCheck()
         ThemeSelfCheck.run()
         FoodTagInput.runSelfCheck()
-        RecipeChatManager.runSelfCheck()
         DietFidelity.runSelfCheck()
         DietCompliance.runSelfCheck()
 #endif
