@@ -33,7 +33,7 @@ struct ExerciseDetailView: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 20) {
+            LazyVStack(spacing: Spacing.lg) {
                 // Header
                 exerciseHeader
 
@@ -180,7 +180,7 @@ struct ExerciseDetailView: View {
         .padding(.vertical)
         .background(BulkUpColors.surface)
         .cornerRadius(CornerRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: CornerRadius.large).stroke(BulkUpColors.border, lineWidth: 0.5))
     }
 
     private var progressChart: some View {
@@ -211,7 +211,7 @@ struct ExerciseDetailView: View {
         .padding(.vertical)
         .background(BulkUpColors.surface)
         .cornerRadius(CornerRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: CornerRadius.large).stroke(BulkUpColors.border, lineWidth: 0.5))
     }
 
     private var recordsList: some View {
@@ -269,7 +269,7 @@ struct ExerciseDetailView: View {
         .padding(.vertical)
         .background(BulkUpColors.surface)
         .cornerRadius(CornerRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: CornerRadius.large).stroke(BulkUpColors.border, lineWidth: 0.5))
     }
 
     // MARK: - Actions

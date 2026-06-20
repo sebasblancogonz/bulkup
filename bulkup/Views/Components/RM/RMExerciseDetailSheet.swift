@@ -15,7 +15,7 @@ struct RMExerciseDetailSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
                     // Imágenes del ejercicio
                     if let images = exercise.images, !images.isEmpty {
                         imageCarousel(images: images)

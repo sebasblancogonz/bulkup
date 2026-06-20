@@ -71,7 +71,7 @@ struct CompactExerciseCard: View {
             .frame(maxWidth: .infinity, minHeight: 140)
             .background(BulkUpColors.surface)
             .cornerRadius(CornerRadius.large)
-            .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: CornerRadius.large).stroke(BulkUpColors.border, lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
         .sheet(isPresented: $showingDetail) {

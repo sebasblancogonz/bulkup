@@ -86,7 +86,7 @@ struct RMTrackerView: View {
                 }
             }
             .navigationTitle("Tus PR")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showAddForm) {
                 AddRecordFormView(
                     formData: $formData,
@@ -112,14 +112,14 @@ struct RMTrackerView: View {
 
     private var mainContentWithRefresh: some View {
             ScrollView {
-                LazyVStack(spacing: 20) {
+                LazyVStack(spacing: Spacing.lg) {
                     // Stats Cards
                     StatsCardsView(stats: rmManager.stats)
-                        .padding(.horizontal)
+                        .padding(.horizontal, Spacing.screenH)
 
                     // Search Bar
                     SearchBar(text: $searchTerm)
-                        .padding(.horizontal)
+                        .padding(.horizontal, Spacing.screenH)
 
                     // Exercise Cards
                     exerciseCardsGrid
@@ -147,8 +147,8 @@ struct RMTrackerView: View {
                             }
                             .padding(8)
                             .background(BulkUpColors.surface)
-                            .cornerRadius(20)
-                            .overlay(RoundedRectangle(cornerRadius: 20).stroke(BulkUpColors.border, lineWidth: 0.5))
+                            .cornerRadius(CornerRadius.medium)
+                            .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
 
                             Spacer()
                         }
@@ -222,7 +222,7 @@ struct RMTrackerView: View {
     }
 
     private var exerciseCardsGrid: some View {
-        LazyVGrid(columns: gridColumns, spacing: 16) {
+        LazyVGrid(columns: gridColumns, spacing: Spacing.md) {
             ForEach(filteredExercises) { exercise in
                 RMExerciseCardView(
                     exercise: exercise,
@@ -235,13 +235,13 @@ struct RMTrackerView: View {
                 )
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, Spacing.screenH)
     }
 
     private var gridColumns: [GridItem] {
         [
-            GridItem(.flexible(), spacing: 16),
-            GridItem(.flexible(), spacing: 16),
+            GridItem(.flexible(), spacing: Spacing.md),
+            GridItem(.flexible(), spacing: Spacing.md),
         ]
     }
 
@@ -398,7 +398,7 @@ struct RMExerciseCardView: View {
         .padding(Spacing.lg)
         .background(BulkUpColors.surface)
         .cornerRadius(CornerRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: CornerRadius.large).stroke(BulkUpColors.border, lineWidth: 0.5))
     }
 
     @ViewBuilder

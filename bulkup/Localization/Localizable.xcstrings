@@ -137,6 +137,9 @@
         }
       }
     },
+    "¿Qué comiste?" : {
+
+    },
     "¿Ya tienes cuenta? Inicia sesión" : {
       "localizations" : {
         "en" : {
@@ -460,6 +463,9 @@
           }
         }
       }
+    },
+    "%lld kcal" : {
+
     },
     "%lld opc." : {
       "localizations" : {
@@ -1085,6 +1091,16 @@
         }
       }
     },
+    "Alergias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allergies"
+          }
+        }
+      }
+    },
     "Alerta al finalizar tiempo de descanso" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1212,6 +1228,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add set"
+          }
+        }
+      }
+    },
+    "Añadir…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add…"
           }
         }
       }
@@ -2658,6 +2684,9 @@
         }
       }
     },
+    "Día saltado" : {
+
+    },
     "Diario" : {
       "localizations" : {
         "en" : {
@@ -2953,6 +2982,9 @@
           }
         }
       }
+    },
+    "Ej: pizza familiar y 2 cervezas" : {
+
     },
     "Ej: Post-entreno" : {
       "localizations" : {
@@ -3515,6 +3547,9 @@
         }
       }
     },
+    "Estimando…" : {
+
+    },
     "Estiramiento" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3717,6 +3752,12 @@
           }
         }
       }
+    },
+    "Fidelidad a la dieta" : {
+
+    },
+    "Fidelidad a la dieta (PRO)" : {
+
     },
     "Filtros" : {
       "localizations" : {
@@ -4642,6 +4683,16 @@
         }
       }
     },
+    "Me gusta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Likes"
+          }
+        }
+      }
+    },
     "Mecánica" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5059,6 +5110,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No records"
+          }
+        }
+      }
+    },
+    "No me gusta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dislikes"
           }
         }
       }
@@ -5500,6 +5561,9 @@
         }
       }
     },
+    "Pensando…" : {
+
+    },
     "Perder grasa" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5791,6 +5855,19 @@
         }
       }
     },
+    "Preferencias y alergias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferences & allergies"
+          }
+        }
+      }
+    },
+    "Pregunta sobre tu receta…" : {
+
+    },
     "Preguntas frecuentes y tutoriales" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6046,6 +6123,12 @@
         }
       }
     },
+    "Receta con IA" : {
+
+    },
+    "Recetas con IA" : {
+
+    },
     "Recomposicion corporal" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6139,6 +6222,9 @@
         }
       }
     },
+    "Registra días o añade calorías al plan" : {
+
+    },
     "Registra lo que comiste en tu comida libre" : {
       "localizations" : {
         "en" : {
@@ -6159,7 +6245,11 @@
         }
       }
     },
+    "Registra tus levantamientos" : {
+
+    },
     "Registra tus levantamientos en la seccion RM" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6209,6 +6299,9 @@
           }
         }
       }
+    },
+    "Registrar" : {
+
     },
     "Registrar para mi racha" : {
       "localizations" : {
@@ -6952,6 +7045,9 @@
         }
       }
     },
+    "Sugerencias de recetas con los ingredientes de tu dieta." : {
+
+    },
     "Suplemento" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7272,6 +7368,9 @@
         }
       }
     },
+    "últimos 30 días" : {
+
+    },
     "UPGRADE" : {
       "localizations" : {
         "en" : {
@@ -7465,56 +7564,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Me"
-          }
-        }
-      }
-    },
-    "Preferencias y alergias" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preferences & allergies"
-          }
-        }
-      }
-    },
-    "Alergias" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Allergies"
-          }
-        }
-      }
-    },
-    "Me gusta" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Likes"
-          }
-        }
-      }
-    },
-    "No me gusta" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dislikes"
-          }
-        }
-      }
-    },
-    "Añadir…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add…"
           }
         }
       }
