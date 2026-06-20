@@ -273,7 +273,26 @@ struct ServerMeal: Codable {
     struct MealOptionData: Codable {
         let description: String
         let ingredients: [String]
-        let instructions: [String]?  // <-- Optional now
+        let instructions: [String]?
+
+        enum CodingKeys: String, CodingKey {
+            case description, ingredients, instructions
+        }
+
+        init(description: String, ingredients: [String], instructions: [String]?) {
+            self.description = description
+            self.ingredients = ingredients
+            self.instructions = instructions
+        }
+
+        // Tolerate plans where an option omits ingredients/description (older or
+        // partially-parsed data) instead of failing the whole list decode.
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            description = (try? c.decode(String.self, forKey: .description)) ?? ""
+            ingredients = (try? c.decode([String].self, forKey: .ingredients)) ?? []
+            instructions = try? c.decode([String].self, forKey: .instructions)
+        }
     }
 }
 
@@ -770,4 +789,24 @@ struct CompleteWorkoutRequest: Codable {
 
 struct FriendCodeResponse: Codable {
     let friendCode: String
+}
+
+// MARK: - Resilient list decoding
+
+/// Wraps a Decodable so one malformed element in an array doesn't fail the whole
+/// decode. Used for plan lists, which aggregate user-uploaded / AI-parsed data of
+/// varying quality. Decode `[FailableDecodable<T>]` then compactMap `.value`.
+struct FailableDecodable<T: Codable>: Codable {
+    let value: T?
+    init(from decoder: Decoder) throws {
+        value = try? T(from: decoder)
+    }
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        if let value {
+            try container.encode(value)
+        } else {
+            try container.encodeNil()
+        }
+    }
 }

@@ -140,6 +140,9 @@
     "¿Qué comiste?" : {
 
     },
+    "¿Qué quieres usar?" : {
+
+    },
     "¿Ya tienes cuenta? Inicia sesión" : {
       "localizations" : {
         "en" : {
@@ -1668,6 +1671,9 @@
         }
       }
     },
+    "Cambiar opciones" : {
+
+    },
     "Cambios desde la medición anterior" : {
       "localizations" : {
         "en" : {
@@ -2078,6 +2084,9 @@
           }
         }
       }
+    },
+    "Complejidad" : {
+
     },
     "Completado" : {
       "localizations" : {
@@ -3057,6 +3066,9 @@
         }
       }
     },
+    "Elige las opciones que tengas o te apetezcan." : {
+
+    },
     "Elige tu plan:" : {
       "localizations" : {
         "en" : {
@@ -3856,6 +3868,9 @@
 
     },
     "Generando receta…" : {
+
+    },
+    "Generar receta" : {
 
     },
     "Gestión de Cuenta" : {
