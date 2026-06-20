@@ -87,6 +87,12 @@
         }
       }
     },
+    "¿Algo que destacar? (opcional)" : {
+
+    },
+    "¿Cómo fue el entreno?" : {
+
+    },
     "¿Eliminar récord?" : {
       "localizations" : {
         "en" : {
@@ -138,6 +144,9 @@
       }
     },
     "¿Qué comiste?" : {
+
+    },
+    "¿Qué quieres usar?" : {
 
     },
     "¿Ya tienes cuenta? Inicia sesión" : {
@@ -1668,6 +1677,9 @@
         }
       }
     },
+    "Cambiar opciones" : {
+
+    },
     "Cambios desde la medición anterior" : {
       "localizations" : {
         "en" : {
@@ -2078,6 +2090,9 @@
           }
         }
       }
+    },
+    "Complejidad" : {
+
     },
     "Completado" : {
       "localizations" : {
@@ -3057,6 +3072,9 @@
         }
       }
     },
+    "Elige las opciones que tengas o te apetezcan." : {
+
+    },
     "Elige tu plan:" : {
       "localizations" : {
         "en" : {
@@ -3581,6 +3599,9 @@
         }
       }
     },
+    "Etiquetas" : {
+
+    },
     "Experto" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3799,6 +3820,9 @@
         }
       }
     },
+    "Fotos" : {
+
+    },
     "Frecuencia" : {
       "localizations" : {
         "en" : {
@@ -3858,6 +3882,9 @@
     "Generando receta…" : {
 
     },
+    "Generar receta" : {
+
+    },
     "Gestión de Cuenta" : {
       "localizations" : {
         "en" : {
@@ -3899,6 +3926,9 @@
           }
         }
       }
+    },
+    "Guardadas solo en este dispositivo." : {
+
     },
     "Guardado" : {
       "localizations" : {
@@ -5250,6 +5280,9 @@
           }
         }
       }
+    },
+    "Nota" : {
+
     },
     "Notas (opcional)" : {
       "localizations" : {
@@ -6635,6 +6668,9 @@
           }
         }
       }
+    },
+    "Sensación" : {
+
     },
     "SERIE" : {
       "localizations" : {

@@ -887,7 +887,7 @@ private struct InlineWeightLogger: View {
                                     .foregroundColor(BulkUpColors.textTertiary)
 
                                 if let prev = safeGetPrevWeight(setIndex), prev > 0 {
-                                    Text(formatWeight(prev))
+                                    Text("ant. " + formatWeight(prev))
                                         .font(.system(size: 9, weight: .medium))
                                         .foregroundColor(BulkUpColors.textTertiary)
                                 }
