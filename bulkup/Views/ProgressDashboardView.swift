@@ -21,6 +21,7 @@ struct ProgressDashboardView: View {
     @State private var showingAddFriend = false
     @State private var showingMyCode = false
     @State private var showingSubscription = false
+    @State private var showingRMTracker = false
 
     var body: some View {
         NavigationStack {
@@ -604,22 +605,27 @@ struct ProgressDashboardView: View {
 
                 Spacer()
 
-                if !rmManager.bestRecords.isEmpty {
-                    Text("Ver todos")
+                Button { showingRMTracker = true } label: {
+                    Text(rmManager.bestRecords.isEmpty ? "Registrar" : "Ver todos")
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.accent)
                 }
             }
 
             if rmManager.bestRecords.isEmpty {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .font(BulkUpFont.caption())
-                    Text("Registra tus levantamientos en la seccion RM")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
+                Button { showingRMTracker = true } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle")
+                            .foregroundColor(BulkUpColors.accent)
+                            .font(BulkUpFont.caption())
+                        Text("Registra tus levantamientos")
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             } else {
                 let recentRecords = Array(
                     rmManager.bestRecords
@@ -654,6 +660,10 @@ struct ProgressDashboardView: View {
             }
         }
         .cardStyle()
+        .sheet(isPresented: $showingRMTracker) {
+            RMTrackerView()
+                .environmentObject(authManager)
+        }
     }
 
     // MARK: - Section 6: Friends & Leaderboard
