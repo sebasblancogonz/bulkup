@@ -87,6 +87,12 @@
         }
       }
     },
+    "¿Algo que destacar? (opcional)" : {
+
+    },
+    "¿Cómo fue el entreno?" : {
+
+    },
     "¿Eliminar récord?" : {
       "localizations" : {
         "en" : {
@@ -3593,6 +3599,9 @@
         }
       }
     },
+    "Etiquetas" : {
+
+    },
     "Experto" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3811,6 +3820,9 @@
         }
       }
     },
+    "Fotos" : {
+
+    },
     "Frecuencia" : {
       "localizations" : {
         "en" : {
@@ -3914,6 +3926,9 @@
           }
         }
       }
+    },
+    "Guardadas solo en este dispositivo." : {
+
     },
     "Guardado" : {
       "localizations" : {
@@ -5265,6 +5280,9 @@
           }
         }
       }
+    },
+    "Nota" : {
+
     },
     "Notas (opcional)" : {
       "localizations" : {
@@ -6650,6 +6668,9 @@
           }
         }
       }
+    },
+    "Sensación" : {
+
     },
     "SERIE" : {
       "localizations" : {

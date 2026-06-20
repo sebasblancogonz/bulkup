@@ -622,7 +622,7 @@ struct ExerciseWeightLogger: View {
                 Spacer()
 
                 if let prev = safeGetPrevWeight(setIndex), prev > 0 {
-                    Text(formatWeight(prev) + " kg")
+                    Text("ant. " + formatWeight(prev) + " kg")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(BulkUpColors.textTertiary)
                 }
@@ -787,13 +787,9 @@ struct ExerciseWeightLogger: View {
 
     private func ensureArrayCapacity() {
         while weightTexts.count < totalSetsCount {
-            // Pre-fill from previous weight if available
-            let idx = weightTexts.count
-            if let prev = safeGetPrevWeight(idx), prev > 0 {
-                weightTexts.append(formatWeight(prev))
-            } else {
-                weightTexts.append("")
-            }
+            // Start empty — the previous week's weight is only a hint, never a
+            // real value for this week (otherwise it looks registered every week).
+            weightTexts.append("")
         }
         while repsTexts.count < totalSetsCount {
             repsTexts.append(defaultReps)
