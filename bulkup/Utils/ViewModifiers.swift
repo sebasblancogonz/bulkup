@@ -247,6 +247,7 @@ struct StatCard: View {
 // MARK: - Calendar Day (week strip)
 struct CalendarDayView: View {
     let dayLetter: String
+    let dayNumber: String
     let isToday: Bool
     let isCompleted: Bool
 
@@ -256,30 +257,19 @@ struct CalendarDayView: View {
                 .font(.system(size: 13, weight: isToday ? .bold : .medium))
                 .foregroundColor(isToday ? BulkUpColors.textPrimary : BulkUpColors.textSecondary)
 
-            Circle()
-                .fill(
-                    isToday ? BulkUpColors.accent :
-                    isCompleted ? BulkUpColors.accent.opacity(0.6) :
-                    Color.clear
-                )
-                .frame(width: isToday ? 32 : 6, height: isToday ? 32 : 6)
-                .overlay {
-                    if isToday {
-                        Text(Calendar.current.component(.day, from: Date()).description)
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(BulkUpColors.onAccent)
-                    }
-                }
-
-            if !isToday && isCompleted {
+            ZStack {
                 Circle()
-                    .fill(BulkUpColors.accent)
-                    .frame(width: 4, height: 4)
-            } else if !isToday {
-                Circle()
-                    .fill(Color.clear)
-                    .frame(width: 4, height: 4)
+                    .fill(isToday ? BulkUpColors.accent : Color.clear)
+                    .frame(width: 32, height: 32)
+                Text(dayNumber)
+                    .font(.system(size: 13, weight: isToday ? .bold : .medium))
+                    .foregroundColor(isToday ? BulkUpColors.onAccent : BulkUpColors.textPrimary)
             }
+
+            // Completion indicator (kept clear-sized so the row stays aligned)
+            Circle()
+                .fill(isCompleted && !isToday ? BulkUpColors.accent : Color.clear)
+                .frame(width: 4, height: 4)
         }
         .frame(maxWidth: .infinity)
     }

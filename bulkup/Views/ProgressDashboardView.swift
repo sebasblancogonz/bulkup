@@ -21,6 +21,7 @@ struct ProgressDashboardView: View {
     @State private var showingAddFriend = false
     @State private var showingMyCode = false
     @State private var showingSubscription = false
+    @State private var showingRMTracker = false
 
     var body: some View {
         NavigationStack {
@@ -503,6 +504,17 @@ struct ProgressDashboardView: View {
 
     // MARK: - Section 4: Meal Compliance
 
+    /// Weekly compliance: meals completed in the last 7 days vs. meals the active
+    /// plan expects over those 7 days (single-template plans apply every day).
+    /// nil when the plan expects no measurable meals → UI shows "—".
+    private var weeklyCompliancePercent: Double? {
+        let expected = DietCompliance.expectedMealsLast7(dietData: dietManager.dietData)
+        return DietCompliance.percent(
+            completedLast7: mealManager.weeklyCompletedMeals,
+            expectedLast7: expected
+        )
+    }
+
     private var mealComplianceCard: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
@@ -533,18 +545,20 @@ struct ProgressDashboardView: View {
 
                     Spacer().frame(width: 8)
 
-                    // Weekly compliance
+                    // Weekly compliance (meals done vs. meals the plan expects over 7 days)
+                    let weekly = weeklyCompliancePercent
+                    let weeklyColor = (weekly ?? 0) >= 80 ? BulkUpColors.success : BulkUpColors.warning
                     VStack(spacing: 4) {
-                        Text(String(format: "%.0f%%", stats.complianceRate * 100))
+                        Text(weekly.map { String(format: "%.0f%%", $0) } ?? "—")
                             .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(stats.complianceRate >= 0.8 ? BulkUpColors.success : BulkUpColors.warning)
+                            .foregroundColor(weekly == nil ? BulkUpColors.textSecondary : weeklyColor)
                         Text("Semanal")
                             .font(BulkUpFont.caption())
                             .foregroundColor(BulkUpColors.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .background((stats.complianceRate >= 0.8 ? BulkUpColors.success : BulkUpColors.warning).opacity(0.08))
+                    .background((weekly == nil ? BulkUpColors.textSecondary : weeklyColor).opacity(0.08))
                     .cornerRadius(CornerRadius.small)
 
                     Spacer().frame(width: 8)
@@ -604,22 +618,27 @@ struct ProgressDashboardView: View {
 
                 Spacer()
 
-                if !rmManager.bestRecords.isEmpty {
-                    Text("Ver todos")
+                Button { showingRMTracker = true } label: {
+                    Text(rmManager.bestRecords.isEmpty ? "Registrar" : "Ver todos")
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.accent)
                 }
             }
 
             if rmManager.bestRecords.isEmpty {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .font(BulkUpFont.caption())
-                    Text("Registra tus levantamientos en la seccion RM")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
+                Button { showingRMTracker = true } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle")
+                            .foregroundColor(BulkUpColors.accent)
+                            .font(BulkUpFont.caption())
+                        Text("Registra tus levantamientos")
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             } else {
                 let recentRecords = Array(
                     rmManager.bestRecords
@@ -654,6 +673,10 @@ struct ProgressDashboardView: View {
             }
         }
         .cardStyle()
+        .sheet(isPresented: $showingRMTracker) {
+            RMTrackerView()
+                .environmentObject(authManager)
+        }
     }
 
     // MARK: - Section 6: Friends & Leaderboard

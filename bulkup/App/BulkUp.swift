@@ -20,6 +20,7 @@ struct BulkUp: App {
         FoodTagInput.runSelfCheck()
         RecipeChatManager.runSelfCheck()
         DietFidelity.runSelfCheck()
+        DietCompliance.runSelfCheck()
 #endif
 
         NotificationCenter.default.addObserver(

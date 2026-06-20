@@ -112,8 +112,13 @@ struct TrainingView: View {
         return (weekday + 5) % 7
     }
 
-    /// Day letters for calendar strip
-    private let weekDayLetters = ["L", "M", "X", "J", "V", "S", "D"]
+    /// Localized single-letter weekday symbols, Monday-first
+    private var weekDayLetters: [String] {
+        let f = DateFormatter()
+        f.locale = LanguageManager.shared.locale
+        let symbols = f.veryShortWeekdaySymbols ?? ["S", "M", "T", "W", "T", "F", "S"]
+        return Array(symbols[1...]) + [symbols[0]]
+    }
 
     /// Which day indices have a workout assigned
     private var workoutDayIndices: Set<Int> {
