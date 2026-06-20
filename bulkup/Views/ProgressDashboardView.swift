@@ -26,7 +26,7 @@ struct ProgressDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: Spacing.sectionGap) {
                     // Free: Weekly summary and training progress
                     weeklySummaryCard
 
@@ -46,12 +46,13 @@ struct ProgressDashboardView: View {
                         premiumProgressTeaser
                     }
                 }
-                .padding()
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.top, Spacing.md)
                 .padding(.bottom, Spacing.lg)
             }
             .background(BulkUpColors.background.ignoresSafeArea())
             .navigationTitle("Progreso")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if storeKit.isSubscribed {
                     ToolbarItem(placement: .navigationBarTrailing) {

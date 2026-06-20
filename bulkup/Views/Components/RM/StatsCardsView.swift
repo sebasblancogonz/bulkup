@@ -89,7 +89,7 @@ struct StatsCard: View {
             )
         )
         .cornerRadius(CornerRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: CornerRadius.large).stroke(BulkUpColors.border, lineWidth: 0.5))
     }
 }
 
