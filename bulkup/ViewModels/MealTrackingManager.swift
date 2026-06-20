@@ -12,6 +12,9 @@ class MealTrackingManager: ObservableObject {
 
     @Published var todayTracking: [MealTrackingRecord] = []
     @Published var complianceStats: ComplianceStatsResponse?
+    /// Completed-meal count over the last 7 days (server). Paired with the plan's
+    /// expected meals to compute weekly compliance — see DietCompliance.
+    @Published var weeklyCompletedMeals: Int = 0
     @Published var cheatMealLog: String = ""
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -120,6 +123,11 @@ class MealTrackingManager: ObservableObject {
     func loadComplianceStats(userId: String) async {
         do {
             complianceStats = try await apiService.getComplianceStats(userId: userId)
+        } catch {
+            // Silently fail
+        }
+        do {
+            weeklyCompletedMeals = try await apiService.getComplianceStats(userId: userId, days: 7)?.completedMeals ?? 0
         } catch {
             // Silently fail
         }
