@@ -136,8 +136,26 @@ struct TodayView: View {
         return (completed, total)
     }
 
-    /// Week day letters for calendar strip
-    private let weekDayLetters = ["L", "M", "X", "J", "V", "S", "D"]
+    /// Localized single-letter weekday symbols, Monday-first (e.g. ES: L M M J V S D, EN: M T W T F S S)
+    private var weekDayLetters: [String] {
+        let f = DateFormatter()
+        f.locale = LanguageManager.shared.locale
+        // veryShortWeekdaySymbols is Sunday-first; reorder to Monday-first.
+        let symbols = f.veryShortWeekdaySymbols ?? ["S", "M", "T", "W", "T", "F", "S"]
+        return Array(symbols[1...]) + [symbols[0]]
+    }
+
+    /// Calendar date for a Monday-first week index (0=Mon ... 6=Sun) in the current week
+    private func dateForWeekIndex(_ index: Int) -> Date? {
+        guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: Date())?.start else { return nil }
+        return calendar.date(byAdding: .day, value: index, to: weekStart)
+    }
+
+    /// Day-of-month string for the strip (e.g. "14"); empty if uncomputable
+    private func dayNumber(for index: Int) -> String {
+        guard let date = dateForWeekIndex(index) else { return "" }
+        return "\(calendar.component(.day, from: date))"
+    }
 
     /// Completed day indices this week (Mon=0...Sun=6)
     private var completedDayIndices: Set<Int> {
@@ -270,6 +288,7 @@ struct TodayView: View {
             ForEach(0..<7, id: \.self) { index in
                 CalendarDayView(
                     dayLetter: weekDayLetters[index],
+                    dayNumber: dayNumber(for: index),
                     isToday: index == todayWeekdayIndex,
                     isCompleted: completedDayIndices.contains(index)
                 )
