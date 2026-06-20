@@ -60,7 +60,13 @@ struct MealCardView: View {
         .sheet(isPresented: $showingRecipe) {
             RecipeView(
                 mealType: meal.type,
-                ingredients: Array(Set(meal.options.flatMap { $0.ingredients })).sorted()
+                options: meal.options.enumerated().map { index, option in
+                    RecipeOptionChoice(
+                        id: "\(index)",
+                        label: option.optionDescription.isEmpty ? "Opción \(index + 1)" : option.optionDescription,
+                        ingredients: option.ingredients
+                    )
+                }
             )
         }
     }

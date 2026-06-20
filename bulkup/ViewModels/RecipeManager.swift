@@ -1,5 +1,26 @@
 import Foundation
 
+enum RecipeComplexity: String, CaseIterable, Identifiable {
+    case quick, medium, elaborate
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .quick: return "Rápida"
+        case .medium: return "Media"
+        case .elaborate: return "Elaborada"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .quick: return "< 15 min"
+        case .medium: return "~30 min"
+        case .elaborate: return "45+ min"
+        }
+    }
+}
+
 @MainActor
 final class RecipeManager: ObservableObject {
     @Published var recipe: String = ""
@@ -10,20 +31,26 @@ final class RecipeManager: ObservableObject {
     @Published var errorMessage: String?
 
     let mealType: String
-    let ingredients: [String]
     private let api = APIService.shared
+    private var lastIngredients: [String] = []
+    private var lastComplexity: RecipeComplexity = .medium
 
-    init(mealType: String, ingredients: [String]) {
+    init(mealType: String) {
         self.mealType = mealType
-        self.ingredients = ingredients
     }
 
-    func load() async {
+    func load(ingredients: [String], complexity: RecipeComplexity) async {
         guard !isLoadingRecipe else { return }
+        lastIngredients = ingredients
+        lastComplexity = complexity
         errorMessage = nil
         isLoadingRecipe = true
         do {
-            let result = try await api.generateRecipe(mealType: mealType, ingredients: ingredients)
+            let result = try await api.generateRecipe(
+                mealType: mealType,
+                ingredients: ingredients,
+                complexity: complexity.rawValue
+            )
             recipe = result.recipe
             dish = result.dish
             isLoadingRecipe = false
@@ -46,6 +73,6 @@ final class RecipeManager: ObservableObject {
         recipe = ""
         dish = ""
         imageData = nil
-        await load()
+        await load(ingredients: lastIngredients, complexity: lastComplexity)
     }
 }

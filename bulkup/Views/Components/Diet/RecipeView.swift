@@ -1,23 +1,42 @@
 import SwiftUI
 
-/// One-shot AI recipe for a meal: shows a generated recipe (markdown) plus an
-/// AI-generated dish image. Replaces the old recipe chat. PRO-gated.
+/// A selectable protein/carb option for the recipe (one of a meal's options).
+struct RecipeOptionChoice: Identifiable {
+    let id: String
+    let label: String
+    let ingredients: [String]
+}
+
+/// One-shot AI recipe for a meal. First the user picks which option(s) to use
+/// (based on what they have / prefer) and the complexity/time, then it generates
+/// a recipe (markdown) plus an AI image of the dish. PRO-gated.
 struct RecipeView: View {
     @StateObject private var manager: RecipeManager
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var storeKit = StoreKitManager.shared
 
+    private let options: [RecipeOptionChoice]
+
+    @State private var selectedOptionIDs: Set<String>
+    @State private var complexity: RecipeComplexity = .medium
+    @State private var hasGenerated = false
     @State private var showingSubscription = false
 
-    init(mealType: String, ingredients: [String]) {
-        _manager = StateObject(wrappedValue: RecipeManager(mealType: mealType, ingredients: ingredients))
+    init(mealType: String, options: [RecipeOptionChoice]) {
+        _manager = StateObject(wrappedValue: RecipeManager(mealType: mealType))
+        self.options = options
+        _selectedOptionIDs = State(initialValue: Set(options.map { $0.id }))
     }
 
     var body: some View {
         NavigationStack {
             Group {
                 if storeKit.isSubscribed {
-                    content
+                    if hasGenerated {
+                        recipeContent
+                    } else {
+                        configContent
+                    }
                 } else {
                     SubscriptionRequiredView(
                         onSubscribe: { showingSubscription = true },
@@ -36,25 +55,116 @@ struct RecipeView: View {
                     Button("Cerrar") { dismiss() }
                         .foregroundColor(BulkUpColors.accent)
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        Task { await manager.regenerate() }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .foregroundColor(BulkUpColors.accent)
+                if hasGenerated {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            Task { await manager.regenerate() }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .foregroundColor(BulkUpColors.accent)
+                        }
+                        .disabled(manager.isLoadingRecipe)
                     }
-                    .disabled(manager.isLoadingRecipe)
-                }
-            }
-            .task {
-                if storeKit.isSubscribed, manager.recipe.isEmpty {
-                    await manager.load()
                 }
             }
         }
     }
 
-    private var content: some View {
+    // MARK: - Config step
+
+    private var selectedIngredients: [String] {
+        let chosen = options.filter { selectedOptionIDs.contains($0.id) }
+        let pool = chosen.isEmpty ? options : chosen
+        return Array(Set(pool.flatMap { $0.ingredients })).sorted()
+    }
+
+    private var configContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                if options.count > 1 {
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Text("¿Qué quieres usar?")
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
+                        Text("Elige las opciones que tengas o te apetezcan.")
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
+                        ForEach(options) { option in
+                            optionRow(option)
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    Text("Complejidad")
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textPrimary)
+                    Picker("Complejidad", selection: $complexity) {
+                        ForEach(RecipeComplexity.allCases) { c in
+                            Text(c.label).tag(c)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    Text(complexity.detail)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
+                }
+
+                Button {
+                    hasGenerated = true
+                    Task { await manager.load(ingredients: selectedIngredients, complexity: complexity) }
+                } label: {
+                    Text("Generar receta")
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.onAccent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.md)
+                        .background(canGenerate ? BulkUpColors.accent : BulkUpColors.textTertiary)
+                        .cornerRadius(CornerRadius.large)
+                }
+                .disabled(!canGenerate)
+
+                Color.clear.frame(height: 20)
+            }
+            .padding(.horizontal, Spacing.screenH)
+            .padding(.top, Spacing.md)
+        }
+        .background(BulkUpColors.background)
+    }
+
+    private var canGenerate: Bool {
+        options.count <= 1 || !selectedOptionIDs.isEmpty
+    }
+
+    private func optionRow(_ option: RecipeOptionChoice) -> some View {
+        let isSelected = selectedOptionIDs.contains(option.id)
+        return Button {
+            if isSelected { selectedOptionIDs.remove(option.id) } else { selectedOptionIDs.insert(option.id) }
+        } label: {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(isSelected ? BulkUpColors.accent : BulkUpColors.textTertiary)
+                Text(option.label)
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .multilineTextAlignment(.leading)
+                Spacer()
+            }
+            .padding(Spacing.md)
+            .background(BulkUpColors.surface)
+            .cornerRadius(CornerRadius.large)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .stroke(isSelected ? BulkUpColors.accent.opacity(0.5) : BulkUpColors.border, lineWidth: isSelected ? 1.5 : 0.5)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Recipe step
+
+    private var recipeContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 imageHeader
@@ -74,6 +184,15 @@ struct RecipeView: View {
                             RoundedRectangle(cornerRadius: CornerRadius.large)
                                 .stroke(BulkUpColors.border, lineWidth: 0.5)
                         )
+
+                    Button {
+                        hasGenerated = false
+                    } label: {
+                        Label("Cambiar opciones", systemImage: "slider.horizontal.3")
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.accent)
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 Color.clear.frame(height: 40)
@@ -134,7 +253,7 @@ struct RecipeView: View {
                 .foregroundColor(BulkUpColors.textSecondary)
                 .multilineTextAlignment(.center)
             Button("Reintentar") {
-                Task { await manager.load() }
+                Task { await manager.load(ingredients: selectedIngredients, complexity: complexity) }
             }
             .foregroundColor(BulkUpColors.accent)
         }
