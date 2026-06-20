@@ -185,13 +185,13 @@ extension APIService {
     func listTrainingPlans(userId: String) async throws -> [ServerWorkout] {
         let request = LoadPlanRequest(userId: userId)
 
-        let response: APIResponse<[ServerWorkout]> = try await requestWithBody(
+        let response: APIResponse<[FailableDecodable<ServerWorkout>]> = try await requestWithBody(
             endpoint: "list-training-plans",
             method: .POST,
             body: request
         )
 
-        return response.data ?? []
+        return (response.data ?? []).compactMap { $0.value }
     }
 
     func createTrainingPlan(
@@ -484,13 +484,15 @@ extension APIService {
     func listDietPlans(userId: String) async throws -> [ServerDietPlan] {
         let request = LoadPlanRequest(userId: userId)
 
-        let response: APIResponse<[ServerDietPlan]> = try await requestWithBody(
+        let response: APIResponse<[FailableDecodable<ServerDietPlan>]> = try await requestWithBody(
             endpoint: "list-diet-plans",
             method: .POST,
             body: request
         )
 
-        return response.data ?? []
+        // Skip any individual plan that fails to decode so one bad plan doesn't
+        // blank the whole library.
+        return (response.data ?? []).compactMap { $0.value }
     }
 
     func activateDietPlan(userId: String, planId: String) async throws {
