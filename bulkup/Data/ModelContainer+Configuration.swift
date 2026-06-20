@@ -24,6 +24,7 @@ extension ModelContainer {
             WeightRecord.self,
             WeightSet.self,
             MealTrackingRecord.self,
+            WorkoutFeedback.self,
         ])
 
         let modelConfiguration = ModelConfiguration(

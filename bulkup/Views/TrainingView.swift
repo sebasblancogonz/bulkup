@@ -19,6 +19,8 @@ struct TrainingView: View {
     @State private var showingCompletionPrompt = false
     @State private var completionExerciseCount = 0
     @State private var completionTotalSets = 0
+    @State private var showFeedback = false
+    @State private var feedbackDayName = ""
     @AppStorage("lastCompletionPromptDate") private var lastCompletionPromptDate: String = ""
 
     enum ViewMode: String, CaseIterable {
@@ -384,11 +386,18 @@ struct TrainingView: View {
                 WorkoutSummaryView(summary: summary) {
                     // Save and mark complete
                     markWorkoutComplete()
+                    let finishedDay = currentTrainingDay ?? selectedDay
                     workoutSession.saveAndDismissSummary()
+                    // Prompt for post-workout sensations
+                    feedbackDayName = finishedDay
+                    showFeedback = true
                 }
                 .transition(.opacity)
                 .zIndex(100)
             }
+        }
+        .sheet(isPresented: $showFeedback) {
+            WorkoutFeedbackView(dayName: feedbackDayName, planId: trainingManager.trainingPlanId)
         }
     }
 
@@ -430,21 +439,37 @@ struct TrainingView: View {
     }
 
     private var completedPill: some View {
-        HStack(spacing: Spacing.sm) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 16))
-            Text("Completado")
-                .font(.system(size: 17, weight: .bold))
+        let day = currentTrainingDay ?? selectedDay
+        let savedEmoji = WorkoutFeedbackManager.shared
+            .feedback(planId: trainingManager.trainingPlanId, dayName: day)
+            .flatMap { WorkoutFeedbackManager.emoji(for: $0.rating) }
+        return Button {
+            feedbackDayName = day
+            showFeedback = true
+        } label: {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 16))
+                Text("Completado")
+                    .font(.system(size: 17, weight: .bold))
+                if let savedEmoji {
+                    Text(savedEmoji).font(.system(size: 18))
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .opacity(0.6)
+            }
+            .foregroundColor(BulkUpColors.success)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(BulkUpColors.success.opacity(0.1))
+            .cornerRadius(14)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(BulkUpColors.success.opacity(0.3), lineWidth: 1)
+            )
         }
-        .foregroundColor(BulkUpColors.success)
-        .frame(maxWidth: .infinity)
-        .frame(height: 56)
-        .background(BulkUpColors.success.opacity(0.1))
-        .cornerRadius(14)
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(BulkUpColors.success.opacity(0.3), lineWidth: 1)
-        )
+        .buttonStyle(.plain)
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.md)
     }
