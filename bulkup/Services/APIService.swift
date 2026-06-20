@@ -77,30 +77,12 @@ class APIService: ObservableObject {
             }
 
             let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .custom { decoder in
-                let container = try decoder.singleValueContainer()
+            decoder.dateDecodingStrategy = .custom { dec in
+                let container = try dec.singleValueContainer()
                 let dateString = try container.decode(String.self)
-
-                // Crear un formatter personalizado
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-                formatter.locale = Locale(identifier: "en_US_POSIX")
-                formatter.timeZone = TimeZone(secondsFromGMT: 0)
-
-                if let date = formatter.date(from: dateString) {
+                if let date = APIService.parseServerDate(dateString) {
                     return date
                 }
-
-                // Backup formatter sin milisegundos
-                let backupFormatter = DateFormatter()
-                backupFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-                backupFormatter.locale = Locale(identifier: "en_US_POSIX")
-                backupFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-
-                if let date = backupFormatter.date(from: dateString) {
-                    return date
-                }
-
                 throw DecodingError.dataCorruptedError(
                     in: container,
                     debugDescription: "Cannot decode date string \(dateString)"
@@ -189,28 +171,12 @@ class APIService: ObservableObject {
         }
 
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .custom { decoder in
-            let container = try decoder.singleValueContainer()
+        decoder.dateDecodingStrategy = .custom { dec in
+            let container = try dec.singleValueContainer()
             let dateString = try container.decode(String.self)
-
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.timeZone = TimeZone(secondsFromGMT: 0)
-
-            if let date = formatter.date(from: dateString) {
+            if let date = APIService.parseServerDate(dateString) {
                 return date
             }
-
-            let backupFormatter = DateFormatter()
-            backupFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-            backupFormatter.locale = Locale(identifier: "en_US_POSIX")
-            backupFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-
-            if let date = backupFormatter.date(from: dateString) {
-                return date
-            }
-
             throw DecodingError.dataCorruptedError(
                 in: container,
                 debugDescription: "Cannot decode date string \(dateString)"
@@ -233,4 +199,47 @@ class APIService: ObservableObject {
         // Aquí obtienes el token de KeyChain, UserDefaults, etc.
         return UserDefaults.standard.string(forKey: "auth_token")
     }
+}
+
+// MARK: - Robust server date parsing
+
+extension APIService {
+    /// Parses RFC3339 / ISO8601 timestamps from the Go backend, which emits
+    /// variable-length fractional seconds (nanoseconds). Fixed ".SSS"
+    /// DateFormatters reject those, which silently broke list decoding.
+    static func parseServerDate(_ raw: String) -> Date? {
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = iso.date(from: raw) { return d }
+        iso.formatOptions = [.withInternetDateTime]
+        if let d = iso.date(from: raw) { return d }
+
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(secondsFromGMT: 0)
+
+        // Normalize fractional seconds to 3 digits, then parse as milliseconds.
+        if let range = raw.range(of: #"\.\d+"#, options: .regularExpression) {
+            let digits = raw[range].dropFirst()
+            let millis = String((digits + "000").prefix(3))
+            let normalized = raw.replacingCharacters(in: range, with: "." + millis)
+            f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            if let d = f.date(from: normalized) { return d }
+        }
+
+        for fmt in ["yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ss"] {
+            f.dateFormat = fmt
+            if let d = f.date(from: raw) { return d }
+        }
+        return nil
+    }
+
+    #if DEBUG
+    static func runDateParsingSelfCheck() {
+        assert(parseServerDate("2026-06-20T10:00:00.123456789Z") != nil, "nanoseconds")
+        assert(parseServerDate("2026-06-20T10:00:00Z") != nil, "no fraction")
+        assert(parseServerDate("2026-06-20T10:00:00.123Z") != nil, "milliseconds")
+        assert(parseServerDate("not-a-date") == nil, "invalid")
+    }
+    #endif
 }

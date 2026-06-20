@@ -20,6 +20,7 @@ struct BulkUp: App {
         FoodTagInput.runSelfCheck()
         DietFidelity.runSelfCheck()
         DietCompliance.runSelfCheck()
+        APIService.runDateParsingSelfCheck()
 #endif
 
         NotificationCenter.default.addObserver(
