@@ -357,6 +357,16 @@
         }
       }
     },
+    "%lld %@ gratis" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@ gratis"
+          }
+        }
+      }
+    },
     "%lld × %@" : {
       "localizations" : {
         "en" : {
@@ -1267,6 +1277,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "yrs"
+          }
+        }
+      }
+    },
+    "ant. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prev. %@"
+          }
+        }
+      }
+    },
+    "ant. %@ kg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prev. %@ kg"
           }
         }
       }
@@ -3195,6 +3225,9 @@
         }
       }
     },
+    "Empezar prueba gratis" : {
+
+    },
     "Empuje" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3654,7 +3687,11 @@
         }
       }
     },
+    "facturado %@" : {
+
+    },
     "Facturado %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3664,7 +3701,11 @@
         }
       }
     },
+    "facturado anualmente" : {
+
+    },
     "Facturado anualmente" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3674,7 +3715,11 @@
         }
       }
     },
+    "facturado mensualmente" : {
+
+    },
     "Facturado mensualmente" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4689,6 +4734,7 @@
       }
     },
     "MÁS POPULAR" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4842,6 +4888,9 @@
           }
         }
       }
+    },
+    "MEJOR VALOR" : {
+
     },
     "Mensual" : {
       "localizations" : {
