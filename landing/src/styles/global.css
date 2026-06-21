@@ -1,7 +1,39 @@
 @import "tailwindcss";
 
+@theme {
+  --color-bg: #0A0A0B;
+  --color-surface: #121214;
+  --color-surface-2: #1A1A1E;
+  --color-line: #26262B;
+  --color-fg: #F4F4F2;
+  --color-muted: #9A9AA2;
+  --color-accent: #C8FF3D;      /* electric lime */
+  --color-accent-2: #34D399;    /* app diet green, used sparingly */
+  --font-display: "Clash Display", "Arial Black", system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
 :root { color-scheme: dark; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; background: var(--color-bg); }
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-sans); }
+
+.text-balance { text-wrap: balance; }
+
+/* Film grain overlay (applied on a fixed full-screen layer in BaseLayout) */
+.grain::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 50;
+  opacity: .04; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Soft radial accent glow utility */
+.glow { position: relative; }
+.glow::before {
+  content: ""; position: absolute; inset: -20% -10% auto; height: 60%;
+  background: radial-gradient(50% 50% at 50% 0%, color-mix(in oklab, var(--color-accent) 22%, transparent), transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
