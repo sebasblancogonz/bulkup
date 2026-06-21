@@ -1771,6 +1771,16 @@
     "Cambiar opciones" : {
 
     },
+    "Cambiar vista" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change view"
+          }
+        }
+      }
+    },
     "Cambios desde la medición anterior" : {
       "localizations" : {
         "en" : {
@@ -2903,6 +2913,16 @@
         }
       }
     },
+    "Distribución semanal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly split"
+          }
+        }
+      }
+    },
     "Dorsales" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3173,6 +3193,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exercises with PR"
+          }
+        }
+      }
+    },
+    "Ejercicios y series" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exercises and sets"
           }
         }
       }
@@ -3964,6 +3994,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Photo of your diet"
+          }
+        }
+      }
+    },
+    "Foto de tu plan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo of your plan"
           }
         }
       }
@@ -6196,6 +6236,16 @@
         }
       }
     },
+    "Progresión y volumen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progression and volume"
+          }
+        }
+      }
+    },
     "Proteína" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6552,6 +6602,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reps"
+          }
+        }
+      }
+    },
+    "Repeticiones y descansos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reps and rest"
           }
         }
       }
