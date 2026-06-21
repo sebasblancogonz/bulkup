@@ -1,0 +1,29 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import Reveal from '../Reveal.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+const features = [
+  { k: 'training', span: 'md:col-span-2' },
+  { k: 'diet', span: '' },
+  { k: 'rm', span: '' },
+  { k: 'body', span: '' },
+  { k: 'meals', span: '' },
+  { k: 'friends', span: 'md:col-span-2' },
+];
+---
+<section class="max-w-6xl mx-auto px-6 py-28">
+  <Reveal client:visible>
+    <h2 class="font-[var(--font-display)] text-4xl sm:text-5xl font-black text-center text-balance mb-16">{t('features.title')}</h2>
+  </Reveal>
+  <div class="grid md:grid-cols-3 gap-4 auto-rows-fr">
+    {features.map((f, i) => (
+      <Reveal client:visible delay={i * 0.05}>
+        <article class={`h-full rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] p-7 hover:border-[var(--color-accent)]/50 transition-colors ${f.span}`}>
+          <h3 class="text-xl font-semibold mb-2">{t(`feature.${f.k}.title`)}</h3>
+          <p class="text-[var(--color-muted)]">{t(`feature.${f.k}.body`)}</p>
+        </article>
+      </Reveal>
+    ))}
+  </div>
+</section>
