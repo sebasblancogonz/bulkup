@@ -128,7 +128,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "bulkupannual",
+          "productID" : "bulkupyearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "BulkUp PRO Annual",
           "subscriptionGroupID" : "A30F7F13",
