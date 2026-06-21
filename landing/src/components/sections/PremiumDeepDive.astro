@@ -5,7 +5,7 @@ const { locale } = Astro.props as { locale: Locale };
 const t = useT(locale);
 ---
 <section class="glow relative max-w-6xl mx-auto px-6 py-32 text-center">
-  <Reveal client:visible>
+  <Reveal client:visible variant="blur" duration={0.9}>
     <h2 class="font-[var(--font-display)] text-4xl sm:text-6xl font-black text-balance mb-6">{t('premium.title')}</h2>
     <p class="text-lg text-[var(--color-muted)] max-w-xl mx-auto">{t('premium.body')}</p>
   </Reveal>

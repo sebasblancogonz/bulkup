@@ -13,7 +13,13 @@
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
 }
 
-:root { color-scheme: dark; }
+:root {
+  color-scheme: dark;
+  /* Motion curves — stronger than the CSS built-ins (Emil Kowalski) */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
 html { scroll-behavior: smooth; background: var(--color-bg); }
 body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-sans); }
 
@@ -34,10 +40,85 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   pointer-events: none; z-index: 0;
 }
 
+/* ─── Ambient aurora ──────────────────────────────────────────────
+   Slow-drifting blurred color fields behind the hero. GPU-only
+   (transform/opacity). Organic — never lands in the same spot. */
+.aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.aurora::before, .aurora::after {
+  content: ""; position: absolute; width: 60vw; height: 60vw; border-radius: 50%;
+  filter: blur(80px); opacity: .5; will-change: transform;
+}
+.aurora::before {
+  top: -20%; left: -10%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--color-accent) 55%, transparent), transparent 60%);
+  animation: drift-a 22s var(--ease-in-out) infinite alternate;
+}
+.aurora::after {
+  top: -10%; right: -15%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--color-accent-2) 45%, transparent), transparent 60%);
+  animation: drift-b 28s var(--ease-in-out) infinite alternate;
+}
+@keyframes drift-a {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  100% { transform: translate3d(12vw, 8vh, 0) scale(1.25); }
+}
+@keyframes drift-b {
+  0%   { transform: translate3d(0,0,0) scale(1.1); }
+  100% { transform: translate3d(-10vw, 12vh, 0) scale(0.85); }
+}
+
+/* Gentle idle float (hero visual) */
+.float { animation: float 7s var(--ease-in-out) infinite alternate; will-change: transform; }
+@keyframes float {
+  from { transform: translateY(-8px); }
+  to   { transform: translateY(8px); }
+}
+
+/* Scroll cue */
+.scroll-cue { animation: cue 1.8s var(--ease-in-out) infinite; }
+@keyframes cue {
+  0%, 100% { transform: translateY(0); opacity: .35; }
+  50%      { transform: translateY(6px); opacity: 1; }
+}
+
+/* ─── Cursor spotlight cards ─────────────────────────────────────
+   A pointer-following highlight + border glow. The position vars
+   (--mx/--my) are written by the Spotlight island. */
+.spot { position: relative; isolation: isolate; }
+.spot::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
+  opacity: 0; transition: opacity 300ms var(--ease-out);
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 0%),
+    color-mix(in oklab, var(--color-accent) 14%, transparent), transparent 60%);
+}
+@media (hover: hover) and (pointer: fine) {
+  .spot { transition: transform 300ms var(--ease-out), border-color 300ms var(--ease-out); }
+  .spot:hover { transform: translateY(-4px); border-color: color-mix(in oklab, var(--color-accent) 45%, var(--color-line)); }
+  .spot:hover::before { opacity: 1; }
+}
+
+/* ─── CTA sheen ──────────────────────────────────────────────────
+   A light sweep that crosses the button on hover. */
+.sheen { position: relative; overflow: hidden; }
+.sheen::after {
+  content: ""; position: absolute; top: 0; left: 0; width: 60%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.45), transparent);
+  transform: translateX(-160%) skewX(-18deg); pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .sheen:hover::after { transition: transform 700ms var(--ease-out); transform: translateX(280%) skewX(-18deg); }
+}
+
+/* Press feedback for any pressable element */
+.press { transition: transform 160ms var(--ease-out); }
+.press:active { transform: scale(0.97); }
+
 /* No-JS reveal fallback: show content that motion.js would animate in */
-html:not(.js) [data-reveal] { opacity: 1 !important; transform: none !important; }
+html:not(.js) [data-reveal] { opacity: 1 !important; transform: none !important; filter: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  /* Kill ambient looping motion entirely rather than running it at warp speed */
+  .aurora::before, .aurora::after, .float, .scroll-cue { animation: none !important; }
 }

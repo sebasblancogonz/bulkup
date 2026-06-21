@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { useT, type Locale } from '../i18n/ui';
 import { buildAlternates, softwareAppLd, organizationLd, faqLd } from '../lib/seo';
 import JsonLd from '../components/seo/JsonLd.astro';
+import ScrollProgress from '../components/ScrollProgress.tsx';
 
 interface Props { locale: Locale; path: string; title?: string; description?: string }
 const { locale, path, title, description } = Astro.props;
@@ -40,6 +41,19 @@ const ogImage = 'https://getbulkup.com/og-default.png';
     <JsonLd data={faqLd(locale)} />
   </head>
   <body class="grain antialiased">
+    <ScrollProgress client:load />
     <slot />
+    <script is:inline>
+      // Delegated cursor spotlight for any `.spot` card (fine pointers only).
+      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        document.addEventListener('pointermove', (e) => {
+          const card = e.target.closest && e.target.closest('.spot');
+          if (!card) return;
+          const r = card.getBoundingClientRect();
+          card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+          card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+        }, { passive: true });
+      }
+    </script>
   </body>
 </html>

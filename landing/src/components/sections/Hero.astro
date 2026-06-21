@@ -1,29 +1,39 @@
 ---
 import { useT, type Locale } from '../../i18n/ui';
 import WaitlistForm from '../WaitlistForm.tsx';
+import RevealText from '../RevealText.tsx';
+import HeroVisual from '../HeroVisual.tsx';
+import Reveal from '../Reveal.tsx';
 import LanguageSwitch from '../LanguageSwitch.astro';
 const { locale } = Astro.props as { locale: Locale };
 const t = useT(locale);
 ---
-<header class="glow relative overflow-hidden">
+<header class="relative overflow-hidden">
+  <div class="aurora" aria-hidden="true"></div>
   <nav class="relative z-10 max-w-6xl mx-auto flex items-center justify-between px-6 py-6">
     <span class="font-[var(--font-display)] text-xl font-black tracking-tight">BulkUp</span>
     <LanguageSwitch locale={locale} />
   </nav>
   <div class="relative z-10 max-w-6xl mx-auto px-6 pt-12 pb-24 grid lg:grid-cols-2 gap-12 items-center">
     <div>
-      <p class="uppercase tracking-[0.2em] text-xs text-[var(--color-accent)] mb-5">{t('hero.eyebrow')}</p>
-      <h1 class="font-[var(--font-display)] text-5xl sm:text-6xl lg:text-7xl font-black leading-[0.95] text-balance mb-6">{t('hero.title')}</h1>
-      <p class="text-lg text-[var(--color-muted)] max-w-md mb-8">{t('hero.subtitle')}</p>
-      <WaitlistForm client:load locale={locale}
-        ctaLabel={t('hero.cta')} placeholder={t('hero.placeholder')}
-        successMsg={t('form.success')} errorMsg={t('form.error')} invalidMsg={t('form.invalid')} />
+      <Reveal client:load variant="blur" y={12}>
+        <p class="uppercase tracking-[0.2em] text-xs text-[var(--color-accent)] mb-5">{t('hero.eyebrow')}</p>
+      </Reveal>
+      <h1 class="font-[var(--font-display)] text-5xl sm:text-6xl lg:text-7xl font-black leading-[0.95] text-balance mb-6">
+        <RevealText client:load text={t('hero.title')} />
+      </h1>
+      <Reveal client:load variant="up" delay={0.4} duration={0.8}>
+        <p class="text-lg text-[var(--color-muted)] max-w-md mb-8">{t('hero.subtitle')}</p>
+      </Reveal>
+      <Reveal client:load variant="up" delay={0.55} duration={0.8}>
+        <WaitlistForm client:load locale={locale}
+          ctaLabel={t('hero.cta')} placeholder={t('hero.placeholder')}
+          successMsg={t('form.success')} errorMsg={t('form.error')} invalidMsg={t('form.invalid')} />
+      </Reveal>
     </div>
-    <div class="relative">
-      <!-- placeholder phone mockup; swap with real screenshot -->
-      <div class="mx-auto w-[280px] h-[580px] rounded-[2.5rem] border border-[var(--color-line)] bg-[var(--color-surface)] shadow-2xl shadow-black/60 flex items-center justify-center">
-        <span class="text-[var(--color-muted)] text-sm">App preview</span>
-      </div>
-    </div>
+    <HeroVisual client:load label="App preview" />
+  </div>
+  <div class="relative z-10 flex justify-center pb-10 text-[var(--color-muted)]" aria-hidden="true">
+    <svg class="scroll-cue" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
   </div>
 </header>
