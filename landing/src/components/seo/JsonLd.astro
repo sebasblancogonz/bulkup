@@ -1,0 +1,4 @@
+---
+const { data } = Astro.props as { data: unknown };
+---
+<script type="application/ld+json" set:html={JSON.stringify(data)} />

@@ -1,0 +1,43 @@
+---
+import '../styles/global.css';
+import { useT, type Locale } from '../i18n/ui';
+import { buildAlternates, softwareAppLd, organizationLd, faqLd } from '../lib/seo';
+import JsonLd from '../components/seo/JsonLd.astro';
+
+interface Props { locale: Locale; path: string; title?: string; description?: string }
+const { locale, path, title, description } = Astro.props;
+const t = useT(locale);
+const pageTitle = title ?? t('meta.title');
+const pageDesc = description ?? t('meta.description');
+const canonical = new URL(Astro.url.pathname, 'https://getbulkup.com').href;
+const alternates = buildAlternates(path);
+const ogImage = 'https://getbulkup.com/og-default.png';
+---
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDesc} />
+    <link rel="canonical" href={canonical} />
+    {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={locale === 'es' ? 'es_ES' : 'en_US'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDesc} />
+    <meta name="twitter:image" content={ogImage} />
+    <link rel="icon" href="/favicon.svg" />
+    <meta name="theme-color" content="#0A0A0B" />
+    <JsonLd data={softwareAppLd(locale)} />
+    <JsonLd data={organizationLd()} />
+    <JsonLd data={faqLd(locale)} />
+  </head>
+  <body class="grain antialiased">
+    <slot />
+  </body>
+</html>
