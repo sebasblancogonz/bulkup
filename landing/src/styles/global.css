@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0A0A0B;
-  --color-surface: #121214;
-  --color-surface-2: #1A1A1E;
-  --color-line: #26262B;
-  --color-fg: #F4F4F2;
-  --color-muted: #9A9AA2;
-  --color-accent: #C8FF3D;      /* electric lime */
-  --color-accent-2: #34D399;    /* app diet green, used sparingly */
+  /* Mirrors the iOS app's DesignSystem.swift (dark palette) */
+  --color-bg: #0A0A0A;
+  --color-surface: #161616;
+  --color-surface-2: #1E1E1E;
+  --color-line: rgba(255, 255, 255, 0.09);  /* app border: white @ ~0.08 */
+  --color-fg: #FFFFFF;
+  --color-muted: #8E8E93;                    /* app textSecondary */
+  --color-accent: #00E6C3;                   /* brand teal/mint */
+  --color-accent-glow: #00FFD5;              /* brand gradient highlight */
+  --color-accent-2: #7B61FF;                 /* electric violet, used sparingly */
   --font-display: "Clash Display", "Arial Black", system-ui, sans-serif;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
 }
@@ -25,6 +27,9 @@
    good measure). `clip` adds no scroll container and is sticky/fixed-safe. */
 html { scroll-behavior: smooth; background: var(--color-bg); overflow-x: clip; }
 body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-sans); overflow-x: clip; }
+
+/* Display headings hold against dark surfaces — bold + tight tracking (Spotify) */
+h1, h2 { letter-spacing: -0.02em; }
 
 .text-balance { text-wrap: balance; }
 
@@ -95,8 +100,9 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     color-mix(in oklab, var(--color-accent) 14%, transparent), transparent 60%);
 }
 @media (hover: hover) and (pointer: fine) {
-  .spot { transition: transform 300ms var(--ease-out), border-color 300ms var(--ease-out); }
-  .spot:hover { transform: translateY(-4px); border-color: color-mix(in oklab, var(--color-accent) 45%, var(--color-line)); }
+  /* Spotify card hover: surface steps up + lift + accent border + spotlight */
+  .spot { transition: transform 300ms var(--ease-out), border-color 300ms var(--ease-out), background-color 300ms var(--ease-out); }
+  .spot:hover { transform: translateY(-4px); background-color: var(--color-surface-2); border-color: color-mix(in oklab, var(--color-accent) 45%, var(--color-line)); }
   .spot:hover::before { opacity: 1; }
 }
 
@@ -112,8 +118,11 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   .sheen:hover::after { transition: transform 700ms var(--ease-out); transform: translateX(280%) skewX(-18deg); }
 }
 
-/* Press feedback for any pressable element */
+/* Pill-button feel (Spotify primary): subtle hover grow, snappy press */
 .press { transition: transform 160ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .press:hover { transform: scale(1.02); }
+}
 .press:active { transform: scale(0.97); }
 
 /* No-JS reveal fallback: show content that motion.js would animate in */
