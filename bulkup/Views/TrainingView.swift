@@ -668,11 +668,11 @@ struct TrainingView: View {
         }
         .padding(.vertical, Spacing.sm)
         .background(BulkUpColors.surface)
-        .cornerRadius(CornerRadius.medium)
         .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .stroke(BulkUpColors.border, lineWidth: 0.5)
+            Rectangle().frame(height: 0.5).foregroundColor(BulkUpColors.border),
+            alignment: .bottom
         )
+        .padding(.horizontal, -Spacing.screenH)
     }
 
     private func dateForWeekIndex(_ index: Int) -> Date? {
