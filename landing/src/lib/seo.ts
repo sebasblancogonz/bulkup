@@ -4,12 +4,12 @@ const SITE = 'https://getbulkup.com';
 
 export function buildAlternates(path: string) {
   const clean = path.replace(/^\/es/, '') || '/';
-  const en = `${SITE}${clean === '/' ? '' : clean}` || SITE;
+  const en = `${SITE}${clean === '/' ? '' : clean}`;
   const es = `${SITE}/es${clean === '/' ? '' : clean}`;
   return [
-    { hreflang: 'en', href: en || SITE },
+    { hreflang: 'en', href: en },
     { hreflang: 'es', href: es },
-    { hreflang: 'x-default', href: en || SITE },
+    { hreflang: 'x-default', href: en },
   ];
 }
 

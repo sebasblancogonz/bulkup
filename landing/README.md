@@ -21,7 +21,7 @@ npm test
 - Framework preset: Astro.
 
 ## Swap placeholders before launch
-- `public/og-default.png` — real 1200×630 OG image.
+- `public/og-default.png` — replace the placeholder solid-color PNG with branded 1200×630 art.
 - `public/favicon.svg`, logo wordmark in `Hero.astro` / `Footer.astro`.
 - Device mockups in `Hero.astro` and `Showcase.astro` — real screenshots.
 - `SocialProof.astro` / count value.

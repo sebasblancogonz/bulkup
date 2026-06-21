@@ -6,6 +6,7 @@ export default function Reveal({ children, delay = 0, y = 24 }: { children: Reac
   if (reduce) return <>{children}</>;
   return (
     <motion.div
+      data-reveal
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}

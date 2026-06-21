@@ -9,13 +9,14 @@ const { locale, path, title, description } = Astro.props;
 const t = useT(locale);
 const pageTitle = title ?? t('meta.title');
 const pageDesc = description ?? t('meta.description');
-const canonical = new URL(Astro.url.pathname, 'https://getbulkup.com').href;
+const canonical = new URL(Astro.url.pathname, 'https://getbulkup.com').href.replace(/\/$/, '') || 'https://getbulkup.com';
 const alternates = buildAlternates(path);
 const ogImage = 'https://getbulkup.com/og-default.png';
 ---
 <!doctype html>
 <html lang={locale}>
   <head>
+    <script is:inline>document.documentElement.classList.add('js')</script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
@@ -23,6 +24,7 @@ const ogImage = 'https://getbulkup.com/og-default.png';
     <link rel="canonical" href={canonical} />
     {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDesc} />
     <meta property="og:image" content={ogImage} />

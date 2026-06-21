@@ -34,6 +34,9 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   pointer-events: none; z-index: 0;
 }
 
+/* No-JS reveal fallback: show content that motion.js would animate in */
+html:not(.js) [data-reveal] { opacity: 1 !important; transform: none !important; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
