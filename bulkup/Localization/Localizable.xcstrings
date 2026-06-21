@@ -1,6 +1,46 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    "Energía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energy"
+          }
+        }
+      }
+    },
+    "Fatiga" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fatigue"
+          }
+        }
+      }
+    },
+    "Dolor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pain"
+          }
+        }
+      }
+    },
+    "Ánimo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mood"
+          }
+        }
+      }
+    },
     "" : {
       "localizations" : {
         "en" : {
@@ -88,10 +128,24 @@
       }
     },
     "¿Algo que destacar? (opcional)" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anything to highlight? (optional)"
+          }
+        }
+      }
     },
     "¿Cómo fue el entreno?" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How was the workout?"
+          }
+        }
+      }
     },
     "¿Eliminar récord?" : {
       "localizations" : {
@@ -144,7 +198,14 @@
       }
     },
     "¿Qué comiste?" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What did you eat?"
+          }
+        }
+      }
     },
     "¿Qué quieres usar?" : {
 
@@ -353,6 +414,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld"
+          }
+        }
+      }
+    },
+    "%lld %@ gratis" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@ gratis"
           }
         }
       }
@@ -1267,6 +1338,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "yrs"
+          }
+        }
+      }
+    },
+    "ant. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prev. %@"
+          }
+        }
+      }
+    },
+    "ant. %@ kg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prev. %@ kg"
           }
         }
       }
@@ -2700,7 +2791,14 @@
       }
     },
     "Día saltado" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skipped day"
+          }
+        }
+      }
     },
     "Diario" : {
       "localizations" : {
@@ -2999,7 +3097,14 @@
       }
     },
     "Ej: pizza familiar y 2 cervezas" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E.g. family pizza and 2 beers"
+          }
+        }
+      }
     },
     "Ej: Post-entreno" : {
       "localizations" : {
@@ -3194,6 +3299,9 @@
           }
         }
       }
+    },
+    "Empezar prueba gratis" : {
+
     },
     "Empuje" : {
       "extractionState" : "manual",
@@ -3566,7 +3674,14 @@
       }
     },
     "Estimando…" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimating…"
+          }
+        }
+      }
     },
     "Estiramiento" : {
       "extractionState" : "manual",
@@ -3600,7 +3715,14 @@
       }
     },
     "Etiquetas" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        }
+      }
     },
     "Experto" : {
       "extractionState" : "manual",
@@ -3654,7 +3776,11 @@
         }
       }
     },
+    "facturado %@" : {
+
+    },
     "Facturado %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3664,7 +3790,11 @@
         }
       }
     },
+    "facturado anualmente" : {
+
+    },
     "Facturado anualmente" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3674,7 +3804,11 @@
         }
       }
     },
+    "facturado mensualmente" : {
+
+    },
     "Facturado mensualmente" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3775,10 +3909,24 @@
       }
     },
     "Fidelidad a la dieta" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diet adherence"
+          }
+        }
+      }
     },
     "Fidelidad a la dieta (PRO)" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diet adherence (PRO)"
+          }
+        }
+      }
     },
     "Filtros" : {
       "localizations" : {
@@ -3821,7 +3969,14 @@
       }
     },
     "Fotos" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos"
+          }
+        }
+      }
     },
     "Frecuencia" : {
       "localizations" : {
@@ -3928,7 +4083,14 @@
       }
     },
     "Guardadas solo en este dispositivo." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved only on this device."
+          }
+        }
+      }
     },
     "Guardado" : {
       "localizations" : {
@@ -4689,6 +4851,7 @@
       }
     },
     "MÁS POPULAR" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4842,6 +5005,9 @@
           }
         }
       }
+    },
+    "MEJOR VALOR" : {
+
     },
     "Mensual" : {
       "localizations" : {
@@ -5282,7 +5448,14 @@
       }
     },
     "Nota" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        }
+      }
     },
     "Notas (opcional)" : {
       "localizations" : {
@@ -6256,7 +6429,14 @@
       }
     },
     "Registra días o añade calorías al plan" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log days or add calories to the plan"
+          }
+        }
+      }
     },
     "Registra lo que comiste en tu comida libre" : {
       "localizations" : {
@@ -6670,7 +6850,14 @@
       }
     },
     "Sensación" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feeling"
+          }
+        }
+      }
     },
     "SERIE" : {
       "localizations" : {
@@ -7402,7 +7589,14 @@
       }
     },
     "últimos 30 días" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "last 30 days"
+          }
+        }
+      }
     },
     "UPGRADE" : {
       "localizations" : {

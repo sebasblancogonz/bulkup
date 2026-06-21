@@ -622,7 +622,7 @@ struct ExerciseWeightLogger: View {
                 Spacer()
 
                 if let prev = safeGetPrevWeight(setIndex), prev > 0 {
-                    Text("ant. " + formatWeight(prev) + " kg")
+                    Text("ant. \(formatWeight(prev)) kg")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(BulkUpColors.textTertiary)
                 }

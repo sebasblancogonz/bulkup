@@ -227,6 +227,8 @@ struct StatCard: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundColor(BulkUpColors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                 if let trend {
                     Text(trend)
                         .font(BulkUpFont.caption())
@@ -238,6 +240,8 @@ struct StatCard: View {
                 .font(BulkUpFont.badge())
                 .tracking(0.5)
                 .foregroundColor(BulkUpColors.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .flatCardStyle()

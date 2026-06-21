@@ -223,7 +223,7 @@ private struct FlowChips: View {
             ForEach(items, id: \.self) { item in
                 let isOn = selected.contains(item)
                 Button { onTap(item) } label: {
-                    Text(item)
+                    Text(LocalizedStringKey(item))
                         .font(BulkUpFont.caption())
                         .foregroundColor(isOn ? BulkUpColors.onAccent : BulkUpColors.textPrimary)
                         .padding(.horizontal, Spacing.md)
