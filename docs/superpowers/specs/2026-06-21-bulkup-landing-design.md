@@ -17,7 +17,7 @@ Primary CTA everywhere: **join the waitlist**.
 | Topic | Decision |
 |---|---|
 | Launch status | Pre-launch. Waitlist is the only conversion goal. |
-| Languages | Bilingual ES + EN. ES is default (`/`), EN at `/en`. `hreflang` + `x-default`. |
+| Languages | Bilingual EN + ES. **EN is default (`/`)**, ES at `/es`. `hreflang` + `x-default`. |
 | Email backend | **Resend** — contacts stored in a Resend Audience; enables newsletter broadcasts later. |
 | Brand assets | User provides logo + real screenshots later. Build with swappable placeholders (device mockups, logo slot). |
 | Aesthetic | Dark athletic premium — near-black bg, vibrant lime/electric-green accent, oversized bold type, cinematic gradients/glow, subtle grain. Organic, not templated. |
@@ -76,12 +76,14 @@ Each section is an independent component with one clear purpose.
 ## SEO / SEM / LLM Plan
 
 - Per-page `<title>`, meta description, canonical, OG + Twitter cards.
-- `hreflang` for es/en + `x-default`.
+- `hreflang` for en/es + `x-default` (→ EN).
 - `sitemap.xml`, `robots.txt`, and `llms.txt`.
 - JSON-LD: `SoftwareApplication`, `Organization`, `FAQPage`.
 - Keyword-targeted bilingual copy
-  (ES: "app entrenamiento personalizado", "convertir plan PDF en app",
-  "seguimiento dieta IA"; EN mirrors).
+  (EN: "personalized workout plan app", "turn PDF workout plan into app",
+  "AI diet tracking app"; ES mirrors:
+  "app entrenamiento personalizado", "convertir plan PDF en app",
+  "seguimiento dieta IA").
 - Dynamic OG image. Performance budget: near-100 Lighthouse, green Core Web Vitals.
 
 ## Design System (dark athletic premium)
@@ -105,7 +107,7 @@ Each section is an independent component with one clear purpose.
   astro.config.mjs      # i18n + vercel adapter + tailwind
   .env.example
   src/
-    pages/              # index.astro (es), en/index.astro
+    pages/              # index.astro (en, default), es/index.astro
     components/         # one file per section + shared UI
     layouts/
     content/            # bilingual copy (i18n dictionaries)
@@ -129,5 +131,5 @@ The iOS app, widgets, and Go backend are untouched.
 - Waitlist form adds a real contact to the Resend Audience.
 - Lighthouse SEO + Performance ≥ 95 on the hero page.
 - Valid JSON-LD (passes Rich Results test), correct hreflang, sitemap present.
-- Both `/` (ES) and `/en` render fully with working language switch.
+- Both `/` (EN) and `/es` render fully with working language switch.
 - Reduced-motion users get a static, fully-usable page.
