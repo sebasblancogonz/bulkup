@@ -1,5 +1,26 @@
 ---
-import '../styles/global.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/sections/Hero.astro';
+import SocialProof from '../components/sections/SocialProof.astro';
+import ProblemSolution from '../components/sections/ProblemSolution.astro';
+import FeaturesBento from '../components/sections/FeaturesBento.astro';
+import PremiumDeepDive from '../components/sections/PremiumDeepDive.astro';
+import Showcase from '../components/sections/Showcase.astro';
+import PricingTeaser from '../components/sections/PricingTeaser.astro';
+import Faq from '../components/sections/Faq.astro';
+import FinalCta from '../components/sections/FinalCta.astro';
+import Footer from '../components/sections/Footer.astro';
+const locale = 'en';
 ---
-<html lang="en"><head><meta charset="utf-8" /><title>BulkUp</title></head>
-<body class="bg-black text-white"><h1 class="text-4xl p-10">BulkUp landing — scaffold OK</h1></body></html>
+<BaseLayout locale={locale} path="/">
+  <Hero locale={locale} />
+  <SocialProof locale={locale} />
+  <ProblemSolution locale={locale} />
+  <FeaturesBento locale={locale} />
+  <PremiumDeepDive locale={locale} />
+  <Showcase locale={locale} />
+  <PricingTeaser locale={locale} />
+  <Faq locale={locale} />
+  <FinalCta locale={locale} />
+  <Footer locale={locale} />
+</BaseLayout>
