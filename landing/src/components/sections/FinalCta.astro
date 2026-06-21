@@ -1,0 +1,15 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import WaitlistForm from '../WaitlistForm.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+---
+<section id="waitlist" class="glow relative overflow-hidden">
+  <div class="relative z-10 max-w-3xl mx-auto px-6 py-32 text-center flex flex-col items-center">
+    <h2 class="font-[var(--font-display)] text-4xl sm:text-6xl font-black text-balance mb-5">{t('cta.title')}</h2>
+    <p class="text-lg text-[var(--color-muted)] mb-8 max-w-md">{t('cta.subtitle')}</p>
+    <WaitlistForm client:visible locale={locale}
+      ctaLabel={t('cta.button')} placeholder={t('hero.placeholder')}
+      successMsg={t('form.success')} errorMsg={t('form.error')} invalidMsg={t('form.invalid')} />
+  </div>
+</section>
