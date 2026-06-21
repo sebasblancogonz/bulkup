@@ -1,0 +1,11 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+const count = 250; // swap with live count later
+---
+<section class="border-y border-[var(--color-line)] bg-[var(--color-surface)]/40">
+  <div class="max-w-6xl mx-auto px-6 py-6 text-center text-[var(--color-muted)]">
+    {t('social.title').replace('{count}', String(count))}
+  </div>
+</section>
