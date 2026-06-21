@@ -18,8 +18,10 @@ class StoreKitManager: ObservableObject {
     var isSubscribed: Bool { hasActiveSubscription }
     
     // MARK: - Product IDs
+    // Deben coincidir EXACTAMENTE con App Store Connect.
     private let productIds = [
-        "bulkupmonthly" // Debe coincidir EXACTAMENTE con App Store Connect
+        "bulkupmonthly",
+        "bulkupannual",
     ]
     
     // MARK: - Environment Detection
@@ -279,6 +281,31 @@ class StoreKitManager: ObservableObject {
         @unknown default:
             return "periodo desconocido"
         }
+    }
+
+    /// True for a yearly subscription — robust to the product ID (uses the period).
+    func isYearly(_ product: Product) -> Bool {
+        product.subscription?.subscriptionPeriod.unit == .year
+    }
+
+    func isMonthly(_ product: Product) -> Bool {
+        product.subscription?.subscriptionPeriod.unit == .month
+    }
+
+    /// Localized free-trial label if the product has an introductory free-trial offer.
+    func trialDescription(for product: Product) -> String? {
+        guard let offer = product.subscription?.introductoryOffer,
+              offer.paymentMode == .freeTrial else { return nil }
+        let p = offer.period
+        let unit: String
+        switch p.unit {
+        case .day: unit = p.value == 1 ? "día" : "días"
+        case .week: unit = p.value == 1 ? "semana" : "semanas"
+        case .month: unit = p.value == 1 ? "mes" : "meses"
+        case .year: unit = p.value == 1 ? "año" : "años"
+        @unknown default: unit = ""
+        }
+        return String(localized: "\(p.value) \(unit) gratis")
     }
     
     // MARK: - Debug Helper

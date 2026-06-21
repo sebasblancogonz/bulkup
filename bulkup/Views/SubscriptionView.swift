@@ -75,6 +75,8 @@ struct SubscriptionView: View {
             } message: {
                 Text(errorMessage)
             }
+            .onAppear { selectDefaultPlanIfNeeded() }
+            .onChange(of: storeManager.products) { _, _ in selectDefaultPlanIfNeeded() }
             .overlay(
                 Group {
                     if isPurchasing {
@@ -97,6 +99,13 @@ struct SubscriptionView: View {
                 }
             )
         }
+    }
+
+    /// Default the selection to the annual plan (the anchor) once products load.
+    private func selectDefaultPlanIfNeeded() {
+        guard selectedProduct == nil, !storeManager.products.isEmpty else { return }
+        selectedProduct = storeManager.products.first(where: { storeManager.isYearly($0) })
+            ?? storeManager.products.first
     }
 
     // MARK: - Header View
@@ -278,7 +287,7 @@ struct SubscriptionView: View {
                 SubscriptionPlanCard(
                     product: product,
                     isSelected: selectedProduct?.id == product.id,
-                    isPopular: product.id.contains("yearly"),
+                    isPopular: storeManager.isYearly(product),
                     onSelect: {
                         selectedProduct = product
                     }
@@ -293,7 +302,7 @@ struct SubscriptionView: View {
                     }
                 }) {
                     HStack {
-                        Text("Suscribirse")
+                        Text(storeManager.trialDescription(for: selectedProduct) != nil ? "Empezar prueba gratis" : "Suscribirse")
                         Text("•")
                         Text(storeManager.priceString(for: selectedProduct))
                     }
@@ -416,7 +425,7 @@ struct SubscriptionPlanCard: View {
         Button(action: onSelect) {
             VStack(spacing: Spacing.md) {
                 if isPopular {
-                    Text("MÁS POPULAR")
+                    Text("MEJOR VALOR")
                         .font(BulkUpFont.caption())
                         .fontWeight(.bold)
                         .foregroundColor(BulkUpColors.onAccent)
@@ -478,9 +487,9 @@ struct SubscriptionPlanCard: View {
     }
 
     private var planTitle: LocalizedStringKey {
-        if product.id.contains("monthly") {
+        if storeManager.isMonthly(product) {
             return "Mensual"
-        } else if product.id.contains("yearly") {
+        } else if storeManager.isYearly(product) {
             return "Anual"
         } else {
             return LocalizedStringKey(storeManager.periodString(for: product).capitalized)
@@ -488,18 +497,24 @@ struct SubscriptionPlanCard: View {
     }
 
     private var planDescription: LocalizedStringKey {
-        if product.id.contains("monthly") {
-            return "Facturado mensualmente"
-        } else if product.id.contains("yearly") {
-            return "Facturado anualmente"
-        } else {
-            return LocalizedStringKey("Facturado \(storeManager.periodString(for: product))")
+        if let trial = storeManager.trialDescription(for: product) {
+            return LocalizedStringKey(trial + ", luego " + perPeriodLabel)
         }
+        return LocalizedStringKey(perPeriodLabel)
+    }
+
+    private var perPeriodLabel: String {
+        if storeManager.isMonthly(product) {
+            return String(localized: "facturado mensualmente")
+        } else if storeManager.isYearly(product) {
+            return String(localized: "facturado anualmente")
+        }
+        return String(localized: "facturado \(storeManager.periodString(for: product))")
     }
 
     private func calculateSavings() -> String? {
-        guard product.id.contains("yearly"),
-              let monthlyProduct = storeManager.products.first(where: { $0.id.contains("monthly") }) else {
+        guard storeManager.isYearly(product),
+              let monthlyProduct = storeManager.products.first(where: { storeManager.isMonthly($0) }) else {
             return nil
         }
 
