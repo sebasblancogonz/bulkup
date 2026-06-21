@@ -13,6 +13,7 @@ struct TrainingHubView: View {
     @EnvironmentObject var trainingManager: TrainingManager
     @ObservedObject private var storeKit = StoreKitManager.shared
     @State private var selectedView: TrainingHubSection = .active
+    @AppStorage("trainingViewMode") private var trainingViewMode: TrainingView.ViewMode = .day
     @State private var showingPlanEditor = false
     @State private var showingImportCode = false
     @State private var showingImageImport = false
@@ -146,61 +147,43 @@ struct TrainingHubView: View {
                 Capsule().fill(BulkUpColors.surface)
             )
 
-            if selectedView == .library {
-                Menu {
-                    Button {
-                        showingTemplateWizard = true
-                    } label: {
-                        Label(
-                            "Usar plantilla",
-                            systemImage: "doc.on.doc"
-                        )
-                    }
-
-                    Button {
-                        showingPlanEditor = true
-                    } label: {
-                        Label(
-                            "Crear manualmente",
-                            systemImage: "square.and.pencil"
-                        )
-                    }
-
-                    Button {
-                        if storeKit.isSubscribed {
-                            showingImageImport = true
-                        } else {
-                            showingSubscription = true
+            Menu {
+                if selectedView == .active {
+                    // View-mode switch (only meaningful for an active training plan)
+                    Picker("Cambiar vista", selection: $trainingViewMode) {
+                        ForEach(TrainingView.ViewMode.allCases, id: \.self) { mode in
+                            Label(mode.displayName, systemImage: mode.icon).tag(mode)
                         }
-                    } label: {
-                        Label(
-                            "Importar con IA",
-                            systemImage: "sparkles"
-                        )
                     }
-
                     Divider()
-
-                    Button {
-                        if storeKit.isSubscribed {
-                            showingImportCode = true
-                        } else {
-                            showingSubscription = true
-                        }
-                    } label: {
-                        Label(
-                            "Importar con codigo",
-                            systemImage: "qrcode"
-                        )
-                    }
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(BulkUpColors.accent)
                 }
-                .padding(.trailing, 4)
-                .transition(.opacity.combined(with: .scale))
+                // Create / import — available from both tabs
+                Button {
+                    showingTemplateWizard = true
+                } label: { Label("Usar plantilla", systemImage: "doc.on.doc") }
+
+                Button {
+                    showingPlanEditor = true
+                } label: { Label("Crear manualmente", systemImage: "square.and.pencil") }
+
+                Button {
+                    if storeKit.isSubscribed { showingImageImport = true } else { showingSubscription = true }
+                } label: { Label("Importar con IA", systemImage: "sparkles") }
+
+                Divider()
+
+                Button {
+                    if storeKit.isSubscribed { showingImportCode = true } else { showingSubscription = true }
+                } label: { Label("Importar con codigo", systemImage: "qrcode") }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(BulkUpColors.textSecondary)
+                    .frame(width: 36, height: 36)
+                    .background(BulkUpColors.surfaceElevated)
+                    .clipShape(Circle())
             }
+            .padding(.leading, Spacing.sm)
         }
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.sm)
