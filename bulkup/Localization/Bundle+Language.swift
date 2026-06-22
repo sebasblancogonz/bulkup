@@ -4,8 +4,13 @@ import ObjectiveC
 private var associatedLanguageBundleKey: UInt8 = 0
 
 /// When installed on Bundle.main, routes localized-string lookups to the
-/// selected .lproj bundle so String(localized:)/NSLocalizedString respect an
-/// in-app language override.
+/// selected .lproj bundle so the in-app language override is respected.
+///
+/// IMPORTANT: this only intercepts `localizedString(forKey:value:table:)`, which
+/// `NSLocalizedString` and `Text(LocalizedStringKey)` go through. `String(localized:)`
+/// (the iOS 15 API) resolves via a different path that BYPASSES this override, so
+/// it does NOT follow the in-app switch — use `NSLocalizedString` for runtime
+/// strings instead. See memory: i18n-live-language-switch.
 final class LocalizedBundle: Bundle, @unchecked Sendable {
     override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
         if let override = objc_getAssociatedObject(self, &associatedLanguageBundleKey) as? Bundle {

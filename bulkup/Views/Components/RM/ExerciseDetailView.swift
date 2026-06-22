@@ -301,9 +301,9 @@ struct ExerciseDetailView: View {
 
             await MainActor.run {
                 if success {
-                    notificationManager.showNotification(.success, message: String(localized: "Récord eliminado"))
+                    notificationManager.showNotification(.success, message: NSLocalizedString("Récord eliminado", comment: ""))
                 } else {
-                    notificationManager.showNotification(.error, message: String(localized: "Error al eliminar"))
+                    notificationManager.showNotification(.error, message: NSLocalizedString("Error al eliminar", comment: ""))
                 }
             }
         }
@@ -331,10 +331,10 @@ struct ExerciseDetailView: View {
             await MainActor.run {
                 if success {
                     resetForm()
-                    let message = editingRecordId != nil ? String(localized: "Récord actualizado") : String(localized: "Récord creado")
+                    let message = editingRecordId != nil ? NSLocalizedString("Récord actualizado", comment: "") : NSLocalizedString("Récord creado", comment: "")
                     notificationManager.showNotification(.success, message: message)
                 } else {
-                    notificationManager.showNotification(.error, message: String(localized: "Error al guardar"))
+                    notificationManager.showNotification(.error, message: NSLocalizedString("Error al guardar", comment: ""))
                 }
             }
         }

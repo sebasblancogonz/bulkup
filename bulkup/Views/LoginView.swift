@@ -166,13 +166,13 @@ struct LoginContentView: View {
         switch result {
         case .success(let authorization):
             guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-                errorMessage = String(localized: "Error: credencial inválida")
+                errorMessage = NSLocalizedString("Error: credencial inválida", comment: "")
                 return
             }
 
             guard let identityTokenData = credential.identityToken,
                   let identityToken = String(data: identityTokenData, encoding: .utf8) else {
-                errorMessage = String(localized: "Error: no se pudo obtener el token de identidad")
+                errorMessage = NSLocalizedString("Error: no se pudo obtener el token de identidad", comment: "")
                 return
             }
 
@@ -198,7 +198,7 @@ struct LoginContentView: View {
                authError.code == .canceled {
                 return
             }
-            errorMessage = String(localized: "Error al iniciar sesión con Apple: \(error.localizedDescription)")
+            errorMessage = String(format: NSLocalizedString("Error al iniciar sesión con Apple: %@", comment: ""), error.localizedDescription)
         }
     }
 }

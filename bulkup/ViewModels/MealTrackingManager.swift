@@ -143,7 +143,7 @@ class MealTrackingManager: ObservableObject {
     var todayComplianceSummary: String {
         let completed = todayTracking.filter { $0.completed }.count
         let total = todayTracking.count
-        return String(format: String(localized: "%1$d/%2$d comidas"), completed, total)
+        return String(format: NSLocalizedString("%1$d/%2$d comidas", comment: ""), completed, total)
     }
 
     func trackingRecord(for mealOrder: Int, date: String) -> MealTrackingRecord? {

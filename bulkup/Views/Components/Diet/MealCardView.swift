@@ -107,7 +107,7 @@ struct MealCardView: View {
             Button(action: { onToggleExpand?() }) {
                 HStack(spacing: Spacing.md) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(meal.type.capitalized.replacingOccurrences(of: "_", with: " "))
+                        Text(MealTypeLabel.localized(meal.type))
                             .font(BulkUpFont.cardTitle())
                             .foregroundColor(BulkUpColors.textPrimary)
                             .opacity(isCompleted ? 0.5 : 1.0)

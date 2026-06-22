@@ -26,7 +26,7 @@ struct RMExerciseDetailSheet: View {
                     VStack(alignment: .leading, spacing: Spacing.lg) {
                         // Nombre y categoría
                         VStack(alignment: .leading, spacing: Spacing.sm) {
-                            Text(exercise.nameEs)
+                            Text(exercise.localizedName)
                                 .font(BulkUpFont.screenTitle())
                                 .fontWeight(.bold)
                                 .foregroundColor(BulkUpColors.textPrimary)
@@ -35,26 +35,26 @@ struct RMExerciseDetailSheet: View {
                         // Tags principales
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: Spacing.sm) {
-                                if let category = exercise.category {
+                                if let category = exercise.localizedCategory {
                                     TagView(
-                                        text: translateCategory(category),
+                                        text: category,
                                         color: BulkUpColors.training,
                                         icon: "tag.fill"
                                     )
                                 }
 
-                                if let equipment = exercise.equipment {
+                                if let equipment = exercise.localizedEquipment {
                                     TagView(
-                                        text: translateEquipment(equipment),
+                                        text: equipment,
                                         color: BulkUpColors.secondary,
                                         icon: "dumbbell.fill"
                                     )
                                 }
 
-                                if let level = exercise.level {
+                                if let level = exercise.localizedLevel {
                                     TagView(
-                                        text: translateLevel(level),
-                                        color: levelColor(level),
+                                        text: level,
+                                        color: levelColor(exercise.level ?? ""),
                                         icon: "chart.bar.fill"
                                     )
                                 }
@@ -72,9 +72,9 @@ struct RMExerciseDetailSheet: View {
                         technicalDetailsSection
 
                         // Instrucciones si están disponibles
-                        if let instructions = exercise.instructionsEs, !instructions.isEmpty {
+                        if !exercise.localizedInstructions.isEmpty {
                             Divider()
-                            instructionsSection(instructions)
+                            instructionsSection(exercise.localizedInstructions)
                         }
                     }
                     .padding(.horizontal)
@@ -153,36 +153,30 @@ struct RMExerciseDetailSheet: View {
                 .sectionHeader()
 
             // Músculos principales
-            if let primaryMuscles = exercise.primaryMuscles, !primaryMuscles.isEmpty {
+            if !exercise.localizedPrimaryMuscles.isEmpty {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Label("Principales", systemImage: "figure.strengthtraining.traditional")
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textPrimary)
 
                     FlowLayout(spacing: 6) {
-                        ForEach(primaryMuscles, id: \.self) { muscle in
-                            MuscleChip(
-                                name: translateMuscle(muscle),
-                                isPrimary: true
-                            )
+                        ForEach(exercise.localizedPrimaryMuscles, id: \.self) { muscle in
+                            MuscleChip(name: muscle, isPrimary: true)
                         }
                     }
                 }
             }
 
             // Músculos secundarios
-            if let secondaryMuscles = exercise.secondaryMuscles, !secondaryMuscles.isEmpty {
+            if !exercise.localizedSecondaryMuscles.isEmpty {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Label("Secundarios", systemImage: "figure.walk")
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textSecondary)
 
                     FlowLayout(spacing: 6) {
-                        ForEach(secondaryMuscles, id: \.self) { muscle in
-                            MuscleChip(
-                                name: translateMuscle(muscle),
-                                isPrimary: false
-                            )
+                        ForEach(exercise.localizedSecondaryMuscles, id: \.self) { muscle in
+                            MuscleChip(name: muscle, isPrimary: false)
                         }
                     }
                 }
@@ -196,36 +190,20 @@ struct RMExerciseDetailSheet: View {
                 .sectionHeader()
 
             VStack(spacing: Spacing.sm) {
-                if let force = exercise.force, !force.isEmpty {
-                    DetailRow(
-                        icon: "arrow.up.arrow.down",
-                        title: "Tipo de fuerza",
-                        value: translateForce(force)
-                    )
+                if let force = exercise.localizedForce {
+                    DetailRow(icon: "arrow.up.arrow.down", title: "Tipo de fuerza", value: force)
                 }
 
-                if let mechanic = exercise.mechanic, !mechanic.isEmpty {
-                    DetailRow(
-                        icon: "gearshape.2",
-                        title: "Mecánica",
-                        value: translateMechanic(mechanic)
-                    )
+                if let mechanic = exercise.localizedMechanic {
+                    DetailRow(icon: "gearshape.2", title: "Mecánica", value: mechanic)
                 }
 
-                if let equipment = exercise.equipment, !equipment.isEmpty {
-                    DetailRow(
-                        icon: "dumbbell",
-                        title: "Equipo necesario",
-                        value: translateEquipment(equipment)
-                    )
+                if let equipment = exercise.localizedEquipment {
+                    DetailRow(icon: "dumbbell", title: "Equipo necesario", value: equipment)
                 }
 
-                if let level = exercise.level, !level.isEmpty  {
-                    DetailRow(
-                        icon: "chart.bar",
-                        title: "Nivel de dificultad",
-                        value: translateLevel(level)
-                    )
+                if let level = exercise.localizedLevel {
+                    DetailRow(icon: "chart.bar", title: "Nivel de dificultad", value: level)
                 }
             }
         }
@@ -270,87 +248,6 @@ struct RMExerciseDetailSheet: View {
         }
     }
 
-    // MARK: - Translation Functions
-
-    private func translateCategory(_ category: String) -> String {
-        let translations: [String: String] = [
-            "strength": "Fuerza",
-            "stretching": "Estiramiento",
-            "plyometrics": "Pliometría",
-            "strongman": "Strongman",
-            "powerlifting": "Powerlifting",
-            "cardio": "Cardio",
-            "olympic weightlifting": "Halterofilia"
-        ]
-        return translations[category.lowercased()] ?? category.capitalized
-    }
-
-    private func translateLevel(_ level: String) -> String {
-        let translations: [String: String] = [
-            "beginner": "Principiante",
-            "intermediate": "Intermedio",
-            "expert": "Experto"
-        ]
-        return translations[level.lowercased()] ?? level.capitalized
-    }
-
-    private func translateForce(_ force: String) -> String {
-        let translations: [String: String] = [
-            "push": "Empuje",
-            "pull": "Jalón",
-            "static": "Estático"
-        ]
-        return translations[force.lowercased()] ?? force.capitalized
-    }
-
-    private func translateMechanic(_ mechanic: String) -> String {
-        let translations: [String: String] = [
-            "compound": "Compuesto",
-            "isolation": "Aislamiento"
-        ]
-        return translations[mechanic.lowercased()] ?? mechanic.capitalized
-    }
-
-    private func translateEquipment(_ equipment: String) -> String {
-        let translations: [String: String] = [
-            "barbell": "Barra",
-            "dumbbell": "Mancuerna",
-            "body only": "Peso corporal",
-            "machine": "Máquina",
-            "cable": "Cable",
-            "kettlebells": "Pesas rusas",
-            "bands": "Bandas",
-            "medicine ball": "Balón medicinal",
-            "exercise ball": "Pelota de ejercicio",
-            "e-z curl bar": "Barra Z",
-            "foam roll": "Rodillo de espuma",
-            "other": "Otro"
-        ]
-        return translations[equipment.lowercased()] ?? equipment.capitalized
-    }
-
-    private func translateMuscle(_ muscle: String) -> String {
-        let translations: [String: String] = [
-            "chest": "Pecho",
-            "shoulders": "Hombros",
-            "triceps": "Tríceps",
-            "biceps": "Bíceps",
-            "forearms": "Antebrazos",
-            "abdominals": "Abdominales",
-            "quadriceps": "Cuádriceps",
-            "hamstrings": "Isquiotibiales",
-            "calves": "Pantorrillas",
-            "glutes": "Glúteos",
-            "lower back": "Espalda baja",
-            "middle back": "Espalda media",
-            "lats": "Dorsales",
-            "traps": "Trapecios",
-            "neck": "Cuello",
-            "adductors": "Aductores",
-            "abductors": "Abductores"
-        ]
-        return translations[muscle.lowercased()] ?? muscle.capitalized
-    }
 }
 
 // MARK: - Supporting Views

@@ -16,7 +16,7 @@ struct RMFormData {
         let formatter = ISO8601DateFormatter()
         return [
             "exerciseId": exerciseId,
-            "weight": Double(weight) ?? 0,
+            "weight": weight.decimalValue ?? 0,
             "reps": Int(reps) ?? 1,
             "date": formatter.string(from: date),
             "notes": notes,
@@ -180,10 +180,10 @@ struct RMTrackerView: View {
                 await MainActor.run {
                     if success {
                         resetForm()
-                        let message = editingRecordId != nil ? String(localized: "Récord actualizado") : String(localized: "Récord creado")
+                        let message = editingRecordId != nil ? NSLocalizedString("Récord actualizado", comment: "") : NSLocalizedString("Récord creado", comment: "")
                         notificationManager.showNotification(.success, message: message)
                     } else {
-                        notificationManager.showNotification(.error, message: String(localized: "Error al guardar el récord"))
+                        notificationManager.showNotification(.error, message: NSLocalizedString("Error al guardar el récord", comment: ""))
                     }
                 }
             }
@@ -200,9 +200,9 @@ struct RMTrackerView: View {
 
                 await MainActor.run {
                     if success {
-                        notificationManager.showNotification(.success, message: String(localized: "Récord eliminado"))
+                        notificationManager.showNotification(.success, message: NSLocalizedString("Récord eliminado", comment: ""))
                     } else {
-                        notificationManager.showNotification(.error, message: String(localized: "Error al eliminar el récord"))
+                        notificationManager.showNotification(.error, message: NSLocalizedString("Error al eliminar el récord", comment: ""))
                     }
                 }
             }
@@ -222,7 +222,7 @@ struct RMTrackerView: View {
     }
 
     private var exerciseCardsGrid: some View {
-        LazyVGrid(columns: gridColumns, spacing: Spacing.md) {
+        LazyVStack(spacing: Spacing.sm) {
             ForEach(filteredExercises) { exercise in
                 RMExerciseCardView(
                     exercise: exercise,
@@ -236,13 +236,6 @@ struct RMTrackerView: View {
             }
         }
         .padding(.horizontal, Spacing.screenH)
-    }
-
-    private var gridColumns: [GridItem] {
-        [
-            GridItem(.flexible(), spacing: Spacing.md),
-            GridItem(.flexible(), spacing: Spacing.md),
-        ]
     }
 
     // MARK: - Actions
@@ -279,12 +272,12 @@ struct RMTrackerView: View {
                 if success {
                     notificationManager.showNotification(
                         .success,
-                        message: String(localized: "Récord eliminado")
+                        message: NSLocalizedString("Récord eliminado", comment: "")
                     )
                 } else {
                     notificationManager.showNotification(
                         .error,
-                        message: String(localized: "Error al eliminar el récord")
+                        message: NSLocalizedString("Error al eliminar el récord", comment: "")
                     )
                 }
             }
@@ -336,157 +329,90 @@ struct RMExerciseCardView: View {
     @State private var showDeleteConfirmation = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            // Header
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(exercise.nameEs)
-                        .font(BulkUpFont.cardTitle())
-                        .foregroundColor(BulkUpColors.textPrimary)
-                        .lineLimit(2)
-                        .frame(minHeight: 44)
-
-                    Text(exercise.category.capitalized)
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(BulkUpColors.surfaceElevated)
-                        .cornerRadius(CornerRadius.small)
-                }
-
-                Spacer()
-
-                if bestRecord != nil {
-                    Image(systemName: "trophy.fill")
-                        .foregroundColor(BulkUpColors.accent)
-                        .font(BulkUpFont.sectionHeader())
-                }
-            }
-
-            // Content
-            Group {
-                if let bestRecord = bestRecord {
-                    bestRecordContent(bestRecord)
-                } else {
-                    noRecordsContent
-                }
-            }
-            .frame(minHeight: 120)
-
-            // Navigation Button
+        HStack(spacing: Spacing.md) {
+            // Main row — tap to open the exercise history/detail.
             NavigationLink(
-                destination: ExerciseDetailView(
-                    exercise: exercise,
-                    rmManager: rmManager
-                )
+                destination: ExerciseDetailView(exercise: exercise, rmManager: rmManager)
             ) {
-                HStack {
-                    Image(systemName: "chart.bar.fill")
-                        .font(BulkUpFont.caption())
-                    Text("Ver Detalle")
-                        .font(BulkUpFont.dataLabel())
+                HStack(spacing: Spacing.md) {
+                    ZStack {
+                        Circle()
+                            .fill(bestRecord != nil ? BulkUpColors.accent.opacity(0.15) : BulkUpColors.surfaceElevated)
+                            .frame(width: 44, height: 44)
+                        Image(systemName: bestRecord != nil ? "trophy.fill" : "dumbbell")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(bestRecord != nil ? BulkUpColors.accent : BulkUpColors.textTertiary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(exercise.nameEs)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(BulkUpColors.textPrimary)
+                            .lineLimit(1)
+                        Text(metaLine)
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
+                            .lineLimit(1)
+                    }
+
+                    Spacer(minLength: Spacing.sm)
+
+                    if let record = bestRecord {
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("\(record.weight, specifier: "%g") kg × \(record.reps)")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundColor(BulkUpColors.textPrimary)
+                                .lineLimit(1)
+                            if let rm = RMCalculator.calculateHybridRM(weight: record.weight, reps: record.reps) {
+                                Text("1RM \(rm, specifier: "%g") kg")
+                                    .font(BulkUpFont.caption())
+                                    .foregroundColor(BulkUpColors.success)
+                            }
+                        }
+                    } else {
+                        Text("Añadir")
+                            .font(BulkUpFont.caption())
+                            .fontWeight(.medium)
+                            .foregroundColor(BulkUpColors.accent)
+                    }
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(BulkUpColors.training)
-                .foregroundColor(Color.onFill(BulkUpColors.training))
-                .cornerRadius(CornerRadius.small)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            // Edit / delete live in a menu so the row stays clean.
+            if let record = bestRecord {
+                Menu {
+                    Button { onEdit(record) } label: { Label("Editar", systemImage: "pencil") }
+                    Button(role: .destructive) { showDeleteConfirmation = true } label: {
+                        Label("Eliminar", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textTertiary)
+                        .frame(width: 32, height: 44)
+                        .contentShape(Rectangle())
+                }
+            } else {
+                Image(systemName: "chevron.right")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textTertiary)
+                    .frame(width: 32, height: 44)
             }
         }
-        .frame(height: 280)
-        .padding(Spacing.lg)
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
         .background(BulkUpColors.surface)
         .cornerRadius(CornerRadius.large)
         .overlay(RoundedRectangle(cornerRadius: CornerRadius.large).stroke(BulkUpColors.border, lineWidth: 0.5))
-    }
-
-    @ViewBuilder
-    private func bestRecordContent(_ record: PersonalRecord) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            // Best RM Display
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Mejor PR")
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
-
-                HStack {
-                    Text(
-                        "\(record.weight, specifier: "%.1f") kg × \(record.reps)"
-                    )
-                    .font(BulkUpFont.heroStat())
-                    .foregroundColor(BulkUpColors.textPrimary)
-
-                    Spacer()
-
-                    HStack(spacing: 0) {
-                        Button(action: { onEdit(record) }) {
-                            Image(systemName: "pencil")
-                                .font(BulkUpFont.caption())
-                                .foregroundColor(BulkUpColors.training)
-                                .frame(width: 44, height: 44)
-                                .contentShape(Rectangle())
-                        }
-
-                        Button(action: { showDeleteConfirmation = true }) {
-                            Image(systemName: "trash")
-                                .font(BulkUpFont.caption())
-                                .foregroundColor(BulkUpColors.error)
-                                .frame(width: 44, height: 44)
-                                .contentShape(Rectangle())
-                        }
-                    }
-                }
-
-                if let estimatedRM = RMCalculator.calculateHybridRM(
-                    weight: record.weight,
-                    reps: record.reps
-                ) {
-                    Text("RM Estimado: \(estimatedRM, specifier: "%.1f") kg")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.success)
-                        .fontWeight(.medium)
-                }
-
-                Text(formatDate(record.date))
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
-
-                if let notes = record.notes, !notes.isEmpty {
-                    Text("\"\(notes)\"")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .italic()
-                        .lineLimit(2)
-                }
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.small)
-                    .fill(BulkUpColors.accent.opacity(0.1))
-            )
-
-            // Stats
-            HStack {
-                Text("Total registros:")
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
-
-                Spacer()
-
-                Text("\(totalRecords)")
-                    .font(BulkUpFont.dataLabel())
-                    .foregroundColor(BulkUpColors.textPrimary)
-            }
-        }
         .confirmationDialog(
             "¿Eliminar récord?",
             isPresented: $showDeleteConfirmation,
             titleVisibility: .visible
         ) {
             Button("Eliminar", role: .destructive) {
-                onDelete(record)
+                if let record = bestRecord { onDelete(record) }
             }
             Button("Cancelar", role: .cancel) {}
         } message: {
@@ -494,22 +420,12 @@ struct RMExerciseCardView: View {
         }
     }
 
-    private var noRecordsContent: some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: "dumbbell")
-                .font(BulkUpFont.screenTitle())
-                .foregroundColor(BulkUpColors.textTertiary)
-
-            Text("Sin récords registrados")
-                .font(BulkUpFont.caption())
-                .foregroundColor(BulkUpColors.textSecondary)
-
-            Text("¡Registra tu primer RM!")
-                .font(BulkUpFont.caption())
-                .foregroundColor(BulkUpColors.textSecondary)
+    private var metaLine: String {
+        let category = exercise.category.capitalized
+        if let record = bestRecord {
+            return "\(category) · \(formatDate(record.date))"
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        return category
     }
 
     private func formatDate(_ dateString: String) -> String {
@@ -549,7 +465,7 @@ struct AddRecordFormView: View {
     }
 
     private var estimatedRM: Double? {
-        guard let weight = Double(formData.weight),
+        guard let weight = formData.weight.decimalValue,
             let reps = Int(formData.reps),
             weight > 0 && reps > 0
         else { return nil }

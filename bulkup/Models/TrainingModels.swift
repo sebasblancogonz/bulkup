@@ -143,3 +143,43 @@ struct RMExerciseFull: Identifiable, Codable {
         case primaryMuscles, secondaryMuscles, instructions, category
     }
 }
+
+// Language-aware accessors: the backend ships every field in English and
+// Spanish; pick the field that matches the app language (falling back to the
+// other when a translation is missing) so the explorer follows the in-app switch.
+extension RMExerciseFull {
+    // Resolve the app language without touching the @MainActor LanguageManager,
+    // so these accessors can be read from any context. Mirrors its logic:
+    // explicit override ("en"/"es") wins, else fall back to the device language.
+    private var isEnglish: Bool {
+        switch UserDefaults.standard.string(forKey: "app_language") {
+        case "en": return true
+        case "es": return false
+        default: return (Locale.preferredLanguages.first ?? "es").lowercased().hasPrefix("en")
+        }
+    }
+
+    private func pick(_ en: String?, _ es: String?) -> String? {
+        let primary = isEnglish ? en : es
+        let fallback = isEnglish ? es : en
+        let value = (primary?.isEmpty == false) ? primary : fallback
+        guard let value, !value.isEmpty else { return nil }
+        return value
+    }
+
+    private func pickList(_ en: [String]?, _ es: [String]?) -> [String] {
+        let primary = isEnglish ? en : es
+        let fallback = isEnglish ? es : en
+        return (primary?.isEmpty == false ? primary : fallback) ?? []
+    }
+
+    var localizedName: String { pick(name, nameEs) ?? name }
+    var localizedCategory: String? { pick(category, categoryEs)?.capitalized }
+    var localizedForce: String? { pick(force, forceEs)?.capitalized }
+    var localizedLevel: String? { pick(level, levelEs)?.capitalized }
+    var localizedMechanic: String? { pick(mechanic, mechanicEs)?.capitalized }
+    var localizedEquipment: String? { pick(equipment, equipmentEs)?.capitalized }
+    var localizedPrimaryMuscles: [String] { pickList(primaryMuscles, primaryMusclesEs).map { $0.capitalized } }
+    var localizedSecondaryMuscles: [String] { pickList(secondaryMuscles, secondaryMusclesEs).map { $0.capitalized } }
+    var localizedInstructions: [String] { pickList(instructions, instructionsEs) }
+}
