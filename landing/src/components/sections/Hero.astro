@@ -1,39 +1,50 @@
 ---
 import { useT, type Locale } from '../../i18n/ui';
 import WaitlistForm from '../WaitlistForm.tsx';
-import RevealText from '../RevealText.tsx';
-import HeroVisual from '../HeroVisual.tsx';
 import Reveal from '../Reveal.tsx';
-import LanguageSwitch from '../LanguageSwitch.astro';
 const { locale } = Astro.props as { locale: Locale };
 const t = useT(locale);
+
+// Two-tone headline: first sentence in green, the rest in graphite.
+const title = t('hero.title');
+const dot = title.indexOf('.');
+const titleA = dot >= 0 ? title.slice(0, dot + 1) : title;
+const titleB = dot >= 0 ? title.slice(dot + 1) : '';
 ---
-<header class="relative overflow-hidden">
-  <div class="aurora" aria-hidden="true"></div>
-  <nav class="relative z-10 max-w-6xl mx-auto flex items-center justify-between px-6 py-6">
-    <span class="font-[var(--font-display)] text-xl font-black tracking-tight">BulkUp</span>
-    <LanguageSwitch locale={locale} />
-  </nav>
-  <div class="relative z-10 max-w-6xl mx-auto px-6 pt-12 pb-24 grid lg:grid-cols-2 gap-12 items-center">
-    <div>
-      <Reveal client:load variant="blur" y={12}>
-        <p class="uppercase tracking-[0.2em] text-xs text-[var(--color-accent)] mb-5">{t('hero.eyebrow')}</p>
-      </Reveal>
-      <h1 class="font-[var(--font-display)] text-5xl sm:text-6xl lg:text-7xl font-black leading-[0.95] text-balance mb-6">
-        <RevealText client:load text={t('hero.title')} />
+<section class="relative overflow-hidden">
+  <div class="max-w-[1200px] mx-auto px-6 pt-14 sm:pt-20 pb-10 flex flex-col items-center text-center">
+    <Reveal client:load variant="up" y={10}>
+      <p class="uppercase tracking-[0.18em] text-[13px] font-bold text-[var(--color-accent)] mb-5">{t('hero.eyebrow')}</p>
+    </Reveal>
+    <Reveal client:load variant="up" delay={0.05}>
+      <h1 class="font-[var(--font-display)] font-extrabold leading-[1.05] text-balance text-[2.6rem] sm:text-[3.6rem] lg:text-[3.9rem] max-w-3xl">
+        <span class="tone-green">{titleA}</span><span class="text-[var(--color-fg)]">{titleB}</span>
       </h1>
-      <Reveal client:load variant="up" delay={0.4} duration={0.8}>
-        <p class="text-lg text-[var(--color-muted)] max-w-md mb-8">{t('hero.subtitle')}</p>
-      </Reveal>
-      <Reveal client:load variant="up" delay={0.55} duration={0.8}>
+    </Reveal>
+    <Reveal client:load variant="up" delay={0.15}>
+      <p class="text-[var(--color-muted)] text-lg leading-[1.6] max-w-xl mt-6">{t('hero.subtitle')}</p>
+    </Reveal>
+    <Reveal client:load variant="up" delay={0.25}>
+      <div class="mt-8 flex justify-center">
         <WaitlistForm client:load locale={locale}
           ctaLabel={t('hero.cta')} placeholder={t('hero.placeholder')}
           successMsg={t('form.success')} errorMsg={t('form.error')} invalidMsg={t('form.invalid')} />
-      </Reveal>
+      </div>
+    </Reveal>
+  </div>
+
+  <!-- Fanned phone mockups — flat, floating on white -->
+  <Reveal client:load variant="up" delay={0.35}>
+    <div class="max-w-[1200px] mx-auto px-6 pb-24 flex justify-center items-end">
+      <div class="phone float hidden sm:block w-[200px] shrink-0 -mr-10 rotate-[-8deg] origin-bottom">
+        <img src="/workout.png" alt="Logging a workout in BulkUp" loading="eager" class="w-full h-full object-cover" />
+      </div>
+      <div class="phone float relative z-10 w-[248px] shrink-0">
+        <img src="/home.png" alt="BulkUp home screen" loading="eager" class="w-full h-full object-cover" />
+      </div>
+      <div class="phone float hidden sm:block w-[200px] shrink-0 -ml-10 rotate-[8deg] origin-bottom">
+        <img src="/diet.png" alt="A diet plan in BulkUp" loading="eager" class="w-full h-full object-cover" />
+      </div>
     </div>
-    <HeroVisual client:load label="App preview" />
-  </div>
-  <div class="relative z-10 flex justify-center pb-10 text-[var(--color-muted)]" aria-hidden="true">
-    <svg class="scroll-cue" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-  </div>
-</header>
+  </Reveal>
+</section>

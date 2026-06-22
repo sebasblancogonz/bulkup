@@ -1,12 +1,10 @@
 ---
 export const prerender = true;
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/sections/Header.astro';
 import Hero from '../../components/sections/Hero.astro';
 import SocialProof from '../../components/sections/SocialProof.astro';
-import ProblemSolution from '../../components/sections/ProblemSolution.astro';
 import FeaturesBento from '../../components/sections/FeaturesBento.astro';
-import PremiumDeepDive from '../../components/sections/PremiumDeepDive.astro';
-import Showcase from '../../components/sections/Showcase.astro';
 import PricingTeaser from '../../components/sections/PricingTeaser.astro';
 import Faq from '../../components/sections/Faq.astro';
 import FinalCta from '../../components/sections/FinalCta.astro';
@@ -14,12 +12,10 @@ import Footer from '../../components/sections/Footer.astro';
 const locale = 'es';
 ---
 <BaseLayout locale={locale} path="/es">
+  <Header locale={locale} />
   <Hero locale={locale} />
   <SocialProof locale={locale} />
-  <ProblemSolution locale={locale} />
   <FeaturesBento locale={locale} />
-  <PremiumDeepDive locale={locale} />
-  <Showcase locale={locale} />
   <PricingTeaser locale={locale} />
   <Faq locale={locale} />
   <FinalCta locale={locale} />
