@@ -1,0 +1,13 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import CountUp from '../CountUp.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+const count = 250; // swap with live count later
+const [before, after] = t('social.title').split('{count}');
+---
+<section class="border-y border-[var(--color-line)] bg-[var(--color-surface)]/40">
+  <div class="max-w-6xl mx-auto px-6 py-6 text-center text-[var(--color-muted)]">
+    {before}<span class="text-[var(--color-fg)] font-semibold tabular-nums"><CountUp client:visible to={count} /></span>{after}
+  </div>
+</section>

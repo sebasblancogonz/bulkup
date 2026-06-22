@@ -1,0 +1,16 @@
+# BulkUp
+
+> AI-powered fitness coaching app (iOS). Upload a PDF or photo of any workout or diet plan and BulkUp's AI turns it into a fully trackable, personalized app.
+
+## What it does
+- Smart training plans: templates (PPL, Upper/Lower, Full Body) or AI-imported from your own PDF/photo. Weekly weight logging.
+- AI diet parsing: nutrition PDFs become tappable meals, supplements, and rest-day swaps.
+- 1RM tracking with a 1000+ exercise database.
+- Body composition tracking with historical charts.
+- Meal compliance, streaks, friends and leaderboard.
+
+## Status
+Pre-launch. Join the waitlist at https://getbulkup.com for early access.
+
+## Pricing
+Free trial with monthly and annual premium subscriptions.

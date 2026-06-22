@@ -1,0 +1,11 @@
+---
+import type { Locale } from '../i18n/ui';
+const { locale } = Astro.props as { locale: Locale };
+const enHref = '/';
+const esHref = '/es';
+---
+<div class="flex gap-2 text-sm text-[var(--color-muted)]">
+  <a href={enHref} class={locale === 'en' ? 'text-[var(--color-fg)] font-semibold' : 'hover:text-[var(--color-fg)]'}>EN</a>
+  <span aria-hidden="true">/</span>
+  <a href={esHref} class={locale === 'es' ? 'text-[var(--color-fg)] font-semibold' : 'hover:text-[var(--color-fg)]'}>ES</a>
+</div>

@@ -1,0 +1,25 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import Reveal from '../Reveal.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+---
+<section class="max-w-6xl mx-auto px-6 py-28">
+  <Reveal client:visible variant="blur">
+    <h2 class="font-[var(--font-display)] text-4xl sm:text-5xl font-black text-center text-balance mb-16">{t('problem.title')}</h2>
+  </Reveal>
+  <div class="grid md:grid-cols-2 gap-6">
+    <Reveal client:visible variant="left">
+      <div class="rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] p-8 opacity-70">
+        <p class="text-sm uppercase tracking-widest text-[var(--color-muted)] mb-4">PDF</p>
+        <p class="text-xl">{t('problem.before')}</p>
+      </div>
+    </Reveal>
+    <Reveal client:visible variant="right" delay={0.1}>
+      <div class="spot rounded-2xl border border-[var(--color-accent)]/40 bg-[var(--color-surface-2)] p-8">
+        <p class="text-sm uppercase tracking-widest text-[var(--color-accent)] mb-4">BulkUp</p>
+        <p class="text-xl">{t('problem.after')}</p>
+      </div>
+    </Reveal>
+  </div>
+</section>

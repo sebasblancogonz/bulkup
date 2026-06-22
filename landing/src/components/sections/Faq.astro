@@ -1,0 +1,25 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import Reveal from '../Reveal.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+const items = [['faq.q1','faq.a1'],['faq.q2','faq.a2'],['faq.q3','faq.a3'],['faq.q4','faq.a4']];
+---
+<section class="max-w-3xl mx-auto px-6 py-28">
+  <Reveal client:visible variant="blur">
+    <h2 class="font-[var(--font-display)] text-4xl sm:text-5xl font-black text-center text-balance mb-12">{t('faq.title')}</h2>
+  </Reveal>
+  <Reveal client:visible variant="up">
+    <div class="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+      {items.map(([q,a]) => (
+        <details class="group py-5">
+          <summary class="cursor-pointer list-none flex justify-between items-center text-lg font-medium transition-colors hover:text-[var(--color-accent)]">
+            {t(q)}
+            <span class="text-[var(--color-accent)] text-xl group-open:rotate-45 transition-transform duration-300">+</span>
+          </summary>
+          <p class="text-[var(--color-muted)] mt-3">{t(a)}</p>
+        </details>
+      ))}
+    </div>
+  </Reveal>
+</section>
