@@ -61,6 +61,7 @@ extension SmartFileUploadManager {
     nonisolated func uploadFile(
         at fileURL: URL,
         fileName: String,
+        planName: String,
         userId: String,
         language: String,
         startDate: Date? = nil,
@@ -73,7 +74,7 @@ extension SmartFileUploadManager {
 
         let data = try Data(contentsOf: fileURL)
         return try await uploadToServer(
-            fileData: data, fileName: fileName, mimeType: "application/pdf",
+            fileData: data, fileName: fileName, planName: planName, mimeType: "application/pdf",
             userId: userId, language: language, startDate: startDate, endDate: endDate
         )
     }
@@ -82,21 +83,25 @@ extension SmartFileUploadManager {
     nonisolated func uploadImage(
         _ imageData: Data,
         fileName: String,
+        planName: String,
         userId: String,
         language: String,
         startDate: Date? = nil,
         endDate: Date? = nil
     ) async throws -> FileProcessingResponse {
         try await uploadToServer(
-            fileData: imageData, fileName: fileName, mimeType: "image/jpeg",
+            fileData: imageData, fileName: fileName, planName: planName, mimeType: "image/jpeg",
             userId: userId, language: language, startDate: startDate, endDate: endDate
         )
     }
 
     /// Builds and sends the multipart POST shared by every upload path.
+    /// `fileName` keeps a real extension (drives server-side type detection);
+    /// `planName` is the clean user-facing name (no extension).
     nonisolated private func uploadToServer(
         fileData: Data,
         fileName: String,
+        planName: String,
         mimeType: String,
         userId: String,
         language: String,
@@ -129,7 +134,7 @@ extension SmartFileUploadManager {
         }
 
         appendField("userId", userId)
-        appendField("planName", fileName)
+        appendField("planName", planName)
         appendField("language", language)
 
         if let startDate, let endDate {
