@@ -83,7 +83,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "1.99",
+          "displayPrice" : "5.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "67BCF823",
@@ -98,6 +98,39 @@
           "productID" : "bulkupmonthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "BulkUp PRO Monthly",
+          "subscriptionGroupID" : "A30F7F13",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "A1B2C3D4",
+          "introductoryOffer" : {
+            "displayPrice" : "0.00",
+            "internalID" : "E5F6A7B8",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "bulkupyearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "BulkUp PRO Annual",
           "subscriptionGroupID" : "A30F7F13",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
