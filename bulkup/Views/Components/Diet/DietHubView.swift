@@ -11,21 +11,48 @@ struct DietHubView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var dietManager: DietManager
     @ObservedObject private var storeKit = StoreKitManager.shared
+    @State private var selectedView: DietHubSection = .active
     @State private var showingCreateDietPlan = false
     @State private var showingDietPlanEditor = false
     @State private var showingSubscription = false
-    @State private var showingLibrarySheet = false
     @State private var showingFoodPreferences = false
+
+    enum DietHubSection: String, CaseIterable {
+        case active = "active"
+        case library = "library"
+
+        var displayName: LocalizedStringKey {
+            switch self {
+            case .active: return "Plan Activo"
+            case .library: return "Mis Planes"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .active: return "leaf.fill"
+            case .library: return "folder.fill"
+            }
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            if dietManager.isLoading {
-                loadingView
-            } else if dietManager.dietData.isEmpty {
-                activePlanEmptyState
-            } else {
-                activePlanContent
+            sectionPicker
+
+            Group {
+                switch selectedView {
+                case .active:
+                    if dietManager.isLoading { loadingView }
+                    else if dietManager.dietData.isEmpty { activePlanEmptyState }
+                    else { activePlanContent }
+                case .library:
+                    DietPlanLibraryView()
+                        .environmentObject(dietManager)
+                        .environmentObject(authManager)
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(BulkUpColors.background)
         .toolbar(.hidden, for: .navigationBar)
@@ -46,53 +73,6 @@ struct DietHubView: View {
         .sheet(isPresented: $showingFoodPreferences) {
             FoodPreferencesView()
         }
-        .sheet(isPresented: $showingLibrarySheet) {
-            NavigationStack {
-                DietPlanLibraryView()
-                    .environmentObject(dietManager)
-                    .environmentObject(authManager)
-                    .navigationTitle("Mis Planes")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button("Cerrar") {
-                                showingLibrarySheet = false
-                            }
-                            .foregroundColor(BulkUpColors.diet)
-                        }
-
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Menu {
-                                Button {
-                                    showingLibrarySheet = false
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                        if storeKit.isSubscribed {
-                                            showingCreateDietPlan = true
-                                        } else {
-                                            showingSubscription = true
-                                        }
-                                    }
-                                } label: {
-                                    Label("Importar con IA", systemImage: "sparkles")
-                                }
-
-                                Button {
-                                    showingLibrarySheet = false
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                        showingDietPlanEditor = true
-                                    }
-                                } label: {
-                                    Label("Crear manualmente", systemImage: "square.and.pencil")
-                                }
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(BulkUpColors.diet)
-                            }
-                        }
-                    }
-            }
-        }
         .onAppear {
             if dietManager.dietData.isEmpty && !dietManager.isLoading {
                 if let userId = authManager.user?.id {
@@ -103,58 +83,51 @@ struct DietHubView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateToDietLibrary)) { _ in
-            showingLibrarySheet = true
+            withAnimation(.easeInOut(duration: 0.2)) { selectedView = .library }
         }
     }
 
-    // MARK: - Plan Header
+    // MARK: - Section Picker
 
-    private var planHeader: some View {
-        HStack(spacing: Spacing.md) {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(dietManager.activePlanName ?? String(localized: "Plan de Dieta"))
-                    .font(BulkUpFont.sectionHeader())
-                    .foregroundColor(BulkUpColors.textPrimary)
-                    .lineLimit(1)
-
-                Text("\(dietManager.dietData.count) dias · \(totalMealCount) comidas")
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
+    private var sectionPicker: some View {
+        HStack(spacing: 0) {
+            HStack(spacing: 0) {
+                ForEach(DietHubSection.allCases, id: \.self) { section in
+                    let isActive = selectedView == section
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { selectedView = section }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: section.icon)
+                                .font(.system(size: 13, weight: .semibold))
+                            Text(section.displayName)
+                                .font(.system(size: 14, weight: .bold))
+                        }
+                        .foregroundColor(isActive ? BulkUpColors.onAccent : BulkUpColors.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            isActive ? Capsule().fill(BulkUpColors.diet) : Capsule().fill(Color.clear)
+                        )
+                        .contentShape(Capsule())
+                    }
+                }
             }
-
-            Spacer()
+            .padding(3)
+            .background(Capsule().fill(BulkUpColors.surface))
 
             Menu {
-                Button {
-                    showingLibrarySheet = true
-                } label: {
-                    Label("Mis Planes", systemImage: "folder.fill")
-                }
-
-                Divider()
-
-                Button {
-                    if storeKit.isSubscribed {
-                        showingCreateDietPlan = true
-                    } else {
-                        showingSubscription = true
+                if selectedView == .active {
+                    Button { showingFoodPreferences = true } label: {
+                        Label("Preferencias y alergias", systemImage: "fork.knife.circle")
                     }
-                } label: {
-                    Label("Importar con IA", systemImage: "sparkles")
+                    Divider()
                 }
-
                 Button {
-                    showingDietPlanEditor = true
-                } label: {
+                    if storeKit.isSubscribed { showingCreateDietPlan = true } else { showingSubscription = true }
+                } label: { Label("Importar con IA", systemImage: "sparkles") }
+                Button { showingDietPlanEditor = true } label: {
                     Label("Crear manualmente", systemImage: "square.and.pencil")
-                }
-
-                Divider()
-
-                Button {
-                    showingFoodPreferences = true
-                } label: {
-                    Label("Preferencias y alergias", systemImage: "fork.knife.circle")
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -164,7 +137,28 @@ struct DietHubView: View {
                     .background(BulkUpColors.surfaceElevated)
                     .clipShape(Circle())
             }
+            .padding(.leading, Spacing.sm)
         }
+        .padding(.horizontal, Spacing.screenH)
+        .padding(.bottom, Spacing.sm)
+        .padding(.top, Spacing.md)
+        .background(BulkUpColors.background)
+    }
+
+    // MARK: - Plan Header
+
+    private var planHeader: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(dietManager.activePlanName ?? String(localized: "Plan de Dieta"))
+                .font(BulkUpFont.sectionHeader())
+                .foregroundColor(BulkUpColors.textPrimary)
+                .lineLimit(1)
+
+            Text("\(dietManager.dietData.count) dias · \(totalMealCount) comidas")
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.screenH)
         .padding(.top, Spacing.md)
         .padding(.bottom, Spacing.sm)
@@ -341,7 +335,7 @@ struct DietHubView: View {
 
                 // Ver Mis Planes link
                 Button {
-                    showingLibrarySheet = true
+                    withAnimation(.easeInOut(duration: 0.2)) { selectedView = .library }
                 } label: {
                     HStack(spacing: Spacing.sm) {
                         Image(systemName: "folder.fill")
@@ -483,6 +477,9 @@ struct DietPlanLibraryView: View {
                         },
                         onDelete: {
                             deletePlan(plan)
+                        },
+                        onUpdated: {
+                            loadDietPlans()
                         }
                     )
                 }
@@ -512,7 +509,8 @@ struct DietPlanLibraryView: View {
                                     mealCount: day.meals.count,
                                     supplementCount: day.supplements?.count ?? 0
                                 )
-                            } ?? []
+                            } ?? [],
+                            serverDietData: serverPlan.dietData ?? []
                         )
                     }
                     self.isLoading = false
@@ -583,8 +581,10 @@ struct DietPlanCard: View {
     let plan: DietPlan
     let onActivate: () -> Void
     let onDelete: () -> Void
+    var onUpdated: () -> Void = {}
 
     @State private var showingDeleteAlert = false
+    @State private var showingEditor = false
     @State private var isActivating = false
 
     var body: some View {
@@ -622,6 +622,10 @@ struct DietPlanCard: View {
                             }
                         }
                         .disabled(isActivating)
+                    }
+
+                    Button("Editar") {
+                        showingEditor = true
                     }
 
                     Divider()
@@ -709,6 +713,9 @@ struct DietPlanCard: View {
                 "Estas seguro de que deseas eliminar este plan? Esta accion no se puede deshacer."
             )
         }
+        .sheet(isPresented: $showingEditor, onDismiss: onUpdated) {
+            DietPlanEditorView(planId: plan.id, existingPlan: plan)
+        }
     }
 }
 
@@ -719,6 +726,8 @@ struct DietPlan: Identifiable {
     var isActive: Bool
     let createdAt: Date
     let dietDays: [DietDaySummary]
+    // Full server data, kept so the editor can prefill the whole plan.
+    let serverDietData: [ServerDietDay]
 }
 
 struct DietDaySummary {

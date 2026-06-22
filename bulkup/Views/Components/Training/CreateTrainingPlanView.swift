@@ -70,114 +70,135 @@ struct CreateTrainingPlanView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: Spacing.xl) {
-                    // Plan Name Section
-                    VStack(alignment: .leading, spacing: Spacing.md) {
-                        Text("Nombre del Plan")
-                            .font(BulkUpFont.cardTitle())
-                            .foregroundColor(BulkUpColors.textPrimary)
-
-                        TextField("Ej: Fuerza Primavera 2024", text: $planName)
-                            .padding(Spacing.md)
-                            .background(BulkUpColors.surfaceElevated)
-                            .cornerRadius(CornerRadius.small)
-                            .foregroundColor(BulkUpColors.textPrimary)
-                            .submitLabel(.done)
+            if creationMethod == .imageUpload {
+                aiImportBody
+                    .background(BulkUpColors.background)
+                    .navigationTitle("Importar con IA")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Cancelar") {
+                                dismiss()
+                            }
+                            .foregroundColor(BulkUpColors.training)
+                        }
                     }
-
-                    // Date Range Section
-                    VStack(alignment: .leading, spacing: Spacing.md) {
-                        HStack {
-                            Text("Duración del Plan")
+                    .disabled(isProcessingFile)
+                    .overlay {
+                        if isProcessingFile {
+                            processingOverlay
+                        }
+                    }
+            } else {
+                ScrollView {
+                    VStack(spacing: Spacing.xl) {
+                        // Plan Name Section
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            Text("Nombre del Plan")
                                 .font(BulkUpFont.cardTitle())
                                 .foregroundColor(BulkUpColors.textPrimary)
 
-                            Spacer()
-
-                            Toggle("Fechas específicas", isOn: $useCustomDates)
-                                .toggleStyle(.switch)
-                                .tint(BulkUpColors.training)
+                            TextField("Ej: Fuerza Primavera 2024", text: $planName)
+                                .padding(Spacing.md)
+                                .background(BulkUpColors.surfaceElevated)
+                                .cornerRadius(CornerRadius.small)
+                                .foregroundColor(BulkUpColors.textPrimary)
+                                .submitLabel(.done)
                         }
 
-                        if useCustomDates {
-                            VStack(spacing: Spacing.md) {
-                                DatePicker(
-                                    "Fecha de inicio",
-                                    selection: $startDate,
-                                    displayedComponents: .date
-                                )
-                                .foregroundColor(BulkUpColors.textPrimary)
-                                DatePicker(
-                                    "Fecha de fin",
-                                    selection: $endDate,
-                                    displayedComponents: .date
-                                )
-                                .foregroundColor(BulkUpColors.textPrimary)
+                        // Date Range Section
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            HStack {
+                                Text("Duración del Plan")
+                                    .font(BulkUpFont.cardTitle())
+                                    .foregroundColor(BulkUpColors.textPrimary)
+
+                                Spacer()
+
+                                Toggle("Fechas específicas", isOn: $useCustomDates)
+                                    .toggleStyle(.switch)
+                                    .tint(BulkUpColors.training)
                             }
-                            .padding(.leading)
-                        } else {
-                            Text("Sin fechas específicas - plan indefinido")
-                                .font(BulkUpFont.body())
-                                .foregroundColor(BulkUpColors.textSecondary)
+
+                            if useCustomDates {
+                                VStack(spacing: Spacing.md) {
+                                    DatePicker(
+                                        "Fecha de inicio",
+                                        selection: $startDate,
+                                        displayedComponents: .date
+                                    )
+                                    .foregroundColor(BulkUpColors.textPrimary)
+                                    DatePicker(
+                                        "Fecha de fin",
+                                        selection: $endDate,
+                                        displayedComponents: .date
+                                    )
+                                    .foregroundColor(BulkUpColors.textPrimary)
+                                }
                                 .padding(.leading)
+                            } else {
+                                Text("Sin fechas específicas - plan indefinido")
+                                    .font(BulkUpFont.body())
+                                    .foregroundColor(BulkUpColors.textSecondary)
+                                    .padding(.leading)
+                            }
                         }
-                    }
 
-                    // Creation Method Section
-                    VStack(alignment: .leading, spacing: Spacing.lg) {
-                        Text("Método de Creación")
-                            .font(BulkUpFont.cardTitle())
-                            .foregroundColor(BulkUpColors.textPrimary)
+                        // Creation Method Section
+                        VStack(alignment: .leading, spacing: Spacing.lg) {
+                            Text("Método de Creación")
+                                .font(BulkUpFont.cardTitle())
+                                .foregroundColor(BulkUpColors.textPrimary)
 
-                        VStack(spacing: Spacing.md) {
-                            ForEach(CreationMethod.allCases, id: \.self) {
-                                method in
-                                CreationMethodCard(
-                                    method: method,
-                                    isSelected: creationMethod == method
-                                ) {
-                                    creationMethod = method
+                            VStack(spacing: Spacing.md) {
+                                ForEach(CreationMethod.allCases, id: \.self) {
+                                    method in
+                                    CreationMethodCard(
+                                        method: method,
+                                        isSelected: creationMethod == method
+                                    ) {
+                                        creationMethod = method
+                                    }
                                 }
                             }
                         }
+
+                        // Error Message
+                        if let errorMessage = errorMessage {
+                            Text(errorMessage)
+                                .font(BulkUpFont.body())
+                                .foregroundColor(BulkUpColors.error)
+                                .padding(.horizontal)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .padding(Spacing.lg)
+                }
+                .background(BulkUpColors.background)
+                .navigationTitle("Nuevo Plan")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancelar") {
+                            dismiss()
+                        }
+                        .foregroundColor(BulkUpColors.training)
                     }
 
-                    // Error Message
-                    if let errorMessage = errorMessage {
-                        Text(errorMessage)
-                            .font(BulkUpFont.body())
-                            .foregroundColor(BulkUpColors.error)
-                            .padding(.horizontal)
-                            .multilineTextAlignment(.center)
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Continuar") {
+                            handleContinue()
+                        }
+                        .disabled(planName.isEmpty || isCreating)
+                        .fontWeight(.semibold)
+                        .foregroundColor(BulkUpColors.training)
                     }
                 }
-                .padding(Spacing.lg)
-            }
-            .background(BulkUpColors.background)
-            .navigationTitle("Nuevo Plan")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancelar") {
-                        dismiss()
+                .disabled(isCreating || isProcessingFile)
+                .overlay {
+                    if isCreating || isProcessingFile {
+                        processingOverlay
                     }
-                    .foregroundColor(BulkUpColors.training)
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Continuar") {
-                        handleContinue()
-                    }
-                    .disabled(planName.isEmpty || isCreating)
-                    .fontWeight(.semibold)
-                    .foregroundColor(BulkUpColors.training)
-                }
-            }
-            .disabled(isCreating || isProcessingFile)
-            .overlay {
-                if isCreating || isProcessingFile {
-                    processingOverlay
                 }
             }
         }
@@ -233,6 +254,117 @@ struct CreateTrainingPlanView: View {
         }
         .onDisappear {
             cleanupNotifications()
+        }
+    }
+
+    // MARK: - AI Import Body (shown when opened for "Importar con IA")
+
+    private var aiImportBody: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                // Plan name field
+                VStack(alignment: .leading, spacing: Spacing.md) {
+                    Text("Nombre del Plan")
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textPrimary)
+
+                    TextField("Ej: Fuerza Primavera 2024", text: $planName)
+                        .padding(Spacing.md)
+                        .background(BulkUpColors.surfaceElevated)
+                        .cornerRadius(CornerRadius.small)
+                        .foregroundColor(BulkUpColors.textPrimary)
+                        .submitLabel(.done)
+                }
+
+                // Optional dates toggle (training-only)
+                VStack(alignment: .leading, spacing: Spacing.md) {
+                    HStack {
+                        Text("Duración del Plan")
+                            .font(BulkUpFont.cardTitle())
+                            .foregroundColor(BulkUpColors.textPrimary)
+
+                        Spacer()
+
+                        Toggle("Fechas específicas", isOn: $useCustomDates)
+                            .toggleStyle(.switch)
+                            .tint(BulkUpColors.training)
+                    }
+
+                    if useCustomDates {
+                        VStack(spacing: Spacing.md) {
+                            DatePicker(
+                                "Fecha de inicio",
+                                selection: $startDate,
+                                displayedComponents: .date
+                            )
+                            .foregroundColor(BulkUpColors.textPrimary)
+                            DatePicker(
+                                "Fecha de fin",
+                                selection: $endDate,
+                                displayedComponents: .date
+                            )
+                            .foregroundColor(BulkUpColors.textPrimary)
+                        }
+                        .padding(.leading)
+                    } else {
+                        Text("Sin fechas específicas - plan indefinido")
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.textSecondary)
+                            .padding(.leading)
+                    }
+                }
+
+                // Dashed PDF + Image upload boxes
+                AIImportUploadBoxes(
+                    tint: BulkUpColors.accent,
+                    onPickPDF: { showingFilePicker = true },
+                    onPickImage: { showingPhotoPicker = true },
+                    disabled: planName.isEmpty
+                )
+
+                if planName.isEmpty {
+                    Text("Escribe un nombre para el plan antes de subir el archivo")
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
+                }
+
+                // AI detection feature list
+                VStack(alignment: .leading, spacing: Spacing.md) {
+                    Text("La IA detectará automáticamente:")
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textPrimary)
+
+                    aiFeatureRow(icon: "figure.strengthtraining.traditional", text: "Ejercicios y series")
+                    aiFeatureRow(icon: "repeat", text: "Repeticiones y descansos")
+                    aiFeatureRow(icon: "calendar", text: "Distribución semanal")
+                    aiFeatureRow(icon: "chart.bar.fill", text: "Progresión y volumen")
+                }
+                .flatCardStyle()
+
+                // Error message
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.error)
+                        .padding(.horizontal)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .padding(.horizontal, Spacing.screenH)
+            .padding(.top, Spacing.md)
+            .padding(.bottom, Spacing.lg)
+        }
+    }
+
+    private func aiFeatureRow(icon: String, text: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.accent)
+                .frame(width: 24)
+            Text(LocalizedStringKey(text))
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
     }
 

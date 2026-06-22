@@ -6,7 +6,7 @@ struct TrainingView: View {
     @EnvironmentObject var trainingManager: TrainingManager
     @ObservedObject private var friendsManager = FriendsManager.shared
     @ObservedObject private var workoutSession = WorkoutSessionManager.shared
-    @State private var viewMode: ViewMode = .day
+    @AppStorage("trainingViewMode") private var viewMode: ViewMode = .day
     @State private var selectedDay = ""
     @State private var expandedDay: Int? = nil
     @State private var expandedExercises: Set<String> = []
@@ -522,36 +522,6 @@ struct TrainingView: View {
     @ViewBuilder
     private var navigationHeader: some View {
         VStack(spacing: Spacing.md) {
-            // Inline segmented view mode toggle
-            HStack(spacing: 0) {
-                ForEach(ViewMode.allCases, id: \.self) { mode in
-                    Button {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
-                            viewMode = mode
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: mode.icon)
-                                .font(.system(size: 11, weight: .medium))
-                            Text(mode.displayName)
-                                .font(.system(size: 13, weight: .semibold))
-                        }
-                        .foregroundColor(viewMode == mode ? BulkUpColors.onAccent : BulkUpColors.textSecondary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 32)
-                        .background(
-                            viewMode == mode
-                                ? BulkUpColors.accent
-                                : Color.clear
-                        )
-                        .cornerRadius(8)
-                    }
-                }
-            }
-            .padding(3)
-            .background(BulkUpColors.surfaceElevated)
-            .cornerRadius(10)
-
             if viewMode == .day {
                 dayNavigationContent
             } else {
@@ -698,11 +668,11 @@ struct TrainingView: View {
         }
         .padding(.vertical, Spacing.sm)
         .background(BulkUpColors.surface)
-        .cornerRadius(CornerRadius.medium)
         .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .stroke(BulkUpColors.border, lineWidth: 0.5)
+            Rectangle().frame(height: 0.5).foregroundColor(BulkUpColors.border),
+            alignment: .bottom
         )
+        .padding(.horizontal, -Spacing.screenH)
     }
 
     private func dateForWeekIndex(_ index: Int) -> Date? {

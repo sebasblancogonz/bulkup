@@ -77,75 +77,12 @@ struct CreateDietPlanView: View {
                     }
 
                     // Upload Buttons
-                    HStack(spacing: Spacing.md) {
-                        // PDF Upload
-                        Button(action: {
-                            showingFilePicker = true
-                        }) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: CornerRadius.large)
-                                    .strokeBorder(
-                                        style: StrokeStyle(lineWidth: 2, dash: [8])
-                                    )
-                                    .foregroundColor(BulkUpColors.diet.opacity(0.4))
-                                    .frame(height: 160)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: CornerRadius.large)
-                                            .fill(BulkUpColors.surfaceElevated)
-                                    )
-
-                                VStack(spacing: Spacing.md) {
-                                    Image(systemName: "arrow.up.doc.fill")
-                                        .font(.system(size: 36))
-                                        .foregroundColor(BulkUpColors.diet)
-
-                                    Text("Subir PDF")
-                                        .font(BulkUpFont.cardTitle())
-                                        .foregroundColor(BulkUpColors.diet)
-
-                                    Text("Archivo PDF")
-                                        .font(BulkUpFont.caption())
-                                        .foregroundColor(BulkUpColors.textSecondary)
-                                }
-                            }
-                        }
-                        .disabled(planName.isEmpty)
-                        .opacity(planName.isEmpty ? 0.5 : 1.0)
-
-                        // Image Upload
-                        Button(action: {
-                            showingPhotoPicker = true
-                        }) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: CornerRadius.large)
-                                    .strokeBorder(
-                                        style: StrokeStyle(lineWidth: 2, dash: [8])
-                                    )
-                                    .foregroundColor(BulkUpColors.diet.opacity(0.4))
-                                    .frame(height: 160)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: CornerRadius.large)
-                                            .fill(BulkUpColors.surfaceElevated)
-                                    )
-
-                                VStack(spacing: Spacing.md) {
-                                    Image(systemName: "photo.on.rectangle")
-                                        .font(.system(size: 36))
-                                        .foregroundColor(BulkUpColors.diet)
-
-                                    Text("Subir Imagen")
-                                        .font(BulkUpFont.cardTitle())
-                                        .foregroundColor(BulkUpColors.diet)
-
-                                    Text("Foto de tu dieta")
-                                        .font(BulkUpFont.caption())
-                                        .foregroundColor(BulkUpColors.textSecondary)
-                                }
-                            }
-                        }
-                        .disabled(planName.isEmpty)
-                        .opacity(planName.isEmpty ? 0.5 : 1.0)
-                    }
+                    AIImportUploadBoxes(
+                        tint: BulkUpColors.diet,
+                        onPickPDF: { showingFilePicker = true },
+                        onPickImage: { showingPhotoPicker = true },
+                        disabled: planName.isEmpty
+                    )
 
                     if planName.isEmpty {
                         Text("Escribe un nombre para el plan antes de subir el archivo")
