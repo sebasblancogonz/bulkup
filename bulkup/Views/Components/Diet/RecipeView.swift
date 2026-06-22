@@ -116,7 +116,7 @@ struct RecipeView: View {
                 } label: {
                     Text("Generar receta")
                         .font(BulkUpFont.cardTitle())
-                        .foregroundColor(BulkUpColors.onAccent)
+                        .foregroundColor(Color.onFill(canGenerate ? BulkUpColors.accent : BulkUpColors.textTertiary))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Spacing.md)
                         .background(canGenerate ? BulkUpColors.accent : BulkUpColors.textTertiary)

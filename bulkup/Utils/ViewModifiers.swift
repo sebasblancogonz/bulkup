@@ -93,7 +93,7 @@ struct PrimaryButtonModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.system(size: 17, weight: .semibold))
-            .foregroundColor(BulkUpColors.onAccent)
+            .foregroundColor(Color.onFill(color))
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(

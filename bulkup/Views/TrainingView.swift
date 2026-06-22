@@ -955,9 +955,7 @@ struct TrainingView: View {
     }
 
     private func formatDayName(_ day: String) -> String {
-        return day.capitalized
-            .replacingOccurrences(of: "_", with: " ")
-            .replacingOccurrences(of: "dia", with: "Día")
+        return WeekdayLabel.localized(day)
     }
 }
 

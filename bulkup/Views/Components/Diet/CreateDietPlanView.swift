@@ -256,12 +256,14 @@ struct CreateDietPlanView: View {
         uploadManager.fileName = url.lastPathComponent
         uploadManager.startTimeout()
 
+        let appLanguage = LanguageManager.shared.resolvedCode
         Task {
             do {
                 let response = try await uploadManager.uploadFile(
                     at: url,
                     fileName: planName.isEmpty ? url.lastPathComponent : "\(planName).pdf",
-                    userId: userId
+                    userId: userId,
+                    language: appLanguage
                 )
 
                 processId = response.processId
@@ -290,13 +292,15 @@ struct CreateDietPlanView: View {
         uploadManager.fileName = planName.isEmpty ? "diet_plan.jpg" : "\(planName).jpg"
         uploadManager.startTimeout()
 
+        let appLanguage = LanguageManager.shared.resolvedCode
         Task {
             do {
                 let fileName = planName.isEmpty ? "diet_plan.jpg" : "\(planName).jpg"
                 let response = try await uploadManager.uploadImage(
                     imageData,
                     fileName: fileName,
-                    userId: userId
+                    userId: userId,
+                    language: appLanguage
                 )
                 processId = response.processId
             } catch {

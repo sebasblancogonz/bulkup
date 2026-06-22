@@ -35,6 +35,19 @@ final class LanguageManager: ObservableObject {
         return Locale(identifier: Locale.preferredLanguages.first ?? "es")
     }
 
+    /// Effective language code ("en"/"es") to send when importing plans, so the
+    /// backend can translate the parsed plan to the language the user sees.
+    /// Source plans are Spanish, so anything that isn't English maps to "es".
+    var resolvedCode: String {
+        switch language {
+        case .english: return "en"
+        case .spanish: return "es"
+        case .system:
+            let device = (Locale.preferredLanguages.first ?? "es").prefix(2).lowercased()
+            return device == "en" ? "en" : "es"
+        }
+    }
+
     private init() {
         let stored = UserDefaults.standard.string(forKey: storageKey)
         let initial = AppLanguage(rawValue: stored ?? AppLanguage.system.rawValue) ?? .system

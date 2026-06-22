@@ -68,31 +68,19 @@ class DietManager: ObservableObject {
         }
     }
     
-    func loadActiveDietPlan(userId: String, retryCount: Int = 0) async {
-        print("[DietManager] loadActiveDietPlan called for userId: \(userId) (attempt \(retryCount + 1))")
+    func loadActiveDietPlan(userId: String) async {
         isLoading = true
         errorMessage = nil
 
         do {
             let response = try await apiService.loadActiveDietPlan(userId: userId)
-            print("[DietManager] Response received - dietData: \(response.dietData?.count ?? 0) days, planId: \(response.planId ?? "nil")")
 
             if let serverDietData = response.dietData, !serverDietData.isEmpty {
                 let localDietDays = convertServerDataToLocal(serverDietData)
                 setDietData(localDietDays, planId: response.planId)
                 self.activePlanName = response.filename
-                print("[DietManager] Diet data set: \(localDietDays.count) days")
-            } else if retryCount < 3 {
-                // Retry with delay - backend may not have persisted data yet
-                let delay = UInt64((retryCount + 1) * 2) * 1_000_000_000
-                print("[DietManager] No diet data yet, retrying in \((retryCount + 1) * 2)s...")
-                try? await Task.sleep(nanoseconds: delay)
-                isLoading = false
-                await loadActiveDietPlan(userId: userId, retryCount: retryCount + 1)
-                return
             } else {
                 setDietData([])
-                print("[DietManager] No diet data after \(retryCount + 1) attempts")
             }
         } catch {
             errorMessage = error.localizedDescription

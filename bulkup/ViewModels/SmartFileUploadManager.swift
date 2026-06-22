@@ -62,6 +62,7 @@ extension SmartFileUploadManager {
         at fileURL: URL,
         fileName: String,
         userId: String,
+        language: String,
         startDate: Date? = nil,
         endDate: Date? = nil
     ) async throws -> FileProcessingResponse {
@@ -73,7 +74,7 @@ extension SmartFileUploadManager {
         let data = try Data(contentsOf: fileURL)
         return try await uploadToServer(
             fileData: data, fileName: fileName, mimeType: "application/pdf",
-            userId: userId, startDate: startDate, endDate: endDate
+            userId: userId, language: language, startDate: startDate, endDate: endDate
         )
     }
 
@@ -82,12 +83,13 @@ extension SmartFileUploadManager {
         _ imageData: Data,
         fileName: String,
         userId: String,
+        language: String,
         startDate: Date? = nil,
         endDate: Date? = nil
     ) async throws -> FileProcessingResponse {
         try await uploadToServer(
             fileData: imageData, fileName: fileName, mimeType: "image/jpeg",
-            userId: userId, startDate: startDate, endDate: endDate
+            userId: userId, language: language, startDate: startDate, endDate: endDate
         )
     }
 
@@ -97,6 +99,7 @@ extension SmartFileUploadManager {
         fileName: String,
         mimeType: String,
         userId: String,
+        language: String,
         startDate: Date?,
         endDate: Date?
     ) async throws -> FileProcessingResponse {
@@ -127,6 +130,7 @@ extension SmartFileUploadManager {
 
         appendField("userId", userId)
         appendField("planName", fileName)
+        appendField("language", language)
 
         if let startDate, let endDate {
             let formatter = ISO8601DateFormatter()

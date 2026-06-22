@@ -840,10 +840,10 @@ struct ProgressDashboardView: View {
     }
 
     private var weeklyComplianceText: String {
-        if let stats = mealManager.complianceStats {
-            return String(format: "%.0f%%", stats.complianceRate * 100)
-        }
-        return "--"
+        // Use the completion-based weekly percent (meals done vs. meals the plan
+        // expects over 7 days). Returns nil — shown as "—" — when the plan expects
+        // no meals yet, so a fresh account no longer reads 100%.
+        weeklyCompliancePercent.map { String(format: "%.0f%%", $0) } ?? "—"
     }
 
     private var weightTrend: Double? {

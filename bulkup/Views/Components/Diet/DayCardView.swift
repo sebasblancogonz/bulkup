@@ -18,7 +18,7 @@ struct DayCardView: View {
         Button(action: onSelect) {
             HStack(spacing: Spacing.md) {
                 // Day name
-                Text(day.day.capitalized.replacingOccurrences(of: "_", with: " "))
+                Text(WeekdayLabel.localized(day.day))
                     .font(BulkUpFont.body())
                     .foregroundColor(BulkUpColors.textPrimary)
                     .lineLimit(1)

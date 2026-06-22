@@ -16,16 +16,20 @@ struct LoginContentView: View {
     @State private var name = ""
     @State private var isRegistering = false
     @State private var errorMessage: String?
+    @FocusState private var focusedField: Field?
+
+    private enum Field { case name, email, password }
+
+    private var isFormValid: Bool {
+        !email.isEmpty && !password.isEmpty && (!isRegistering || !name.isEmpty)
+    }
 
     var body: some View {
-        VStack(spacing: 40) {
-            // Header
-            LoginHeaderView()
-                .padding(.top, 60)
+        ScrollView {
+            VStack(spacing: Spacing.xl) {
+                LoginHeaderView()
+                    .padding(.top, Spacing.xl)
 
-            // Form
-            VStack(spacing: 20) {
-                // Input fields
                 VStack(spacing: Spacing.lg) {
                     if isRegistering {
                         CustomTextField(
@@ -33,6 +37,9 @@ struct LoginContentView: View {
                             text: $name,
                             icon: "person.fill"
                         )
+                        .focused($focusedField, equals: .name)
+                        .submitLabel(.next)
+                        .onSubmit { focusedField = .email }
                     }
 
                     CustomTextField(
@@ -41,90 +48,104 @@ struct LoginContentView: View {
                         icon: "envelope.fill",
                         keyboardType: .emailAddress
                     )
+                    .focused($focusedField, equals: .email)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .password }
 
                     CustomSecureField(
                         placeholder: "Contraseña",
                         text: $password,
                         icon: "lock.fill"
                     )
-                }
-                .padding(.horizontal, 24)
+                    .focused($focusedField, equals: .password)
+                    .submitLabel(.go)
+                    .onSubmit { if isFormValid { handleAuthAction() } }
 
-                // Error message
-                if let errorMessage = errorMessage {
-                    Text(LocalizedStringKey(errorMessage))
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.error)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                }
-
-                // Primary button
-                Button(action: handleAuthAction) {
-                    HStack {
-                        if authManager.isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: BulkUpColors.onAccent))
-                                .scaleEffect(0.9)
-                        } else {
-                            Text(isRegistering ? LocalizedStringKey("Crear cuenta") : LocalizedStringKey("Iniciar sesión"))
-                        }
+                    if let errorMessage = errorMessage {
+                        Text(LocalizedStringKey(errorMessage))
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.error)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
                     }
-                    .primaryButtonStyle(color: BulkUpColors.accent)
-                    .contentShape(Rectangle())
-                }
-                .disabled(authManager.isLoading || email.isEmpty || password.isEmpty || (isRegistering && name.isEmpty))
-                .opacity((email.isEmpty || password.isEmpty || (isRegistering && name.isEmpty)) ? 0.6 : 1)
-                .padding(.horizontal, 24)
 
-                // Toggle mode
-                Button(action: { isRegistering.toggle() }) {
-                    Text(isRegistering ? LocalizedStringKey("¿Ya tienes cuenta? Inicia sesión") : LocalizedStringKey("¿No tienes cuenta? Regístrate"))
-                        .font(.footnote)
-                        .fontWeight(.medium)
-                        .foregroundColor(BulkUpColors.accent)
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity)
+                    // Primary button
+                    Button(action: handleAuthAction) {
+                        HStack {
+                            if authManager.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: BulkUpColors.onAccent))
+                                    .scaleEffect(0.9)
+                            } else {
+                                Text(isRegistering ? LocalizedStringKey("Crear cuenta") : LocalizedStringKey("Iniciar sesión"))
+                            }
+                        }
+                        .primaryButtonStyle(color: BulkUpColors.accent)
                         .contentShape(Rectangle())
-                }
+                    }
+                    .disabled(authManager.isLoading || !isFormValid)
+                    .opacity(isFormValid ? 1 : 0.6)
 
-                // Divider
-                HStack {
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(BulkUpColors.textTertiary.opacity(0.5))
-                    Text("o")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textTertiary)
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(BulkUpColors.textTertiary.opacity(0.5))
-                }
-                .padding(.horizontal, 24)
+                    // Toggle mode
+                    Button(action: { withAnimation { isRegistering.toggle() } }) {
+                        Text(isRegistering ? LocalizedStringKey("¿Ya tienes cuenta? Inicia sesión") : LocalizedStringKey("¿No tienes cuenta? Regístrate"))
+                            .font(.footnote)
+                            .fontWeight(.medium)
+                            .foregroundColor(BulkUpColors.accent)
+                            .padding(.vertical, Spacing.xs)
+                            .frame(maxWidth: .infinity)
+                            .contentShape(Rectangle())
+                    }
 
-                // Sign in with Apple
-                SignInWithAppleButton(.signIn) { request in
-                    request.requestedScopes = [.fullName, .email]
-                } onCompletion: { result in
-                    handleAppleSignIn(result: result)
+                    // Divider
+                    HStack(spacing: Spacing.sm) {
+                        line
+                        Text("o")
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textTertiary)
+                        line
+                    }
+                    .padding(.vertical, Spacing.xs)
+
+                    // Sign in with Apple — native button (label localized by the system).
+                    SignInWithAppleButton(.signIn) { request in
+                        focusedField = nil
+                        request.requestedScopes = [.fullName, .email]
+                    } onCompletion: { result in
+                        handleAppleSignIn(result: result)
+                    }
+                    .signInWithAppleButtonStyle(colorScheme == .dark ? .whiteOutline : .black)
+                    .frame(height: 54)
+                    .cornerRadius(CornerRadius.medium)
                 }
-                .signInWithAppleButtonStyle(colorScheme == .dark ? .whiteOutline : .black)
-                .frame(height: 56)
-                .cornerRadius(CornerRadius.medium)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, Spacing.xl)
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, Spacing.xl)
         }
-        .background(
-            BulkUpColors.background
-                .ignoresSafeArea()
-        )
+        .scrollDismissesKeyboard(.interactively)
+        .background(BulkUpColors.background.ignoresSafeArea())
         .navigationBarHidden(true)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(action: { focusedField = nil }) {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                }
+                .tint(BulkUpColors.accent)
+            }
+        }
+    }
+
+    private var line: some View {
+        Rectangle()
+            .frame(height: 1)
+            .foregroundColor(BulkUpColors.textTertiary.opacity(0.5))
     }
 
     private func handleAuthAction() {
         errorMessage = nil
+        focusedField = nil
 
         Task {
             do {
@@ -203,7 +224,8 @@ struct CustomTextField: View {
                 .foregroundColor(BulkUpColors.textPrimary)
                 .focused($isFocused)
         }
-        .padding()
+        .padding(.horizontal, Spacing.md)
+        .frame(height: 54)
         .background(BulkUpColors.surfaceElevated)
         .cornerRadius(CornerRadius.medium)
         .overlay(
@@ -228,27 +250,28 @@ struct CustomSecureField: View {
                 .foregroundColor(BulkUpColors.textTertiary)
                 .frame(width: 20)
 
-            if isSecure {
-                SecureField(placeholder, text: $text)
-                    .foregroundColor(BulkUpColors.textPrimary)
-                    .focused($isFocused)
-            } else {
-                TextField(placeholder, text: $text)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .foregroundColor(BulkUpColors.textPrimary)
-                    .focused($isFocused)
+            Group {
+                if isSecure {
+                    SecureField(placeholder, text: $text)
+                } else {
+                    TextField(placeholder, text: $text)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                }
             }
+            .foregroundColor(BulkUpColors.textPrimary)
+            .focused($isFocused)
 
             Button(action: { isSecure.toggle() }) {
                 Image(systemName: isSecure ? "eye.slash.fill" : "eye.fill")
                     .foregroundColor(BulkUpColors.textTertiary)
                     .font(BulkUpFont.caption())
-                    .frame(width: 44, height: 44)
+                    .frame(width: 24, height: 24)
                     .contentShape(Rectangle())
             }
         }
-        .padding()
+        .padding(.horizontal, Spacing.md)
+        .frame(height: 54)
         .background(BulkUpColors.surfaceElevated)
         .cornerRadius(CornerRadius.medium)
         .overlay(
@@ -266,7 +289,7 @@ struct LoginHeaderView: View {
             Image("BulkUp")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 200, height: 200)
+                .frame(width: 130, height: 130)
 
             Text("Come, entrena, crece, repite.")
                 .font(BulkUpFont.body())

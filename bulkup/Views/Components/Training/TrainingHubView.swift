@@ -762,7 +762,7 @@ struct TrainingPlanCard: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 36)
                         .background(isActivating ? BulkUpColors.textTertiary : BulkUpColors.success)
-                        .foregroundColor(BulkUpColors.onAccent)
+                        .foregroundColor(Color.onFill(isActivating ? BulkUpColors.textTertiary : BulkUpColors.success))
                         .cornerRadius(CornerRadius.small)
                     }
 
@@ -816,7 +816,7 @@ struct TrainingPlanCard: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: Spacing.sm) {
                             ForEach(plan.trainingDays.prefix(5)) { day in
-                                Text(day.day)
+                                Text(WeekdayLabel.localized(day.day))
                                     .font(BulkUpFont.caption())
                                     .padding(.horizontal, Spacing.sm)
                                     .padding(.vertical, Spacing.xs)
@@ -856,7 +856,7 @@ struct TrainingPlanCard: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 36)
                     .background(BulkUpColors.success)
-                    .foregroundColor(BulkUpColors.onAccent)
+                    .foregroundColor(Color.onFill(BulkUpColors.success))
                     .cornerRadius(CornerRadius.small)
                     .contentShape(Rectangle())
                 }
@@ -1001,7 +1001,7 @@ struct ShareCodeView: View {
                         }
                         .frame(width: 200, height: 44)
                         .background(copied ? BulkUpColors.success : BulkUpColors.training)
-                        .foregroundColor(BulkUpColors.onAccent)
+                        .foregroundColor(Color.onFill(copied ? BulkUpColors.success : BulkUpColors.training))
                         .cornerRadius(CornerRadius.medium)
                     }
 
