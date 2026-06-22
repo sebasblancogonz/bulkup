@@ -13,6 +13,7 @@ private struct RecipeRequest: Codable {
     let mealType: String
     let ingredients: [String]
     let complexity: String
+    let language: String
 }
 
 struct RecipeResponse: Codable {
@@ -536,7 +537,7 @@ extension APIService {
 
     // MARK: - Recipe (one-shot) + AI image
 
-    func generateRecipe(mealType: String, ingredients: [String], complexity: String) async throws -> RecipeResponse {
+    func generateRecipe(mealType: String, ingredients: [String], complexity: String, language: String) async throws -> RecipeResponse {
         guard let url = URL(string: "\(APIConfig.baseURL)/diet/recipe") else {
             throw APIError.invalidURL
         }
@@ -546,7 +547,7 @@ extension APIService {
         if let token = UserDefaults.standard.string(forKey: "auth_token") {
             urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        urlRequest.httpBody = try JSONEncoder().encode(RecipeRequest(mealType: mealType, ingredients: ingredients, complexity: complexity))
+        urlRequest.httpBody = try JSONEncoder().encode(RecipeRequest(mealType: mealType, ingredients: ingredients, complexity: complexity, language: language))
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
