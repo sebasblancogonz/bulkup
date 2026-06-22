@@ -421,7 +421,7 @@ struct OnboardingView: View {
             HStack(spacing: Spacing.lg) {
                 Image(systemName: icon)
                     .font(BulkUpFont.sectionHeader())
-                    .foregroundColor(BulkUpColors.onAccent)
+                    .foregroundColor(Color.onFill(color))
                     .frame(width: 52, height: 52)
                     .background(
                         RoundedRectangle(cornerRadius: CornerRadius.medium)

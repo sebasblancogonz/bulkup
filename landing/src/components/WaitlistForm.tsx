@@ -41,7 +41,7 @@ export default function WaitlistForm({ locale, ctaLabel, placeholder, successMsg
         className="flex-1 rounded-full bg-[var(--color-surface)] border border-[var(--color-line)] px-5 py-3.5 text-[var(--color-fg)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
       />
       <button type="submit" disabled={state === 'loading'}
-        className="sheen press rounded-full bg-[linear-gradient(95deg,var(--color-accent),var(--color-accent-glow))] text-black font-semibold px-6 py-3.5 disabled:opacity-60 transition-shadow duration-300 hover:shadow-[0_10px_34px_-8px_color-mix(in_oklab,var(--color-accent)_60%,transparent)]">
+        className="sheen press rounded-full bg-[linear-gradient(95deg,var(--color-accent),var(--color-accent-glow))] text-white font-semibold px-6 py-3.5 disabled:opacity-60 transition-shadow duration-300 hover:shadow-[0_10px_34px_-8px_color-mix(in_oklab,var(--color-accent)_60%,transparent)]">
         {state === 'loading' ? '…' : ctaLabel}
       </button>
       {state === 'invalid' && <p className="text-red-400 text-sm w-full" role="alert">{invalidMsg}</p>}

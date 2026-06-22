@@ -372,6 +372,16 @@
         }
       }
     },
+    "%lld %@ gratis": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld %2$@ gratis"
+          }
+        }
+      }
+    },
     "%lld × %@": {
       "localizations": {
         "en": {
@@ -2995,6 +3005,16 @@
         }
       }
     },
+    "Editar Plan de Dieta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Diet Plan"
+          }
+        }
+      }
+    },
     "Editar RM": {
       "localizations": {
         "en": {
@@ -3289,6 +3309,7 @@
         }
       }
     },
+    "Empezar prueba gratis": {},
     "Empuje": {
       "extractionState": "manual",
       "localizations": {
@@ -3773,7 +3794,9 @@
         }
       }
     },
+    "facturado %@": {},
     "Facturado %@": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3783,7 +3806,9 @@
         }
       }
     },
+    "facturado anualmente": {},
     "Facturado anualmente": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3793,7 +3818,9 @@
         }
       }
     },
+    "facturado mensualmente": {},
     "Facturado mensualmente": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -4863,6 +4890,7 @@
       }
     },
     "MÁS POPULAR": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -5017,6 +5045,7 @@
         }
       }
     },
+    "MEJOR VALOR": {},
     "Mensual": {
       "localizations": {
         "en": {
@@ -7835,12 +7864,32 @@
         }
       }
     },
-    "Editar Plan de Dieta": {
+    "%1$d/%2$d comidas": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Edit Diet Plan"
+            "value": "%1$d/%2$d meals"
+          }
+        }
+      }
+    },
+    "Miércoles": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wednesday"
+          }
+        }
+      }
+    },
+    "Sábado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saturday"
           }
         }
       }

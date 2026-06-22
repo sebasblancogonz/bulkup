@@ -113,7 +113,7 @@ private struct TemplateCard: View {
                     ForEach(template.trainingDays, id: \.day) { day in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                Text(day.day)
+                                Text(WeekdayLabel.localized(day.day))
                                     .font(BulkUpFont.body())
                                     .fontWeight(.semibold)
                                     .foregroundColor(BulkUpColors.textPrimary)

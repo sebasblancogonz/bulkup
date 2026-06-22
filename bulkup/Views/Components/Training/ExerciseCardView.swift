@@ -511,7 +511,7 @@ struct ExerciseWeightLogger: View {
                 } label: {
                     Text("F")
                         .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(BulkUpColors.onAccent)
+                        .foregroundColor(Color.onFill(BulkUpColors.warning))
                         .frame(width: 24, height: 24)
                         .background(BulkUpColors.warning)
                         .clipShape(Circle())

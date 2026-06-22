@@ -8,8 +8,8 @@
   --color-line: rgba(255, 255, 255, 0.09);  /* app border: white @ ~0.08 */
   --color-fg: #FFFFFF;
   --color-muted: #8E8E93;                    /* app textSecondary */
-  --color-accent: #00E6C3;                   /* brand teal/mint */
-  --color-accent-glow: #00FFD5;              /* brand gradient highlight */
+  --color-accent: #F87740;                   /* brand orange (matches logo) */
+  --color-accent-glow: #FF9359;              /* brand gradient highlight */
   --color-accent-2: #7B61FF;                 /* electric violet, used sparingly */
   --font-display: "Clash Display", "Arial Black", system-ui, sans-serif;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;

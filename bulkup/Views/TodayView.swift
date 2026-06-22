@@ -308,7 +308,7 @@ struct TodayView: View {
     @ViewBuilder
     private var heroWorkoutCard: some View {
         if let day = todayTrainingDay {
-            let dayLabel = day.workoutName ?? day.day.capitalized
+            let dayLabel = day.workoutName ?? WeekdayLabel.localized(day.day)
             let totalExercises = day.exercises.count
             let loggedExercises = day.exercises.filter { ex in
                 trainingManager.getCompletedSets(

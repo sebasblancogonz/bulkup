@@ -23,7 +23,7 @@ struct SimpleDayCardView: View {
                         .fill(BulkUpColors.diet)
                         .frame(width: 10, height: 10)
 
-                    Text(day.day.capitalized.replacingOccurrences(of: "_", with: " "))
+                    Text(WeekdayLabel.localized(day.day))
                         .font(BulkUpFont.cardTitle())
                         .foregroundColor(BulkUpColors.textPrimary)
 

@@ -56,15 +56,29 @@ extension Color {
             traits.userInterfaceStyle == .dark ? UIColor(hex: dark) : UIColor(hex: light)
         })
     }
+
+    /// Best-contrast label color (white or black) for text/icons sitting on top
+    /// of a filled element, chosen per light/dark trait via WCAG luminance.
+    /// Orange/red fills resolve to white; bright cyan/green/yellow fills to black.
+    static func onFill(_ fill: Color) -> Color {
+        Color(uiColor: UIColor { traits in
+            let c = UIColor(fill).resolvedColor(with: traits)
+            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+            c.getRed(&r, green: &g, blue: &b, alpha: &a)
+            func lin(_ v: CGFloat) -> CGFloat { v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4) }
+            let L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+            return L > 0.45 ? .black : .white
+        })
+    }
 }
 
 // MARK: - Color Tokens
 enum BulkUpColors {
-    // Brand — Teal/Mint
-    static let accent = Color.adaptive(dark: "#00E6C3", light: "#00E6C3")
-    static let accentGlow = Color.adaptive(dark: "#00FFD5", light: "#00D9BC")
-    static let accentMuted = Color.adaptive(dark: "#00997F", light: "#00A88F")
-    static let accentText = Color.adaptive(dark: "#00E6C3", light: "#00A88F")
+    // Brand — Charcoal + Orange (matches the logo/app icon)
+    static let accent = Color.adaptive(dark: "#F87740", light: "#F87740")       // logo orange
+    static let accentGlow = Color.adaptive(dark: "#FF9359", light: "#FF8A50")   // brighter end of gradient
+    static let accentMuted = Color.adaptive(dark: "#C9572A", light: "#D4602E")  // deep orange for fills/bg
+    static let accentText = Color.adaptive(dark: "#FB8557", light: "#C9572A")   // legible orange per background
     static let accentGradient = LinearGradient(
         colors: [accent, accentGlow],
         startPoint: .leading, endPoint: .trailing
@@ -81,7 +95,7 @@ enum BulkUpColors {
     static let textPrimary = Color.adaptive(dark: "#FFFFFF", light: "#1A1A1A")
     static let textSecondary = Color.adaptive(dark: "#8E8E93", light: "#6E6E73")
     static let textTertiary = Color.adaptive(dark: "#48484A", light: "#A0A0A5")
-    static let onAccent = Color.adaptive(dark: "#000000", light: "#000000") // text on bright accent buttons
+    static let onAccent = Color.onFill(accent) // text/icons on the orange accent → white
 
     // Semantic
     static let success = Color.adaptive(dark: "#30D158", light: "#28B14C")

@@ -242,7 +242,7 @@ struct RMExerciseDetailSheet: View {
                         Text("\(index + 1)")
                             .font(BulkUpFont.caption())
                             .fontWeight(.bold)
-                            .foregroundColor(BulkUpColors.onAccent)
+                            .foregroundColor(Color.onFill(BulkUpColors.training))
                             .frame(width: 24, height: 24)
                             .background(BulkUpColors.training)
                             .clipShape(Circle())

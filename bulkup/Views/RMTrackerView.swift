@@ -390,7 +390,7 @@ struct RMExerciseCardView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
                 .background(BulkUpColors.training)
-                .foregroundColor(BulkUpColors.onAccent)
+                .foregroundColor(Color.onFill(BulkUpColors.training))
                 .cornerRadius(CornerRadius.small)
             }
         }

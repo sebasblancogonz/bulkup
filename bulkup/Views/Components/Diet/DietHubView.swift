@@ -103,7 +103,7 @@ struct DietHubView: View {
                             Text(section.displayName)
                                 .font(.system(size: 14, weight: .bold))
                         }
-                        .foregroundColor(isActive ? BulkUpColors.onAccent : BulkUpColors.textSecondary)
+                        .foregroundColor(isActive ? Color.onFill(BulkUpColors.diet) : BulkUpColors.textSecondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(
@@ -671,7 +671,7 @@ struct DietPlanCard: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: Spacing.sm) {
                             ForEach(plan.dietDays.prefix(5), id: \.day) { day in
-                                Text(day.day.capitalized)
+                                Text(WeekdayLabel.localized(day.day))
                                     .font(BulkUpFont.caption())
                                     .padding(.horizontal, Spacing.sm)
                                     .padding(.vertical, Spacing.xs)
@@ -699,7 +699,7 @@ struct DietPlanCard: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 36)
                 .background(BulkUpColors.diet)
-                .foregroundColor(BulkUpColors.onAccent)
+                .foregroundColor(Color.onFill(BulkUpColors.diet))
                 .cornerRadius(CornerRadius.small)
                 .contentShape(Rectangle())
             }
