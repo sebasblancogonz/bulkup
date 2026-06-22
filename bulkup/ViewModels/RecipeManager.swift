@@ -49,7 +49,8 @@ final class RecipeManager: ObservableObject {
             let result = try await api.generateRecipe(
                 mealType: mealType,
                 ingredients: ingredients,
-                complexity: complexity.rawValue
+                complexity: complexity.rawValue,
+                language: LanguageManager.shared.resolvedCode
             )
             recipe = result.recipe
             dish = result.dish
