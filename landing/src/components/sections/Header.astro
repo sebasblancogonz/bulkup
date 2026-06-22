@@ -1,0 +1,32 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import LanguageSwitch from '../LanguageSwitch.astro';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+const home = locale === 'es' ? '/es' : '/';
+---
+<header class="sticky top-0 z-50 bg-white/85 backdrop-blur border-b border-[var(--color-line)]">
+  <nav class="max-w-[1200px] mx-auto px-6 h-[72px] flex items-center justify-between gap-4">
+    <a href={home} class="flex items-center gap-2.5" aria-label="BulkUp">
+      <span class="grid place-items-center w-8 h-8 rounded-[10px] bg-[var(--color-accent)]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M5 19v-8M12 19V5M19 19v-5"/></svg>
+      </span>
+      <span class="font-[var(--font-display)] text-lg font-extrabold text-[var(--color-fg)]">BulkUp</span>
+    </a>
+
+    <div class="hidden md:flex items-center gap-8 text-[var(--color-fg)]">
+      <a href="#features" class="hover:text-[var(--color-accent)] transition-colors">{t('nav.features')}</a>
+      <a href="#pricing" class="hover:text-[var(--color-accent)] transition-colors">{t('nav.pricing')}</a>
+      <a href="#faq" class="hover:text-[var(--color-accent)] transition-colors">{t('nav.faq')}</a>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <LanguageSwitch locale={locale} />
+      <a href="#waitlist"
+        class="press inline-flex items-center gap-1.5 rounded-[26px] bg-[var(--color-accent)] text-white font-bold px-5 py-2.5">
+        {t('hero.cta')}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </nav>
+</header>

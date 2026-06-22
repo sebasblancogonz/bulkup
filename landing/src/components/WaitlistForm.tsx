@@ -25,7 +25,7 @@ export default function WaitlistForm({ locale, ctaLabel, placeholder, successMsg
   }
 
   if (state === 'success')
-    return <p className="text-[var(--color-accent)] font-medium" role="status">{successMsg}</p>;
+    return <p className="font-bold text-[var(--color-green)]" role="status">{successMsg}</p>;
 
   return (
     <form onSubmit={onSubmit} action="/api/waitlist" method="post"
@@ -38,14 +38,14 @@ export default function WaitlistForm({ locale, ctaLabel, placeholder, successMsg
       <input
         type="email" name="email" required value={email}
         onChange={(e) => setEmail(e.target.value)} placeholder={placeholder}
-        className="flex-1 rounded-full bg-[var(--color-surface)] border border-[var(--color-line)] px-5 py-3.5 text-[var(--color-fg)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+        className="flex-1 rounded-[26px] bg-white border border-[var(--color-line)] px-5 py-3.5 text-[var(--color-fg)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
       />
       <button type="submit" disabled={state === 'loading'}
-        className="sheen press rounded-full bg-[linear-gradient(95deg,var(--color-accent),var(--color-accent-glow))] text-white font-semibold px-6 py-3.5 disabled:opacity-60 transition-shadow duration-300 hover:shadow-[0_10px_34px_-8px_color-mix(in_oklab,var(--color-accent)_60%,transparent)]">
+        className="press rounded-[26px] bg-[var(--color-accent)] text-white font-bold px-6 py-3.5 disabled:opacity-60 whitespace-nowrap">
         {state === 'loading' ? '…' : ctaLabel}
       </button>
-      {state === 'invalid' && <p className="text-red-400 text-sm w-full" role="alert">{invalidMsg}</p>}
-      {state === 'error' && <p className="text-red-400 text-sm w-full" role="alert">{errorMsg}</p>}
+      {state === 'invalid' && <p className="text-[var(--color-accent)] text-sm w-full" role="alert">{invalidMsg}</p>}
+      {state === 'error' && <p className="text-[var(--color-accent)] text-sm w-full" role="alert">{errorMsg}</p>}
     </form>
   );
 }

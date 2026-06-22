@@ -4,9 +4,9 @@ import type { PointerEvent } from 'react';
 /**
  * Floating phone mockup with a spring-based 3D tilt that tracks the
  * pointer. Decorative only — gated to fine-pointer devices and reduced
- * motion. Replace the inner content with a real screenshot later.
+ * motion. Renders a real app screenshot inside the frame.
  */
-export default function HeroVisual({ label }: { label: string }) {
+export default function HeroVisual({ src, alt }: { src: string; alt: string }) {
   const reduce = useReducedMotion();
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
@@ -45,12 +45,8 @@ export default function HeroVisual({ label }: { label: string }) {
         style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
       >
         <div className="relative mx-auto w-[280px] h-[580px] rounded-[2.5rem] border border-[var(--color-line)] bg-[var(--color-surface)] shadow-2xl shadow-black/60 overflow-hidden">
-          {/* notch */}
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 rounded-full bg-black/70 z-10" />
-          {/* placeholder app screen — swap with real screenshot */}
-          <div className="absolute inset-0 flex items-center justify-center text-[var(--color-muted)] text-sm">
-            {label}
-          </div>
+          {/* real app screenshot (its own status bar shows, so no fake notch) */}
+          <img src={src} alt={alt} className="absolute inset-0 w-full h-full object-cover" loading="eager" />
           {/* moving glare */}
           {!reduce && (
             <motion.div className="absolute inset-0 pointer-events-none" style={{ background: glareBg }} />

@@ -5,19 +5,19 @@ const { locale } = Astro.props as { locale: Locale };
 const t = useT(locale);
 const items = [['faq.q1','faq.a1'],['faq.q2','faq.a2'],['faq.q3','faq.a3'],['faq.q4','faq.a4']];
 ---
-<section class="max-w-3xl mx-auto px-6 py-28">
-  <Reveal client:visible variant="blur">
-    <h2 class="font-[var(--font-display)] text-4xl sm:text-5xl font-black text-center text-balance mb-12">{t('faq.title')}</h2>
+<section id="faq" class="max-w-3xl mx-auto px-6 py-24">
+  <Reveal client:visible variant="up">
+    <h2 class="font-[var(--font-display)] font-extrabold text-3xl sm:text-[2.4rem] text-center text-balance mb-12 text-[var(--color-fg)]">{t('faq.title')}</h2>
   </Reveal>
   <Reveal client:visible variant="up">
-    <div class="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+    <div class="flex flex-col gap-4">
       {items.map(([q,a]) => (
-        <details class="group py-5">
-          <summary class="cursor-pointer list-none flex justify-between items-center text-lg font-medium transition-colors hover:text-[var(--color-accent)]">
+        <details class="group rounded-[26px] bg-[var(--color-surface)] px-7 py-5">
+          <summary class="cursor-pointer list-none flex justify-between items-center gap-4 text-lg font-bold text-[var(--color-fg)] transition-colors group-open:text-[var(--color-accent)]">
             {t(q)}
-            <span class="text-[var(--color-accent)] text-xl group-open:rotate-45 transition-transform duration-300">+</span>
+            <span class="text-[var(--color-accent)] text-2xl leading-none group-open:rotate-45 transition-transform duration-300">+</span>
           </summary>
-          <p class="text-[var(--color-muted)] mt-3">{t(a)}</p>
+          <p class="text-[var(--color-muted)] leading-[1.6] mt-3">{t(a)}</p>
         </details>
       ))}
     </div>
