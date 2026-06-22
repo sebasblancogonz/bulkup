@@ -554,8 +554,8 @@ struct CreateTrainingPlanView: View {
             do {
                 let response = try await uploadManager.uploadFile(
                     at: url,
-                    fileName: planName.isEmpty
-                        ? url.lastPathComponent : "\(planName).pdf",
+                    fileName: url.lastPathComponent,
+                    planName: planName,
                     userId: userId,
                     language: appLanguage,
                     startDate: useCustomDates ? startDate : nil,
@@ -589,10 +589,10 @@ struct CreateTrainingPlanView: View {
         let appLanguage = LanguageManager.shared.resolvedCode
         Task {
             do {
-                let fileName = planName.isEmpty ? "training_plan.jpg" : "\(planName).jpg"
                 let response = try await uploadManager.uploadImage(
                     imageData,
-                    fileName: fileName,
+                    fileName: "training_plan.jpg",
+                    planName: planName,
                     userId: userId,
                     language: appLanguage,
                     startDate: useCustomDates ? startDate : nil,
