@@ -41,15 +41,22 @@ struct EditableSupplement: Identifiable {
 // MARK: - Diet Plan Editor View
 
 struct DietPlanEditorView: View {
+    // When set, the editor updates this plan instead of creating a new one.
+    var planId: String? = nil
+    var existingPlan: DietPlan? = nil
+
     @State private var planName: String = ""
     @State private var dietDays: [EditableDietDay] = []
     @State private var isSaving = false
     @State private var showingAddDay = false
     @State private var errorMessage: String?
+    @State private var didLoad = false
 
     @EnvironmentObject var dietManager: DietManager
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
+
+    private var isEditing: Bool { planId != nil }
 
     var body: some View {
         NavigationStack {
@@ -88,7 +95,7 @@ struct DietPlanEditorView: View {
                 .padding()
             }
             .background(BulkUpColors.background)
-            .navigationTitle("Nuevo Plan de Dieta")
+            .navigationTitle(isEditing ? LocalizedStringKey("Editar Plan de Dieta") : LocalizedStringKey("Nuevo Plan de Dieta"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -100,6 +107,41 @@ struct DietPlanEditorView: View {
             AddDietDayView { newDay in
                 dietDays.append(newDay)
             }
+        }
+        .onAppear(perform: loadExistingPlan)
+    }
+
+    // MARK: - Prefill (edit mode)
+
+    private func loadExistingPlan() {
+        guard !didLoad, let plan = existingPlan else { return }
+        didLoad = true
+        planName = plan.name
+        dietDays = plan.serverDietData.map { day in
+            EditableDietDay(
+                dayName: day.day,
+                meals: day.meals.map { meal in
+                    EditableMeal(
+                        type: meal.type,
+                        time: meal.time,
+                        options: (meal.options ?? []).map { option in
+                            EditableMealOption(
+                                optionDescription: option.description,
+                                ingredients: option.ingredients,
+                                instructions: option.instructions?.joined(separator: "\n") ?? ""
+                            )
+                        }
+                    )
+                },
+                supplements: (day.supplements ?? []).map { supplement in
+                    EditableSupplement(
+                        name: supplement.name,
+                        dosage: supplement.dosage,
+                        timing: supplement.timing,
+                        frequency: supplement.frequency
+                    )
+                }
+            )
         }
     }
 
@@ -210,11 +252,20 @@ struct DietPlanEditorView: View {
                     )
                 }
 
-                let _ = try await APIService.shared.createDietPlan(
-                    userId: userId,
-                    filename: planName,
-                    dietData: serverDietDays
-                )
+                if let planId = planId {
+                    try await APIService.shared.updateDietPlan(
+                        planId: planId,
+                        userId: userId,
+                        filename: planName,
+                        dietData: serverDietDays
+                    )
+                } else {
+                    let _ = try await APIService.shared.createDietPlan(
+                        userId: userId,
+                        filename: planName,
+                        dietData: serverDietDays
+                    )
+                }
 
                 // Reload the active diet plan
                 await dietManager.loadActiveDietPlan(userId: userId)

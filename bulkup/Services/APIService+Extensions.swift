@@ -481,6 +481,25 @@ extension APIService {
         return data
     }
 
+    func updateDietPlan(
+        planId: String,
+        userId: String,
+        filename: String,
+        dietData: [ServerDietDay]
+    ) async throws {
+        let request = CreateDietPlanRequest(
+            userId: userId,
+            filename: filename,
+            dietData: dietData
+        )
+
+        let _: APIResponse<EmptyResponse> = try await requestWithBody(
+            endpoint: "diet-plans/\(planId)",
+            method: .PUT,
+            body: request
+        )
+    }
+
     func listDietPlans(userId: String) async throws -> [ServerDietPlan] {
         let request = LoadPlanRequest(userId: userId)
 

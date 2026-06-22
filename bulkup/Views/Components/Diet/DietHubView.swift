@@ -477,6 +477,9 @@ struct DietPlanLibraryView: View {
                         },
                         onDelete: {
                             deletePlan(plan)
+                        },
+                        onUpdated: {
+                            loadDietPlans()
                         }
                     )
                 }
@@ -506,7 +509,8 @@ struct DietPlanLibraryView: View {
                                     mealCount: day.meals.count,
                                     supplementCount: day.supplements?.count ?? 0
                                 )
-                            } ?? []
+                            } ?? [],
+                            serverDietData: serverPlan.dietData ?? []
                         )
                     }
                     self.isLoading = false
@@ -577,8 +581,10 @@ struct DietPlanCard: View {
     let plan: DietPlan
     let onActivate: () -> Void
     let onDelete: () -> Void
+    var onUpdated: () -> Void = {}
 
     @State private var showingDeleteAlert = false
+    @State private var showingEditor = false
     @State private var isActivating = false
 
     var body: some View {
@@ -616,6 +622,10 @@ struct DietPlanCard: View {
                             }
                         }
                         .disabled(isActivating)
+                    }
+
+                    Button("Editar") {
+                        showingEditor = true
                     }
 
                     Divider()
@@ -703,6 +713,9 @@ struct DietPlanCard: View {
                 "Estas seguro de que deseas eliminar este plan? Esta accion no se puede deshacer."
             )
         }
+        .sheet(isPresented: $showingEditor, onDismiss: onUpdated) {
+            DietPlanEditorView(planId: plan.id, existingPlan: plan)
+        }
     }
 }
 
@@ -713,6 +726,8 @@ struct DietPlan: Identifiable {
     var isActive: Bool
     let createdAt: Date
     let dietDays: [DietDaySummary]
+    // Full server data, kept so the editor can prefill the whole plan.
+    let serverDietData: [ServerDietDay]
 }
 
 struct DietDaySummary {

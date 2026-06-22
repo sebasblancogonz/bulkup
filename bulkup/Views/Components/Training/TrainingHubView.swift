@@ -550,6 +550,9 @@ struct TrainingPlanLibraryView: View {
                         },
                         onDelete: {
                             deletePlan(plan)
+                        },
+                        onUpdated: {
+                            loadTrainingPlans()
                         }
                     )
                 }
@@ -686,6 +689,7 @@ struct TrainingPlanCard: View {
     let plan: TrainingPlan
     let onActivate: () -> Void
     let onDelete: () -> Void
+    var onUpdated: () -> Void = {}
     @EnvironmentObject var authManager: AuthManager
     @ObservedObject private var storeKit = StoreKitManager.shared
 
@@ -867,7 +871,7 @@ struct TrainingPlanCard: View {
                 "¿Estás seguro de que deseas eliminar este plan? Esta acción no se puede deshacer."
             )
         }
-        .sheet(isPresented: $showingEditor) {
+        .sheet(isPresented: $showingEditor, onDismiss: onUpdated) {
             TrainingPlanEditorView(
                 planId: plan.id,
                 existingPlan: plan

@@ -252,6 +252,9 @@ struct TrainingPlanEditorView: View {
                     )
                 }
 
+                // Refresh the active plan so name/data changes show immediately.
+                await trainingManager.loadActiveTrainingPlan(userId: userId)
+
                 await MainActor.run {
                     isSaving = false
                     dismiss()
