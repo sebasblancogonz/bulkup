@@ -9,6 +9,19 @@
 import SwiftUI
 import SwiftData
 
+/// Shared column geometry for the set-logging table so the header and every row
+/// stay aligned. Steppers are sized for comfortable tapping mid-workout.
+private enum SetCol {
+    static let gap: CGFloat = 10        // breathing room between SERIE / KG / REPS
+    static let serie: CGFloat = 30
+    static let rowH: CGFloat = 38
+    static let stepper: CGFloat = 32    // +/- tap target width
+    static let stepperIcon: CGFloat = 13
+    static let kg: CGFloat = 100        // stepper + field(36) + stepper
+    static let reps: CGFloat = 96       // stepper + field(32) + stepper
+    static let check: CGFloat = 36
+}
+
 struct ExerciseCardView: View {
     let exercise: Exercise
     let exerciseIndex: Int
@@ -357,16 +370,16 @@ struct ExerciseWeightLogger: View {
         }
 
         // Table header
-        HStack(spacing: 0) {
+        HStack(spacing: SetCol.gap) {
             Text("SERIE")
-                .frame(width: 40, alignment: .leading)
+                .frame(width: SetCol.serie, alignment: .leading)
             Text("KG")
-                .frame(width: 72, alignment: .center)
+                .frame(width: SetCol.kg, alignment: .center)
             Text("REPS")
-                .frame(width: 56, alignment: .center)
+                .frame(width: SetCol.reps, alignment: .center)
             Spacer()
             Text("✓")
-                .frame(width: 40, alignment: .center)
+                .frame(width: SetCol.check, alignment: .center)
         }
         .font(BulkUpFont.badge())
         .tracking(0.5)
@@ -412,7 +425,7 @@ struct ExerciseWeightLogger: View {
             day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex
         )
 
-        HStack(spacing: 0) {
+        HStack(spacing: SetCol.gap) {
             // Set number circle
             ZStack {
                 Circle()
@@ -422,7 +435,7 @@ struct ExerciseWeightLogger: View {
                     .font(.system(size: 13, weight: .bold))
                     .foregroundColor(isCompleted ? BulkUpColors.onAccent : BulkUpColors.textSecondary)
             }
-            .frame(width: 40, alignment: .leading)
+            .frame(width: SetCol.serie, alignment: .leading)
 
             // Weight input with steppers
             HStack(spacing: 0) {
@@ -430,9 +443,10 @@ struct ExerciseWeightLogger: View {
                     adjustWeight(setIndex: setIndex, delta: -2.5)
                 } label: {
                     Image(systemName: "minus")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: SetCol.stepperIcon, weight: .bold))
                         .foregroundColor(BulkUpColors.textTertiary)
-                        .frame(width: 18, height: 32)
+                        .frame(width: SetCol.stepper, height: SetCol.rowH)
+                        .contentShape(Rectangle())
                 }
 
                 TextField("—", text: weightBinding(for: setIndex))
@@ -441,19 +455,20 @@ struct ExerciseWeightLogger: View {
                     .multilineTextAlignment(.center)
                     .font(.system(size: 15, weight: .medium, design: .monospaced))
                     .foregroundColor(BulkUpColors.textPrimary)
-                    .frame(width: 36, height: 32)
+                    .frame(width: SetCol.kg - SetCol.stepper * 2, height: SetCol.rowH)
                     .disabled(isCompleted)
 
                 Button {
                     adjustWeight(setIndex: setIndex, delta: 2.5)
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: SetCol.stepperIcon, weight: .bold))
                         .foregroundColor(BulkUpColors.textTertiary)
-                        .frame(width: 18, height: 32)
+                        .frame(width: SetCol.stepper, height: SetCol.rowH)
+                        .contentShape(Rectangle())
                 }
             }
-            .frame(width: 72, height: 32)
+            .frame(width: SetCol.kg, height: SetCol.rowH)
             .background(
                 RoundedRectangle(cornerRadius: 8)
                     .fill(isCompleted ? BulkUpColors.accent.opacity(0.08) : BulkUpColors.surfaceElevated)
@@ -472,9 +487,10 @@ struct ExerciseWeightLogger: View {
                     adjustReps(setIndex: setIndex, delta: -1)
                 } label: {
                     Image(systemName: "minus")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: SetCol.stepperIcon, weight: .bold))
                         .foregroundColor(BulkUpColors.textTertiary)
-                        .frame(width: 16, height: 32)
+                        .frame(width: SetCol.stepper, height: SetCol.rowH)
+                        .contentShape(Rectangle())
                 }
 
                 TextField(defaultReps, text: repsBinding(for: setIndex))
@@ -482,19 +498,20 @@ struct ExerciseWeightLogger: View {
                     .multilineTextAlignment(.center)
                     .font(.system(size: 15, weight: .medium, design: .monospaced))
                     .foregroundColor(BulkUpColors.textPrimary)
-                    .frame(width: 24, height: 32)
+                    .frame(width: SetCol.reps - SetCol.stepper * 2, height: SetCol.rowH)
                     .disabled(isCompleted)
 
                 Button {
                     adjustReps(setIndex: setIndex, delta: 1)
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: SetCol.stepperIcon, weight: .bold))
                         .foregroundColor(BulkUpColors.textTertiary)
-                        .frame(width: 16, height: 32)
+                        .frame(width: SetCol.stepper, height: SetCol.rowH)
+                        .contentShape(Rectangle())
                 }
             }
-            .frame(width: 56, height: 32)
+            .frame(width: SetCol.reps, height: SetCol.rowH)
             .background(
                 RoundedRectangle(cornerRadius: 8)
                     .fill(isCompleted ? BulkUpColors.accent.opacity(0.08) : BulkUpColors.surfaceElevated)
@@ -546,7 +563,7 @@ struct ExerciseWeightLogger: View {
                         )
                 )
             }
-            .frame(width: 40, alignment: .center)
+            .frame(width: SetCol.check, alignment: .center)
         }
         .padding(.vertical, 2)
         .background(
@@ -560,7 +577,7 @@ struct ExerciseWeightLogger: View {
         if !isCompleted, let prev = safeGetPrevWeight(setIndex), prev > 0 {
             HStack {
                 Spacer()
-                    .frame(width: 40)
+                    .frame(width: SetCol.serie)
                 Text("anterior: \(formatWeight(prev)) kg")
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(BulkUpColors.textTertiary)
@@ -701,7 +718,7 @@ struct ExerciseWeightLogger: View {
         if nextSetIdx < totalSetsCount {
             let weightStr = safeGetWeightText(nextSetIdx)
             let repsStr = safeGetRepsText(nextSetIdx)
-            nextInfo = String(format: String(localized: "Serie %lld · %@kg × %@"), nextSetIdx + 1, weightStr, repsStr)
+            nextInfo = String(format: NSLocalizedString("Serie %lld · %@kg × %@", comment: ""), nextSetIdx + 1, weightStr, repsStr)
         } else {
             nextInfo = nil
         }
@@ -872,8 +889,12 @@ struct ExerciseWeightLogger: View {
             },
             set: { newValue in
                 guard setIndex < weightTexts.count else { return }
-                weightTexts[setIndex] = newValue
-                let weight = Double(newValue) ?? 0
+                // The decimal pad shows the locale separator (a comma in es),
+                // but Double(_:) only parses ".". Accept the comma and store a
+                // period so the value parses and the field stays consistent.
+                let normalized = newValue.replacingOccurrences(of: ",", with: ".")
+                weightTexts[setIndex] = normalized
+                let weight = Double(normalized) ?? 0
                 trainingManager.updateWeight(
                     day: normalizedDay,
                     exerciseIndex: exercise.orderIndex,

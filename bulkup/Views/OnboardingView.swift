@@ -484,8 +484,8 @@ struct OnboardingView: View {
     // MARK: - Logic
 
     private var measurementsAreValid: Bool {
-        guard let weight = Double(weightText), weight > 0, weight < 500 else { return false }
-        guard let height = Double(heightText), height > 0, height < 300 else { return false }
+        guard let weight = weightText.decimalValue, weight > 0, weight < 500 else { return false }
+        guard let height = heightText.decimalValue, height > 0, height < 300 else { return false }
         guard let age = Int(ageText), age > 0, age < 120 else { return false }
         return true
     }
@@ -493,8 +493,8 @@ struct OnboardingView: View {
     private func saveMeasurementsAndContinue() async {
         guard measurementsAreValid,
               let userId = authManager.user?.id,
-              let weight = Double(weightText),
-              let height = Double(heightText),
+              let weight = weightText.decimalValue,
+              let height = heightText.decimalValue,
               let age = Int(ageText)
         else { return }
 

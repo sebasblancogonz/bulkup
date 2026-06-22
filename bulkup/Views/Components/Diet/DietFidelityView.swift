@@ -14,6 +14,7 @@ struct DietFidelityView: View {
     @ObservedObject private var store = StoreKitManager.shared
     @State private var showingLog = false
     @State private var showingSubscription = false
+    @AppStorage("dietFidelityExpanded") private var isExpanded = false
 
     var body: some View {
         Group {
@@ -43,38 +44,54 @@ struct DietFidelityView: View {
         }
     }
 
+    private var fidelityText: String {
+        if let pct = manager.fidelityPercent(dietData: dietManager.dietData) {
+            return "\(Int(pct.rounded()))%"
+        }
+        return "—"
+    }
+
     private var content: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack {
-                Text("Fidelidad a la dieta")
-                    .font(BulkUpFont.cardTitle())
-                    .foregroundColor(BulkUpColors.textPrimary)
-                Spacer()
-                Button {
-                    showingLog = true
-                } label: {
-                    Image(systemName: "plus.circle.fill")
+        VStack(alignment: .leading, spacing: isExpanded ? Spacing.md : 0) {
+            // Compact, tappable summary row — collapsed by default to save space.
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+            } label: {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "chart.pie.fill")
+                        .font(.system(size: 14))
                         .foregroundColor(BulkUpColors.accent)
+                    Text("Fidelidad a la dieta")
+                        .font(BulkUpFont.body())
+                        .foregroundColor(BulkUpColors.textPrimary)
+                    Spacer()
+                    Text(fidelityText)
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundColor(fidelityText == "—" ? BulkUpColors.textSecondary : BulkUpColors.accent)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textTertiary)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
 
-            if let pct = manager.fidelityPercent(dietData: dietManager.dietData) {
-                Text("\(Int(pct.rounded()))%")
-                    .font(BulkUpFont.heroStat())
-                    .foregroundColor(BulkUpColors.accent)
-                Text("últimos 30 días")
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
-            } else {
-                Text("—")
-                    .font(BulkUpFont.heroStat())
-                    .foregroundColor(BulkUpColors.textSecondary)
-                Text("Registra días o añade calorías al plan")
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
-            }
+            if isExpanded {
+                HStack {
+                    Text(fidelityText == "—" ? "Registra días o añade calorías al plan" : "últimos 30 días")
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
+                    Spacer()
+                    Button {
+                        showingLog = true
+                    } label: {
+                        Label("Registrar día", systemImage: "plus.circle.fill")
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.accent)
+                    }
+                }
 
-            if !manager.skippedDays.isEmpty {
                 ForEach(manager.skippedDays) { day in
                     HStack {
                         VStack(alignment: .leading) {
@@ -100,7 +117,8 @@ struct DietFidelityView: View {
                 }
             }
         }
-        .padding()
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, isExpanded ? Spacing.md : Spacing.sm)
         .background(BulkUpColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
         .sheet(isPresented: $showingLog) {

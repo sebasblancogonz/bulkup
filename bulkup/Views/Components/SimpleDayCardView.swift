@@ -85,7 +85,7 @@ struct CompactMealView: View {
                 .frame(width: 20, height: 20)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(meal.type.capitalized.replacingOccurrences(of: "_", with: " "))
+                Text(MealTypeLabel.localized(meal.type))
                     .font(BulkUpFont.body())
                     .foregroundColor(BulkUpColors.textPrimary)
 

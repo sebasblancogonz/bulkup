@@ -19,6 +19,7 @@ struct TrainingHubView: View {
     @State private var showingImageImport = false
     @State private var showingTemplateWizard = false
     @State private var showingSubscription = false
+    @State private var showingExerciseLibrary = false
 
     enum TrainingHubSection: String, CaseIterable {
         case active = "active"
@@ -99,6 +100,9 @@ struct TrainingHubView: View {
                 .environmentObject(trainingManager)
                 .environmentObject(authManager)
         }
+        .sheet(isPresented: $showingExerciseLibrary) {
+            ExerciseExplorerView()
+        }
         .sheet(isPresented: $showingSubscription) {
             SubscriptionView()
                 .environmentObject(authManager)
@@ -175,6 +179,10 @@ struct TrainingHubView: View {
                 Button {
                     if storeKit.isSubscribed { showingImportCode = true } else { showingSubscription = true }
                 } label: { Label("Importar con codigo", systemImage: "qrcode") }
+
+                Button {
+                    showingExerciseLibrary = true
+                } label: { Label("Explorar ejercicios", systemImage: "books.vertical") }
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 16, weight: .medium))
@@ -1173,7 +1181,7 @@ struct ImportPlanByCodeView: View {
             } catch {
                 await MainActor.run {
                     isImporting = false
-                    errorMessage = String(localized: "Código inválido o expirado")
+                    errorMessage = NSLocalizedString("Código inválido o expirado", comment: "")
                 }
             }
         }

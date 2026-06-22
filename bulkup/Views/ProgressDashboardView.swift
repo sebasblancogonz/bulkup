@@ -485,7 +485,7 @@ struct ProgressDashboardView: View {
                     Image(systemName: "flame.fill")
                         .foregroundColor(BulkUpColors.accent)
                         .font(BulkUpFont.caption())
-                    Text("Racha actual: \(friendsManager.myStreak?.currentStreak ?? 0) dias")
+                    Text(String(format: NSLocalizedString("Racha actual: %lld días", comment: ""), friendsManager.myStreak?.currentStreak ?? 0))
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
@@ -836,7 +836,7 @@ struct ProgressDashboardView: View {
         let totalDays = trainingManager.trainingData.count
         guard totalDays > 0 else { return "0/0" }
         let completedDays = trainingManager.trainingData.filter { isDayCompleted($0) }.count
-        return String(format: String(localized: "%1$d/%2$d dias"), completedDays, totalDays)
+        return String(format: NSLocalizedString("%1$d/%2$d dias", comment: ""), completedDays, totalDays)
     }
 
     private var weeklyComplianceText: String {

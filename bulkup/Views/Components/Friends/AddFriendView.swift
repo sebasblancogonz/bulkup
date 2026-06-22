@@ -139,7 +139,7 @@ struct AddFriendView: View {
                     dismiss()
                 }
             } else {
-                errorMessage = friendsManager.errorMessage ?? String(localized: "Error al agregar amigo")
+                errorMessage = friendsManager.errorMessage ?? NSLocalizedString("Error al agregar amigo", comment: "")
             }
         }
     }

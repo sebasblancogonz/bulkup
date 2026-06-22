@@ -64,6 +64,7 @@
       }
     },
     "¡Registra tu primer RM!": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -195,6 +196,7 @@
       }
     },
     "\"%@\"": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -285,6 +287,7 @@
       }
     },
     "%.1f kg × %lld": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -312,6 +315,16 @@
           "stringUnit": {
             "state": "new",
             "value": "%1$@ - %2$@"
+          }
+        }
+      }
+    },
+    "%@ %@ gratis": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@ free"
           }
         }
       }
@@ -352,6 +365,16 @@
         }
       }
     },
+    "%1$d/%2$d comidas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$d/%2$d meals"
+          }
+        }
+      }
+    },
     "%1$d/%2$d dias": {
       "localizations": {
         "en": {
@@ -362,22 +385,22 @@
         }
       }
     },
+    "%g kg × %lld": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$g kg × %2$lld"
+          }
+        }
+      }
+    },
     "%lld": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld"
-          }
-        }
-      }
-    },
-    "%lld %@ gratis": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$lld %2$@ gratis"
           }
         }
       }
@@ -737,6 +760,7 @@
         }
       }
     },
+    "1RM %g kg": {},
     "2-1-1": {
       "localizations": {
         "en": {
@@ -1148,6 +1172,17 @@
         }
       }
     },
+    "Almuerzo": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lunch"
+          }
+        }
+      }
+    },
     "Altura": {
       "localizations": {
         "en": {
@@ -1275,6 +1310,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mood"
+          }
+        }
+      }
+    },
+    "año": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "year"
           }
         }
       }
@@ -1879,6 +1924,17 @@
         }
       }
     },
+    "Cena": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dinner"
+          }
+        }
+      }
+    },
     "Centro de Ayuda": {
       "extractionState": "stale",
       "localizations": {
@@ -1998,6 +2054,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Start Workout"
+          }
+        }
+      }
+    },
+    "Comida": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lunch"
           }
         }
       }
@@ -2526,6 +2593,17 @@
       }
     },
     "Delta": {},
+    "Desayuno": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breakfast"
+          }
+        }
+      }
+    },
     "Desbloquea el poder de subir y gestionar tus planes personalizados de entrenamiento y dieta": {
       "localizations": {
         "en": {
@@ -2708,6 +2786,16 @@
         }
       }
     },
+    "día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "day"
+          }
+        }
+      }
+    },
     "Día": {
       "localizations": {
         "en": {
@@ -2784,6 +2872,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Days"
+          }
+        }
+      }
+    },
+    "días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "days"
           }
         }
       }
@@ -3794,7 +3892,16 @@
         }
       }
     },
-    "facturado %@": {},
+    "facturado %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "billed %@"
+          }
+        }
+      }
+    },
     "Facturado %@": {
       "extractionState": "stale",
       "localizations": {
@@ -3806,7 +3913,16 @@
         }
       }
     },
-    "facturado anualmente": {},
+    "facturado anualmente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "billed annually"
+          }
+        }
+      }
+    },
     "Facturado anualmente": {
       "extractionState": "stale",
       "localizations": {
@@ -3818,7 +3934,16 @@
         }
       }
     },
-    "facturado mensualmente": {},
+    "facturado mensualmente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "billed monthly"
+          }
+        }
+      }
+    },
     "Facturado mensualmente": {
       "extractionState": "stale",
       "localizations": {
@@ -4953,6 +5078,28 @@
         }
       }
     },
+    "Media mañana": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mid-morning"
+          }
+        }
+      }
+    },
+    "Media tarde": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mid-afternoon"
+          }
+        }
+      }
+    },
     "Medidas Adicionales": {
       "localizations": {
         "en": {
@@ -5026,6 +5173,7 @@
       }
     },
     "Mejor PR": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -5052,6 +5200,37 @@
           "stringUnit": {
             "state": "translated",
             "value": "Monthly"
+          }
+        }
+      }
+    },
+    "Merienda": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snack"
+          }
+        }
+      }
+    },
+    "mes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "month"
+          }
+        }
+      }
+    },
+    "meses": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "months"
           }
         }
       }
@@ -5121,6 +5300,17 @@
       }
     },
     "Miercoles": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wednesday"
+          }
+        }
+      }
+    },
+    "Miércoles": {
       "extractionState": "stale",
       "localizations": {
         "en": {
@@ -6091,6 +6281,17 @@
         }
       }
     },
+    "Post-entreno": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Post-workout"
+          }
+        }
+      }
+    },
     "Powered by AI": {
       "localizations": {
         "en": {
@@ -6108,6 +6309,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Powerlifting"
+          }
+        }
+      }
+    },
+    "Pre-entreno": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pre-workout"
           }
         }
       }
@@ -6338,6 +6550,17 @@
       }
     },
     "Racha actual: %lld dias": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current streak: %lld days"
+          }
+        }
+      }
+    },
+    "Racha actual: %lld días": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -6567,6 +6790,16 @@
       }
     },
     "Registrar": {},
+    "Registrar día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log a day"
+          }
+        }
+      }
+    },
     "Registrar para mi racha": {
       "localizations": {
         "en": {
@@ -6723,6 +6956,7 @@
       }
     },
     "RM Estimado: %.1f kg": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -6786,6 +7020,17 @@
       }
     },
     "Sabado": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saturday"
+          }
+        }
+      }
+    },
+    "Sábado": {
       "extractionState": "stale",
       "localizations": {
         "en": {
@@ -6889,6 +7134,16 @@
         }
       }
     },
+    "semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "week"
+          }
+        }
+      }
+    },
     "Semana del %@": {
       "localizations": {
         "en": {
@@ -6905,6 +7160,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Weekly"
+          }
+        }
+      }
+    },
+    "semanas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "weeks"
           }
         }
       }
@@ -7084,6 +7349,7 @@
       }
     },
     "Sin récords registrados": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -7148,6 +7414,17 @@
       }
     },
     "Skip rest": {},
+    "Snack": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snack"
+          }
+        }
+      }
+    },
     "Sobrepeso": {
       "localizations": {
         "en": {
@@ -7535,6 +7812,7 @@
       }
     },
     "Total registros:": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -7729,6 +8007,7 @@
       }
     },
     "Ver Detalle": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -7864,32 +8143,12 @@
         }
       }
     },
-    "%1$d/%2$d comidas": {
+    "Explorar ejercicios": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$d/%2$d meals"
-          }
-        }
-      }
-    },
-    "Miércoles": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wednesday"
-          }
-        }
-      }
-    },
-    "Sábado": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Saturday"
+            "value": "Exercise library"
           }
         }
       }

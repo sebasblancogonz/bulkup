@@ -1055,8 +1055,11 @@ private struct InlineWeightLogger: View {
             },
             set: { newValue in
                 guard setIndex < weightTexts.count else { return }
-                weightTexts[setIndex] = newValue
-                let weight = Double(newValue) ?? 0
+                // Accept the locale decimal comma (es keypad) and store a period
+                // so Double(_:) parses it and the field stays consistent.
+                let normalized = newValue.replacingOccurrences(of: ",", with: ".")
+                weightTexts[setIndex] = normalized
+                let weight = Double(normalized) ?? 0
                 trainingManager.updateWeight(
                     day: normalizedDay,
                     exerciseIndex: exercise.orderIndex,
@@ -1140,7 +1143,7 @@ private struct InlineMealRow: View {
                 }
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isCompleted)
 
-                Text(mealType.capitalized.replacingOccurrences(of: "_", with: " "))
+                Text(MealTypeLabel.localized(mealType))
                     .font(BulkUpFont.body())
                     .foregroundColor(isCompleted ? BulkUpColors.textTertiary : BulkUpColors.textPrimary)
                     .strikethrough(isCompleted, color: BulkUpColors.textTertiary)

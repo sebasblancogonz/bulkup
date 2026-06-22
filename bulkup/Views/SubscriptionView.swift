@@ -363,7 +363,7 @@ struct SubscriptionView: View {
             }
         } catch {
             isPurchasing = false
-            errorMessage = String(localized: "Error al procesar la compra: \(error.localizedDescription)")
+            errorMessage = String(format: NSLocalizedString("Error al procesar la compra: %@", comment: ""), error.localizedDescription)
             showingError = true
         }
     }
@@ -377,7 +377,7 @@ struct SubscriptionView: View {
         if storeManager.hasActiveSubscription {
             dismiss()
         } else {
-            errorMessage = String(localized: "No se encontraron compras previas para restaurar.")
+            errorMessage = NSLocalizedString("No se encontraron compras previas para restaurar.", comment: "")
             showingError = true
         }
     }
@@ -505,11 +505,11 @@ struct SubscriptionPlanCard: View {
 
     private var perPeriodLabel: String {
         if storeManager.isMonthly(product) {
-            return String(localized: "facturado mensualmente")
+            return NSLocalizedString("facturado mensualmente", comment: "")
         } else if storeManager.isYearly(product) {
-            return String(localized: "facturado anualmente")
+            return NSLocalizedString("facturado anualmente", comment: "")
         }
-        return String(localized: "facturado \(storeManager.periodString(for: product))")
+        return String(format: NSLocalizedString("facturado %@", comment: ""), storeManager.periodString(for: product))
     }
 
     private func calculateSavings() -> String? {
@@ -526,6 +526,6 @@ struct SubscriptionPlanCard: View {
         guard savings > 0 else { return nil }
 
         let percentage = Int((savings / monthlyCostPerYear) * 100.0)
-        return String(localized: "Ahorra \(percentage)%")
+        return String(format: NSLocalizedString("Ahorra %lld%%", comment: ""), percentage)
     }
 }

@@ -149,7 +149,7 @@ struct DietHubView: View {
 
     private var planHeader: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text(dietManager.activePlanName ?? String(localized: "Plan de Dieta"))
+            Text(dietManager.activePlanName ?? NSLocalizedString("Plan de Dieta", comment: ""))
                 .font(BulkUpFont.sectionHeader())
                 .foregroundColor(BulkUpColors.textPrimary)
                 .lineLimit(1)

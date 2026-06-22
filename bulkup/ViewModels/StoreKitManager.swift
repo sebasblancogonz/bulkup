@@ -299,13 +299,13 @@ class StoreKitManager: ObservableObject {
         let p = offer.period
         let unit: String
         switch p.unit {
-        case .day: unit = p.value == 1 ? "día" : "días"
-        case .week: unit = p.value == 1 ? "semana" : "semanas"
-        case .month: unit = p.value == 1 ? "mes" : "meses"
-        case .year: unit = p.value == 1 ? "año" : "años"
+        case .day: unit = p.value == 1 ? NSLocalizedString("día", comment: "") : NSLocalizedString("días", comment: "")
+        case .week: unit = p.value == 1 ? NSLocalizedString("semana", comment: "") : NSLocalizedString("semanas", comment: "")
+        case .month: unit = p.value == 1 ? NSLocalizedString("mes", comment: "") : NSLocalizedString("meses", comment: "")
+        case .year: unit = p.value == 1 ? NSLocalizedString("año", comment: "") : NSLocalizedString("años", comment: "")
         @unknown default: unit = ""
         }
-        return String(localized: "\(p.value) \(unit) gratis")
+        return String(format: NSLocalizedString("%@ %@ gratis", comment: ""), "\(p.value)", unit)
     }
     
     // MARK: - Debug Helper

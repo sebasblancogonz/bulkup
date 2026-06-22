@@ -494,38 +494,20 @@ struct DietView: View {
     }
 
     private func abbreviatedDayName(_ day: String) -> String {
-        let formatted = day.capitalized
+        let norm = day.lowercased()
+            .folding(options: .diacriticInsensitive, locale: Locale(identifier: "es_ES"))
             .replacingOccurrences(of: "_", with: " ")
+            .trimmingCharacters(in: .whitespaces)
 
-        if formatted.lowercased().hasPrefix("dia") {
-            let number = formatted.filter { $0.isNumber }
+        if norm.hasPrefix("dia") {
+            let number = norm.filter { $0.isNumber }
             if !number.isEmpty {
                 return "D\(number)"
             }
         }
 
-        let dayMap: [String: String] = [
-            "lunes": "Lun",
-            "martes": "Mar",
-            "miercoles": "Mié",
-            "miércoles": "Mié",
-            "jueves": "Jue",
-            "viernes": "Vie",
-            "sabado": "Sáb",
-            "sábado": "Sáb",
-            "domingo": "Dom",
-        ]
-
-        let lower = day.lowercased()
-            .replacingOccurrences(of: "_", with: "")
-            .trimmingCharacters(in: .whitespaces)
-
-        if let mapped = dayMap[lower] {
-            return mapped
-        }
-
-        let clean = formatted.trimmingCharacters(in: .whitespaces)
-        return String(clean.prefix(3))
+        // Localized weekday (e.g. "Lunes"/"Monday") shortened to 3 letters.
+        return String(WeekdayLabel.localized(day).prefix(3))
     }
 
     private func formatDayName(_ day: String) -> String {
