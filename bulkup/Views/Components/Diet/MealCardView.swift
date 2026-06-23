@@ -36,26 +36,7 @@ struct MealCardView: View {
                 .opacity(isExpanded ? 1 : 0)
         }
         .background(BulkUpColors.surface)
-        .cornerRadius(CornerRadius.large)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .stroke(BulkUpColors.border, lineWidth: 0.5)
-        )
-        // Completed: accent left border
-        .overlay(alignment: .leading) {
-            if isCompleted {
-                UnevenRoundedRectangle(
-                    topLeadingRadius: CornerRadius.large,
-                    bottomLeadingRadius: CornerRadius.large,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 0
-                )
-                .fill(BulkUpColors.accent)
-                .frame(width: 3)
-            }
-        }
-        .clipped()
-        .opacity(isCompleted ? 0.85 : 1.0)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .padding(.horizontal, Spacing.screenH)
         .sheet(isPresented: $showingRecipe) {
             RecipeView(
@@ -110,7 +91,6 @@ struct MealCardView: View {
                         Text(MealTypeLabel.localized(meal.type))
                             .font(BulkUpFont.cardTitle())
                             .foregroundColor(BulkUpColors.textPrimary)
-                            .opacity(isCompleted ? 0.5 : 1.0)
 
                         if !meal.time.isEmpty {
                             Text(meal.time)
@@ -121,10 +101,6 @@ struct MealCardView: View {
                     }
 
                     Spacer()
-
-                    if isCompleted {
-                        PillBadge(text: "Completado", color: BulkUpColors.accent, icon: "checkmark")
-                    }
 
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 11, weight: .semibold))

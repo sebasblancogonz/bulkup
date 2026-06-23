@@ -52,13 +52,8 @@ struct DietView: View {
                     totalCount: sortedMeals.count
                 )
                 .padding(.horizontal, Spacing.screenH)
-                .padding(.top, Spacing.lg)
-                .padding(.bottom, Spacing.sm)
-
-                // Progress bar
-                progressBar(completed: completedCount, total: sortedMeals.count)
-                    .padding(.horizontal, Spacing.screenH)
-                    .padding(.bottom, Spacing.lg)
+                .padding(.top, Spacing.xl)
+                .padding(.bottom, Spacing.xl)
 
                 // Celebration banner
                 if allComplete {
@@ -177,12 +172,7 @@ struct DietView: View {
                 )
                 .padding(.horizontal, Spacing.screenH)
                 .padding(.top, Spacing.lg)
-                .padding(.bottom, Spacing.sm)
-
-                // Progress bar
-                progressBar(completed: completedCount, total: sortedMeals.count)
-                    .padding(.horizontal, Spacing.screenH)
-                    .padding(.bottom, Spacing.lg)
+                .padding(.bottom, Spacing.xl)
 
                 // Celebration banner
                 if allComplete {
@@ -220,31 +210,27 @@ struct DietView: View {
     // MARK: - Day Header
 
     private func dayHeader(title: LocalizedStringKey, completedCount: Int, totalCount: Int, subtitle: LocalizedStringKey? = nil) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            HStack(alignment: .firstTextBaseline) {
+        VStack(spacing: 16) {
+            VStack(spacing: 2) {
                 Text(title)
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundColor(BulkUpColors.textPrimary)
-
-                Spacer()
-
-                if totalCount > 0 {
-                    Text("\(completedCount)/\(totalCount) comidas")
-                        .font(.system(size: 13, weight: .bold, design: .monospaced))
-                        .foregroundColor(
-                            completedCount == totalCount
-                                ? BulkUpColors.accent
-                                : BulkUpColors.textSecondary
-                        )
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textTertiary)
                 }
             }
 
-            if let subtitle = subtitle {
-                Text(subtitle)
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textTertiary)
-            }
+            MetricRing(
+                value: totalCount > 0 ? "\(completedCount)/\(totalCount)" : "—",
+                label: "COMIDAS HOY",
+                progress: totalCount > 0 ? Double(completedCount) / Double(totalCount) : 0,
+                size: 124,
+                dimmed: totalCount == 0
+            )
         }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Progress Bar
@@ -270,18 +256,16 @@ struct DietView: View {
     // MARK: - Celebration Banner
 
     private var celebrationBanner: some View {
-        HStack(spacing: Spacing.sm) {
-            Text("🎯")
-                .font(.system(size: 20))
+        HStack(spacing: 6) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 14))
+                .foregroundColor(BulkUpColors.accent)
             Text("¡Dieta completada hoy!")
-                .font(BulkUpFont.cardTitle())
-                .foregroundColor(BulkUpColors.onAccent)
-            Spacer()
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
-        .padding(Spacing.md)
-        .background(BulkUpColors.accentGradient)
-        .cornerRadius(CornerRadius.medium)
-        .transition(.scale.combined(with: .opacity))
+        .frame(maxWidth: .infinity)
+        .transition(.opacity)
     }
 
     // MARK: - Meal List
@@ -348,44 +332,47 @@ struct DietView: View {
     @ViewBuilder
     private func dailyMacrosCard(_ day: DietDay) -> some View {
         if day.hasMacros {
-            VStack(alignment: .leading, spacing: Spacing.md) {
-                HStack(spacing: Spacing.sm) {
-                    Image(systemName: "flame.fill")
-                        .foregroundColor(BulkUpColors.warning)
-                        .font(.system(size: 14))
-                    Text("MACROS DIARIOS")
-                        .font(BulkUpFont.sectionLabel())
-                        .tracking(1.5)
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
+            VStack(alignment: .leading, spacing: 16) {
+                MicroLabel("Macros diarios")
 
                 // Calories hero
-                HStack {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(day.macroCalories)")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundColor(BulkUpColors.textPrimary)
                     Text("kcal")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(BulkUpColors.textTertiary)
+                        .foregroundColor(BulkUpColors.textSecondary)
                     Spacer()
                 }
 
-                // Macro bars
-                HStack(spacing: Spacing.sm) {
-                    MacroBar(label: "Proteína", grams: day.macroProtein, color: BulkUpColors.accent, total: day.macroCalories)
-                    MacroBar(label: "Carbos", grams: day.macroCarbs, color: BulkUpColors.training, total: day.macroCalories)
-                    MacroBar(label: "Grasas", grams: day.macroFat, color: BulkUpColors.warning, total: day.macroCalories)
+                // Quiet macro stats — monochrome, no multicolor bars
+                HStack(spacing: 0) {
+                    macroStat(value: "\(day.macroProtein)", label: "Proteína")
+                    macroStat(value: "\(day.macroCarbs)", label: "Carbos")
+                    macroStat(value: "\(day.macroFat)", label: "Grasas")
                 }
             }
-            .padding(Spacing.md)
-            .background(BulkUpColors.surface)
-            .cornerRadius(CornerRadius.large)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(BulkUpColors.border, lineWidth: 0.5)
-            )
+            .whoopCard()
             .padding(.horizontal, Spacing.screenH)
         }
+    }
+
+    private func macroStat(value: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(value)
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
+                    .foregroundColor(BulkUpColors.textPrimary)
+                Text("g")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+            }
+            Text(LocalizedStringKey(label))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(BulkUpColors.textSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Cheat Meal Section

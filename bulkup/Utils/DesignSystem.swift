@@ -74,11 +74,11 @@ extension Color {
 
 // MARK: - Color Tokens
 enum BulkUpColors {
-    // Brand — Charcoal + Orange (matches the logo/app icon)
-    static let accent = Color.adaptive(dark: "#F87740", light: "#F87740")       // logo orange
-    static let accentGlow = Color.adaptive(dark: "#FF9359", light: "#FF8A50")   // brighter end of gradient
-    static let accentMuted = Color.adaptive(dark: "#C9572A", light: "#D4602E")  // deep orange for fills/bg
-    static let accentText = Color.adaptive(dark: "#FB8557", light: "#C9572A")   // legible orange per background
+    // Brand — minimalist Apple/Whoop: lime green accent
+    static let accent = Color.adaptive(dark: "#84CC16", light: "#84CC16")       // lime green
+    static let accentGlow = Color.adaptive(dark: "#A3E635", light: "#A3E635")   // brighter end of gradient
+    static let accentMuted = Color.adaptive(dark: "#4D7C0F", light: "#65A30D")  // deep lime for fills/bg
+    static let accentText = Color.adaptive(dark: "#A3E635", light: "#4D7C0F")   // legible lime per background
     static let accentGradient = LinearGradient(
         colors: [accent, accentGlow],
         startPoint: .leading, endPoint: .trailing
@@ -86,16 +86,16 @@ enum BulkUpColors {
     static let secondary = Color.adaptive(dark: "#7B61FF", light: "#6A4DF0") // electric violet (sparingly)
 
     // Surfaces — adaptive light/dark elevation
-    static let background = Color.adaptive(dark: "#0A0A0A", light: "#FAF9F6")
-    static let surface = Color.adaptive(dark: "#161616", light: "#FFFFFF")
-    static let surfaceElevated = Color.adaptive(dark: "#1E1E1E", light: "#FFFFFF")
+    static let background = Color.adaptive(dark: "#000000", light: "#FFFFFF")   // deep black / white
+    static let surface = Color.adaptive(dark: "#111827", light: "#F3F4F6")      // dark gray / light gray
+    static let surfaceElevated = Color.adaptive(dark: "#1F2937", light: "#FFFFFF")
     static let border = Color.adaptive(dark: "#FFFFFF", light: "#000000").opacity(0.08)
 
     // Text
-    static let textPrimary = Color.adaptive(dark: "#FFFFFF", light: "#1A1A1A")
-    static let textSecondary = Color.adaptive(dark: "#8E8E93", light: "#6E6E73")
-    static let textTertiary = Color.adaptive(dark: "#48484A", light: "#A0A0A5")
-    static let onAccent = Color.onFill(accent) // text/icons on the orange accent → white
+    static let textPrimary = Color.adaptive(dark: "#FFFFFF", light: "#111827")
+    static let textSecondary = Color.adaptive(dark: "#9CA3AF", light: "#6B7280")  // gray
+    static let textTertiary = Color.adaptive(dark: "#4B5563", light: "#9CA3AF")
+    static let onAccent = Color.onFill(accent) // text/icons on the lime accent → black (high-luminance fill)
 
     // Semantic
     static let success = Color.adaptive(dark: "#30D158", light: "#28B14C")
@@ -107,7 +107,7 @@ enum BulkUpColors {
     static let diet = Color.adaptive(dark: "#30D158", light: "#28B14C")      // green for diet context
 
     // Muscle map states
-    static let muscleDefault = Color.adaptive(dark: "#2A2A2A", light: "#E5E3DD")
+    static let muscleDefault = Color.adaptive(dark: "#1F2937", light: "#E5E7EB")
     static let muscleActive = accent.opacity(0.9)
 
     // Shadow

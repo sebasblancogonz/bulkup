@@ -26,15 +26,12 @@ struct ProgressDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: Spacing.sectionGap) {
-                    // Free: Weekly summary and training progress
-                    weeklySummaryCard
+                VStack(spacing: 36) {
+                    // Hero: three big rings (this week) — Whoop-style
+                    heroRings
+                        .padding(.top, Spacing.lg)
 
-                    trainingProgressCard
-
-                    mealComplianceCard
-
-                    // Premium: Body stats, PR, Friends
+                    // Premium: Body, PR, Friends — quiet minimal cards
                     if storeKit.isSubscribed {
                         bodyStatsCard
 
@@ -42,13 +39,12 @@ struct ProgressDashboardView: View {
 
                         friendsLeaderboardCard
                     } else {
-                        // Gated premium sections
                         premiumProgressTeaser
                     }
                 }
                 .padding(.horizontal, Spacing.screenH)
                 .padding(.top, Spacing.md)
-                .padding(.bottom, Spacing.lg)
+                .padding(.bottom, Spacing.xl)
             }
             .background(BulkUpColors.background.ignoresSafeArea())
             .navigationTitle("Progreso")
@@ -105,6 +101,36 @@ struct ProgressDashboardView: View {
             group.addTask { await friendsManager.loadTodayStatus() }
             group.addTask { await friendsManager.loadMyStreak() }
         }
+    }
+
+    // MARK: - Hero rings (this week)
+
+    private var workoutsTotal: Int { trainingManager.trainingData.count }
+    private var workoutsDone: Int { trainingManager.trainingData.filter { isDayCompleted($0) }.count }
+    private var streak: Int { friendsManager.myStreak?.currentStreak ?? 0 }
+
+    private var heroRings: some View {
+        HStack(alignment: .top, spacing: Spacing.sm) {
+            MetricRing(
+                value: workoutsTotal > 0 ? "\(workoutsDone)/\(workoutsTotal)" : "0",
+                label: "ENTRENOS",
+                progress: workoutsTotal > 0 ? Double(workoutsDone) / Double(workoutsTotal) : 0,
+                dimmed: workoutsTotal == 0
+            )
+            MetricRing(
+                value: weeklyCompliancePercent.map { String(format: "%.0f%%", $0) } ?? "—",
+                label: "DIETA",
+                progress: (weeklyCompliancePercent ?? 0) / 100,
+                dimmed: weeklyCompliancePercent == nil
+            )
+            MetricRing(
+                value: "\(streak)",
+                label: "RACHA",
+                progress: min(Double(streak) / 7.0, 1),
+                dimmed: streak == 0
+            )
+        }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Section 1: Weekly Summary
@@ -332,112 +358,53 @@ struct ProgressDashboardView: View {
     // MARK: - Section 2: Body Stats
 
     private var bodyStatsCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack {
-                Image(systemName: "scalemass.fill")
-                    .foregroundColor(BulkUpColors.training)
-
-                Text("Medidas Corporales")
-                    .sectionHeader()
-
-                Spacer()
-
-                NavigationLink(destination: BodyMeasurementsView().environmentObject(authManager)) {
-                    Text("Ver historial")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.accent)
+        NavigationLink(destination: BodyMeasurementsView().environmentObject(authManager)) {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    MicroLabel("Cuerpo")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textTertiary)
                 }
-            }
 
-            if let m = bodyManager.currentMeasurements {
-                HStack(spacing: 0) {
-                    // Weight + trend
-                    VStack(spacing: 4) {
-                        HStack(spacing: 3) {
-                            Text(String(format: "%.1f", m.peso))
-                                .font(.system(size: 15, weight: .bold, design: .rounded))
-                                .foregroundColor(BulkUpColors.training)
-                            Text("kg")
-                                .font(BulkUpFont.caption())
-                                .foregroundColor(BulkUpColors.textSecondary)
-                            if let trend = weightTrend {
-                                Image(systemName: trend > 0 ? "arrow.up.right" : "arrow.down.right")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(trend > 0 ? BulkUpColors.error : BulkUpColors.success)
-                            }
-                        }
-                        Text("Peso")
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
+                if let m = bodyManager.currentMeasurements {
+                    HStack(alignment: .top, spacing: 0) {
+                        bodyStat(value: String(format: "%.1f", m.peso), unit: "kg", label: "Peso", trend: weightTrend)
+                        bodyStat(value: bodyManager.bodyComposition.map { String(format: "%.1f", $0.bodyFatPercentage) } ?? "—", unit: "%", label: "Grasa", trend: bodyFatTrend)
+                        bodyStat(value: bodyManager.bodyComposition.map { String(format: "%.1f", $0.leanMass) } ?? "—", unit: "kg", label: "Masa magra", trend: nil)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(BulkUpColors.training.opacity(0.08))
-                    .cornerRadius(CornerRadius.small)
-
-                    Spacer().frame(width: 8)
-
-                    // Body fat + trend
-                    if let comp = bodyManager.bodyComposition {
-                        VStack(spacing: 4) {
-                            HStack(spacing: 3) {
-                                Text(String(format: "%.1f", comp.bodyFatPercentage))
-                                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                                    .foregroundColor(BulkUpColors.accent)
-                                Text("%")
-                                    .font(BulkUpFont.caption())
-                                    .foregroundColor(BulkUpColors.textSecondary)
-                                if let trend = bodyFatTrend {
-                                    Image(systemName: trend > 0 ? "arrow.up.right" : "arrow.down.right")
-                                        .font(.system(size: 10))
-                                        .foregroundColor(trend > 0 ? BulkUpColors.error : BulkUpColors.success)
-                                }
-                            }
-                            Text("% Grasa")
-                                .font(BulkUpFont.caption())
-                                .foregroundColor(BulkUpColors.textSecondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(BulkUpColors.accent.opacity(0.08))
-                        .cornerRadius(CornerRadius.small)
-                    }
-
-                    Spacer().frame(width: 8)
-
-                    // Lean mass
-                    if let comp = bodyManager.bodyComposition {
-                        VStack(spacing: 4) {
-                            HStack(spacing: 3) {
-                                Text(String(format: "%.1f", comp.leanMass))
-                                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                                    .foregroundColor(BulkUpColors.success)
-                                Text("kg")
-                                    .font(BulkUpFont.caption())
-                                    .foregroundColor(BulkUpColors.textSecondary)
-                            }
-                            Text("Masa Magra")
-                                .font(BulkUpFont.caption())
-                                .foregroundColor(BulkUpColors.textSecondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(BulkUpColors.success.opacity(0.08))
-                        .cornerRadius(CornerRadius.small)
-                    }
-                }
-            } else {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .font(BulkUpFont.caption())
-                    Text("Agrega tus medidas corporales para ver tu progreso")
+                } else {
+                    Text("Agrega tus medidas para ver tu progreso")
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
             }
+            .whoopCard()
         }
-        .cardStyle()
+        .buttonStyle(.plain)
+    }
+
+    private func bodyStat(value: String, unit: String, label: String, trend: Double?) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(value)
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundColor(BulkUpColors.textPrimary)
+                Text(unit)
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+                if let trend, trend != 0 {
+                    Image(systemName: trend > 0 ? "arrow.up" : "arrow.down")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(trend < 0 ? BulkUpColors.accent : BulkUpColors.textTertiary)
+                }
+            }
+            Text(LocalizedStringKey(label))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(BulkUpColors.textSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Section 3: Training Progress
@@ -611,11 +578,7 @@ struct ProgressDashboardView: View {
     private var personalRecordsCard: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
-                Image(systemName: "trophy.fill")
-                    .foregroundColor(BulkUpColors.accent)
-
-                Text("Records Personales")
-                    .sectionHeader()
+                MicroLabel("Records Personales")
 
                 Spacer()
 
@@ -673,7 +636,7 @@ struct ProgressDashboardView: View {
                 }
             }
         }
-        .cardStyle()
+        .whoopCard()
         .sheet(isPresented: $showingRMTracker) {
             RMTrackerView()
                 .environmentObject(authManager)
@@ -685,12 +648,7 @@ struct ProgressDashboardView: View {
     private var friendsLeaderboardCard: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
-                Image(systemName: "person.2.fill")
-                    .foregroundColor(BulkUpColors.accent)
-
-                Text("Ranking")
-                    .sectionHeader()
-
+                MicroLabel("Ranking")
                 Spacer()
             }
 
@@ -761,7 +719,7 @@ struct ProgressDashboardView: View {
                 }
             }
         }
-        .cardStyle()
+        .whoopCard()
     }
 
     // MARK: - Compact Leaderboard Row
