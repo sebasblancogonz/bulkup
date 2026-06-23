@@ -63,7 +63,10 @@ class AuthManager: ObservableObject {
         
         self.user = newUser
         self.isAuthenticated = true
-        
+
+        // Existing account → skip onboarding (only fresh register shows it)
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+
         if !isLoadingUserData {
             self.isLoadingUserData = true
             await loadAllUserData(userId: newUser.id)
@@ -149,6 +152,9 @@ class AuthManager: ObservableObject {
 
         self.user = newUser
         self.isAuthenticated = true
+
+        // Existing account → skip onboarding (only fresh register shows it)
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
 
         if !isLoadingUserData {
             self.isLoadingUserData = true

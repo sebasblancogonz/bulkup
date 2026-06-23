@@ -286,10 +286,10 @@ struct CustomSecureField: View {
 struct LoginHeaderView: View {
     var body: some View {
         VStack(spacing: Spacing.sm) {
-            Image("BulkUp")
+            Image("BulkUpLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 130, height: 130)
+                .frame(width: 150, height: 166)
 
             Text("Come, entrena, crece, repite.")
                 .font(BulkUpFont.body())
