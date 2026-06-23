@@ -6,12 +6,13 @@
   --color-surface: #f5f5f5;       /* Fog — card / alt-section surface */
   --color-surface-2: #ffffff;     /* white elevated card (paired with border) */
   --color-line: rgba(0, 0, 0, 0.08);
-  --color-fg: #2f2f2f;            /* Graphite — primary text */
-  --color-muted: #6b6b6b;         /* muted graphite — secondary text */
-  --color-accent: #ff5406;        /* Ember Orange — brand accent / buttons */
-  --color-accent-glow: #ff6d00;   /* Sunset Orange */
-  --color-accent-2: #00b33f;      /* Verdant Green — achievement / two-tone */
-  --color-green: #00b33f;
+  --color-fg: #111827;            /* Graphite — primary text (brand) */
+  --color-muted: #6b7280;         /* muted graphite — secondary text */
+  --color-accent: #94c51d;        /* BulkUp Lime — brand accent / highlights */
+  --color-accent-glow: #7da817;   /* deeper lime */
+  --color-accent-2: #94c51d;      /* lime — two-tone */
+  --color-green: #94c51d;
+  --color-ink: #111827;           /* Graphite — primary buttons */
   --color-sky: #00a9dd;           /* Sky Blue — cool app-data accent */
   --color-plum: #bd4be5;
 

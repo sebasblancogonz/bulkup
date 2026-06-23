@@ -41,7 +41,7 @@ export default function WaitlistForm({ locale, ctaLabel, placeholder, successMsg
         className="flex-1 rounded-[26px] bg-white border border-[var(--color-line)] px-5 py-3.5 text-[var(--color-fg)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
       />
       <button type="submit" disabled={state === 'loading'}
-        className="press rounded-[26px] bg-[var(--color-accent)] text-white font-bold px-6 py-3.5 disabled:opacity-60 whitespace-nowrap">
+        className="press rounded-[26px] bg-[var(--color-ink)] text-white font-bold px-6 py-3.5 disabled:opacity-60 whitespace-nowrap">
         {state === 'loading' ? '…' : ctaLabel}
       </button>
       {state === 'invalid' && <p className="text-[var(--color-accent)] text-sm w-full" role="alert">{invalidMsg}</p>}

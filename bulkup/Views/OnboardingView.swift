@@ -70,10 +70,10 @@ struct OnboardingView: View {
         VStack(spacing: Spacing.xxl) {
             Spacer()
 
-            Image("BulkUp")
+            Image("BulkUpLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 180, height: 180)
+                .frame(width: 180, height: 199)
 
             VStack(spacing: Spacing.sm) {
                 Text("Bienvenido a BulkUp")
