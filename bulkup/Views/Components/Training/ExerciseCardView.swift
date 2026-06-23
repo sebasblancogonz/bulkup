@@ -119,9 +119,7 @@ struct ExerciseCardView: View {
                             Text(exercise.name)
                                 .font(BulkUpFont.cardTitle())
                                 .foregroundColor(
-                                    isSkipped ? BulkUpColors.textTertiary :
-                                    allSetsLogged ? BulkUpColors.textSecondary :
-                                    BulkUpColors.textPrimary
+                                    isSkipped ? BulkUpColors.textTertiary : BulkUpColors.textPrimary
                                 )
                                 .strikethrough(isSkipped, color: BulkUpColors.textTertiary)
                                 .lineLimit(2)
@@ -205,26 +203,8 @@ struct ExerciseCardView: View {
             }
         }
         .background(BulkUpColors.surface)
-        .cornerRadius(CornerRadius.large)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .stroke(BulkUpColors.border, lineWidth: 0.5)
-        )
-        // Completed: accent left border
-        .overlay(alignment: .leading) {
-            if allSetsLogged {
-                UnevenRoundedRectangle(
-                    topLeadingRadius: CornerRadius.large,
-                    bottomLeadingRadius: CornerRadius.large,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 0
-                )
-                .fill(BulkUpColors.accent)
-                .frame(width: 3)
-            }
-        }
-        .clipped()
-        .opacity(isSkipped ? 0.6 : allSetsLogged ? 0.85 : 1.0)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .opacity(isSkipped ? 0.6 : 1.0)
         .padding(.horizontal, Spacing.screenH)
     }
 
@@ -240,24 +220,24 @@ struct ExerciseCardView: View {
                 ForEach(Array(repsComponents.enumerated()), id: \.offset) { idx, rep in
                     let isSetCompleted = idx < completedSets
                     Text(rep)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(isSetCompleted ? BulkUpColors.onAccent : BulkUpColors.textPrimary)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(isSetCompleted ? BulkUpColors.accentText : BulkUpColors.textSecondary)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(isSetCompleted ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
+                            RoundedRectangle(cornerRadius: 7)
+                                .fill(isSetCompleted ? BulkUpColors.accent.opacity(0.18) : BulkUpColors.muscleDefault)
                         )
                 }
             } else {
                 Text("\(exercise.sets)×\(exercise.reps)")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(BulkUpColors.textPrimary)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(BulkUpColors.textSecondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(BulkUpColors.surfaceElevated)
+                        RoundedRectangle(cornerRadius: 7)
+                            .fill(BulkUpColors.muscleDefault)
                     )
             }
         }

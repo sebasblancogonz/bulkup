@@ -463,6 +463,7 @@ struct SettingsPicker: View {
                     Text(LocalizedStringKey(option.1)).tag(option.0)
                 }
             }
+            .labelsHidden()
             .pickerStyle(.menu)
             .tint(BulkUpColors.accent)
         }

@@ -428,10 +428,9 @@ struct TrainingView: View {
             }
             .foregroundColor(BulkUpColors.onAccent)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(BulkUpColors.accentGradient)
-            .cornerRadius(14)
-            .shadow(color: BulkUpColors.accent.opacity(0.2), radius: 12, y: 4)
+            .frame(height: 54)
+            .background(BulkUpColors.accent)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .pressable()
         .padding(.horizontal, Spacing.screenH)

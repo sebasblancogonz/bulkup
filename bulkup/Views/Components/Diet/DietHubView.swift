@@ -103,11 +103,11 @@ struct DietHubView: View {
                             Text(section.displayName)
                                 .font(.system(size: 14, weight: .bold))
                         }
-                        .foregroundColor(isActive ? Color.onFill(BulkUpColors.diet) : BulkUpColors.textSecondary)
+                        .foregroundColor(isActive ? Color.onFill(BulkUpColors.accent) : BulkUpColors.textSecondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(
-                            isActive ? Capsule().fill(BulkUpColors.diet) : Capsule().fill(Color.clear)
+                            isActive ? Capsule().fill(BulkUpColors.accent) : Capsule().fill(Color.clear)
                         )
                         .contentShape(Capsule())
                     }
