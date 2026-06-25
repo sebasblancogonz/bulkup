@@ -9,6 +9,8 @@ import SwiftUI
 
 struct WorkoutSummaryView: View {
     let summary: WorkoutSummary
+    var saveState: WorkoutSessionManager.SaveState
+    var onRetry: () -> Void
     var onSave: () -> Void
 
     @State private var showCheck = false
@@ -66,6 +68,31 @@ struct WorkoutSummaryView: View {
 
                 // Actions
                 VStack(spacing: Spacing.md) {
+                    if saveState == .saving {
+                        Text("Guardando...")
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
+                    } else if saveState == .failed {
+                        VStack(spacing: Spacing.sm) {
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                Text("No se pudo guardar tu entreno")
+                            }
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.warning)
+
+                            Button {
+                                onRetry()
+                            } label: {
+                                HStack(spacing: Spacing.sm) {
+                                    Image(systemName: "arrow.clockwise")
+                                    Text("Reintentar")
+                                        .fontWeight(.semibold)
+                                }
+                                .primaryButtonStyle(color: BulkUpColors.warning)
+                            }
+                        }
+                    }
                     Button {
                         onSave()
                     } label: {

@@ -3506,6 +3506,9 @@
         }
       }
     },
+    "Entendido" : {
+
+    },
     "Entrenamiento" : {
       "localizations" : {
         "en" : {
@@ -5024,6 +5027,9 @@
           }
         }
       }
+    },
+    "Los vídeos se guardan solo en este dispositivo y no se suben a la nube." : {
+
     },
     "Lunes" : {
       "extractionState" : "stale",
@@ -6671,6 +6677,9 @@
         }
       }
     },
+    "Quitar serie" : {
+
+    },
     "Racha" : {
       "localizations" : {
         "en" : {
@@ -6862,6 +6871,9 @@
           }
         }
       }
+    },
+    "Reemplazar" : {
+
     },
     "Registra días o añade calorías al plan" : {
       "localizations" : {
@@ -7356,6 +7368,9 @@
           }
         }
       }
+    },
+    "Serie %lld" : {
+
     },
     "Serie %lld · %@kg × %@" : {
       "localizations" : {
@@ -8265,6 +8280,12 @@
           }
         }
       }
+    },
+    "Vídeo no disponible" : {
+
+    },
+    "Vídeos en este dispositivo" : {
+
     },
     "Viernes" : {
       "extractionState" : "stale",

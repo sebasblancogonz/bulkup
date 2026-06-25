@@ -50,6 +50,12 @@ class WorkoutSessionManager: ObservableObject {
     @Published var showSummary = false
     @Published var summaryData: WorkoutSummary?
 
+    // MARK: - Save State
+
+    enum SaveState: Equatable { case idle, saving, saved, failed }
+    @Published var saveState: SaveState = .idle
+    private var pendingSaveRequest: SaveWorkoutSessionRequest?
+
     // MARK: - Private
 
     private var elapsedTimer: AnyCancellable?
@@ -149,6 +155,14 @@ class WorkoutSessionManager: ObservableObject {
         )
         summaryData = summary
         showSummary = true
+        // The workout is done: show a final "completed" card on the Live Activity, then
+        // let it auto-dismiss. (resetAll() still ends it immediately on summary dismiss.)
+        if let live = SharedWorkoutStore.load() {
+            var finished = WorkoutActivityController.contentState(from: live)
+            finished.isFinished = true
+            WorkoutActivityController.shared.finish(state: finished)
+        }
+        SharedWorkoutStore.save(nil)
         return summary
     }
 
@@ -232,13 +246,30 @@ class WorkoutSessionManager: ObservableObject {
             date: dateStr
         )
 
-        Task {
+        pendingSaveRequest = request
+        performSave()
+    }
+
+    private func performSave() {
+        guard let request = pendingSaveRequest else { return }
+        saveState = .saving
+        Task { @MainActor in
             do {
                 try await APIService.shared.saveWorkoutSession(request)
+                saveState = .saved
+                pendingSaveRequest = nil
             } catch {
                 print("Error saving workout session: \(error)")
+                saveState = .failed
             }
         }
+    }
+
+    /// Re-attempt the last failed backend save (uses the already-built request so
+    /// it works even after session state has been cleared).
+    func retrySave() {
+        guard pendingSaveRequest != nil else { return }
+        performSave()
     }
 
     private func resetAll() {
@@ -264,6 +295,8 @@ class WorkoutSessionManager: ObservableObject {
         pauseStartTime = nil
         summaryData = nil
         showSummary = false
+        saveState = .idle
+        pendingSaveRequest = nil
         SharedWorkoutStore.save(nil)
         WorkoutActivityController.shared.end()
     }
@@ -573,6 +606,11 @@ class WorkoutSessionManager: ObservableObject {
         m.removeLastSet(day: "lunes", exerciseIndex: 0, plannedSets: 3)
         m.removeLastSet(day: "lunes", exerciseIndex: 0, plannedSets: 3) // floor at 0
         assert(m.extraSets(day: "lunes", exerciseIndex: 0) == 0)
+
+        // Save-state checks
+        assert(m.saveState == .idle, "save state starts idle")
+        m.retrySave() // no pending request → no-op, stays idle
+        assert(m.saveState == .idle, "retry with nothing pending is a no-op")
     }
     #endif
 
