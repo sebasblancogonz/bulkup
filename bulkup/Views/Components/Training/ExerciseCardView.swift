@@ -352,13 +352,14 @@ struct ExerciseWeightLogger: View {
         .onChange(of: selectedVideoItem) { _, item in
             guard let item, let setIndex = pendingVideoSet else { return }
             Task {
-                if let picked = try? await item.loadTransferable(type: PickedVideo.self) {
+                let picked = try? await item.loadTransferable(type: PickedVideo.self)
+                if let picked {
                     WorkoutVideoStore.save(from: picked.url, for: videoKey(setIndex))
-                    await MainActor.run {
-                        refreshVideoSets()
-                        selectedVideoItem = nil
-                        pendingVideoSet = nil
-                    }
+                }
+                await MainActor.run {
+                    refreshVideoSets()
+                    selectedVideoItem = nil
+                    pendingVideoSet = nil
                 }
             }
         }
@@ -374,7 +375,26 @@ struct ExerciseWeightLogger: View {
             get: { playerSet.map { VideoSheetItem(setIndex: $0) } },
             set: { playerSet = $0?.setIndex }
         )) { sheet in
-            videoPlayerSheet(for: sheet.setIndex)
+            let setIndex = sheet.setIndex
+            if let url = WorkoutVideoStore.url(for: videoKey(setIndex)) {
+                SetVideoPlayerView(
+                    url: url,
+                    title: "Serie \(setIndex + 1)",
+                    onReplace: { playerSet = nil; startVideoFlow(for: setIndex) },
+                    onDelete: {
+                        WorkoutVideoStore.delete(for: videoKey(setIndex))
+                        refreshVideoSets()
+                        playerSet = nil
+                    }
+                )
+            } else {
+                NavigationStack {
+                    Text("Vídeo no disponible")
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .navigationTitle("Serie \(setIndex + 1)")
+                        .navigationBarTitleDisplayMode(.inline)
+                }
+            }
         }
     }
 
@@ -1046,31 +1066,34 @@ struct ExerciseWeightLogger: View {
 
     private struct VideoSheetItem: Identifiable { let setIndex: Int; var id: Int { setIndex } }
 
-    @ViewBuilder
-    private func videoPlayerSheet(for setIndex: Int) -> some View {
-        NavigationStack {
-            Group {
-                if let url = WorkoutVideoStore.url(for: videoKey(setIndex)) {
-                    VideoPlayer(player: AVPlayer(url: url))
-                        .ignoresSafeArea(edges: .bottom)
-                } else {
-                    Text("Vídeo no disponible").foregroundColor(BulkUpColors.textSecondary)
+    private struct SetVideoPlayerView: View {
+        let url: URL
+        let title: String
+        let onReplace: () -> Void
+        let onDelete: () -> Void
+        @State private var player: AVPlayer?
+
+        var body: some View {
+            NavigationStack {
+                Group {
+                    if let player {
+                        VideoPlayer(player: player).ignoresSafeArea(edges: .bottom)
+                    } else {
+                        Color.black
+                    }
                 }
-            }
-            .navigationTitle("Serie \(setIndex + 1)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Reemplazar") { playerSet = nil; startVideoFlow(for: setIndex) }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Eliminar", role: .destructive) {
-                        WorkoutVideoStore.delete(for: videoKey(setIndex))
-                        refreshVideoSets()
-                        playerSet = nil
+                .navigationTitle(title)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Reemplazar") { onReplace() }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Eliminar", role: .destructive) { onDelete() }
                     }
                 }
             }
+            .onAppear { if player == nil { player = AVPlayer(url: url) } }
         }
     }
 }
