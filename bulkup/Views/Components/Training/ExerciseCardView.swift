@@ -270,6 +270,7 @@ struct ExerciseWeightLogger: View {
     @State private var playerSet: Int?                   // set whose video is playing
     @AppStorage("hasSeenVideoStorageWarning") private var hasSeenVideoWarning = false
     @State private var showVideoWarning = false
+    @State private var showVideoPicker = false
 
     private var normalizedDay: String {
         dayName.lowercased().folding(options: .diacriticInsensitive, locale: .current)
@@ -341,10 +342,7 @@ struct ExerciseWeightLogger: View {
             loadInitialData()
         }
         .photosPicker(
-            isPresented: Binding(
-                get: { pendingVideoSet != nil && hasSeenVideoWarning },
-                set: { if !$0 { pendingVideoSet = nil } }
-            ),
+            isPresented: $showVideoPicker,
             selection: $selectedVideoItem,
             matching: .videos,
             photoLibrary: .shared()
@@ -365,7 +363,8 @@ struct ExerciseWeightLogger: View {
         }
         .alert("Vídeos en este dispositivo", isPresented: $showVideoWarning) {
             Button("Entendido") {
-                hasSeenVideoWarning = true   // picker opens automatically (binding above)
+                hasSeenVideoWarning = true
+                showVideoPicker = true
             }
             Button("Cancelar", role: .cancel) { pendingVideoSet = nil }
         } message: {
@@ -924,7 +923,7 @@ struct ExerciseWeightLogger: View {
     private func startVideoFlow(for setIndex: Int) {
         pendingVideoSet = setIndex
         if hasSeenVideoWarning {
-            // PhotosPicker is presented via the .photosPicker modifier bound to pendingVideoSet.
+            showVideoPicker = true
         } else {
             showVideoWarning = true
         }
