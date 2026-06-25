@@ -86,7 +86,7 @@ class WorkoutSessionManager: ObservableObject {
 
         // Seed the shared store and start the Live Activity
         let tm = trainingManager ?? TrainingManager.shared
-        let live = buildLiveWorkout(dayName: dayName, trainingManager: tm)
+        let live = buildLiveWorkout(dayName: dayName, trainingManager: tm, seedCursorAtZero: true)
         SharedWorkoutStore.save(live)
         WorkoutActivityController.shared.start(
             dayName: dayName,
@@ -716,7 +716,7 @@ class WorkoutSessionManager: ObservableObject {
 
     /// Mirrors buildSummary's iteration to produce a LiveWorkout for the shared store
     /// and the Lock Screen Live Activity.
-    private func buildLiveWorkout(dayName: String, trainingManager: TrainingManager) -> LiveWorkout {
+    private func buildLiveWorkout(dayName: String, trainingManager: TrainingManager, seedCursorAtZero: Bool = false) -> LiveWorkout {
         let normalizedDay = dayName.lowercased()
             .folding(options: .diacriticInsensitive, locale: .current)
 
@@ -770,7 +770,7 @@ class WorkoutSessionManager: ObservableObject {
             cursor: 0,
             restEndDate: nil
         )
-        live.advanceCursor()
+        if !seedCursorAtZero { live.advanceCursor() }
         return live
     }
 
