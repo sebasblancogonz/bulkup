@@ -383,7 +383,11 @@ struct TrainingView: View {
 
             // Workout summary overlay
             if workoutSession.showSummary, let summary = workoutSession.summaryData {
-                WorkoutSummaryView(summary: summary) {
+                WorkoutSummaryView(
+                    summary: summary,
+                    saveState: workoutSession.saveState,
+                    onRetry: { workoutSession.retrySave() }
+                ) {
                     // Save and mark complete
                     markWorkoutComplete()
                     let finishedDay = currentTrainingDay ?? selectedDay
