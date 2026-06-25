@@ -8,6 +8,8 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
+import AVKit
 
 /// Shared column geometry for the set-logging table so the header and every row
 /// stay aligned. Steppers are sized for comfortable tapping mid-workout.
@@ -262,6 +264,13 @@ struct ExerciseWeightLogger: View {
     @State private var showSaved = false
     @FocusState private var focusedSet: Int?
 
+    @State private var videoSets: Set<Int> = []          // set indices that have a video
+    @State private var pendingVideoSet: Int?             // set awaiting a picker result
+    @State private var selectedVideoItem: PhotosPickerItem?
+    @State private var playerSet: Int?                   // set whose video is playing
+    @AppStorage("hasSeenVideoStorageWarning") private var hasSeenVideoWarning = false
+    @State private var showVideoWarning = false
+
     private var normalizedDay: String {
         dayName.lowercased().folding(options: .diacriticInsensitive, locale: .current)
     }
@@ -330,6 +339,42 @@ struct ExerciseWeightLogger: View {
         }
         .onChange(of: trainingManager.selectedWeek) { _, _ in
             loadInitialData()
+        }
+        .photosPicker(
+            isPresented: Binding(
+                get: { pendingVideoSet != nil && hasSeenVideoWarning },
+                set: { if !$0 { pendingVideoSet = nil } }
+            ),
+            selection: $selectedVideoItem,
+            matching: .videos,
+            photoLibrary: .shared()
+        )
+        .onChange(of: selectedVideoItem) { _, item in
+            guard let item, let setIndex = pendingVideoSet else { return }
+            Task {
+                if let picked = try? await item.loadTransferable(type: PickedVideo.self) {
+                    WorkoutVideoStore.save(from: picked.url, for: videoKey(setIndex))
+                    await MainActor.run {
+                        refreshVideoSets()
+                        selectedVideoItem = nil
+                        pendingVideoSet = nil
+                    }
+                }
+            }
+        }
+        .alert("Vídeos en este dispositivo", isPresented: $showVideoWarning) {
+            Button("Entendido") {
+                hasSeenVideoWarning = true   // picker opens automatically (binding above)
+            }
+            Button("Cancelar", role: .cancel) { pendingVideoSet = nil }
+        } message: {
+            Text("Los vídeos se guardan solo en este dispositivo y no se suben a la nube.")
+        }
+        .sheet(item: Binding(
+            get: { playerSet.map { VideoSheetItem(setIndex: $0) } },
+            set: { playerSet = $0?.setIndex }
+        )) { sheet in
+            videoPlayerSheet(for: sheet.setIndex)
         }
     }
 
@@ -533,6 +578,21 @@ struct ExerciseWeightLogger: View {
                         .background(BulkUpColors.warning)
                         .clipShape(Circle())
                 }
+            }
+
+            // Per-set video
+            Button {
+                if videoSets.contains(setIndex) {
+                    playerSet = setIndex
+                } else {
+                    startVideoFlow(for: setIndex)
+                }
+            } label: {
+                Image(systemName: videoSets.contains(setIndex) ? "video.fill" : "video.badge.plus")
+                    .font(.system(size: 14))
+                    .foregroundColor(videoSets.contains(setIndex) ? BulkUpColors.accent : BulkUpColors.textTertiary)
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
             }
 
             // Check button
@@ -826,6 +886,28 @@ struct ExerciseWeightLogger: View {
         if repsTexts.count > totalSetsCount { repsTexts.removeLast() }
     }
 
+    // MARK: - Video Helpers
+
+    private func videoKey(_ setIndex: Int) -> String {
+        trainingManager.generateWeightKey(
+            day: normalizedDay, exerciseIndex: exercise.orderIndex,
+            exerciseName: exercise.name, setIndex: setIndex, weekStart: currentWeekString
+        )
+    }
+
+    private func refreshVideoSets() {
+        videoSets = Set((0..<totalSetsCount).filter { WorkoutVideoStore.hasVideo(for: videoKey($0)) })
+    }
+
+    private func startVideoFlow(for setIndex: Int) {
+        pendingVideoSet = setIndex
+        if hasSeenVideoWarning {
+            // PhotosPicker is presented via the .photosPicker modifier bound to pendingVideoSet.
+        } else {
+            showVideoWarning = true
+        }
+    }
+
     // MARK: - Weight Data
 
     private func loadInitialData() {
@@ -846,6 +928,7 @@ struct ExerciseWeightLogger: View {
         repsTexts = Self.perSetReps(from: exercise.reps, count: setsCount, fallback: defaultReps)
         loadPreviousWeights()
         loadExerciseNote()
+        refreshVideoSets()
     }
 
     private func loadExerciseNote() {
@@ -957,6 +1040,38 @@ struct ExerciseWeightLogger: View {
 
     private func formatWeight(_ w: Double) -> String {
         String(format: "%.1f", w).replacingOccurrences(of: ".0", with: "")
+    }
+
+    // MARK: - Video Player Sheet
+
+    private struct VideoSheetItem: Identifiable { let setIndex: Int; var id: Int { setIndex } }
+
+    @ViewBuilder
+    private func videoPlayerSheet(for setIndex: Int) -> some View {
+        NavigationStack {
+            Group {
+                if let url = WorkoutVideoStore.url(for: videoKey(setIndex)) {
+                    VideoPlayer(player: AVPlayer(url: url))
+                        .ignoresSafeArea(edges: .bottom)
+                } else {
+                    Text("Vídeo no disponible").foregroundColor(BulkUpColors.textSecondary)
+                }
+            }
+            .navigationTitle("Serie \(setIndex + 1)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Reemplazar") { playerSet = nil; startVideoFlow(for: setIndex) }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Eliminar", role: .destructive) {
+                        WorkoutVideoStore.delete(for: videoKey(setIndex))
+                        refreshVideoSets()
+                        playerSet = nil
+                    }
+                }
+            }
+        }
     }
 }
 
