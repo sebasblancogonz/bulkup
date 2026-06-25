@@ -24,6 +24,7 @@ struct BulkUp: App {
         WorkoutSessionManager.runSelfCheck()
         ExerciseWeightLogger.runSelfCheck()
         APIService.runDateParsingSelfCheck()
+        WorkoutVideoStore.runSelfCheck()
 #endif
 
         NotificationCenter.default.addObserver(
