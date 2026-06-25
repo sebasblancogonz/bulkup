@@ -149,6 +149,14 @@ class WorkoutSessionManager: ObservableObject {
         )
         summaryData = summary
         showSummary = true
+        // The workout is done: show a final "completed" card on the Live Activity, then
+        // let it auto-dismiss. (resetAll() still ends it immediately on summary dismiss.)
+        if let live = SharedWorkoutStore.load() {
+            var finished = WorkoutActivityController.contentState(from: live)
+            finished.isFinished = true
+            WorkoutActivityController.shared.finish(state: finished)
+        }
+        SharedWorkoutStore.save(nil)
         return summary
     }
 

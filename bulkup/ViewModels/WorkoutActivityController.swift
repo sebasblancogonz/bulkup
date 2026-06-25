@@ -41,6 +41,24 @@ final class WorkoutActivityController {
         }
     }
 
+    /// Show a final "completed" state, then auto-dismiss the Live Activity after a
+    /// few seconds. Used when the workout is finished (vs. `end()` which is immediate).
+    func finish(state: WorkoutActivityAttributes.ContentState) {
+        let content = ActivityContent(state: state, staleDate: nil)
+        let dismissAt = Date().addingTimeInterval(4)
+        if let activity {
+            Task {
+                await activity.update(content)
+                await activity.end(content, dismissalPolicy: .after(dismissAt))
+            }
+            self.activity = nil
+        } else {
+            for stray in Activity<WorkoutActivityAttributes>.activities {
+                Task { await stray.end(content, dismissalPolicy: .after(dismissAt)) }
+            }
+        }
+    }
+
     func end() {
         for activity in Activity<WorkoutActivityAttributes>.activities {
             Task {

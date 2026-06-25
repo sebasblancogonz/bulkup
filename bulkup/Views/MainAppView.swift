@@ -117,8 +117,8 @@ struct MainAppView: View {
                     }
                     .tint(BulkUpColors.accent)
 
-                    // Floating workout FAB when session active
-                    if workoutSession.isActive {
+                    // Floating workout FAB when session active (hidden while summary is shown)
+                    if workoutSession.isActive && !workoutSession.showSummary {
                         workoutFAB
                     }
                 }
