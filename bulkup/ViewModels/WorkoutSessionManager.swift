@@ -86,7 +86,7 @@ class WorkoutSessionManager: ObservableObject {
 
         // Seed the shared store and start the Live Activity
         let tm = trainingManager ?? TrainingManager.shared
-        let live = buildLiveWorkout(dayName: dayName, trainingManager: tm)
+        let live = buildLiveWorkout(dayName: dayName, trainingManager: tm, seedCursorAtZero: true)
         SharedWorkoutStore.save(live)
         WorkoutActivityController.shared.start(
             dayName: dayName,
@@ -548,6 +548,34 @@ class WorkoutSessionManager: ObservableObject {
         addedSets[exerciseKey(day: day, exerciseIndex: exerciseIndex)] ?? 0
     }
 
+    /// Removes the most recently added set for an exercise (added sets only —
+    /// planned sets are never removed). Clears that set's session state.
+    func removeLastSet(day: String, exerciseIndex: Int, plannedSets: Int) {
+        let key = exerciseKey(day: day, exerciseIndex: exerciseIndex)
+        guard let extra = addedSets[key], extra > 0 else { return }
+        let removedIndex = plannedSets + extra - 1
+        let sk = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: removedIndex)
+        completedSetIds.remove(sk)
+        failedSetIds.remove(sk)
+        actualReps[sk] = nil
+        if extra - 1 == 0 { addedSets[key] = nil } else { addedSets[key] = extra - 1 }
+    }
+
+    #if DEBUG
+    @MainActor
+    static func runSelfCheck() {
+        let m = WorkoutSessionManager()
+        m.addSet(day: "lunes", exerciseIndex: 0)
+        m.addSet(day: "lunes", exerciseIndex: 0)
+        assert(m.extraSets(day: "lunes", exerciseIndex: 0) == 2)
+        m.removeLastSet(day: "lunes", exerciseIndex: 0, plannedSets: 3)
+        assert(m.extraSets(day: "lunes", exerciseIndex: 0) == 1)
+        m.removeLastSet(day: "lunes", exerciseIndex: 0, plannedSets: 3)
+        m.removeLastSet(day: "lunes", exerciseIndex: 0, plannedSets: 3) // floor at 0
+        assert(m.extraSets(day: "lunes", exerciseIndex: 0) == 0)
+    }
+    #endif
+
     // MARK: - Actual Reps
 
     func setActualReps(day: String, exerciseIndex: Int, setIndex: Int, reps: Int) {
@@ -716,7 +744,7 @@ class WorkoutSessionManager: ObservableObject {
 
     /// Mirrors buildSummary's iteration to produce a LiveWorkout for the shared store
     /// and the Lock Screen Live Activity.
-    private func buildLiveWorkout(dayName: String, trainingManager: TrainingManager) -> LiveWorkout {
+    private func buildLiveWorkout(dayName: String, trainingManager: TrainingManager, seedCursorAtZero: Bool = false) -> LiveWorkout {
         let normalizedDay = dayName.lowercased()
             .folding(options: .diacriticInsensitive, locale: .current)
 
@@ -770,7 +798,7 @@ class WorkoutSessionManager: ObservableObject {
             cursor: 0,
             restEndDate: nil
         )
-        live.advanceCursor()
+        if !seedCursorAtZero { live.advanceCursor() }
         return live
     }
 

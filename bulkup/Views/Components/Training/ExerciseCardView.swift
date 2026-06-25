@@ -8,6 +8,8 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
+import AVKit
 
 /// Shared column geometry for the set-logging table so the header and every row
 /// stay aligned. Steppers are sized for comfortable tapping mid-workout.
@@ -262,6 +264,13 @@ struct ExerciseWeightLogger: View {
     @State private var showSaved = false
     @FocusState private var focusedSet: Int?
 
+    @State private var videoSets: Set<Int> = []          // set indices that have a video
+    @State private var pendingVideoSet: Int?             // set awaiting a picker result
+    @State private var selectedVideoItem: PhotosPickerItem?
+    @State private var playerSet: Int?                   // set whose video is playing
+    @AppStorage("hasSeenVideoStorageWarning") private var hasSeenVideoWarning = false
+    @State private var showVideoWarning = false
+
     private var normalizedDay: String {
         dayName.lowercased().folding(options: .diacriticInsensitive, locale: .current)
     }
@@ -331,6 +340,62 @@ struct ExerciseWeightLogger: View {
         .onChange(of: trainingManager.selectedWeek) { _, _ in
             loadInitialData()
         }
+        .photosPicker(
+            isPresented: Binding(
+                get: { pendingVideoSet != nil && hasSeenVideoWarning },
+                set: { if !$0 { pendingVideoSet = nil } }
+            ),
+            selection: $selectedVideoItem,
+            matching: .videos,
+            photoLibrary: .shared()
+        )
+        .onChange(of: selectedVideoItem) { _, item in
+            guard let item, let setIndex = pendingVideoSet else { return }
+            Task {
+                let picked = try? await item.loadTransferable(type: PickedVideo.self)
+                if let picked {
+                    WorkoutVideoStore.save(from: picked.url, for: videoKey(setIndex))
+                }
+                await MainActor.run {
+                    refreshVideoSets()
+                    selectedVideoItem = nil
+                    pendingVideoSet = nil
+                }
+            }
+        }
+        .alert("Vídeos en este dispositivo", isPresented: $showVideoWarning) {
+            Button("Entendido") {
+                hasSeenVideoWarning = true   // picker opens automatically (binding above)
+            }
+            Button("Cancelar", role: .cancel) { pendingVideoSet = nil }
+        } message: {
+            Text("Los vídeos se guardan solo en este dispositivo y no se suben a la nube.")
+        }
+        .sheet(item: Binding(
+            get: { playerSet.map { VideoSheetItem(setIndex: $0) } },
+            set: { playerSet = $0?.setIndex }
+        )) { sheet in
+            let setIndex = sheet.setIndex
+            if let url = WorkoutVideoStore.url(for: videoKey(setIndex)) {
+                SetVideoPlayerView(
+                    url: url,
+                    title: "Serie \(setIndex + 1)",
+                    onReplace: { playerSet = nil; startVideoFlow(for: setIndex) },
+                    onDelete: {
+                        WorkoutVideoStore.delete(for: videoKey(setIndex))
+                        refreshVideoSets()
+                        playerSet = nil
+                    }
+                )
+            } else {
+                NavigationStack {
+                    Text("Vídeo no disponible")
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .navigationTitle("Serie \(setIndex + 1)")
+                        .navigationBarTitleDisplayMode(.inline)
+                }
+            }
+        }
     }
 
     // MARK: - Workout Mode Content
@@ -370,19 +435,39 @@ struct ExerciseWeightLogger: View {
             workoutSetRow(setIndex: setIndex)
         }
 
-        // Add set button
-        Button {
-            workoutSession.addSet(day: normalizedDay, exerciseIndex: exercise.orderIndex)
-            ensureArrayCapacity()
-        } label: {
-            HStack(spacing: Spacing.xs) {
-                Image(systemName: "plus.circle")
-                    .font(.system(size: 12))
-                Text("Anadir serie")
-                    .font(.system(size: 12, weight: .medium))
+        // Add / remove set buttons
+        HStack(spacing: Spacing.md) {
+            Button {
+                workoutSession.addSet(day: normalizedDay, exerciseIndex: exercise.orderIndex)
+                ensureArrayCapacity()
+            } label: {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 12))
+                    Text("Anadir serie")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundColor(BulkUpColors.accent)
+                .padding(.vertical, Spacing.xs)
             }
-            .foregroundColor(BulkUpColors.accent)
-            .padding(.vertical, Spacing.xs)
+
+            if workoutSession.extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex) > 0 {
+                Button {
+                    workoutSession.removeLastSet(
+                        day: normalizedDay, exerciseIndex: exercise.orderIndex, plannedSets: exercise.sets
+                    )
+                    trimArrayCapacity()
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "minus.circle")
+                            .font(.system(size: 12))
+                        Text("Quitar serie")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(BulkUpColors.textTertiary)
+                    .padding(.vertical, Spacing.xs)
+                }
+            }
         }
 
         // Note input
@@ -513,6 +598,21 @@ struct ExerciseWeightLogger: View {
                         .background(BulkUpColors.warning)
                         .clipShape(Circle())
                 }
+            }
+
+            // Per-set video
+            Button {
+                if videoSets.contains(setIndex) {
+                    playerSet = setIndex
+                } else {
+                    startVideoFlow(for: setIndex)
+                }
+            } label: {
+                Image(systemName: videoSets.contains(setIndex) ? "video.fill" : "video.badge.plus")
+                    .font(.system(size: 14))
+                    .foregroundColor(videoSets.contains(setIndex) ? BulkUpColors.accent : BulkUpColors.textTertiary)
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
             }
 
             // Check button
@@ -793,6 +893,43 @@ struct ExerciseWeightLogger: View {
         }
     }
 
+    private func trimArrayCapacity() {
+        let removedIndex = weightTexts.count - 1
+        if removedIndex >= 0 {
+            let key = trainingManager.generateWeightKey(
+                day: normalizedDay, exerciseIndex: exercise.orderIndex,
+                exerciseName: exercise.name, setIndex: removedIndex, weekStart: currentWeekString
+            )
+            trainingManager.weights[key] = nil
+            WorkoutVideoStore.delete(for: videoKey(removedIndex))
+        }
+        if weightTexts.count > totalSetsCount { weightTexts.removeLast() }
+        if repsTexts.count > totalSetsCount { repsTexts.removeLast() }
+        refreshVideoSets()
+    }
+
+    // MARK: - Video Helpers
+
+    private func videoKey(_ setIndex: Int) -> String {
+        trainingManager.generateWeightKey(
+            day: normalizedDay, exerciseIndex: exercise.orderIndex,
+            exerciseName: exercise.name, setIndex: setIndex, weekStart: currentWeekString
+        )
+    }
+
+    private func refreshVideoSets() {
+        videoSets = Set((0..<totalSetsCount).filter { WorkoutVideoStore.hasVideo(for: videoKey($0)) })
+    }
+
+    private func startVideoFlow(for setIndex: Int) {
+        pendingVideoSet = setIndex
+        if hasSeenVideoWarning {
+            // PhotosPicker is presented via the .photosPicker modifier bound to pendingVideoSet.
+        } else {
+            showVideoWarning = true
+        }
+    }
+
     // MARK: - Weight Data
 
     private func loadInitialData() {
@@ -810,9 +947,10 @@ struct ExerciseWeightLogger: View {
             }
             return ""
         }
-        repsTexts = (0..<setsCount).map { _ in defaultReps }
+        repsTexts = Self.perSetReps(from: exercise.reps, count: setsCount, fallback: defaultReps)
         loadPreviousWeights()
         loadExerciseNote()
+        refreshVideoSets()
     }
 
     private func loadExerciseNote() {
@@ -925,4 +1063,67 @@ struct ExerciseWeightLogger: View {
     private func formatWeight(_ w: Double) -> String {
         String(format: "%.1f", w).replacingOccurrences(of: ".0", with: "")
     }
+
+    // MARK: - Video Player Sheet
+
+    private struct VideoSheetItem: Identifiable { let setIndex: Int; var id: Int { setIndex } }
+
+    private struct SetVideoPlayerView: View {
+        let url: URL
+        let title: String
+        let onReplace: () -> Void
+        let onDelete: () -> Void
+        @State private var player: AVPlayer?
+
+        var body: some View {
+            NavigationStack {
+                Group {
+                    if let player {
+                        VideoPlayer(player: player).ignoresSafeArea(edges: .bottom)
+                    } else {
+                        Color.black
+                    }
+                }
+                .navigationTitle(title)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Reemplazar") { onReplace() }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Eliminar", role: .destructive) { onDelete() }
+                    }
+                }
+            }
+            .onAppear { if player == nil { player = AVPlayer(url: url) } }
+        }
+    }
+}
+
+extension ExerciseWeightLogger {
+    /// Per-set rep targets parsed from `exercise.reps`. Mirrors the comma-splitting
+    /// `setRepsPills` already uses (ExerciseCardView.swift:215-217). A range like
+    /// "8-12" resolves to its upper bound; a single value repeats for every set.
+    static func perSetReps(from reps: String, count: Int, fallback: String) -> [String] {
+        guard count > 0 else { return [] }
+        let parts = reps.components(separatedBy: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+        func upperBound(_ s: String) -> String {
+            s.contains("-") ? (s.split(separator: "-").last.map(String.init) ?? s) : s
+        }
+        if parts.count > 1 {
+            return (0..<count).map { i in i < parts.count ? upperBound(parts[i]) : fallback }
+        }
+        return Array(repeating: fallback, count: count)
+    }
+
+    #if DEBUG
+    static func runSelfCheck() {
+        assert(perSetReps(from: "10, 8, 6", count: 3, fallback: "10") == ["10", "8", "6"])
+        assert(perSetReps(from: "10, 8, 6", count: 4, fallback: "10") == ["10", "8", "6", "10"])
+        assert(perSetReps(from: "8-12", count: 3, fallback: "12") == ["12", "12", "12"])
+        assert(perSetReps(from: "12", count: 2, fallback: "12") == ["12", "12"])
+        assert(perSetReps(from: "12, 10-8", count: 2, fallback: "12") == ["12", "8"])
+    }
+    #endif
 }

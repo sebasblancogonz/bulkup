@@ -21,7 +21,10 @@ struct BulkUp: App {
         DietFidelity.runSelfCheck()
         DietCompliance.runSelfCheck()
         WorkoutFeedbackManager.runSelfCheck()
+        WorkoutSessionManager.runSelfCheck()
+        ExerciseWeightLogger.runSelfCheck()
         APIService.runDateParsingSelfCheck()
+        WorkoutVideoStore.runSelfCheck()
 #endif
 
         NotificationCenter.default.addObserver(

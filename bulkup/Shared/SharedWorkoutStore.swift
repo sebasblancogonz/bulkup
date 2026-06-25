@@ -105,6 +105,21 @@ extension SharedWorkoutStore {
         w.sets[1].completed = true; w.advanceCursor()
         assert(w.isFinished, "all sets done -> finished")
         assert(w.completedCount == 2)
+
+        // Bug-3: a freshly seeded workout (cursor 0, no advance) shows the first
+        // exercise even when its first set is pre-marked completed.
+        let fresh = LiveWorkout(
+            dayName: "Lunes", workoutName: "Push", startDate: Date(), isPaused: false,
+            weightUnit: "kg", weightStep: 2.5, repStep: 1,
+            sets: [
+                .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 1,
+                      weight: 40, reps: 10, restSeconds: 60, completed: true),
+                .init(exerciseIndex: 1, exerciseName: "Curl", setIndex: 0, setsTotalForExercise: 1,
+                      weight: 20, reps: 12, restSeconds: 60, completed: false),
+            ],
+            cursor: 0, restEndDate: nil
+        )
+        assert(fresh.current?.exerciseName == "Press", "fresh start must show the first exercise")
     }
 }
 #endif

@@ -6,7 +6,7 @@ import WidgetKit
 /// Local mirror of the app's design tokens (DesignSystem.swift lives in the app
 /// target only). Keep in sync with BulkUpColors if the brand palette changes.
 private enum WidgetTheme {
-    static let accent = Color(red: 0.0, green: 0.902, blue: 0.765)        // #00E6C3
+    static let accent = Color(red: 0.518, green: 0.800, blue: 0.086)      // #84CC16 LIME
     static let background = Color(red: 0.039, green: 0.039, blue: 0.039)  // #0A0A0A
     static let surface = Color(red: 0.086, green: 0.086, blue: 0.086)     // #161616
     static let textPrimary = Color.white
@@ -22,7 +22,7 @@ struct WorkoutLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: WorkoutActivityAttributes.self) { context in
             WorkoutLockScreenView(state: context.state)
-                .padding(14)
+                .padding(20)
                 .activityBackgroundTint(WidgetTheme.background)
                 .activitySystemActionForegroundColor(WidgetTheme.accent)
         } dynamicIsland: { context in
