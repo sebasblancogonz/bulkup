@@ -370,19 +370,39 @@ struct ExerciseWeightLogger: View {
             workoutSetRow(setIndex: setIndex)
         }
 
-        // Add set button
-        Button {
-            workoutSession.addSet(day: normalizedDay, exerciseIndex: exercise.orderIndex)
-            ensureArrayCapacity()
-        } label: {
-            HStack(spacing: Spacing.xs) {
-                Image(systemName: "plus.circle")
-                    .font(.system(size: 12))
-                Text("Anadir serie")
-                    .font(.system(size: 12, weight: .medium))
+        // Add / remove set buttons
+        HStack(spacing: Spacing.md) {
+            Button {
+                workoutSession.addSet(day: normalizedDay, exerciseIndex: exercise.orderIndex)
+                ensureArrayCapacity()
+            } label: {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 12))
+                    Text("Anadir serie")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundColor(BulkUpColors.accent)
+                .padding(.vertical, Spacing.xs)
             }
-            .foregroundColor(BulkUpColors.accent)
-            .padding(.vertical, Spacing.xs)
+
+            if workoutSession.extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex) > 0 {
+                Button {
+                    workoutSession.removeLastSet(
+                        day: normalizedDay, exerciseIndex: exercise.orderIndex, plannedSets: exercise.sets
+                    )
+                    trimArrayCapacity()
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "minus.circle")
+                            .font(.system(size: 12))
+                        Text("Quitar serie")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(BulkUpColors.textTertiary)
+                    .padding(.vertical, Spacing.xs)
+                }
+            }
         }
 
         // Note input
@@ -791,6 +811,19 @@ struct ExerciseWeightLogger: View {
         while repsTexts.count < totalSetsCount {
             repsTexts.append(defaultReps)
         }
+    }
+
+    private func trimArrayCapacity() {
+        let removedIndex = weightTexts.count - 1
+        if removedIndex >= 0 {
+            let key = trainingManager.generateWeightKey(
+                day: normalizedDay, exerciseIndex: exercise.orderIndex,
+                exerciseName: exercise.name, setIndex: removedIndex, weekStart: currentWeekString
+            )
+            trainingManager.weights[key] = nil
+        }
+        if weightTexts.count > totalSetsCount { weightTexts.removeLast() }
+        if repsTexts.count > totalSetsCount { repsTexts.removeLast() }
     }
 
     // MARK: - Weight Data
