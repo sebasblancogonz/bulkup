@@ -901,9 +901,11 @@ struct ExerciseWeightLogger: View {
                 exerciseName: exercise.name, setIndex: removedIndex, weekStart: currentWeekString
             )
             trainingManager.weights[key] = nil
+            WorkoutVideoStore.delete(for: videoKey(removedIndex))
         }
         if weightTexts.count > totalSetsCount { weightTexts.removeLast() }
         if repsTexts.count > totalSetsCount { repsTexts.removeLast() }
+        refreshVideoSets()
     }
 
     // MARK: - Video Helpers
