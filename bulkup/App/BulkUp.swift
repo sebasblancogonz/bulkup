@@ -21,6 +21,7 @@ struct BulkUp: App {
         DietFidelity.runSelfCheck()
         DietCompliance.runSelfCheck()
         WorkoutFeedbackManager.runSelfCheck()
+        ExerciseWeightLogger.runSelfCheck()
         APIService.runDateParsingSelfCheck()
 #endif
 

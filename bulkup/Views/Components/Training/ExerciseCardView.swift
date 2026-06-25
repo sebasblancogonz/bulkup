@@ -810,7 +810,7 @@ struct ExerciseWeightLogger: View {
             }
             return ""
         }
-        repsTexts = (0..<setsCount).map { _ in defaultReps }
+        repsTexts = Self.perSetReps(from: exercise.reps, count: setsCount, fallback: defaultReps)
         loadPreviousWeights()
         loadExerciseNote()
     }
@@ -925,4 +925,32 @@ struct ExerciseWeightLogger: View {
     private func formatWeight(_ w: Double) -> String {
         String(format: "%.1f", w).replacingOccurrences(of: ".0", with: "")
     }
+}
+
+extension ExerciseWeightLogger {
+    /// Per-set rep targets parsed from `exercise.reps`. Mirrors the comma-splitting
+    /// `setRepsPills` already uses (ExerciseCardView.swift:215-217). A range like
+    /// "8-12" resolves to its upper bound; a single value repeats for every set.
+    static func perSetReps(from reps: String, count: Int, fallback: String) -> [String] {
+        guard count > 0 else { return [] }
+        let parts = reps.components(separatedBy: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+        func upperBound(_ s: String) -> String {
+            s.contains("-") ? (s.split(separator: "-").last.map(String.init) ?? s) : s
+        }
+        if parts.count > 1 {
+            return (0..<count).map { i in i < parts.count ? upperBound(parts[i]) : fallback }
+        }
+        return Array(repeating: fallback, count: count)
+    }
+
+    #if DEBUG
+    static func runSelfCheck() {
+        assert(perSetReps(from: "10, 8, 6", count: 3, fallback: "10") == ["10", "8", "6"])
+        assert(perSetReps(from: "10, 8, 6", count: 4, fallback: "10") == ["10", "8", "6", "10"])
+        assert(perSetReps(from: "8-12", count: 3, fallback: "12") == ["12", "12", "12"])
+        assert(perSetReps(from: "12", count: 2, fallback: "12") == ["12", "12"])
+        assert(perSetReps(from: "12, 10-8", count: 2, fallback: "12") == ["12", "8"])
+    }
+    #endif
 }
