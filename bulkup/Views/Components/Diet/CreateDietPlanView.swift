@@ -12,6 +12,7 @@ struct CreateDietPlanView: View {
     @EnvironmentObject var dietManager: DietManager
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var planName = ""
     @State private var showingFilePicker = false
@@ -171,6 +172,18 @@ struct CreateDietPlanView: View {
             setupNotificationObserver()
             if let userId = authManager.user?.id {
                 GotifyWebSocketManager.shared.connect(userId: userId)
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            switch phase {
+            case .background:
+                GotifyWebSocketManager.shared.disconnect()
+            case .active:
+                if let userId = authManager.user?.id {
+                    GotifyWebSocketManager.shared.connect(userId: userId)
+                }
+            default:
+                break
             }
         }
         .onDisappear {
