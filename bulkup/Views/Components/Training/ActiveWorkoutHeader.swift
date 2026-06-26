@@ -66,6 +66,7 @@ struct ActiveWorkoutHeader: View {
         .padding(.horizontal, Spacing.screenH)
         .padding(.vertical, Spacing.sm)
         .onAppear { pulseAnimation = true }
+        .onDisappear { pulseAnimation = false }
         .confirmationDialog("Entreno en curso", isPresented: $showActionSheet) {
             if session.isPaused {
                 Button("Continuar") {

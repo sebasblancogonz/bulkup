@@ -112,7 +112,7 @@ class GotifyWebSocketManager: ObservableObject {
         urlSession = URLSession(configuration: .default)
     }
 
-    func connect(userId: String) {
+    func connect(userId: String, isReconnect: Bool = false) {
         currentUserId = userId
 
         guard !gotifyToken.isEmpty else {
@@ -132,7 +132,7 @@ class GotifyWebSocketManager: ObservableObject {
         reconnectTimer?.invalidate()
         reconnectTimer = nil
         isIntentionalDisconnect = false
-        reconnectAttempts = 0
+        if !isReconnect { reconnectAttempts = 0 }
 
         let wsURLString = "\(gotifyWSURL)/stream?token=\(gotifyToken)"
         guard let wsURL = URL(string: wsURLString) else {
@@ -241,7 +241,7 @@ class GotifyWebSocketManager: ObservableObject {
             Task { @MainActor in
                 // Reset flag antes de reconectar
                 self.isIntentionalDisconnect = false
-                self.connect(userId: self.currentUserId)
+                self.connect(userId: self.currentUserId, isReconnect: true)
             }
         }
     }

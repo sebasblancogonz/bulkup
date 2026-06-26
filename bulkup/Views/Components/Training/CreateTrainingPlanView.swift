@@ -12,6 +12,7 @@ struct CreateTrainingPlanView: View {
     @EnvironmentObject var trainingManager: TrainingManager
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
+    @Environment(\.scenePhase) private var scenePhase
 
     var initialMethod: CreationMethod?
 
@@ -250,6 +251,18 @@ struct CreateTrainingPlanView: View {
             }
             if let initial = initialMethod {
                 creationMethod = initial
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            switch phase {
+            case .background:
+                GotifyWebSocketManager.shared.disconnect()
+            case .active:
+                if let userId = authManager.user?.id {
+                    GotifyWebSocketManager.shared.connect(userId: userId)
+                }
+            default:
+                break
             }
         }
         .onDisappear {
