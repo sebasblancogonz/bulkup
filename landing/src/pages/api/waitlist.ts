@@ -27,12 +27,11 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const apiKey = import.meta.env.RESEND_API_KEY;
-  const audienceId = import.meta.env.RESEND_AUDIENCE_ID;
-  if (!apiKey || !audienceId) return json({ ok: false, reason: 'server' }, 500);
+  if (!apiKey) return json({ ok: false, reason: 'server' }, 500);
 
   try {
     const resend = new Resend(apiKey);
-    await resend.contacts.create({ email: result.email, audienceId, unsubscribed: false });
+    await resend.contacts.create({ email: result.email, unsubscribed: false });
     return json({ ok: true }, 200);
   } catch (e) {
     console.error('waitlist resend error', e);

@@ -5,7 +5,7 @@ Astro + Tailwind v4 marketing site (EN default `/`, ES `/es`). Waitlist → Rese
 ## Develop
 ```bash
 cd landing
-cp .env.example .env   # fill RESEND_API_KEY + RESEND_AUDIENCE_ID
+cp .env.example .env   # fill RESEND_API_KEY
 npm install
 npm run dev
 ```
@@ -17,7 +17,7 @@ npm test
 
 ## Deploy (Vercel)
 - Set **Root Directory** = `landing`.
-- Add env vars `RESEND_API_KEY`, `RESEND_AUDIENCE_ID`.
+- Add env var `RESEND_API_KEY`.
 - Framework preset: Astro.
 
 ## Swap placeholders before launch
