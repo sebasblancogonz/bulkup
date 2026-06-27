@@ -29,34 +29,44 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const apiKey = import.meta.env.RESEND_API_KEY;
-  const audienceId = import.meta.env.RESEND_AUDIENCE_ID;
-  const from = import.meta.env.RESEND_FROM;
-  if (!apiKey || !audienceId || !from) {
-    console.error('waitlist misconfigured: missing RESEND_API_KEY, RESEND_AUDIENCE_ID or RESEND_FROM');
+  if (!apiKey) {
+    console.error('waitlist misconfigured: missing RESEND_API_KEY');
     return json({ ok: false, reason: 'server' }, 500);
   }
+  const from = import.meta.env.RESEND_FROM;
+  const segmentId = import.meta.env.RESEND_SEGMENT_ID;
 
   const resend = new Resend(apiKey);
 
-  // 1) Add the contact to the Resend audience. The SDK returns { data, error }
-  //    instead of throwing, so we must inspect `error` explicitly.
-  const contact = await resend.contacts.create({ email: result.email, audienceId, unsubscribed: false });
+  // 1) Create the contact. Resend migrated Audiences -> Segments, so contacts are
+  //    top-level (no audienceId); an optional segment buckets the signup. The SDK
+  //    resolves with { data, error } instead of throwing, so inspect `error`.
+  const contact = await resend.contacts.create({
+    email: result.email,
+    unsubscribed: false,
+    ...(segmentId ? { segments: [{ id: segmentId }] } : {}),
+  });
   if (contact.error) {
     console.error('waitlist contacts.create error', contact.error);
     return json({ ok: false, reason: 'server' }, 500);
   }
 
   // 2) Send the welcome email. Best-effort: a delivery hiccup must not lose a
-  //    signup that already landed in the audience, so we log and still return ok.
-  const email = welcomeEmail(locale);
-  const sent = await resend.emails.send({
-    from,
-    to: result.email,
-    subject: email.subject,
-    html: email.html,
-    text: email.text,
-  });
-  if (sent.error) console.error('waitlist emails.send error', sent.error);
+  //    signup that already landed, so we log and still return ok. Skipped when
+  //    RESEND_FROM is unset (no verified sender configured yet).
+  if (from) {
+    const email = welcomeEmail(locale);
+    const sent = await resend.emails.send({
+      from,
+      to: result.email,
+      subject: email.subject,
+      html: email.html,
+      text: email.text,
+    });
+    if (sent.error) console.error('waitlist emails.send error', sent.error);
+  } else {
+    console.warn('waitlist: RESEND_FROM unset, skipping welcome email');
+  }
 
   return json({ ok: true }, 200);
 };
