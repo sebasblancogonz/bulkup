@@ -28,6 +28,8 @@ struct BulkUp: App {
         WorkoutVideoStore.runSelfCheck()
 #endif
 
+        PhoneWCManager.shared.activate()
+
         NotificationCenter.default.addObserver(
             forName: ASAuthorizationAppleIDProvider.credentialRevokedNotification,
             object: nil,
