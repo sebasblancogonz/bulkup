@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { Resend } from 'resend';
 import { verifyWaitlistToken } from '../../../lib/waitlist-token';
+import { publicOrigin } from '../../../lib/origin';
 
 export const prerender = false;
 
@@ -10,8 +11,8 @@ function dest(origin: string, locale: string, expired: boolean): string {
   return `${origin}${prefix}/waitlist/confirmed${q}`;
 }
 
-export const GET: APIRoute = async ({ request }) => {
-  const origin = new URL(request.url).origin;
+export const GET: APIRoute = async ({ request, site }) => {
+  const origin = publicOrigin({ site, request, isDev: import.meta.env.DEV });
   const token = new URL(request.url).searchParams.get('token') ?? '';
   const result = verifyWaitlistToken(token);
 
