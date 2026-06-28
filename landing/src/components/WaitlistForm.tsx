@@ -47,6 +47,7 @@ export default function WaitlistForm({
               aria-hidden="true" />
             <input
               type="email" name="email" required value={email}
+              inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck={false}
               onChange={(e) => setEmail(e.target.value)} placeholder={placeholder}
               aria-label={placeholder}
               className="flex-1 rounded-[var(--radius-btn)] bg-[var(--color-surface-2)] border border-[var(--color-line)] px-5 py-3.5 text-[var(--color-fg)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
