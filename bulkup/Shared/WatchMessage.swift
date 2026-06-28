@@ -9,7 +9,7 @@ enum WatchMessage: Codable, Equatable {
     case adjustReps(delta: Int)
     case skipRest
     case addRest(seconds: Int)
-    case finishWorkout
+    case finishWorkout(metrics: WorkoutMetrics?)
     case requestSync                 // ask the phone to re-send context
 }
 
@@ -36,7 +36,10 @@ enum WatchSync {
         let msgs: [WatchMessage] = [
             .startWorkout(day: "Lunes"), .completeSet, .uncompleteSet,
             .adjustWeight(delta: 2.5), .adjustReps(delta: -1), .skipRest,
-            .addRest(seconds: 30), .finishWorkout, .requestSync,
+            .addRest(seconds: 30),
+            .finishWorkout(metrics: WorkoutMetrics(avgHeartRate: 142, maxHeartRate: 171, activeEnergyKcal: 320.5)),
+            .finishWorkout(metrics: nil),
+            .requestSync,
         ]
         for m in msgs {
             let back = decode(WatchMessage.self, from: encode(m))
