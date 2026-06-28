@@ -5,21 +5,37 @@ const { locale } = Astro.props as { locale: Locale };
 const t = useT(locale);
 const items = [['faq.q1','faq.a1'],['faq.q2','faq.a2'],['faq.q3','faq.a3'],['faq.q4','faq.a4']];
 ---
-<section id="faq" class="max-w-3xl mx-auto px-6 py-24">
-  <Reveal client:visible variant="up">
-    <h2 class="font-[var(--font-display)] font-extrabold text-3xl sm:text-[2.4rem] text-center text-balance mb-12 text-[var(--color-fg)]">{t('faq.title')}</h2>
-  </Reveal>
-  <Reveal client:visible variant="up">
-    <div class="flex flex-col gap-4">
-      {items.map(([q,a]) => (
-        <details class="group rounded-[26px] bg-[var(--color-surface)] px-7 py-5">
-          <summary class="cursor-pointer list-none flex justify-between items-center gap-4 text-lg font-bold text-[var(--color-fg)] transition-colors group-open:text-[var(--color-accent)]">
-            {t(q)}
-            <span class="text-[var(--color-accent)] text-2xl leading-none group-open:rotate-45 transition-transform duration-300">+</span>
-          </summary>
-          <p class="text-[var(--color-muted)] leading-[1.6] mt-3">{t(a)}</p>
-        </details>
-      ))}
-    </div>
-  </Reveal>
+<section id="faq" class="px-6 py-[var(--section-pad)]">
+  <div class="max-w-3xl mx-auto">
+    <Reveal client:visible variant="up">
+      <p class="text-[13px] font-[var(--font-display)] uppercase tracking-[0.2em] text-[var(--color-accent)] mb-4">FAQ</p>
+      <h2 class="font-[var(--font-display)] font-extrabold text-[clamp(2rem,4vw,3.25rem)] leading-[1.02] text-balance text-[var(--color-fg)] mb-12">
+        {t('faq.title')}
+      </h2>
+    </Reveal>
+
+    <Reveal client:visible variant="up">
+      <div class="border-t border-[var(--color-line)]">
+        {items.map(([q,a]) => (
+          <details class="group border-b border-[var(--color-line)]">
+            <summary class="flex cursor-pointer list-none items-start justify-between gap-6 py-6 transition-colors duration-200 hover:text-[var(--color-fg)]">
+              <span class="text-[1.05rem] sm:text-[1.2rem] font-semibold text-[var(--color-fg)] transition-colors duration-200 group-open:text-[var(--color-accent)]">
+                {t(q)}
+              </span>
+              <span
+                aria-hidden="true"
+                class="relative mt-1 h-4 w-4 shrink-0 text-[var(--color-muted)] transition-colors duration-200 group-open:text-[var(--color-accent)]"
+              >
+                <span class="absolute left-1/2 top-1/2 h-[1.5px] w-4 -translate-x-1/2 -translate-y-1/2 bg-current"></span>
+                <span class="absolute left-1/2 top-1/2 h-[1.5px] w-4 -translate-x-1/2 -translate-y-1/2 bg-current transition-transform duration-200 ease-out rotate-90 group-open:rotate-0"></span>
+              </span>
+            </summary>
+            <div class="overflow-hidden pb-6 pr-8 -mt-1">
+              <p class="text-[var(--color-muted)] leading-[1.6] text-[1rem] sm:text-[1.05rem]">{t(a)}</p>
+            </div>
+          </details>
+        ))}
+      </div>
+    </Reveal>
+  </div>
 </section>

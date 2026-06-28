@@ -1,84 +1,262 @@
 @import "tailwindcss";
 
 @theme {
-  /* Foodnoms-style light system (see DESIGN.md) */
-  --color-bg: #ffffff;            /* Paper White — page canvas */
-  --color-surface: #f5f5f5;       /* Fog — card / alt-section surface */
-  --color-surface-2: #ffffff;     /* white elevated card (paired with border) */
-  --color-line: rgba(0, 0, 0, 0.08);
-  --color-fg: #111827;            /* Graphite — primary text (brand) */
-  --color-muted: #6b7280;         /* muted graphite — secondary text */
-  --color-accent: #94c51d;        /* BulkUp Lime — brand accent / highlights */
-  --color-accent-glow: #7da817;   /* deeper lime */
-  --color-accent-2: #94c51d;      /* lime — two-tone */
-  --color-green: #94c51d;
-  --color-ink: #111827;           /* Graphite — primary buttons */
-  --color-sky: #00a9dd;           /* Sky Blue — cool app-data accent */
-  --color-plum: #bd4be5;
+  /* ── BulkUp — Graphite + Lime premium system ───────────────────────── */
+  /* Surfaces (never pure black) */
+  --color-bg: #0E1110;            /* graphite near-black — page canvas */
+  --color-surface: #15191A;       /* card / alt-section surface */
+  --color-surface-2: #1D2224;     /* elevated card */
+  --color-line: #2A3033;          /* hairline / border */
 
-  --font-display: "Nunito Sans", ui-rounded, system-ui, -apple-system, sans-serif;
-  --font-sans: "Nunito Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* Text (never pure white) */
+  --color-fg: #F2F4F1;            /* bone white — primary text */
+  --color-muted: #9BA39E;         /* secondary text */
 
-  --radius: 26px;                 /* signature corner radius — everything */
+  /* Lime — the razor, never the brush */
+  --color-accent: #B4FF2E;        /* electric lime — accent */
+  --color-accent-deep: #93D414;   /* deeper lime — hover / gradient end */
+  --color-accent-glow: rgba(180, 255, 46, 0.18); /* radial glow */
+
+  /* Sky — single role: "completed" state in charts */
+  --color-sky: #00A9DD;
+
+  /* Type families */
+  --font-display: "Saira Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Hierarchised radii (kills the universal 26px) */
+  --radius-card: 14px;            /* cards / panels */
+  --radius-btn: 10px;             /* CTAs — NOT a pill */
+  --radius-chip: 999px;           /* chips only */
+  --radius-phone: 38px;           /* device mockups */
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Shared depth tokens */
+  --shadow-card: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 24px 70px rgba(0, 0, 0, 0.55);
+
+  /* Section rhythm */
+  --section-pad: clamp(96px, 14vh, 180px);
+  --container: 1200px;
 }
 
-html { scroll-behavior: smooth; background: var(--color-bg); overflow-x: clip; scroll-padding-top: 84px; }
-body {
+html {
+  scroll-behavior: smooth;
   background: var(--color-bg);
+  overflow-x: clip;
+  scroll-padding-top: 84px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  /* Subtle top→base graphite gradient, NOT a flat fill */
+  background:
+    radial-gradient(120% 80% at 50% -10%, #171C1D 0%, var(--color-bg) 60%) no-repeat,
+    var(--color-bg);
+  background-attachment: fixed;
   color: var(--color-fg);
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 400;
+  font-size: clamp(17px, 1.1vw, 19px);
+  line-height: 1.6;
   overflow-x: clip;
 }
 
-/* Rounded geometric display: bold + slightly tight */
-h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
+/* ── Typographic scale ─────────────────────────────────────────────── */
+h1, h2, h3, .display { font-family: var(--font-display); text-transform: uppercase; }
+
+h1, .h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+h2, .h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  text-transform: uppercase;
+}
+h3, .h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/* Eyebrow — 13px caps, wide tracking, lime */
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+/* Monospace data — metrics / prices / datapoints */
+.mono { font-family: var(--font-mono); font-feature-settings: "tnum" 1; }
 
 .text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
 
-/* Two-tone headline helpers */
-.tone-green { color: var(--color-green); }
-.tone-orange { color: var(--color-accent); }
+/* ── Two-tone headline helper (lime over graphite) ─────────────────── */
+.tone-accent { color: var(--color-accent); }
 
-/* Phone mockup frame — flat, no shadow, 26px-family radius */
+/* ── Grain texture (3–5% over the graphite) ────────────────────────── */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Page-wide fixed grain (use on a top-level element) */
+.grain-fixed::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Lime radial glow (behind hero mockup) ─────────────────────────── */
+.glow {
+  position: relative;
+}
+.glow::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);
+}
+
+/* ── Phone mockup frame ────────────────────────────────────────────── */
 .phone {
-  border-radius: 2.4rem;
+  border-radius: var(--radius-phone);
   border: 1px solid var(--color-line);
   background: var(--color-surface-2);
   overflow: hidden;
+  box-shadow: var(--shadow-card);
 }
 
-/* Snappy press feedback (transform only — flat system, no shadow) */
+/* ── Hairline helper ───────────────────────────────────────────────── */
+.hairline { border: 1px solid var(--color-line); }
+
+/* ── Motion ────────────────────────────────────────────────────────── */
+
+/* Press feedback */
 .press { transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out); }
 @media (hover: hover) and (pointer: fine) {
   .press:hover { transform: scale(1.02); }
 }
 .press:active { transform: scale(0.97); }
 
-/* Card lift on hover — transform only, deliberately shadowless */
-.lift { transition: transform 240ms var(--ease-out), border-color 240ms var(--ease-out); }
+/* Card lift on hover — real shadow + translateY(-4px) */
+.lift {
+  transition: transform 220ms var(--ease-out), border-color 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+  will-change: transform;
+}
 @media (hover: hover) and (pointer: fine) {
-  .lift:hover { transform: translateY(-3px); border-color: color-mix(in oklab, var(--color-accent) 40%, var(--color-line)); }
+  .lift:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in oklab, var(--color-accent) 45%, var(--color-line));
+    box-shadow: var(--shadow-lift);
+  }
 }
 
-/* Gentle idle float (hero phones) */
-.float { animation: float 7s var(--ease-in-out) infinite alternate; will-change: transform; }
-@keyframes float {
-  from { transform: translateY(-6px); }
-  to   { transform: translateY(6px); }
+/* Glow pulse — slow breathing (8–10s) for the hero glow */
+.glow-pulse { animation: glow-pulse 9s var(--ease-in-out) infinite; will-change: opacity, transform; }
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.06); }
 }
 
-/* No-JS reveal fallback */
-html:not(.js) [data-reveal] { opacity: 1 !important; transform: none !important; filter: none !important; }
+/* Sweep — diagonal shine across a CTA on hover */
+.sweep { position: relative; overflow: hidden; }
+.sweep::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 60%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-18deg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .sweep:hover::after { animation: sweep 650ms var(--ease-out); }
+}
+@keyframes sweep {
+  to { left: 150%; }
+}
 
+/* Draw — stroke-dashoffset reveal for chart paths */
+.draw {
+  stroke-dasharray: var(--draw-len, 1000);
+  stroke-dashoffset: var(--draw-len, 1000);
+}
+[data-reveal].is-in .draw,
+html:not(.js) .draw {
+  animation: draw 1.4s var(--ease-out) forwards;
+}
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* On-scroll reveal: opacity + translateY(12px), JS toggles .is-in */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out);
+}
+[data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* No-JS reveal fallback — show everything */
+html:not(.js) [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* ── Focus ring — lime ─────────────────────────────────────────────── */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-btn);
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
-  .float { animation: none !important; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+  .draw { stroke-dashoffset: 0 !important; }
 }

@@ -5,16 +5,59 @@ import Reveal from '../Reveal.tsx';
 const { locale } = Astro.props as { locale: Locale };
 const t = useT(locale);
 ---
-<section id="waitlist" class="max-w-[1200px] mx-auto px-6 py-24">
-  <Reveal client:visible variant="up">
-    <div class="rounded-[26px] bg-[var(--color-surface)] px-6 py-16 sm:py-20 text-center flex flex-col items-center">
-      <h2 class="font-[var(--font-display)] font-extrabold text-3xl sm:text-[2.8rem] leading-[1.1] text-balance mb-4 text-[var(--color-fg)]">{t('cta.title')}</h2>
-      <p class="text-lg text-[var(--color-muted)] leading-[1.6] mb-8 max-w-md">{t('cta.subtitle')}</p>
-      <div class="flex justify-center w-full">
-        <WaitlistForm client:visible locale={locale}
-          ctaLabel={t('cta.button')} placeholder={t('hero.placeholder')}
-          successMsg={t('form.success')} errorMsg={t('form.error')} invalidMsg={t('form.invalid')} />
+<section
+  id="waitlist"
+  class="relative isolate grain overflow-hidden"
+  style="padding-block: var(--section-pad); scroll-margin-top: 84px;"
+>
+  <!-- Radial lime glow behind the closing panel -->
+  <div
+    aria-hidden="true"
+    class="glow-pulse pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[640px] w-[640px] max-w-[120vw] -translate-x-1/2 -translate-y-1/2 rounded-full"
+    style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);"
+  >
+  </div>
+
+  <div class="mx-auto w-full max-w-[760px] px-6 text-center">
+    <Reveal client:visible variant="up">
+      <p class="eyebrow mb-5">{t('hero.eyebrow')}</p>
+    </Reveal>
+
+    <Reveal client:visible variant="up" delay={0.06}>
+      <h2 class="h2 text-balance text-[var(--color-fg)]">{t('cta.title')}</h2>
+    </Reveal>
+
+    <Reveal client:visible variant="up" delay={0.12}>
+      <p class="text-pretty mx-auto mt-5 max-w-[46ch] text-[var(--color-muted)]">
+        {t('cta.subtitle')}
+      </p>
+    </Reveal>
+
+    <Reveal client:visible variant="up" delay={0.18}>
+      <div class="mx-auto mt-9 w-full max-w-[440px]">
+        <WaitlistForm
+          client:visible
+          locale={locale}
+          ctaLabel={t('cta.button')}
+          placeholder={t('hero.placeholder')}
+          successMsg={t('form.success')}
+          errorMsg={t('form.error')}
+          invalidMsg={t('form.invalid')}
+        />
       </div>
-    </div>
-  </Reveal>
+    </Reveal>
+
+    <Reveal client:visible variant="up">
+      <p
+        class="mono mt-6 inline-flex items-center gap-2 text-[13px] uppercase tracking-[0.14em] text-[var(--color-muted)]"
+      >
+        <span
+          aria-hidden="true"
+          class="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]"
+          style="box-shadow: 0 0 10px var(--color-accent);"
+        ></span>
+        {locale === 'es' ? 'Plazas de fundador limitadas.' : 'Limited founder spots.'}
+      </p>
+    </Reveal>
+  </div>
 </section>

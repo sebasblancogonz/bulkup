@@ -5,25 +5,24 @@ const { locale } = Astro.props as { locale: Locale };
 const t = useT(locale);
 const home = locale === 'es' ? '/es' : '/';
 ---
-<header class="sticky top-0 z-50 bg-white/85 backdrop-blur border-b border-[var(--color-line)]">
-  <nav class="max-w-[1200px] mx-auto px-6 h-[72px] flex items-center justify-between gap-4">
+<header class="sticky top-0 z-50 bg-[#0E1110]/85 backdrop-blur-md border-b border-[var(--color-line)]">
+  <nav class="max-w-[var(--container)] mx-auto px-6 h-[68px] flex items-center justify-between gap-4">
     <a href={home} class="flex items-center gap-2.5" aria-label="BulkUp">
-      <img src="/mark.svg" alt="" width="32" height="32" class="w-8 h-8 rounded-[10px]" />
-      <span class="font-[var(--font-display)] text-lg font-extrabold text-[var(--color-fg)]">BulkUp</span>
+      <img src="/mark.svg" alt="" width="30" height="30" class="w-[30px] h-[30px] rounded-[8px]" />
+      <span class="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-tight uppercase text-[var(--color-fg)]">BulkUp</span>
     </a>
 
-    <div class="hidden md:flex items-center gap-8 text-[var(--color-fg)]">
-      <a href="#features" class="hover:text-[var(--color-accent)] transition-colors">{t('nav.features')}</a>
-      <a href="#pricing" class="hover:text-[var(--color-accent)] transition-colors">{t('nav.pricing')}</a>
-      <a href="#faq" class="hover:text-[var(--color-accent)] transition-colors">{t('nav.faq')}</a>
+    <div class="hidden md:flex items-center gap-9 font-[family-name:var(--font-display)] uppercase tracking-wide text-sm font-semibold text-[var(--color-muted)]">
+      <a href="#features" class="hover:text-[var(--color-fg)] transition-colors duration-150">{t('nav.features')}</a>
+      <a href="#faq" class="hover:text-[var(--color-fg)] transition-colors duration-150">{t('nav.faq')}</a>
     </div>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3 sm:gap-4">
       <LanguageSwitch locale={locale} />
       <a href="#waitlist"
-        class="press inline-flex items-center gap-1.5 rounded-[26px] bg-[var(--color-ink)] text-white font-bold px-5 py-2.5">
-        {t('hero.cta')}
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        class="press sweep inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] bg-[var(--color-accent)] text-[#0E1110] font-[family-name:var(--font-display)] uppercase tracking-wide font-bold text-sm px-4 py-2 sm:px-5 sm:py-2.5 hover:bg-[var(--color-accent-deep)] transition-colors duration-150">
+        {t('nav.cta')}
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
     </div>
   </nav>

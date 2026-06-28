@@ -1,0 +1,74 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import Reveal from '../Reveal.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+
+const metrics = [
+  { value: '1.000+', label: t('data.exercises') },
+  { value: t('training.metric'), label: t('data.formulas') },
+];
+---
+<section id="features" class="relative grain" style="padding-block: var(--section-pad);">
+  <div class="mx-auto px-6" style="max-width: var(--container);">
+    <div class="grid items-center gap-12 lg:gap-20 lg:grid-cols-2">
+
+      <!-- ── Visual column (alternates left on lg) ───────────────────── -->
+      <Reveal client:visible variant="left" className="order-2 lg:order-1">
+        <div class="relative">
+          <!-- Lime radial glow behind the mockup -->
+          <div class="glow absolute inset-0 -z-10"></div>
+
+          <!-- TODO foto: barra cargada de discos en rack / primer plano de manos con magnesio (chalk), grano de gimnasio, luz dura lateral, encuadre apaisado. Placeholder intencional abajo. -->
+          <div
+            class="relative grain overflow-hidden hairline"
+            style="border-radius: var(--radius-card); aspect-ratio: 16 / 10; background: radial-gradient(120% 90% at 20% 0%, #1D2224 0%, #15191A 55%, #0E1110 100%);"
+            role="img"
+            aria-label="Barra cargada y manos con magnesio (foto pendiente)"
+          >
+            <div class="glow-pulse absolute -bottom-1/4 -right-1/4 h-2/3 w-2/3" style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);"></div>
+            <span class="absolute left-5 top-5 mono text-[11px] tracking-[0.18em] uppercase" style="color: var(--color-muted);">// load · grip · go</span>
+          </div>
+
+          <!-- Phone mockup overlapping the photo, real shadow -->
+          <figure class="phone lift absolute -bottom-10 -right-2 w-[40%] max-w-[200px] sm:-right-6">
+            <img
+              src="/workout_exercise_complete.png"
+              alt="Pantalla de BulkUp registrando series, pesos y un PR de un ejercicio"
+              loading="lazy"
+              class="block h-full w-full object-cover"
+            />
+          </figure>
+        </div>
+      </Reveal>
+
+      <!-- ── Copy column ─────────────────────────────────────────────── -->
+      <Reveal client:visible variant="right" delay={0.06} className="order-1 lg:order-2">
+        <p class="eyebrow mb-4">{t('training.eyebrow')}</p>
+        <h2 class="h2 text-balance mb-5">{t('training.title')}</h2>
+        <p class="text-pretty mb-9 max-w-xl" style="color: var(--color-muted);">
+          {t('training.body')}
+        </p>
+
+        <!-- Key metrics — big mono lime -->
+        <dl class="grid grid-cols-2 gap-6 sm:max-w-md">
+          {metrics.map((m, i) => (
+            <Reveal client:visible variant="up" delay={0.12 + i * 0.06}>
+              <div
+                class="lift hairline h-full px-5 py-5"
+                style="border-radius: var(--radius-card); background: var(--color-surface);"
+              >
+                <dt
+                  class="mono leading-none"
+                  style="color: var(--color-accent); font-size: clamp(2.25rem, 5vw, 3.25rem); font-weight: 700;"
+                >{m.value}</dt>
+                <dd class="mt-2 text-sm" style="color: var(--color-muted);">{m.label}</dd>
+              </div>
+            </Reveal>
+          ))}
+        </dl>
+      </Reveal>
+
+    </div>
+  </div>
+</section>

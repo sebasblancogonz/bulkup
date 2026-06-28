@@ -1,0 +1,94 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import Reveal from '../Reveal.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+
+const scarcity =
+  locale === 'es'
+    ? 'Los primeros en la lista. Plazas de fundador limitadas.'
+    : 'First on the list. Founder spots are limited.';
+const checkLabel = locale === 'es' ? 'check-in diario' : 'daily check-in';
+const adherenceLabel = locale === 'es' ? '% de cumplimiento real' : 'real adherence %';
+---
+<section class="relative grain" style="padding-block: var(--section-pad);">
+  <div class="mx-auto px-6" style="max-width: var(--container);">
+    <div class="grid items-center gap-12 lg:gap-20 lg:grid-cols-2">
+
+      <!-- ── Copy column ─────────────────────────────────────────────── -->
+      <Reveal client:visible variant="left" className="order-1">
+        <p class="eyebrow mb-4">{t('community.eyebrow')}</p>
+        <h2 class="h2 text-balance mb-5">{t('community.title')}</h2>
+        <p class="text-pretty mb-9 max-w-xl" style="color: var(--color-muted);">
+          {t('community.body')}
+        </p>
+
+        <!-- ── Honest social proof ─────────────────────────────────── -->
+        <Reveal client:visible variant="up" delay={0.1}>
+          <div
+            class="lift hairline px-6 py-6 sm:max-w-md"
+            style="border-radius: var(--radius-card); background: var(--color-surface);"
+          >
+            <p class="eyebrow mb-2" style="letter-spacing: 0.16em;">
+              {locale === 'es' ? 'PLAZAS FUNDADOR' : 'FOUNDER SPOTS'}
+            </p>
+            <p
+              class="font-semibold"
+              style="font-family: var(--font-display); text-transform: none; font-size: clamp(1.2rem, 2.4vw, 1.6rem); letter-spacing: -0.01em; line-height: 1.15;"
+            >
+              {scarcity}
+            </p>
+
+            <!-- Honest, datapoint-driven facts (no invented numbers) -->
+            <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-1 border-t pt-5" style="border-color: var(--color-line);">
+              <dt class="mono text-lg" style="color: var(--color-accent); font-weight: 700;">100%</dt>
+              <dt class="mono text-lg" style="color: var(--color-fg); font-weight: 700;">1×día</dt>
+              <dd class="text-xs" style="color: var(--color-muted);">{adherenceLabel}</dd>
+              <dd class="text-xs" style="color: var(--color-muted);">{checkLabel}</dd>
+            </dl>
+          </div>
+        </Reveal>
+      </Reveal>
+
+      <!-- ── Visual column ───────────────────────────────────────────── -->
+      <Reveal client:visible variant="right" delay={0.06} className="order-2">
+        <div class="relative">
+          <!-- Lime radial glow behind the mockup -->
+          <div class="glow absolute inset-0 -z-10"></div>
+
+          <!-- TODO foto: choque de puños tras un set / atleta normal mirando el móvil entre series — gimnasio real, grano, luz dura lateral, dos colegas, encuadre apaisado. Placeholder intencional abajo, NUNCA un alt-box roto. -->
+          <div
+            class="relative grain overflow-hidden hairline"
+            style="border-radius: var(--radius-card); aspect-ratio: 16 / 11; background: radial-gradient(120% 90% at 75% 0%, #1D2224 0%, #15191A 55%, #0E1110 100%);"
+            role="img"
+            aria-label={locale === 'es'
+              ? 'Choque de puños entre dos compañeros tras una serie (foto pendiente)'
+              : 'Fist bump between two training partners after a set (photo pending)'}
+          >
+            <div
+              class="glow-pulse absolute -top-1/4 -left-1/4 h-2/3 w-2/3"
+              style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);"
+            ></div>
+            <span
+              class="absolute left-5 top-5 mono text-[11px] tracking-[0.18em] uppercase"
+              style="color: var(--color-muted);"
+            >// crew · streaks · check-in</span>
+          </div>
+
+          <!-- Phone mockup overlapping the photo, real shadow -->
+          <figure class="phone lift absolute -bottom-10 -left-2 w-[40%] max-w-[200px] sm:-left-6">
+            <img
+              src="/home.png"
+              alt={locale === 'es'
+                ? 'Pantalla de BulkUp con el check-in diario y el porcentaje de cumplimiento del grupo'
+                : "BulkUp screen showing the daily check-in and the group's adherence percentage"}
+              loading="lazy"
+              class="block h-full w-full object-cover"
+            />
+          </figure>
+        </div>
+      </Reveal>
+
+    </div>
+  </div>
+</section>

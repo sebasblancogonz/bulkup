@@ -3,9 +3,12 @@ export const prerender = true;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/sections/Header.astro';
 import Hero from '../../components/sections/Hero.astro';
-import SocialProof from '../../components/sections/SocialProof.astro';
-import FeaturesBento from '../../components/sections/FeaturesBento.astro';
-import PricingTeaser from '../../components/sections/PricingTeaser.astro';
+import DataStrip from '../../components/sections/DataStrip.astro';
+import HowItWorks from '../../components/sections/HowItWorks.astro';
+import Training from '../../components/sections/Training.astro';
+import Diet from '../../components/sections/Diet.astro';
+import ProgressWatch from '../../components/sections/ProgressWatch.astro';
+import Community from '../../components/sections/Community.astro';
 import Faq from '../../components/sections/Faq.astro';
 import FinalCta from '../../components/sections/FinalCta.astro';
 import Footer from '../../components/sections/Footer.astro';
@@ -14,9 +17,12 @@ const locale = 'es';
 <BaseLayout locale={locale} path="/es">
   <Header locale={locale} />
   <Hero locale={locale} />
-  <SocialProof locale={locale} />
-  <FeaturesBento locale={locale} />
-  <PricingTeaser locale={locale} />
+  <DataStrip locale={locale} />
+  <HowItWorks locale={locale} />
+  <Training locale={locale} />
+  <Diet locale={locale} />
+  <ProgressWatch locale={locale} />
+  <Community locale={locale} />
   <Faq locale={locale} />
   <FinalCta locale={locale} />
   <Footer locale={locale} />
