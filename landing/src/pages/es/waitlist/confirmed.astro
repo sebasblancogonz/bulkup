@@ -1,0 +1,8 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Confirmed from '../../../components/Confirmed.astro';
+const expired = Astro.url.searchParams.get('expired') === '1';
+---
+<BaseLayout locale="es" path="/es/waitlist/confirmed" title="BulkUp – Lista de Espera Confirmada">
+  <Confirmed locale="es" expired={expired} />
+</BaseLayout>

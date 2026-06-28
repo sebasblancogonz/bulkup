@@ -1,9 +1,21 @@
 import type { APIRoute } from 'astro';
-import { Resend } from 'resend';
+import crypto from 'node:crypto';
+import { createElement } from 'react';
 import { validateWaitlist } from '../../lib/waitlist';
-import { welcomeEmail } from '../../lib/welcome-email';
+import { checkWaitlistRateLimit } from '../../lib/ratelimit';
+import { signWaitlistToken } from '../../lib/waitlist-token';
+import { sendWithRetry } from '../../lib/send-email';
+import { WaitlistConfirmEmail } from '../../../emails/waitlist-confirm';
 
 export const prerender = false;
+
+// Configurable sender (must be a verified Resend domain); falls back to the brand default.
+const FROM =
+  import.meta.env.RESEND_FROM ?? process.env.RESEND_FROM ?? 'BulkUp <waitlist@getbulkup.com>';
+const SUBJECT = {
+  en: 'Confirm your email — BulkUp',
+  es: 'Confirma tu correo — BulkUp',
+} as const;
 
 export const POST: APIRoute = async ({ request }) => {
   let body: Record<string, string> = {};
@@ -15,62 +27,52 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, reason: 'invalid' }, 400);
   }
 
-  const locale = String(body.locale ?? 'en');
+  const localeRaw = String(body.locale ?? 'en');
+  const locale = localeRaw === 'es' ? 'es' : 'en';
+
   const result = validateWaitlist({
     email: String(body.email ?? ''),
     locale,
     honeypot: String(body.website ?? ''), // hidden field named "website"
   });
-
   if (!result.ok) {
-    // Spam: pretend success so bots get no signal.
-    if (result.reason === 'spam') return json({ ok: true }, 200);
+    if (result.reason === 'spam') return json({ ok: true }, 200); // no signal to bots
     return json({ ok: false, reason: 'invalid' }, 400);
   }
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const rl = await checkWaitlistRateLimit(ip, result.email);
+  if (!rl.success) return json({ ok: false, reason: 'rate_limited' }, 429);
+
   const apiKey = import.meta.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.error('waitlist misconfigured: missing RESEND_API_KEY');
-    return json({ ok: false, reason: 'server' }, 500);
-  }
-  const from = import.meta.env.RESEND_FROM;
-  const segmentId = import.meta.env.RESEND_SEGMENT_ID;
+  if (!apiKey) return json({ ok: false, reason: 'server' }, 500);
 
-  const resend = new Resend(apiKey);
+  // Double opt-in: send a confirmation email. The contact is created only after the
+  // user confirms (see api/waitlist/confirm.ts). No contact is created here.
+  try {
+    const token = signWaitlistToken(result.email, locale);
+    const origin = new URL(request.url).origin;
+    const confirmUrl = `${origin}/api/waitlist/confirm?token=${encodeURIComponent(token)}`;
+    const idempotencyKey = 'wl-' + crypto.createHash('sha256').update(token).digest('hex');
 
-  // 1) Create the contact. Resend migrated Audiences -> Segments, so contacts are
-  //    top-level (no audienceId); an optional segment buckets the signup. The SDK
-  //    resolves with { data, error } instead of throwing, so inspect `error`.
-  const contact = await resend.contacts.create({
-    email: result.email,
-    unsubscribed: false,
-    ...(segmentId ? { segments: [{ id: segmentId }] } : {}),
-  });
-  if (contact.error) {
-    console.error('waitlist contacts.create error', contact.error);
-    return json({ ok: false, reason: 'server' }, 500);
-  }
-
-  // 2) Send the welcome email. Best-effort: a delivery hiccup must not lose a
-  //    signup that already landed, so we log and still return ok. Skipped when
-  //    RESEND_FROM is unset (no verified sender configured yet).
-  if (from) {
-    const email = welcomeEmail(locale);
-    const sent = await resend.emails.send({
-      from,
+    await sendWithRetry({
+      apiKey,
+      from: FROM,
       to: result.email,
-      subject: email.subject,
-      html: email.html,
-      text: email.text,
+      subject: SUBJECT[locale],
+      react: createElement(WaitlistConfirmEmail, { confirmUrl, locale }),
+      idempotencyKey,
     });
-    if (sent.error) console.error('waitlist emails.send error', sent.error);
-  } else {
-    console.warn('waitlist: RESEND_FROM unset, skipping welcome email');
+    return json({ ok: true }, 200);
+  } catch (e) {
+    console.error('waitlist send error', e);
+    return json({ ok: false, reason: 'server' }, 500);
   }
-
-  return json({ ok: true }, 200);
 };
 
 function json(data: unknown, status: number) {
-  return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json' } });
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'content-type': 'application/json' },
+  });
 }
