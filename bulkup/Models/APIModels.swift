@@ -555,6 +555,24 @@ struct ServerWeightRecord: Codable {
     let note: String?
 }
 
+struct ServerWeightHistoryItem: Codable {
+    let weekStart: String          // "yyyy-MM-dd" — the progression key
+    let day: String
+    let exerciseName: String
+    let exerciseIndex: Int
+    let sets: [ServerWeightSet]?
+    let planId: String?
+}
+
+struct WeightHistoryResponse: Codable {
+    let records: [ServerWeightHistoryItem]?
+}
+
+struct WeightHistoryOuterResponse: Codable {
+    let success: Bool
+    let data: WeightHistoryResponse
+}
+
 struct LoadWeightsOuterResponse: Codable {
     let success: Bool
     let data: LoadWeightsResponse
