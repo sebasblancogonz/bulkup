@@ -26,7 +26,7 @@ typography:
     lineHeight: 1.02
     letterSpacing: "-0.02em"
   body:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Hanken Grotesk, Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "clamp(17px, 1.1vw, 19px)"
     fontWeight: 400
     lineHeight: 1.6
@@ -85,13 +85,13 @@ components:
 
 A pre-dawn weight room: matte graphite, dropped barbells, one strip of electric light. The system is built on disciplined darkness — near-black graphite surfaces (`#0E1110`, never pure black) that carry weight and seriousness — punctuated by a single charge of electric lime (`#B4FF2E`) that fires only where progress is being made: a CTA, a logged number, the active line on a chart. Graphite is the eight-years-of-training discipline; lime is the spark of seeing you actually moved the bar. The two never blur together.
 
-The typography is built like equipment: Saira Condensed, set uppercase with tight tracking, stacks like loaded plates — narrow, dense, structural. Body copy is Inter (a neutral grotesque, deliberately not rounded), and every datapoint — kilos, %, PRs, streaks — is set in JetBrains Mono so the numbers read as evidence, not decoration. Surfaces have real depth: a subtle graphite gradient rather than a flat fill, fine film grain at 3–5%, and genuine shadows under device mockups so the app floats off the page instead of lying on it.
+The typography is built like equipment: Saira Condensed, set uppercase with tight tracking, stacks like loaded plates — narrow, dense, structural. Body copy is Hanken Grotesk (a clean grotesque, deliberately not rounded; Inter as fallback), and every datapoint — kilos, %, PRs, streaks — is set in JetBrains Mono so the numbers read as evidence, not decoration. Surfaces have real depth: a subtle graphite gradient rather than a flat fill, fine film grain at 3–5%, and genuine shadows under device mockups so the app floats off the page instead of lying on it.
 
 This system explicitly rejects the four things its audience can smell instantly: **generic SaaS / tech-startup** chrome (corporate voice, hero-metric templates, an eyebrow on every section); the **soft consumer app** it came from (white backgrounds, rounded display type, the universal 26px radius, flat and shadowless — the "Foodnoms-light" look); **loud supplement bro-marketing** (screaming neon, hype, poster clichés); and the **cold corporate dashboard** (gray-on-gray KPIs with no soul). It is athletic, not clinical; premium, not precious; energetic, not loud.
 
 **Key Characteristics:**
 - Graphite-dark canvas with a single electric-lime accent used as a razor (≤10% of any screen).
-- Condensed uppercase display type (Saira) + neutral grotesque body (Inter) + mono for all data (JetBrains Mono).
+- Condensed uppercase display type (Saira) + neutral grotesque body (Hanken Grotesk) + mono for all data (JetBrains Mono).
 - Real depth: graphite gradient, film grain, genuine shadows, lime glow — never flat-shadowless.
 - Hierarchised radii (14 / 10 / 999 / 38px), not one friendly universal radius.
 - Numbers are the hero. Data is set as evidence, in mono, often in lime.
@@ -126,7 +126,7 @@ A disciplined graphite ground with one electric accent; everything earns its pla
 ## 3. Typography
 
 **Display Font:** Saira Condensed (with Arial Narrow, system-ui fallback)
-**Body Font:** Inter (with ui-sans-serif, system-ui fallback)
+**Body Font:** Hanken Grotesk (with Inter, ui-sans-serif, system-ui fallback)
 **Label / Mono Font:** JetBrains Mono (with ui-monospace fallback)
 
 **Character:** Condensed-uppercase display stacked like loaded plates against a neutral, unfussy grotesque body — a contrast pairing (condensed vs. normal-width, structural vs. neutral), never two similar sans. The mono is reserved entirely for data, so numbers always read as evidence.
@@ -135,7 +135,7 @@ A disciplined graphite ground with one electric accent; everything earns its pla
 - **Display / H1** (800, `clamp(3rem, 7vw, 5.5rem)`, line-height 0.95, tracking -0.03em, UPPERCASE): hero and closing headlines. Tight, dense, shouting only by scale.
 - **Headline / H2** (700, `clamp(2rem, 4vw, 3.25rem)`, line-height 1.02, tracking -0.02em, UPPERCASE): section titles.
 - **Title / H3** (600, tracking -0.01em, UPPERCASE): subsection / card titles.
-- **Body** (400, `clamp(17px, 1.1vw, 19px)`, line-height 1.6, Inter): paragraphs and feature copy. Cap measure at 65–75ch.
+- **Body** (400, `clamp(17px, 1.1vw, 19px)`, line-height 1.6, Hanken Grotesk): paragraphs and feature copy. Cap measure at 65–75ch.
 - **Label / Eyebrow** (600, 13px, tracking 0.2em, UPPERCASE, lime, Saira): the short kicker `ENTRENA. REGISTRA. PROGRESA.` and section labels. Reserved for ≤4 words.
 - **Data / Mono** (500, JetBrains Mono, `tnum`): every kilo, %, PR, streak, price, datapoint — frequently in lime.
 
@@ -180,7 +180,7 @@ This system has real depth and uses it deliberately — the opposite of the flat
 
 ### Navigation
 - **Style:** sticky header on a translucent graphite (`#0E1110` ~85%) with backdrop-blur and a bottom hairline.
-- **Links:** Inter, bone-white, hover to lime. Kept minimal (Funciones, FAQ) — no "Pricing" in the nav on a waitlist page.
+- **Links:** Hanken Grotesk, bone-white, hover to lime. Kept minimal (Funciones, FAQ) — no "Pricing" in the nav on a waitlist page.
 - **CTA:** the lime primary button (see Buttons).
 
 ### Signature: Device Mockup & Photo Placeholder
@@ -196,7 +196,7 @@ This system has real depth and uses it deliberately — the opposite of the flat
 - **Do** keep the canvas graphite (`#0E1110`) with the radial gradient + grain. Never a flat fill, never pure black.
 - **Do** ration electric lime to ≤10% of any screen (the Razor Rule): one headline word, the CTA, live metrics, one chart line, the focus ring.
 - **Do** set every datapoint (kilos, %, PR, streak, price) in JetBrains Mono, frequently in lime — numbers are the proof.
-- **Do** set headlines in Saira Condensed uppercase with tight tracking; pair with Inter body and nothing rounder.
+- **Do** set headlines in Saira Condensed uppercase with tight tracking; pair with Hanken Grotesk body and nothing rounder.
 - **Do** put graphite text (`#0E1110`) on any lime fill, and amber (`#F59E0B`) on errors.
 - **Do** use real shadows under mockups and `.lift` on hover; separate blocks with `1px #2A3033` hairlines.
 - **Do** write CTAs as verbs ("Quiero probarlo", "Dame acceso"); keep "waitlist / acceso anticipado" out of the button and in the subtext.

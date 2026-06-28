@@ -48,14 +48,16 @@ export const ui = {
     'diet.body': "Upload your nutrition plan and meals, supplements and the rest-day swap are right there. Tick what you eat and you're done.",
     'progress.title': 'See how much you’ve added',
     'progress.body': "Weight, body fat, lean mass and measurements, history up front. The mirror lies; the numbers don't. And the Apple Watch logs heart rate and calories from your wrist.",
+    'progress.sample': 'sample data',
     'community.eyebrow': 'COMMUNITY',
     'community.title': 'Compete with your crew',
     'community.body': 'Daily check-in and your real adherence %. Add your crew by code, compare streaks and see who slips first. Spoiler: not you.',
 
     // FAQ
+    'faq.eyebrow': 'FAQ',
     'faq.title': 'What everyone asks',
     'faq.q1': 'What is BulkUp, exactly?',
-    'faq.a1': 'You take the plan your coach already gave you —PDF or photo— and BulkUp turns it into an app where you log sets, meals and progress. The plan is yours; we put the numbers on it.',
+    'faq.a1': 'You take the plan your coach already gave you (PDF or photo) and BulkUp turns it into an app where you log sets, meals and progress. The plan is yours; we put the numbers on it.',
     'faq.q2': 'Does it really read my PDF, or do I copy it by hand?',
     'faq.a2': "You read it once and never touch it again. Upload the file or photo, we process it, and you get an editable plan, day by day. If something's off, you fix it in two taps.",
     'faq.q3': 'When can I use it?',
@@ -70,7 +72,9 @@ export const ui = {
 
     // FORM
     'form.success': "You're in. Check your inbox to confirm.",
+    'form.sending': 'Sending…',
     'form.error': 'Something went wrong. Try again.',
+    'form.errorRate': 'Too many tries, give it a moment.',
     'form.invalid': 'Enter a valid email.',
     'form.reassure': 'No spam. Just the launch heads-up.',
 
@@ -123,14 +127,16 @@ export const ui = {
     'diet.body': 'Subes tu plan de nutrición y quedan a mano comidas, suplementos y el cambio de día de descanso. Tachas lo que comes y listo.',
     'progress.title': 'Mira cuánto has subido',
     'progress.body': 'Peso, grasa, masa magra y medidas, con el histórico delante. El espejo miente; los números no. Y el Apple Watch registra pulsaciones y calorías desde la muñeca.',
+    'progress.sample': 'datos de ejemplo',
     'community.eyebrow': 'COMUNIDAD',
     'community.title': 'Pícate con los tuyos',
     'community.body': 'Check-in diario y tu % de cumplimiento real. Añade a tus colegas por código, comparad rachas y a ver quién falla primero. Spoiler: tú no.',
 
     // FAQ
+    'faq.eyebrow': 'FAQ',
     'faq.title': 'Lo que todo el mundo pregunta',
     'faq.q1': '¿Qué es BulkUp exactamente?',
-    'faq.a1': 'Coges el plan que ya te pasó tu entrenador —en PDF o foto— y BulkUp lo convierte en una app donde registras series, comidas y progreso. El plan es tuyo; nosotros le ponemos los números.',
+    'faq.a1': 'Coges el plan que ya te pasó tu entrenador (en PDF o foto) y BulkUp lo convierte en una app donde registras series, comidas y progreso. El plan es tuyo; nosotros le ponemos los números.',
     'faq.q2': '¿De verdad lee mi PDF o lo copio a mano?',
     'faq.a2': 'Lo lees tú una vez y no vuelves a tocarlo. Subes el archivo o la foto, lo procesamos y te queda un plan editable, día a día. Si algo no cuadra, lo ajustas en dos toques.',
     'faq.q3': '¿Cuándo lo puedo usar?',
@@ -145,7 +151,9 @@ export const ui = {
 
     // FORM
     'form.success': 'Estás dentro. Revisa tu correo para confirmar.',
+    'form.sending': 'Enviando…',
     'form.error': 'Algo salió mal. Inténtalo de nuevo.',
+    'form.errorRate': 'Demasiados intentos, espera un momento.',
     'form.invalid': 'Introduce un email válido.',
     'form.reassure': 'Sin spam. Solo el aviso de lanzamiento.',
 

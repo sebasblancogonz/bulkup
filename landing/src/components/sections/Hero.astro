@@ -14,15 +14,23 @@ const keyword = m ? m[2] : '';
 const titlePost = m ? m[3] : '';
 ---
 <section class="relative isolate overflow-hidden">
-  <!-- ── Full-bleed background: gym photo placeholder ──────────────────── -->
-  <!-- TODO foto: iPhone en mano sudada, primer plano, en un gimnasio desenfocado al fondo (bokeh de máquinas + luz cálida), tono grafito, contraste alto -->
+  <!-- ── Full-bleed background: gym photo, graphite-treated ────────────── -->
   <div class="absolute inset-0 -z-10" aria-hidden="true">
-    <!-- graphite block standing in for the raw gym photo -->
+    <!-- raw gym photo, desaturated into the graphite world -->
+    <img
+      src="https://images.unsplash.com/photo-1521805103424-d8f8430e8933?auto=format&fit=crop&w=1600&q=70"
+      alt={locale === 'es'
+        ? 'Barra cargada en el suelo de un gimnasio en penumbra'
+        : 'A loaded barbell on the floor of a dim gym'}
+      width="1600" height="900"
+      loading="eager" fetchpriority="high" decoding="async"
+      class="absolute inset-0 h-full w-full object-cover"
+      style="filter: grayscale(0.35) contrast(1.05) brightness(0.78) saturate(0.9);" />
+    <!-- graphite overlay: fuses the photo into the page + keeps copy legible -->
     <div class="grain absolute inset-0"
       style="background:
-        radial-gradient(80% 60% at 78% 12%, #1F2628 0%, transparent 60%),
-        linear-gradient(180deg, #11151500 0%, #0E1110 78%),
-        linear-gradient(145deg, #161B1C 0%, #0E1110 55%, #0B0D0D 100%);">
+        radial-gradient(80% 60% at 78% 12%, rgba(31,38,40,0.45) 0%, transparent 55%),
+        linear-gradient(180deg, rgba(14,17,16,0.55) 0%, rgba(14,17,16,0.82) 100%);">
     </div>
     <!-- radial lime glow, breathing -->
     <div class="glow-pulse absolute right-[-10%] top-[6%] h-[60vh] w-[60vh] rounded-full"
@@ -58,6 +66,7 @@ const titlePost = m ? m[3] : '';
           <WaitlistForm client:load locale={locale} id="waitlist"
             ctaLabel={t('hero.cta')} placeholder={t('hero.placeholder')}
             successMsg={t('form.success')} errorMsg={t('form.error')} invalidMsg={t('form.invalid')}
+            loadingMsg={t('form.sending')} rateMsg={t('form.errorRate')}
             reassure={t('hero.reassure')} />
         </div>
       </Reveal>

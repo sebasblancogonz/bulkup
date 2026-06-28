@@ -20,10 +20,6 @@ const t = useT(locale);
 
   <div class="mx-auto w-full max-w-[760px] px-6 text-center">
     <Reveal client:visible variant="up">
-      <p class="eyebrow mb-5">{t('hero.eyebrow')}</p>
-    </Reveal>
-
-    <Reveal client:visible variant="up" delay={0.06}>
       <h2 class="h2 text-balance text-[var(--color-fg)]">{t('cta.title')}</h2>
     </Reveal>
 
@@ -43,6 +39,9 @@ const t = useT(locale);
           successMsg={t('form.success')}
           errorMsg={t('form.error')}
           invalidMsg={t('form.invalid')}
+          loadingMsg={t('form.sending')}
+          rateMsg={t('form.errorRate')}
+          reassure={t('hero.reassure')}
         />
       </div>
     </Reveal>

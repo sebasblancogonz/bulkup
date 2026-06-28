@@ -36,7 +36,6 @@ const stats = [
     <!-- Left: copy + live line chart + data row -->
     <div class="order-2 lg:order-1">
       <Reveal client:load variant="up">
-        <p class="eyebrow mb-5">{t('data.platform')}</p>
         <h2 class="h2 text-balance max-w-xl mb-6">
           <span class="text-[var(--color-fg)]">{headA}</span><span class="tone-accent">{headB}</span>
         </h2>
@@ -100,8 +99,11 @@ const stats = [
             <circle cx={lastPt[0].toFixed(1)} cy={lastPt[1].toFixed(1)} r="6" fill="none" stroke="var(--color-sky)" stroke-width="2" class="pw-ping" />
           </svg>
 
+          <!-- honesty: this visualization uses an illustrative series -->
+          <p class="mono text-[10px] tracking-[0.08em] text-[var(--color-muted)] opacity-70 mt-2">{t('progress.sample')}</p>
+
           <!-- data row, mono -->
-          <div class="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-[var(--color-line)]">
+          <div class="grid grid-cols-3 gap-3 mt-4 pt-5 border-t border-[var(--color-line)]">
             {stats.map((s) => (
               <div>
                 <span class="block text-[11px] tracking-[0.12em] uppercase text-[var(--color-muted)] font-[var(--font-display)] font-semibold mb-1">{s.label}</span>
@@ -138,6 +140,7 @@ const stats = [
             <div class="leading-tight">
               <span class="block text-[11px] tracking-[0.12em] uppercase text-[var(--color-muted)] font-[var(--font-display)] font-semibold">Apple Watch</span>
               <span class="mono text-sm text-[var(--color-fg)]">142 <span class="text-[var(--color-muted)]">bpm</span></span>
+              <span class="mono block text-[9px] tracking-[0.08em] text-[var(--color-muted)] opacity-70 mt-0.5">{t('progress.sample')}</span>
             </div>
           </div>
         </div>

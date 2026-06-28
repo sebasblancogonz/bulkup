@@ -19,13 +19,25 @@ const metrics = [
           <!-- Lime radial glow behind the mockup -->
           <div class="glow absolute inset-0 -z-10"></div>
 
-          <!-- TODO foto: barra cargada de discos en rack / primer plano de manos con magnesio (chalk), grano de gimnasio, luz dura lateral, encuadre apaisado. Placeholder intencional abajo. -->
+          <!-- ENTRENO photo treated for the graphite world: desaturated, dark overlay, lime glow accent -->
           <div
             class="relative grain overflow-hidden hairline"
-            style="border-radius: var(--radius-card); aspect-ratio: 16 / 10; background: radial-gradient(120% 90% at 20% 0%, #1D2224 0%, #15191A 55%, #0E1110 100%);"
-            role="img"
-            aria-label="Barra cargada y manos con magnesio (foto pendiente)"
+            style="border-radius: var(--radius-card); aspect-ratio: 16 / 10; background: #15191A;"
           >
+            <img
+              src="https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=1200&q=70"
+              alt={locale === 'es'
+                ? 'Levantando una barra en el gimnasio'
+                : 'Lifting a barbell in the gym'}
+              width="1200"
+              height="750"
+              loading="lazy"
+              decoding="async"
+              class="absolute inset-0 block h-full w-full object-cover"
+              style="filter: grayscale(0.35) contrast(1.05) brightness(0.78) saturate(0.9);"
+            />
+            <!-- dark overlay to fuse with the graphite background -->
+            <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(14,17,16,0.35), rgba(14,17,16,0.72));"></div>
             <div class="glow-pulse absolute -bottom-1/4 -right-1/4 h-2/3 w-2/3" style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);"></div>
             <span class="absolute left-5 top-5 mono text-[11px] tracking-[0.18em] uppercase" style="color: var(--color-muted);">// load · grip · go</span>
           </div>
@@ -44,7 +56,6 @@ const metrics = [
 
       <!-- ── Copy column ─────────────────────────────────────────────── -->
       <Reveal client:visible variant="right" delay={0.06} className="order-1 lg:order-2">
-        <p class="eyebrow mb-4">{t('training.eyebrow')}</p>
         <h2 class="h2 text-balance mb-5">{t('training.title')}</h2>
         <p class="text-pretty mb-9 max-w-xl" style="color: var(--color-muted);">
           {t('training.body')}

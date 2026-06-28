@@ -18,7 +18,7 @@
     "typographyMeta": {
       "display": { "displayName": "Display (Saira Condensed)", "purpose": "Hero + closing headlines, uppercase, tight tracking." },
       "headline": { "displayName": "Headline (Saira Condensed)", "purpose": "Section titles, uppercase." },
-      "body": { "displayName": "Body (Inter)", "purpose": "Paragraphs and feature copy, neutral grotesque, never rounded." },
+      "body": { "displayName": "Body (Hanken Grotesk)", "purpose": "Paragraphs and feature copy, neutral grotesque, never rounded. Inter as fallback." },
       "label": { "displayName": "Eyebrow / Label (Saira)", "purpose": "Lime kicker labels, ≤4 words, wide tracking." },
       "mono": { "displayName": "Data (JetBrains Mono)", "purpose": "Every datapoint: kilos, %, PRs, streaks, prices." }
     },
@@ -86,10 +86,10 @@
   ],
   "narrative": {
     "northStar": "Graphite & Voltage",
-    "overview": "A pre-dawn weight room: matte graphite, dropped barbells, one strip of electric light. Disciplined near-black surfaces (#0E1110, never pure black) carry weight and seriousness, punctuated by a single charge of electric lime (#B4FF2E) that fires only where progress is being made. Graphite is the eight-years-of-training discipline; lime is the spark of seeing you actually moved the bar. Typography is built like equipment: condensed uppercase Saira stacks like loaded plates, Inter handles neutral body, JetBrains Mono renders every datapoint as evidence. Surfaces have real depth: graphite gradient, film grain, genuine shadows, lime glow. It rejects generic SaaS chrome, the soft Foodnoms-light app it came from, loud supplement bro-marketing, and the cold corporate dashboard.",
+    "overview": "A pre-dawn weight room: matte graphite, dropped barbells, one strip of electric light. Disciplined near-black surfaces (#0E1110, never pure black) carry weight and seriousness, punctuated by a single charge of electric lime (#B4FF2E) that fires only where progress is being made. Graphite is the eight-years-of-training discipline; lime is the spark of seeing you actually moved the bar. Typography is built like equipment: condensed uppercase Saira stacks like loaded plates, Hanken Grotesk handles neutral body, JetBrains Mono renders every datapoint as evidence. Surfaces have real depth: graphite gradient, film grain, genuine shadows, lime glow. It rejects generic SaaS chrome, the soft Foodnoms-light app it came from, loud supplement bro-marketing, and the cold corporate dashboard.",
     "keyCharacteristics": [
       "Graphite-dark canvas with a single electric-lime accent used as a razor (≤10% of any screen).",
-      "Condensed uppercase display (Saira) + neutral grotesque body (Inter) + mono for all data (JetBrains Mono).",
+      "Condensed uppercase display (Saira) + neutral grotesque body (Hanken Grotesk) + mono for all data (JetBrains Mono).",
       "Real depth: graphite gradient, film grain, genuine shadows, lime glow — never flat-shadowless.",
       "Hierarchised radii (14 / 10 / 999 / 38px), not one friendly universal radius.",
       "Numbers are the hero — data set as evidence, in mono, often in lime."
@@ -106,7 +106,7 @@
       "Do keep the canvas graphite (#0E1110) with the radial gradient + grain. Never a flat fill, never pure black.",
       "Do ration electric lime to ≤10% of any screen (the Razor Rule).",
       "Do set every datapoint in JetBrains Mono, frequently in lime — numbers are the proof.",
-      "Do set headlines in Saira Condensed uppercase with tight tracking; pair with Inter body and nothing rounder.",
+      "Do set headlines in Saira Condensed uppercase with tight tracking; pair with Hanken Grotesk body and nothing rounder.",
       "Do put graphite text (#0E1110) on any lime fill, and amber (#F59E0B) on errors.",
       "Do use real shadows under mockups and .lift on hover; separate blocks with 1px #2A3033 hairlines.",
       "Do write CTAs as verbs ('Quiero probarlo', 'Dame acceso'); keep waitlist/acceso anticipado out of the button and in the subtext."

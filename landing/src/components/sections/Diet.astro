@@ -19,7 +19,6 @@ const t = useT(locale);
 
       <!-- ── Copy ─────────────────────────────────────────────────── -->
       <Reveal client:visible variant="left" className="order-2 lg:order-1">
-        <p class="eyebrow mb-5">{t('diet.eyebrow')}</p>
         <h2 class="h2 text-balance">
           {t('diet.title')}
         </h2>
@@ -48,28 +47,40 @@ const t = useT(locale);
       <Reveal client:visible variant="right" delay={0.08} className="order-1 lg:order-2">
         <div class="relative mx-auto max-w-[460px]">
 
-          <!--
-            TODO foto: meal-prep real, luz cenital (overhead), fondo grafito.
-            Tuppers de pollo + arroz + brócoli sobre superficie oscura mate,
-            tonos cálidos comida contra el grafito, sin manos ni personas.
-            Reemplazar el bloque .grain de abajo por <img> cuando exista.
-          -->
-          <div
+          <!-- meal-prep foto (Unsplash) tratada al mundo grafito: desaturada + overlay -->
+          <figure
             class="grain absolute -left-8 -top-10 hidden aspect-[4/5] w-44 overflow-hidden hairline sm:block lg:-left-12"
-            style="border-radius: var(--radius-card); background:
-              radial-gradient(120% 90% at 30% 15%, #20262A 0%, var(--color-surface) 55%, var(--color-bg) 100%);
-              box-shadow: var(--shadow-card);"
-            aria-hidden="true"
+            style="border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+              background: var(--color-surface);"
           >
-            <!-- intentional placeholder: subtle lime glow, deliberate -->
+            <img
+              src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=70"
+              alt={locale === 'es'
+                ? 'Comida preparada: proteína y verdura en un bol'
+                : 'Meal prep: protein and vegetables in a bowl'}
+              width="1200"
+              height="1500"
+              loading="lazy"
+              decoding="async"
+              class="block h-full w-full object-cover"
+              style="filter: grayscale(0.35) contrast(1.05) brightness(0.78) saturate(0.9);"
+            />
+            <!-- overlay grafito: funde la stock con el fondo y mantiene el texto legible -->
+            <span
+              class="pointer-events-none absolute inset-0"
+              style="background: linear-gradient(180deg, rgba(14,17,16,0.35), rgba(14,17,16,0.72));"
+              aria-hidden="true"
+            ></span>
+            <!-- glow lima: el "punto de lima" lo da el acento, no la foto -->
             <span
               class="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
               style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);"
+              aria-hidden="true"
             ></span>
-            <span
+            <figcaption
               class="absolute bottom-3 left-3 right-3 mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-muted)]"
-            >meal&nbsp;prep</span>
-          </div>
+            >meal&nbsp;prep</figcaption>
+          </figure>
 
           <!-- lime radial glow behind the phone -->
           <div
