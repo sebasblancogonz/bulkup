@@ -9,6 +9,7 @@ import WatchConnectivity
 @MainActor
 final class WatchWCManager: NSObject, ObservableObject, WCSessionDelegate {
     @Published var ctx: WatchContext?
+    @Published var live: LiveWorkout?
     private var lastSeq = -1
     private var session: WCSession? { WCSession.isSupported() ? WCSession.default : nil }
 
@@ -31,10 +32,19 @@ final class WatchWCManager: NSObject, ObservableObject, WCSessionDelegate {
         }
     }
 
+    // Optimistic: mutate the local working copy for instant UI, and send the action to
+    // the phone (which stays authoritative — its next broadcast reconciles `live`).
+    func completeSet() { live?.completeCurrentSet(); send(.completeSet) }
+    func adjustWeight(_ d: Double) { live?.adjustWeight(d); send(.adjustWeight(delta: d)) }
+    func adjustReps(_ d: Int) { live?.adjustReps(d); send(.adjustReps(delta: d)) }
+    func skipRest() { live?.skipRest(); send(.skipRest) }
+    func addRest(_ s: Int) { live?.addRest(s); send(.addRest(seconds: s)) }
+
     private func apply(_ data: Data?) {
         guard let next = WatchSync.decode(WatchContext.self, from: data), next.seq > lastSeq else { return }
         lastSeq = next.seq
         ctx = next
+        live = next.live
     }
 
     nonisolated func session(_ s: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
