@@ -390,11 +390,7 @@ struct TrainingView: View {
                 ) {
                     // Save and mark complete
                     markWorkoutComplete()
-                    let finishedDay = currentTrainingDay ?? selectedDay
                     workoutSession.saveAndDismissSummary()
-                    // Prompt for post-workout sensations
-                    feedbackDayName = finishedDay
-                    showFeedback = true
                 }
                 .transition(.opacity)
                 .zIndex(100)
@@ -443,36 +439,55 @@ struct TrainingView: View {
 
     private var completedPill: some View {
         let day = currentTrainingDay ?? selectedDay
-        let savedEmoji = WorkoutFeedbackManager.shared
+        let savedFeedback = WorkoutFeedbackManager.shared
             .feedback(planId: trainingManager.trainingPlanId, dayName: day)
-            .flatMap { WorkoutFeedbackManager.emoji(for: $0.rating) }
-        return Button {
-            feedbackDayName = day
-            showFeedback = true
-        } label: {
+        let savedEmoji = savedFeedback.flatMap { WorkoutFeedbackManager.emoji(for: $0.rating) }
+        return VStack(spacing: Spacing.sm) {
+            // Completed status row
             HStack(spacing: Spacing.sm) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 16))
                 Text("Completado")
                     .font(.system(size: 17, weight: .bold))
-                if let savedEmoji {
-                    Text(savedEmoji).font(.system(size: 18))
-                }
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .opacity(0.6)
+                Spacer()
             }
             .foregroundColor(BulkUpColors.success)
-            .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(BulkUpColors.success.opacity(0.1))
-            .cornerRadius(14)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(BulkUpColors.success.opacity(0.3), lineWidth: 1)
-            )
+
+            // On-demand sensations button
+            Button {
+                feedbackDayName = day
+                showFeedback = true
+            } label: {
+                HStack(spacing: Spacing.xs) {
+                    if let emoji = savedEmoji {
+                        Text(emoji).font(.system(size: 18))
+                        Text("Editar sensaciones")
+                            .font(.system(size: 15, weight: .medium))
+                    } else {
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 14))
+                        Text("Registrar sensaciones")
+                            .font(.system(size: 15, weight: .medium))
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .opacity(0.6)
+                }
+                .foregroundColor(BulkUpColors.success)
+                .frame(maxWidth: .infinity)
+                .frame(height: 38)
+                .background(BulkUpColors.success.opacity(0.12))
+                .cornerRadius(10)
+            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .padding(Spacing.md)
+        .background(BulkUpColors.success.opacity(0.08))
+        .cornerRadius(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(BulkUpColors.success.opacity(0.3), lineWidth: 1)
+        )
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.md)
     }
