@@ -499,6 +499,9 @@ struct SaveWorkoutSessionRequest: Codable {
     let exercisesSkipped: Int
     let exercises: [ExerciseSessionData]
     let date: String
+    let avgHeartRate: Int?
+    let maxHeartRate: Int?
+    let activeEnergyKcal: Double?
 }
 
 struct WorkoutSessionRecord: Codable, Identifiable {
