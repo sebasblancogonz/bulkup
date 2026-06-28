@@ -28,12 +28,12 @@ struct ActiveWorkoutView: View {
                         }
 
                         stepper(label: "\(fmt(s.weight)) \(live.weightUnit)",
-                                minus: .adjustWeight(delta: -live.weightStep),
-                                plus: .adjustWeight(delta: live.weightStep))
+                                minus: { wc.adjustWeight(-live.weightStep) },
+                                plus: { wc.adjustWeight(live.weightStep) })
                         stepper(label: "\(s.reps) reps",
-                                minus: .adjustReps(delta: -1), plus: .adjustReps(delta: 1))
+                                minus: { wc.adjustReps(-1) }, plus: { wc.adjustReps(1) })
 
-                        Button { wc.send(.completeSet) } label: {
+                        Button { wc.completeSet() } label: {
                             Text("Complete set").frame(maxWidth: .infinity)
                         }.buttonStyle(.borderedProminent).tint(lime)
 
@@ -59,11 +59,11 @@ struct ActiveWorkoutView: View {
         .onDisappear { Task { _ = await metrics.end() } }
     }
 
-    private func stepper(label: String, minus: WatchMessage, plus: WatchMessage) -> some View {
+    private func stepper(label: String, minus: @escaping () -> Void, plus: @escaping () -> Void) -> some View {
         HStack {
-            Button { wc.send(minus) } label: { Image(systemName: "minus") }.buttonStyle(.bordered)
+            Button { minus() } label: { Image(systemName: "minus") }.buttonStyle(.bordered)
             Text(label).font(.body).monospacedDigit().frame(maxWidth: .infinity)
-            Button { wc.send(plus) } label: { Image(systemName: "plus") }.buttonStyle(.bordered)
+            Button { plus() } label: { Image(systemName: "plus") }.buttonStyle(.bordered)
         }
     }
     private func fmt(_ w: Double) -> String { w == w.rounded() ? String(format: "%.0f", w) : String(format: "%.1f", w) }

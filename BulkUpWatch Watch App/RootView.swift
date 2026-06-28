@@ -8,7 +8,7 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject var wc: WatchWCManager
     var body: some View {
-        if let live = wc.ctx?.live, !live.isFinished {
+        if let live = wc.live, !live.isFinished {
             ActiveWorkoutView(live: live)
         } else if let plan = wc.ctx?.todaysPlan, !plan.exercises.isEmpty {
             TodayView(plan: plan)
