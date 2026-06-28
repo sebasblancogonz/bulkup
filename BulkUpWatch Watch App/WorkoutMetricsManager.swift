@@ -25,6 +25,8 @@ final class WorkoutMetricsManager: NSObject, ObservableObject {
 
     func start() {
         guard HKHealthStore.isHealthDataAvailable(), session == nil else { return }
+        heartRate = 0
+        activeEnergy = 0
         let config = HKWorkoutConfiguration()
         config.activityType = .traditionalStrengthTraining
         config.locationType = .indoor
