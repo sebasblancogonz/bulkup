@@ -5,40 +5,57 @@ struct ActiveWorkoutView: View {
     @EnvironmentObject var metrics: WorkoutMetricsManager
     @State private var finishing = false
     let live: LiveWorkout
-    private let lime = Color(red: 0.518, green: 0.800, blue: 0.086)
 
     var body: some View {
         Group {
             if let restEnd = live.restEndDate, restEnd > Date() {
-                RestTimerView(end: restEnd) // Task 6
+                RestTimerView(end: restEnd)
             } else if let s = live.current {
                 ScrollView {
-                    VStack(spacing: 10) {
-                        Text(s.exerciseName).font(.headline).lineLimit(1)
-                        Text("Serie \(s.setIndex + 1)/\(s.setsTotalForExercise)")
-                            .font(.caption).foregroundStyle(.secondary)
+                    VStack(spacing: 12) {
+                        // Full exercise name — wraps instead of truncating.
+                        Text(s.exerciseName)
+                            .font(.headline)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity)
+
+                        Text("SERIE \(s.setIndex + 1) / \(s.setsTotalForExercise)")
+                            .font(.caption2).fontWeight(.semibold).monospacedDigit()
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 10).padding(.vertical, 3)
+                            .background(Color.lime, in: Capsule())
 
                         if metrics.isRunning {
-                            HStack(spacing: 12) {
+                            HStack(spacing: 16) {
                                 Label("\(metrics.heartRate)", systemImage: "heart.fill")
                                     .foregroundStyle(.red)
                                 Label("\(Int(metrics.activeEnergy)) kcal", systemImage: "flame.fill")
                                     .foregroundStyle(.orange)
-                            }.font(.caption).monospacedDigit()
+                            }
+                            .font(.caption).monospacedDigit()
+                            .padding(.vertical, 6).frame(maxWidth: .infinity)
+                            .background(Color.card, in: RoundedRectangle(cornerRadius: 10))
                         }
 
                         stepper(label: "\(fmt(s.weight)) \(live.weightUnit)",
+                                emphasized: true,
                                 minus: { wc.adjustWeight(-live.weightStep) },
                                 plus: { wc.adjustWeight(live.weightStep) })
                         stepper(label: "\(s.reps) reps",
+                                emphasized: false,
                                 minus: { wc.adjustReps(-1) }, plus: { wc.adjustReps(1) })
 
                         Button { wc.completeSet() } label: {
-                            Text("Complete set").frame(maxWidth: .infinity)
-                        }.buttonStyle(.borderedProminent).tint(lime)
+                            Label("Complete set", systemImage: "checkmark")
+                                .fontWeight(.semibold).frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent).tint(Color.lime).foregroundStyle(.black)
 
                         ProgressView(value: Double(live.completedCount), total: Double(max(live.sets.count, 1)))
-                            .tint(lime)
+                            .tint(Color.lime)
+                        Text("\(live.completedCount)/\(live.sets.count) sets")
+                            .font(.caption2).foregroundStyle(.secondary)
 
                         Button(finishing ? "Finishing…" : "Finish") {
                             finishing = true
@@ -49,6 +66,7 @@ struct ActiveWorkoutView: View {
                         }
                         .disabled(finishing)
                         .font(.caption).foregroundStyle(.secondary)
+                        .padding(.top, 2)
                     }.padding()
                 }
             } else {
@@ -59,10 +77,15 @@ struct ActiveWorkoutView: View {
         .onDisappear { Task { _ = await metrics.end() } }
     }
 
-    private func stepper(label: String, minus: @escaping () -> Void, plus: @escaping () -> Void) -> some View {
-        HStack {
+    private func stepper(label: String, emphasized: Bool,
+                         minus: @escaping () -> Void, plus: @escaping () -> Void) -> some View {
+        HStack(spacing: 8) {
             Button { minus() } label: { Image(systemName: "minus") }.buttonStyle(.bordered)
-            Text(label).font(.body).monospacedDigit().frame(maxWidth: .infinity)
+            Text(label)
+                .font(emphasized ? .title3 : .body).fontWeight(.medium).monospacedDigit()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+                .background(Color.card, in: RoundedRectangle(cornerRadius: 8))
             Button { plus() } label: { Image(systemName: "plus") }.buttonStyle(.bordered)
         }
     }

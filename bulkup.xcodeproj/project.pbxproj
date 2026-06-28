@@ -82,6 +82,7 @@
 				Shared/SharedWorkoutStore.swift,
 				Shared/TodaysPlan.swift,
 				Shared/WatchMessage.swift,
+				Shared/WorkoutMetrics.swift,
 			);
 			target = 161B70672FF12FCB00316A4B /* BulkUpWatch Watch App */;
 		};
@@ -430,6 +431,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = BulkUpWatch;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BulkUp uses your heart rate and energy to track your workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BulkUp saves your workouts to Apple Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.whitesolutions.bulkup;
 				IPHONEOS_DEPLOYMENT_TARGET = 10;
@@ -515,6 +518,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = BulkUpWatch;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BulkUp uses your heart rate and energy to track your workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BulkUp saves your workouts to Apple Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.whitesolutions.bulkup;
 				IPHONEOS_DEPLOYMENT_TARGET = 10;

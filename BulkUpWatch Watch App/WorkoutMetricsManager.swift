@@ -1,5 +1,6 @@
 import Foundation
 import HealthKit
+internal import Combine
 
 /// Owns the watch HKWorkoutSession + live builder: live HR/energy for the UI, and
 /// avg/max HR + total active energy captured at finish. Watch-only.
@@ -13,8 +14,10 @@ final class WorkoutMetricsManager: NSObject, ObservableObject {
     private var session: HKWorkoutSession?
     private var builder: HKLiveWorkoutBuilder?
 
-    private let hrType = HKQuantityType(.heartRate)
-    private let energyType = HKQuantityType(.activeEnergyBurned)
+    // nonisolated: read from the nonisolated HKLiveWorkoutBuilderDelegate callback
+    // (HKQuantityType is Sendable). Needed under the watch target's MainActor-by-default.
+    nonisolated private let hrType = HKQuantityType(.heartRate)
+    nonisolated private let energyType = HKQuantityType(.activeEnergyBurned)
 
     func requestAuthorization() {
         guard HKHealthStore.isHealthDataAvailable() else { return }
