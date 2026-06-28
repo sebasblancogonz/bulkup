@@ -84,7 +84,8 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
             SharedWorkoutStore.skipRest()
         case .addRest(let s):
             SharedWorkoutStore.addRest(s)
-        case .finishWorkout:
+        case .finishWorkout(let metrics):
+            WorkoutSessionManager.shared.pendingWatchMetrics = metrics
             _ = wsm.finishWorkout(trainingManager: tm)
             wsm.saveSessionToBackend(
                 userId: AuthManager.shared.user?.id ?? "",

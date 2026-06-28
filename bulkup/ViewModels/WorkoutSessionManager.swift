@@ -56,6 +56,9 @@ class WorkoutSessionManager: ObservableObject {
     @Published var saveState: SaveState = .idle
     private var pendingSaveRequest: SaveWorkoutSessionRequest?
 
+    /// Metrics delivered from the watch at finish; included in the next backend save, then cleared.
+    var pendingWatchMetrics: WorkoutMetrics?
+
     // MARK: - Private
 
     private var elapsedTimer: AnyCancellable?
@@ -183,6 +186,8 @@ class WorkoutSessionManager: ObservableObject {
         planId: String?,
         trainingManager: TrainingManager
     ) {
+        let watchMetrics = pendingWatchMetrics
+        pendingWatchMetrics = nil
         guard let summary = summaryData, let dayName = currentDayName else { return }
 
         let normalizedDay = dayName.lowercased()
@@ -245,7 +250,10 @@ class WorkoutSessionManager: ObservableObject {
             exercisesTotal: summary.exercisesTotal,
             exercisesSkipped: Int(skippedExercises.count),
             exercises: exerciseData,
-            date: dateStr
+            date: dateStr,
+            avgHeartRate: watchMetrics.map { $0.avgHeartRate > 0 ? $0.avgHeartRate : nil } ?? nil,
+            maxHeartRate: watchMetrics.map { $0.maxHeartRate > 0 ? $0.maxHeartRate : nil } ?? nil,
+            activeEnergyKcal: watchMetrics.map { $0.activeEnergyKcal > 0 ? $0.activeEnergyKcal : nil } ?? nil
         )
 
         pendingSaveRequest = request

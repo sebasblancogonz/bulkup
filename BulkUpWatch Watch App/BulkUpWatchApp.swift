@@ -10,11 +10,16 @@ import SwiftUI
 @main
 struct BulkUpWatch_Watch_AppApp: App {
     @StateObject private var wc = WatchWCManager()
+    @StateObject private var metrics = WorkoutMetricsManager()
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(wc)
-                .onAppear { wc.activate() }
+                .environmentObject(metrics)
+                .onAppear {
+                    wc.activate()
+                    metrics.requestAuthorization()
+                }
         }
     }
 }
