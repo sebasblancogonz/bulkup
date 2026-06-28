@@ -5,46 +5,103 @@ import Reveal from '../Reveal.tsx';
 const { locale } = Astro.props as { locale: Locale };
 const t = useT(locale);
 
-// Two-tone headline: first sentence in green, the rest in graphite.
-const title = t('hero.title');
-const dot = title.indexOf('.');
-const titleA = dot >= 0 ? title.slice(0, dot + 1) : title;
-const titleB = dot >= 0 ? title.slice(dot + 1) : '';
+// Headline: isolate the last word before the final period as the lime keyword
+// (ES "…que mide." → "mide" · EN "…that measures." → "measures").
+const title = t('hero.title').trim();
+const m = title.match(/^(.*?)(\b[\p{L}]+)([.!?]?)$/u);
+const titlePre = m ? m[1] : title;
+const keyword = m ? m[2] : '';
+const titlePost = m ? m[3] : '';
 ---
-<section class="relative overflow-hidden">
-  <div class="max-w-[1200px] mx-auto px-6 pt-14 sm:pt-20 pb-10 flex flex-col items-center text-center">
-    <Reveal client:load variant="up" y={10}>
-      <p class="uppercase tracking-[0.18em] text-[13px] font-bold text-[var(--color-accent)] mb-5">{t('hero.eyebrow')}</p>
-    </Reveal>
-    <Reveal client:load variant="up" delay={0.05}>
-      <h1 class="font-[var(--font-display)] font-extrabold leading-[1.05] text-balance text-[2.6rem] sm:text-[3.6rem] lg:text-[3.9rem] max-w-3xl">
-        <span class="tone-green">{titleA}</span><span class="text-[var(--color-fg)]">{titleB}</span>
+<section class="relative isolate overflow-hidden">
+  <!-- ── Full-bleed background: gym photo, graphite-treated ────────────── -->
+  <div class="absolute inset-0 -z-10" aria-hidden="true">
+    <!-- raw gym photo, desaturated into the graphite world -->
+    <img
+      src="https://images.unsplash.com/photo-1521805103424-d8f8430e8933?auto=format&fit=crop&fm=webp&w=1280&q=68"
+      srcset="https://images.unsplash.com/photo-1521805103424-d8f8430e8933?auto=format&fit=crop&fm=webp&w=640&q=66 640w,
+              https://images.unsplash.com/photo-1521805103424-d8f8430e8933?auto=format&fit=crop&fm=webp&w=1024&q=68 1024w,
+              https://images.unsplash.com/photo-1521805103424-d8f8430e8933?auto=format&fit=crop&fm=webp&w=1600&q=68 1600w"
+      sizes="100vw"
+      alt={locale === 'es'
+        ? 'Barra cargada en el suelo de un gimnasio en penumbra'
+        : 'A loaded barbell on the floor of a dim gym'}
+      width="1600" height="900"
+      loading="eager" fetchpriority="high" decoding="async"
+      class="absolute inset-0 h-full w-full object-cover"
+      style="filter: grayscale(0.45) contrast(1.08) brightness(0.6) saturate(0.85);" />
+    <!-- graphite overlay: fuses the photo into the page + keeps copy legible -->
+    <div class="grain absolute inset-0"
+      style="background:
+        radial-gradient(80% 60% at 78% 12%, rgba(31,38,40,0.45) 0%, transparent 55%),
+        linear-gradient(180deg, rgba(14,17,16,0.55) 0%, rgba(14,17,16,0.82) 100%);">
+    </div>
+    <!-- radial lime glow, breathing -->
+    <div class="glow-pulse absolute right-[-10%] top-[6%] h-[60vh] w-[60vh] rounded-full"
+      style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 72%); filter: blur(8px);">
+    </div>
+    <!-- bottom fade so content sits on solid graphite -->
+    <div class="absolute inset-x-0 bottom-0 h-1/3"
+      style="background: linear-gradient(180deg, transparent, var(--color-bg));">
+    </div>
+  </div>
+
+  <div class="max-w-[1200px] mx-auto px-6 pt-24 sm:pt-32 pb-20 grid lg:grid-cols-[1.05fr_0.95fr] gap-14 lg:gap-10 items-center">
+    <!-- ── Copy column ─────────────────────────────────────────────────── -->
+    <div class="text-center lg:text-left">
+      <!-- Above-the-fold content renders statically (no Reveal): the LCP text must
+           not wait on JS hydration. Below-fold sections still use Reveal. -->
+      <p class="eyebrow mb-6">{t('hero.eyebrow')}</p>
+
+      <h1 class="h1 text-balance max-w-[16ch] mx-auto lg:mx-0">
+        <span>{titlePre}</span><span class="hero-key">{keyword}{titlePost}</span>
       </h1>
-    </Reveal>
-    <Reveal client:load variant="up" delay={0.15}>
-      <p class="text-[var(--color-muted)] text-lg leading-[1.6] max-w-xl mt-6">{t('hero.subtitle')}</p>
-    </Reveal>
-    <Reveal client:load variant="up" delay={0.25}>
-      <div class="mt-8 flex justify-center">
-        <WaitlistForm client:load locale={locale}
+
+      <p class="text-[var(--color-muted)] text-lg leading-[1.6] max-w-[52ch] mt-7 mx-auto lg:mx-0">
+        {t('hero.subtitle')}
+      </p>
+
+      <div class="mt-9 flex justify-center lg:justify-start">
+        <WaitlistForm client:load locale={locale} id="waitlist"
           ctaLabel={t('hero.cta')} placeholder={t('hero.placeholder')}
-          successMsg={t('form.success')} errorMsg={t('form.error')} invalidMsg={t('form.invalid')} />
+          successMsg={t('form.success')} errorMsg={t('form.error')} invalidMsg={t('form.invalid')}
+          loadingMsg={t('form.sending')} rateMsg={t('form.errorRate')}
+          reassure={t('hero.reassure')} />
+      </div>
+    </div>
+
+    <!-- ── iPhone mockup column ────────────────────────────────────────── -->
+    <Reveal client:load variant="scale" delay={0.2}>
+      <div class="relative flex justify-center lg:justify-end">
+        <!-- breathing lime glow behind the device -->
+        <div class="glow-pulse absolute inset-0 -z-10 mx-auto h-[78%] w-[78%] self-center rounded-full"
+          aria-hidden="true"
+          style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);">
+        </div>
+        <div class="phone lift w-[260px] sm:w-[300px]">
+          <img src="/home.webp" alt="Pantalla de inicio de BulkUp con el plan del día"
+            loading="eager" width="300" height="650" class="w-full h-full object-cover" />
+        </div>
       </div>
     </Reveal>
   </div>
-
-  <!-- Fanned phone mockups — flat, floating on white -->
-  <Reveal client:load variant="up" delay={0.35}>
-    <div class="max-w-[1200px] mx-auto px-6 pb-24 flex justify-center items-end">
-      <div class="phone float hidden sm:block w-[200px] shrink-0 -mr-10 rotate-[-8deg] origin-bottom">
-        <img src="/workout.png" alt="Logging a workout in BulkUp" loading="eager" class="w-full h-full object-cover" />
-      </div>
-      <div class="phone float relative z-10 w-[248px] shrink-0">
-        <img src="/home.png" alt="BulkUp home screen" loading="eager" class="w-full h-full object-cover" />
-      </div>
-      <div class="phone float hidden sm:block w-[200px] shrink-0 -ml-10 rotate-[8deg] origin-bottom">
-        <img src="/diet.png" alt="A diet plan in BulkUp" loading="eager" class="w-full h-full object-cover" />
-      </div>
-    </div>
-  </Reveal>
 </section>
+
+<style>
+  /* Lime keyword with a lime underline rule under it */
+  .hero-key {
+    color: var(--color-accent);
+    position: relative;
+    white-space: nowrap;
+  }
+  .hero-key::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0.12em;
+    bottom: 0.04em;
+    height: 0.09em;
+    background: var(--color-accent);
+    border-radius: 2px;
+  }
+</style>

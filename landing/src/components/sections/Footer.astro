@@ -5,16 +5,38 @@ const { locale } = Astro.props as { locale: Locale };
 const t = useT(locale);
 const year = 2026;
 ---
-<footer class="border-t border-[var(--color-line)] bg-[var(--color-surface)]">
-  <div class="max-w-[1200px] mx-auto px-6 py-12 flex flex-col sm:flex-row gap-6 justify-between items-center text-sm text-[var(--color-muted)]">
-    <div class="flex flex-col items-center sm:items-start gap-1">
-      <div class="flex items-center gap-2.5">
-        <img src="/mark.svg" alt="" width="28" height="28" class="w-7 h-7 rounded-[9px]" />
-        <span class="font-[var(--font-display)] font-extrabold text-[var(--color-fg)] text-lg">BulkUp</span>
+<footer class="relative bg-[var(--color-bg)] border-t border-[var(--color-line)]">
+  <div class="grain absolute inset-0 pointer-events-none"></div>
+  <div class="relative max-w-[1200px] mx-auto px-6 py-12 sm:py-14">
+    <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+      <!-- Brand + tagline -->
+      <div class="flex flex-col items-start gap-3">
+        <div class="flex items-center gap-2.5">
+          <img src="/mark.svg" alt="BulkUp" width="28" height="28" class="w-7 h-7 rounded-[10px]" />
+          <span class="font-[family-name:var(--font-display)] font-extrabold tracking-tight text-[var(--color-fg)] text-xl uppercase">BulkUp</span>
+        </div>
+        <p class="text-[15px] text-[var(--color-muted)] max-w-xs">{t('footer.tagline')}</p>
       </div>
-      <p>{t('footer.tagline')}</p>
+
+      <!-- Nav + language -->
+      <nav aria-label="Footer" class="flex flex-col items-start gap-5 sm:items-end">
+        <ul class="flex items-center gap-7 text-sm font-medium">
+          <li>
+            <a href="#features" class="text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors duration-150">{t('nav.features')}</a>
+          </li>
+          <li>
+            <a href="#faq" class="text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors duration-150">{t('nav.faq')}</a>
+          </li>
+        </ul>
+        <LanguageSwitch locale={locale} />
+      </nav>
     </div>
-    <LanguageSwitch locale={locale} />
-    <p>© {year} BulkUp. {t('footer.rights')}</p>
+
+    <!-- Hairline divider + rights -->
+    <div class="mt-10 pt-6 border-t border-[var(--color-line)]">
+      <p class="text-xs text-[var(--color-muted)] font-[family-name:var(--font-mono)] tracking-wide">
+        © {year} BulkUp. {t('footer.rights')}
+      </p>
+    </div>
   </div>
 </footer>

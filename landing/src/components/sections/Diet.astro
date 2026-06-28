@@ -1,0 +1,112 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import Reveal from '../Reveal.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+---
+
+<section
+  id="diet"
+  class="relative overflow-x-clip"
+  style="padding-block: var(--section-pad);"
+>
+  <div
+    class="mx-auto px-6"
+    style="max-width: var(--container);"
+  >
+    <!-- Mirror of Training: copy LEFT, visual RIGHT (visual order-first on mobile) -->
+    <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+
+      <!-- ── Copy ─────────────────────────────────────────────────── -->
+      <Reveal client:visible variant="left" className="order-2 lg:order-1">
+        <h2 class="h2 text-balance">
+          {t('diet.title')}
+        </h2>
+        <p class="text-pretty mt-6 max-w-md text-[var(--color-muted)]">
+          {t('diet.body')}
+        </p>
+
+        <!-- micro-accents: lime razor, not brush -->
+        <ul class="mt-9 flex flex-wrap gap-2.5">
+          {[t('diet.eyebrow'), t('data.platform')].map((chip) => (
+            <li
+              class="hairline mono inline-flex items-center gap-2 px-3.5 py-1.5 text-[12px] text-[var(--color-muted)]"
+              style="border-radius: var(--radius-chip); background: var(--color-surface);"
+            >
+              <span
+                class="inline-block h-1.5 w-1.5"
+                style="border-radius: 999px; background: var(--color-accent);"
+              ></span>
+              {chip}
+            </li>
+          ))}
+        </ul>
+      </Reveal>
+
+      <!-- ── Visual ───────────────────────────────────────────────── -->
+      <Reveal client:visible variant="right" delay={0.08} className="order-1 lg:order-2">
+        <div class="relative mx-auto max-w-[460px]">
+
+          <!-- meal-prep foto (Unsplash) tratada al mundo grafito: desaturada + overlay -->
+          <figure
+            class="grain absolute -left-8 -top-10 hidden aspect-[4/5] w-44 overflow-hidden hairline sm:block lg:-left-12"
+            style="border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+              background: var(--color-surface);"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&fm=webp&w=900&q=72"
+              alt={locale === 'es'
+                ? 'Comida preparada: proteína y verdura en un bol'
+                : 'Meal prep: protein and vegetables in a bowl'}
+              width="1200"
+              height="1500"
+              loading="lazy"
+              decoding="async"
+              class="block h-full w-full object-cover"
+              style="filter: grayscale(0.1) contrast(1.06) brightness(0.85) saturate(1.08);"
+            />
+            <!-- overlay grafito: funde la stock con el fondo y mantiene el texto legible -->
+            <span
+              class="pointer-events-none absolute inset-0"
+              style="background: linear-gradient(180deg, rgba(14,17,16,0.35), rgba(14,17,16,0.72));"
+              aria-hidden="true"
+            ></span>
+            <!-- glow lima: el "punto de lima" lo da el acento, no la foto -->
+            <span
+              class="pointer-events-none absolute -right-6 -top-6 h-24 w-24"
+              style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);"
+              aria-hidden="true"
+            ></span>
+            <figcaption
+              class="absolute bottom-3 left-3 right-3 mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-muted)]"
+            >meal&nbsp;prep</figcaption>
+          </figure>
+
+          <!-- lime radial glow behind the phone -->
+          <div
+            class="glow-pulse pointer-events-none absolute inset-0 -z-10"
+            style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 72%);
+              transform: scale(1.15);"
+            aria-hidden="true"
+          ></div>
+
+          <!-- diet.png in a dark iPhone frame, real shadow -->
+          <div class="phone lift relative mx-auto w-full max-w-[300px]">
+            <img
+              src="/diet.webp"
+              alt={locale === 'es'
+                ? 'Pantalla de la app BulkUp mostrando el plan de dieta del día con comidas para tachar'
+                : 'BulkUp app screen showing the day’s diet plan with meals to tick off'}
+              width="600"
+              height="1299"
+              loading="lazy"
+              decoding="async"
+              class="block h-auto w-full"
+            />
+          </div>
+        </div>
+      </Reveal>
+
+    </div>
+  </div>
+</section>

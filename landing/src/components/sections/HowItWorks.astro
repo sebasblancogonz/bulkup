@@ -1,0 +1,107 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import Reveal from '../Reveal.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+
+const steps = [
+  { n: '01', t: t('howitworks.s1.t'), b: t('howitworks.s1.b') },
+  { n: '02', t: t('howitworks.s2.t'), b: t('howitworks.s2.b') },
+  { n: '03', t: t('howitworks.s3.t'), b: t('howitworks.s3.b') },
+  { n: '04', t: t('howitworks.s4.t'), b: t('howitworks.s4.b') },
+];
+---
+<section
+  id="how"
+  class="grain relative overflow-hidden"
+  style="padding-block: var(--section-pad);"
+>
+  <!-- subtle top hairline -->
+  <div class="absolute inset-x-0 top-0 h-px bg-[var(--color-line)]" aria-hidden="true"></div>
+
+  <div class="mx-auto px-6" style="max-width: var(--container);">
+    <Reveal client:visible variant="up" className="relative z-10">
+      <h2 class="h2 max-w-[16ch] text-balance">{t('howitworks.title')}</h2>
+    </Reveal>
+
+    <div class="mt-16 grid gap-14 lg:mt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-20">
+      <!-- ── STEPS (scroll) ──────────────────────────────────────── -->
+      <ol class="relative order-2 lg:order-1">
+        <!-- vertical accent rail -->
+        <div
+          class="absolute left-[26px] top-3 bottom-3 w-px bg-gradient-to-b from-[var(--color-accent)]/60 via-[var(--color-line)] to-transparent"
+          aria-hidden="true"
+        ></div>
+
+        {steps.map((s, i) => (
+          <Reveal client:visible variant="up" delay={i * 0.06}>
+            <li class="relative flex gap-6 pb-12 last:pb-0">
+              <span
+                class="mono relative z-10 grid h-[54px] w-[54px] shrink-0 place-items-center rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-surface)] text-[15px] font-medium text-[var(--color-accent)]"
+                aria-hidden="true"
+              >{s.n}</span>
+              <div class="pt-1.5">
+                <h3 class="text-2xl text-[var(--color-fg)]">{s.t}</h3>
+                <p class="mt-2 max-w-[42ch] text-pretty text-[var(--color-muted)]">{s.b}</p>
+              </div>
+            </li>
+          </Reveal>
+        ))}
+      </ol>
+
+      <!-- ── TRANSFORMATION VISUAL (sticky) ──────────────────────── -->
+      <div class="order-1 lg:order-2">
+        <div class="lg:sticky lg:top-24">
+          <Reveal client:visible variant="scale">
+            <figure class="relative">
+              <!-- BEFORE: intentional dead-PDF placeholder -->
+              <!-- TODO foto: captura cruda y deslucida de un PDF de rutina abierto en la carpeta Descargas (gris, denso, ilegible en móvil) para vender el "antes". -->
+              <div
+                class="relative mx-auto w-[78%] -rotate-2 rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 opacity-70 shadow-[0_20px_60px_rgba(0,0,0,.5)]"
+                aria-hidden="true"
+              >
+                <div class="mb-4 flex items-center gap-2">
+                  <span class="grid h-7 w-7 place-items-center rounded-md bg-[var(--color-surface-2)] text-[10px] mono text-[var(--color-muted)]">PDF</span>
+                  <span class="text-xs text-[var(--color-muted)]">{t('howitworks.before')}</span>
+                </div>
+                <div class="space-y-2.5">
+                  <div class="h-2 w-2/3 rounded-full bg-[var(--color-line)]"></div>
+                  <div class="h-2 w-full rounded-full bg-[var(--color-line)]"></div>
+                  <div class="h-2 w-5/6 rounded-full bg-[var(--color-line)]"></div>
+                  <div class="h-2 w-3/4 rounded-full bg-[var(--color-line)]"></div>
+                  <div class="h-2 w-full rounded-full bg-[var(--color-line)]"></div>
+                  <div class="h-2 w-1/2 rounded-full bg-[var(--color-line)]"></div>
+                </div>
+              </div>
+
+              <!-- arrow / connector -->
+              <div class="relative z-10 -my-4 flex justify-center" aria-hidden="true">
+                <span class="grid h-11 w-11 place-items-center rounded-full border border-[var(--color-accent)]/40 bg-[var(--color-bg)] text-[var(--color-accent)] shadow-[0_8px_24px_rgba(0,0,0,.5)]">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+                </span>
+              </div>
+
+              <!-- AFTER: real app screen in a dark phone, lime glow behind -->
+              <div class="glow relative ml-auto w-[64%] rotate-1">
+                <div class="absolute inset-0 -z-10 glow-pulse" aria-hidden="true"></div>
+                <div class="phone overflow-hidden">
+                  <img
+                    src="/import_ai.webp"
+                    alt={t('howitworks.after')}
+                    loading="lazy"
+                    decoding="async"
+                    class="block h-auto w-full"
+                  />
+                </div>
+              </div>
+
+              <figcaption class="mt-6 text-center text-sm text-[var(--color-muted)]">
+                <span class="text-[var(--color-fg)]">{t('howitworks.after')}</span>
+              </figcaption>
+            </figure>
+          </Reveal>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

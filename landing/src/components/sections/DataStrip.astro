@@ -1,0 +1,128 @@
+---
+import Reveal from '../Reveal.tsx';
+import { useT, type Locale } from '../../i18n/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useT(locale);
+
+const items = [t('data.exercises'), t('data.formulas'), t('data.platform')];
+---
+
+<section aria-label="BulkUp facts" class="datastrip">
+  <Reveal client:load variant="up" y={10}>
+    <div class="datastrip__scroll">
+      <ul class="datastrip__list" role="list">
+        {
+          items.map((item, i) => (
+            <li class="datastrip__item">
+              {i > 0 && <span class="datastrip__sep" aria-hidden="true" />}
+              <span class="datastrip__text">{item}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </Reveal>
+</section>
+
+<style>
+  .datastrip {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Horizontal scroll on mobile, edge-faded; no visible scrollbar. */
+  .datastrip__scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 16px,
+      #000 calc(100% - 16px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 16px,
+      #000 calc(100% - 16px),
+      transparent 100%
+    );
+  }
+  .datastrip__scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .datastrip__list {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 0;
+    padding: 14px 0;
+    list-style: none;
+    width: max-content;
+    min-width: 100%;
+    justify-content: center;
+  }
+
+  .datastrip__item {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  /* Hairline dot separator with a faint lime micro-accent. */
+  .datastrip__sep {
+    width: 4px;
+    height: 4px;
+    margin: 0 clamp(20px, 5vw, 44px);
+    border-radius: 999px;
+    background: var(--color-line);
+    box-shadow: 0 0 0 3px var(--color-accent-glow);
+    flex: none;
+  }
+
+  .datastrip__text {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: -0.01em;
+    color: var(--color-muted);
+    text-transform: none;
+  }
+
+  /* Numbers and the + sign pick up the lime accent: navaja, no brocha. */
+  .datastrip__text :global(b) {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    .datastrip__list {
+      padding: 16px 0;
+    }
+    .datastrip__text {
+      font-size: 14px;
+    }
+  }
+</style>
+
+<script>
+  // Wrap leading digit/+/symbol runs in <b> so numbers glow lime — done in
+  // the browser to keep i18n strings clean (no markup in ui.ts).
+  document.querySelectorAll('.datastrip__text').forEach((el) => {
+    const txt = el.textContent ?? '';
+    el.innerHTML = txt.replace(
+      /([\d.,+]+)/g,
+      '<b>$1</b>'
+    );
+  });
+</script>

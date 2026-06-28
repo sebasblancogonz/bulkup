@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-28T00:00:00Z",
+  "title": "Design System: BulkUp",
+  "extensions": {
+    "colorMeta": {
+      "electric-lime": { "role": "primary", "displayName": "Electric Lime", "canonical": "#B4FF2E", "tonalRamp": ["#3A5208", "#557A0C", "#6F9E0F", "#86BC14", "#93D414", "#B4FF2E", "#CCFF66", "#E2FFA6"] },
+      "lime-deep": { "role": "primary", "displayName": "Lime Deep", "canonical": "#93D414", "tonalRamp": ["#2E4106", "#43600A", "#5C840D", "#76A911", "#93D414", "#A7E62A", "#C2F35E", "#DCFAA0"] },
+      "sky-complete": { "role": "tertiary", "displayName": "Sky Complete", "canonical": "#00A9DD", "tonalRamp": ["#03303F", "#054A60", "#076581", "#0985A8", "#00A9DD", "#3CC2EC", "#79D6F3", "#B6E9F9"] },
+      "graphite-bg": { "role": "neutral", "displayName": "Graphite BG", "canonical": "#0E1110", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#414A4D", "#6B7570", "#9BA39E", "#F2F4F1"] },
+      "surface": { "role": "neutral", "displayName": "Surface", "canonical": "#15191A" },
+      "surface-2": { "role": "neutral", "displayName": "Surface 2", "canonical": "#1D2224" },
+      "line": { "role": "neutral", "displayName": "Hairline", "canonical": "#2A3033" },
+      "bone-white": { "role": "neutral", "displayName": "Bone White", "canonical": "#F2F4F1" },
+      "muted": { "role": "neutral", "displayName": "Muted", "canonical": "#9BA39E" },
+      "amber-error": { "role": "functional", "displayName": "Amber Error", "canonical": "#F59E0B" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Saira Condensed)", "purpose": "Hero + closing headlines, uppercase, tight tracking." },
+      "headline": { "displayName": "Headline (Saira Condensed)", "purpose": "Section titles, uppercase." },
+      "body": { "displayName": "Body (Hanken Grotesk)", "purpose": "Paragraphs and feature copy, neutral grotesque, never rounded. Inter as fallback." },
+      "label": { "displayName": "Eyebrow / Label (Saira)", "purpose": "Lime kicker labels, ≤4 words, wide tracking." },
+      "mono": { "displayName": "Data (JetBrains Mono)", "purpose": "Every datapoint: kilos, %, PRs, streaks, prices." }
+    },
+    "shadows": [
+      { "name": "card", "value": "0 20px 60px rgba(0,0,0,0.5)", "purpose": "Under device mockups so the app floats off the page." },
+      { "name": "lift", "value": "0 24px 70px rgba(0,0,0,0.55)", "purpose": "Hover state of an interactive card, paired with translateY(-4px) + lime-tinted border." },
+      { "name": "glow", "value": "radial-gradient(closest-side, rgba(180,255,46,0.18), transparent 70%)", "purpose": "Breathing lime halo behind the hero mockup (not a drop shadow)." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default exponential ease for state transitions and reveals (150-250ms)." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "Slow looping motion (glow pulse)." },
+      { "name": "glow-pulse", "value": "9s — opacity 0.7→1, scale 1→1.06", "purpose": "Hero lime glow, slow breathing. Replaces the killed idle float." },
+      { "name": "sweep", "value": "650ms diagonal shine across CTA on hover", "purpose": "Single shine on the primary button hover." },
+      { "name": "draw", "value": "1.4s stroke-dashoffset reveal", "purpose": "Chart line draws in when its section reveals." },
+      { "name": "reveal", "value": "opacity + translateY(12px), 250ms, stagger ~60ms", "purpose": "On-scroll reveal; enhances an already-visible default (no content gated on JS)." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "container", "value": "1200px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The lime CTA. Verb-first label, graphite text on lime, soft-square corners, shine on hover.",
+      "html": "<button class=\"ds-btn-primary\">QUIERO PROBARLO</button>",
+      "css": ".ds-btn-primary { font-family: var(--font-display, 'Saira Condensed', sans-serif); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; font-size: 1.05rem; color: #0E1110; background: var(--color-accent, #B4FF2E); border: none; border-radius: var(--radius-btn, 10px); padding: 14px 28px; cursor: pointer; transition: background 150ms cubic-bezier(0.16,1,0.3,1), transform 160ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-primary:hover { background: var(--color-accent-deep, #93D414); transform: scale(1.02); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-accent, #B4FF2E); outline-offset: 2px; }"
+    },
+    {
+      "name": "Email Input",
+      "kind": "input",
+      "refersTo": "input-email",
+      "description": "Waitlist email field on graphite; border shifts to lime on focus.",
+      "html": "<input class=\"ds-input-email\" type=\"email\" placeholder=\"tu@email.com\" />",
+      "css": ".ds-input-email { font-family: var(--font-sans, 'Inter', sans-serif); font-size: 1rem; color: #F2F4F1; background: var(--color-surface-2, #1D2224); border: 1px solid var(--color-line, #2A3033); border-radius: var(--radius-btn, 10px); padding: 14px 20px; outline: none; transition: border-color 150ms cubic-bezier(0.16,1,0.3,1); } .ds-input-email::placeholder { color: var(--color-muted, #9BA39E); } .ds-input-email:focus { border-color: var(--color-accent, #B4FF2E); }"
+    },
+    {
+      "name": "Feature Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Surface card with a single hairline; flat at rest, lifts with a real shadow + lime-tinted border on hover.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">SERIES, PESOS Y PRS</h3><p class=\"ds-card-body\">Apuntas el peso de cada semana y ves si subes o te estancas.</p><span class=\"ds-card-metric\">1.000+ ejercicios</span></div>",
+      "css": ".ds-card { background: var(--color-surface, #15191A); border: 1px solid var(--color-line, #2A3033); border-radius: var(--radius-card, 14px); padding: 20px; transition: transform 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms, box-shadow 220ms; } .ds-card:hover { transform: translateY(-4px); border-color: color-mix(in oklab, #B4FF2E 45%, #2A3033); box-shadow: 0 24px 70px rgba(0,0,0,0.55); } .ds-card-title { font-family: var(--font-display, 'Saira Condensed', sans-serif); text-transform: uppercase; letter-spacing: -0.01em; font-weight: 600; color: #F2F4F1; margin: 0 0 8px; } .ds-card-body { font-family: var(--font-sans, 'Inter', sans-serif); color: #9BA39E; line-height: 1.6; margin: 0 0 12px; } .ds-card-metric { font-family: var(--font-mono, 'JetBrains Mono', monospace); font-feature-settings: 'tnum' 1; color: #B4FF2E; }"
+    },
+    {
+      "name": "Sticky Header",
+      "kind": "nav",
+      "refersTo": "nav-header",
+      "description": "Translucent graphite header with blur and a bottom hairline; minimal links, lime CTA.",
+      "html": "<header class=\"ds-header\"><span class=\"ds-logo\">BulkUp</span><nav class=\"ds-nav\"><a href=\"#features\">Funciones</a><a href=\"#faq\">FAQ</a></nav><button class=\"ds-nav-cta\">ENTRAR</button></header>",
+      "css": ".ds-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 24px; height: 72px; background: rgba(14,17,16,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-line, #2A3033); } .ds-logo { font-family: var(--font-display, 'Saira Condensed', sans-serif); text-transform: uppercase; font-weight: 800; color: #F2F4F1; } .ds-nav { display: flex; gap: 28px; } .ds-nav a { font-family: var(--font-sans, 'Inter', sans-serif); color: #F2F4F1; text-decoration: none; transition: color 150ms; } .ds-nav a:hover { color: var(--color-accent, #B4FF2E); } .ds-nav-cta { font-family: var(--font-display, 'Saira Condensed', sans-serif); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; color: #0E1110; background: var(--color-accent, #B4FF2E); border: none; border-radius: var(--radius-btn, 10px); padding: 8px 18px; cursor: pointer; }"
+    },
+    {
+      "name": "Data Strip",
+      "kind": "custom",
+      "refersTo": "data-strip",
+      "description": "Honest proof points in mono separated by hairlines; numbers in lime. No invented logos or fake counters.",
+      "html": "<div class=\"ds-datastrip\"><span><b>1.000+</b> ejercicios</span><span><b>1RM</b> fórmulas reales</span><span><b>iOS</b> + Apple Watch</span></div>",
+      "css": ".ds-datastrip { display: flex; flex-wrap: wrap; gap: 0; font-family: var(--font-mono, 'JetBrains Mono', monospace); font-feature-settings: 'tnum' 1; color: #9BA39E; } .ds-datastrip span { padding: 8px 20px; border-left: 1px solid var(--color-line, #2A3033); } .ds-datastrip span:first-child { border-left: none; } .ds-datastrip b { color: var(--color-accent, #B4FF2E); font-weight: 600; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Graphite & Voltage",
+    "overview": "A pre-dawn weight room: matte graphite, dropped barbells, one strip of electric light. Disciplined near-black surfaces (#0E1110, never pure black) carry weight and seriousness, punctuated by a single charge of electric lime (#B4FF2E) that fires only where progress is being made. Graphite is the eight-years-of-training discipline; lime is the spark of seeing you actually moved the bar. Typography is built like equipment: condensed uppercase Saira stacks like loaded plates, Hanken Grotesk handles neutral body, JetBrains Mono renders every datapoint as evidence. Surfaces have real depth: graphite gradient, film grain, genuine shadows, lime glow. It rejects generic SaaS chrome, the soft Foodnoms-light app it came from, loud supplement bro-marketing, and the cold corporate dashboard.",
+    "keyCharacteristics": [
+      "Graphite-dark canvas with a single electric-lime accent used as a razor (≤10% of any screen).",
+      "Condensed uppercase display (Saira) + neutral grotesque body (Hanken Grotesk) + mono for all data (JetBrains Mono).",
+      "Real depth: graphite gradient, film grain, genuine shadows, lime glow — never flat-shadowless.",
+      "Hierarchised radii (14 / 10 / 999 / 38px), not one friendly universal radius.",
+      "Numbers are the hero — data set as evidence, in mono, often in lime."
+    ],
+    "rules": [
+      { "name": "The Razor Rule", "body": "Electric lime covers ≤10% of any surface: one headline word, the CTA, live metrics, one chart line, the focus ring. Paint a whole block lime and it reads as a supermarket protein bag.", "section": "colors" },
+      { "name": "The Two-Greens Rule", "body": "Lime means action/progress; Sky means done/logged. They never swap, and lime is never used to mean completed.", "section": "colors" },
+      { "name": "The No-Pillow Rule", "body": "Display type is condensed and uppercase. Rounded, friendly faces (Nunito and family) are forbidden — a rounded headline on a fitness brand is wearing slippers to the gym.", "section": "typography" },
+      { "name": "The Numbers-Are-Mono Rule", "body": "Any datapoint a user reads as proof (weight, %, max, streak, count, price) is set in JetBrains Mono, never body. Mono makes a number feel measured.", "section": "typography" },
+      { "name": "The Earned-Shadow Rule", "body": "Shadows are heavy and intentional under mockups and on hover, not sprinkled on every card at rest. Separate blocks by hairline and tone first, shadow second.", "section": "elevation" },
+      { "name": "The Never-Flat Rule", "body": "The canvas is always a graphite gradient with grain, never a uniform fill. A section that looks like a flat swatch is unfinished.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the canvas graphite (#0E1110) with the radial gradient + grain. Never a flat fill, never pure black.",
+      "Do ration electric lime to ≤10% of any screen (the Razor Rule).",
+      "Do set every datapoint in JetBrains Mono, frequently in lime — numbers are the proof.",
+      "Do set headlines in Saira Condensed uppercase with tight tracking; pair with Hanken Grotesk body and nothing rounder.",
+      "Do put graphite text (#0E1110) on any lime fill, and amber (#F59E0B) on errors.",
+      "Do use real shadows under mockups and .lift on hover; separate blocks with 1px #2A3033 hairlines.",
+      "Do write CTAs as verbs ('Quiero probarlo', 'Dame acceso'); keep waitlist/acceso anticipado out of the button and in the subtext."
+    ],
+    "donts": [
+      "Don't ship the soft consumer-app (Foodnoms-light) look: no white backgrounds, no rounded display type, no universal 26px radius, no flat-shadowless surfaces.",
+      "Don't drift into generic SaaS/tech-startup chrome: no hero-metric template, no eyebrow above every section, no corporate voice, no Pricing teaser before a free-email CTA.",
+      "Don't go loud supplement bro-marketing: no screaming neon, no hype, no poster clichés ('transforma tu vida', 'siguiente nivel', 'potenciar').",
+      "Don't become a cold corporate dashboard: no soulless gray-on-gray KPI tables.",
+      "Don't paint whole blocks lime, use a pill on the primary CTA, put light text on a lime fill, color an error lime, or fabricate a social-proof number.",
+      "Don't use a colored border-left/border-right stripe as an accent, gradient-clipped text, or decorative glassmorphism."
+    ]
+  }
+}

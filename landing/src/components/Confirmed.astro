@@ -4,7 +4,8 @@ const { locale, expired } = Astro.props;
 
 const t = {
   en: {
-    okTitle: "You're on the list 🎉",
+    eyebrow: expired ? 'LINK EXPIRED' : 'CONFIRMED',
+    okTitle: "You're on the list",
     okBody: "Thanks for confirming. We'll email you the moment BulkUp opens.",
     expTitle: 'This link expired',
     expBody: 'Confirmation links last 48 hours. Head back and join the waitlist again.',
@@ -12,7 +13,8 @@ const t = {
     home: '/',
   },
   es: {
-    okTitle: '¡Estás dentro! 🎉',
+    eyebrow: expired ? 'ENLACE CADUCADO' : 'CONFIRMADO',
+    okTitle: 'Estás dentro',
     okBody: 'Gracias por confirmar. Te avisaremos en cuanto BulkUp abra.',
     expTitle: 'Este enlace caducó',
     expBody: 'Los enlaces de confirmación duran 48 horas. Vuelve y únete a la lista otra vez.',
@@ -24,12 +26,58 @@ const t = {
 const title = expired ? t.expTitle : t.okTitle;
 const bodyText = expired ? t.expBody : t.okBody;
 ---
-<main class="min-h-screen grid place-items-center bg-bg px-6 text-center">
-  <div class="max-w-md w-full rounded-[26px] border border-line bg-surface-2 p-10">
-    <p class="text-xl font-extrabold tracking-tight text-fg">Bulk<span class="text-accent">Up</span></p>
-    <h1 class="mt-6 text-3xl font-extrabold tracking-tight text-fg">{title}</h1>
-    <p class="mt-3 text-muted">{bodyText}</p>
-    <a href={t.home} class="press mt-8 inline-block rounded-[16px] bg-accent px-7 py-3 font-bold text-ink no-underline">
+<main
+  class="relative isolate grain min-h-screen grid place-items-center px-6 text-center"
+  style="background: var(--color-bg);"
+>
+  <!-- Radial lime glow -->
+  <div
+    aria-hidden="true"
+    class="glow-pulse pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[560px] w-[560px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full"
+    style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);"
+  ></div>
+
+  <div
+    class="hairline lift relative w-full max-w-md p-10 text-center"
+    style="border-radius: var(--radius-card); background: var(--color-surface-2);"
+  >
+    <!-- Wordmark -->
+    <p
+      class="mono text-sm font-bold tracking-[0.2em] uppercase"
+      style="color: var(--color-muted);"
+    >
+      Bulk<span style="color: var(--color-accent);">Up</span>
+    </p>
+
+    <!-- Eyebrow -->
+    <p class="eyebrow mt-6 mb-4">{t.eyebrow}</p>
+
+    <!-- Title -->
+    <h1
+      class="h2 text-balance"
+      style="color: var(--color-fg);"
+    >{title}</h1>
+
+    <!-- Body -->
+    <p
+      class="mt-4 text-pretty"
+      style="color: var(--color-muted);"
+    >{bodyText}</p>
+
+    <!-- CTA -->
+    <a
+      href={t.home}
+      class="press sweep mt-8 inline-block font-bold no-underline"
+      style="
+        background: var(--color-accent);
+        color: #0E1110;
+        border-radius: var(--radius-btn);
+        padding: 0.75rem 1.75rem;
+        font-family: var(--font-display);
+        font-size: 0.9375rem;
+        letter-spacing: 0.01em;
+      "
+    >
       {t.cta}
     </a>
   </div>

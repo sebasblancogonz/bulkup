@@ -1,0 +1,103 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import Reveal from '../Reveal.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+
+const scarcity =
+  locale === 'es'
+    ? 'Los primeros en la lista. Plazas de fundador limitadas.'
+    : 'First on the list. Founder spots are limited.';
+const checkLabel = locale === 'es' ? 'check-in diario' : 'daily check-in';
+const adherenceLabel = locale === 'es' ? '% de cumplimiento real' : 'real adherence %';
+---
+<section class="relative grain" style="padding-block: var(--section-pad);">
+  <div class="mx-auto px-6" style="max-width: var(--container);">
+    <div class="grid items-center gap-12 lg:gap-20 lg:grid-cols-2">
+
+      <!-- ── Copy column ─────────────────────────────────────────────── -->
+      <Reveal client:visible variant="left" className="order-1">
+        <h2 class="h2 text-balance mb-5">{t('community.title')}</h2>
+        <p class="text-pretty mb-9 max-w-xl" style="color: var(--color-muted);">
+          {t('community.body')}
+        </p>
+
+        <!-- ── Honest social proof ─────────────────────────────────── -->
+        <Reveal client:visible variant="up" delay={0.1}>
+          <div
+            class="lift hairline px-6 py-6 sm:max-w-md"
+            style="border-radius: var(--radius-card); background: var(--color-surface);"
+          >
+            <p
+              class="font-semibold"
+              style="font-family: var(--font-display); text-transform: none; font-size: clamp(1.2rem, 2.4vw, 1.6rem); letter-spacing: -0.01em; line-height: 1.15;"
+            >
+              {scarcity}
+            </p>
+
+            <!-- Honest, datapoint-driven facts (no invented numbers) -->
+            <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-1 border-t pt-5" style="border-color: var(--color-line);">
+              <dt class="mono text-lg" style="color: var(--color-accent); font-weight: 700;">{locale === 'es' ? 'Tu %' : 'Your %'}</dt>
+              <dt class="mono text-lg" style="color: var(--color-fg); font-weight: 700;">{locale === 'es' ? '1×/día' : '1×/day'}</dt>
+              <dd class="text-xs" style="color: var(--color-muted);">{adherenceLabel}</dd>
+              <dd class="text-xs" style="color: var(--color-muted);">{checkLabel}</dd>
+            </dl>
+          </div>
+        </Reveal>
+      </Reveal>
+
+      <!-- ── Visual column ───────────────────────────────────────────── -->
+      <Reveal client:visible variant="right" delay={0.06} className="order-2">
+        <div class="relative">
+          <!-- Lime radial glow behind the mockup -->
+          <div class="glow absolute inset-0 -z-10"></div>
+
+          <figure
+            class="relative grain overflow-hidden hairline lift"
+            style="border-radius: var(--radius-card); aspect-ratio: 16 / 11; background: #0E1110;"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1775654792362-2eed733e9470?auto=format&fit=crop&fm=webp&w=900&q=72"
+              alt={locale === 'es'
+                ? 'Dos personas chocan los puños tras un set'
+                : 'Two people fist-bump after a set'}
+              width="1200"
+              height="825"
+              loading="lazy"
+              decoding="async"
+              class="block h-full w-full object-cover"
+              style="filter: grayscale(0.28) contrast(1.04) brightness(0.86) saturate(1.0);"
+            />
+            <!-- Overlay grafito: funde la stock con el fondo y mantiene legible el texto -->
+            <div
+              class="absolute inset-0"
+              style="background: linear-gradient(180deg, rgba(14,17,16,0.35), rgba(14,17,16,0.72));"
+            ></div>
+            <div
+              class="glow-pulse absolute -top-1/4 -left-1/4 h-2/3 w-2/3"
+              style="background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);"
+            ></div>
+            <span
+              class="absolute left-5 top-5 mono text-[11px] tracking-[0.18em] uppercase"
+              style="color: var(--color-muted);"
+            >// crew · streaks · check-in</span>
+          </figure>
+
+          <!-- Phone mockup overlapping the photo, real shadow -->
+          <figure class="phone lift absolute -bottom-10 -left-2 w-[40%] max-w-[200px] sm:-left-6">
+            <img
+              src="/continue_workout.webp"
+              alt={locale === 'es'
+                ? 'Pantalla de BulkUp con el check-in diario y el porcentaje de cumplimiento del grupo'
+                : "BulkUp screen showing the daily check-in and the group's adherence percentage"}
+              loading="lazy"
+              decoding="async"
+              class="block h-full w-full object-cover"
+            />
+          </figure>
+        </div>
+      </Reveal>
+
+    </div>
+  </div>
+</section>

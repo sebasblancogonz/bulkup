@@ -1,0 +1,221 @@
+---
+import { useT, type Locale } from '../../i18n/ui';
+import Reveal from '../Reveal.tsx';
+const { locale } = Astro.props as { locale: Locale };
+const t = useT(locale);
+
+// Two-tone heading: last word in lime (razor, not brush).
+const heading = t('progress.title');
+const lastSpace = heading.lastIndexOf(' ');
+const headA = lastSpace >= 0 ? heading.slice(0, lastSpace + 1) : '';
+const headB = lastSpace >= 0 ? heading.slice(lastSpace + 1) : heading;
+
+// Body weight datapoints (kg) — drives the SVG line. Last point = "logged today".
+const series = [82.4, 82.1, 81.6, 81.0, 80.7, 80.1, 79.6, 79.2];
+const W = 520;
+const H = 200;
+const PAD = 16;
+const min = Math.min(...series) - 0.6;
+const max = Math.max(...series) + 0.6;
+const xOf = (i: number) => PAD + (i * (W - PAD * 2)) / (series.length - 1);
+const yOf = (v: number) => PAD + ((max - v) / (max - min)) * (H - PAD * 2);
+const points = series.map((v, i) => [xOf(i), yOf(v)] as const);
+const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+const areaPath = `${linePath} L${xOf(series.length - 1).toFixed(1)} ${H - PAD} L${PAD} ${H - PAD} Z`;
+const lastPt = points[points.length - 1];
+
+const stats = [
+  { label: locale === 'es' ? 'Peso' : 'Weight', value: '79.2', unit: 'kg', delta: '-3.2' },
+  { label: locale === 'es' ? 'Grasa' : 'Body fat', value: '14.1', unit: '%', delta: '-2.4' },
+  { label: locale === 'es' ? 'Magra' : 'Lean mass', value: '68.0', unit: 'kg', delta: '+1.1' },
+];
+---
+<section id="progress" class="relative max-w-[1200px] mx-auto px-6 py-[var(--section-pad)]">
+  <div class="grid lg:grid-cols-2 gap-14 lg:gap-20 items-center">
+
+    <!-- Left: copy + live line chart + data row -->
+    <div class="order-2 lg:order-1">
+      <Reveal client:load variant="up">
+        <h2 class="h2 text-balance max-w-xl mb-6">
+          <span class="text-[var(--color-fg)]">{headA}</span><span class="tone-accent">{headB}</span>
+        </h2>
+        <p class="text-[var(--color-muted)] text-[1.0625rem] sm:text-lg leading-[1.6] max-w-xl">
+          {t('progress.body')}
+        </p>
+      </Reveal>
+
+      <Reveal client:load variant="up" delay={0.08}>
+        <div class="mt-9 rounded-[var(--radius-card)] hairline bg-[var(--color-surface)] p-5 sm:p-6 overflow-hidden">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs tracking-[0.16em] uppercase text-[var(--color-muted)] font-[var(--font-display)] font-semibold">
+              {locale === 'es' ? 'Peso corporal · 8 sem' : 'Body weight · 8 wk'}
+            </span>
+            <span class="mono text-xs text-[var(--color-accent)]">-3.2 kg</span>
+          </div>
+
+          <svg
+            data-chart
+            viewBox={`0 0 ${W} ${H}`}
+            class="w-full h-auto"
+            role="img"
+            aria-label={locale === 'es'
+              ? 'Gráfico de peso corporal bajando de 82,4 a 79,2 kg en 8 semanas'
+              : 'Body weight chart dropping from 82.4 to 79.2 kg over 8 weeks'}
+          >
+            <defs>
+              <linearGradient id="pw-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.18" />
+                <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+
+            <!-- baseline grid hairlines -->
+            {[0.25, 0.5, 0.75].map((f) => (
+              <line
+                x1={PAD} x2={W - PAD}
+                y1={(PAD + f * (H - PAD * 2)).toFixed(1)}
+                y2={(PAD + f * (H - PAD * 2)).toFixed(1)}
+                stroke="var(--color-line)" stroke-width="1"
+              />
+            ))}
+
+            <path d={areaPath} fill="url(#pw-fill)" class="pw-area" />
+            <path
+              d={linePath}
+              fill="none"
+              stroke="var(--color-accent)"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="draw pw-line"
+            />
+
+            <!-- intermediate logged points -->
+            {points.slice(0, -1).map((p) => (
+              <circle cx={p[0].toFixed(1)} cy={p[1].toFixed(1)} r="3" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="1.5" class="pw-dot" />
+            ))}
+            <!-- last point = "registrado hoy / logged today" — uses sky #00A9DD -->
+            <circle cx={lastPt[0].toFixed(1)} cy={lastPt[1].toFixed(1)} r="6" fill="var(--color-sky)" class="pw-dot pw-dot-last" />
+            <circle cx={lastPt[0].toFixed(1)} cy={lastPt[1].toFixed(1)} r="6" fill="none" stroke="var(--color-sky)" stroke-width="2" class="pw-ping" />
+          </svg>
+
+          <!-- honesty: this visualization uses an illustrative series -->
+          <p class="mono text-[10px] tracking-[0.08em] text-[var(--color-muted)] opacity-70 mt-2">{t('progress.sample')}</p>
+
+          <!-- data row, mono -->
+          <div class="grid grid-cols-3 gap-3 mt-4 pt-5 border-t border-[var(--color-line)]">
+            {stats.map((s) => (
+              <div>
+                <span class="block text-[11px] tracking-[0.12em] uppercase text-[var(--color-muted)] font-[var(--font-display)] font-semibold mb-1">{s.label}</span>
+                <span class="mono text-xl sm:text-2xl text-[var(--color-fg)] leading-none">{s.value}</span>
+                <span class="mono text-xs text-[var(--color-muted)] ml-1">{s.unit}</span>
+                <span class={`mono block text-xs mt-1 ${s.delta.startsWith('+') ? 'text-[var(--color-accent)]' : 'text-[var(--color-muted)]'}`}>{s.delta} {s.unit}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Reveal>
+    </div>
+
+    <!-- Right: phone mockup (progress.png) + Apple Watch activity-ring chip -->
+    <div class="order-1 lg:order-2 relative">
+      <Reveal client:load variant="scale">
+        <div class="glow relative flex justify-center">
+          <div class="glow-pulse absolute inset-0 -z-10" aria-hidden="true"></div>
+          <div class="phone w-[250px] sm:w-[280px] lift">
+            <img
+              src="/progress.webp"
+              alt={locale === 'es'
+                ? 'Pantalla de progreso de BulkUp con peso, grasa y masa magra'
+                : 'BulkUp progress screen with weight, body fat and lean mass'}
+              width="280" height="606"
+              loading="lazy"
+              class="w-full h-full object-cover block"
+            />
+          </div>
+
+          <!-- Apple Watch activity-ring chip floating over the mockup -->
+          <div class="absolute -bottom-5 -left-3 sm:-left-6 rounded-[var(--radius-card)] hairline bg-[var(--color-surface-2)] shadow-[var(--shadow-card)] px-4 py-3 flex items-center gap-3">
+            <div class="watch-ring" role="img" aria-label={locale === 'es' ? 'Anillo de actividad del Apple Watch' : 'Apple Watch activity ring'}></div>
+            <div class="leading-tight">
+              <span class="block text-[11px] tracking-[0.12em] uppercase text-[var(--color-muted)] font-[var(--font-display)] font-semibold">Apple Watch</span>
+              <span class="mono text-sm text-[var(--color-fg)]">142 <span class="text-[var(--color-muted)]">bpm</span></span>
+              <span class="mono block text-[9px] tracking-[0.08em] text-[var(--color-muted)] opacity-70 mt-0.5">{t('progress.sample')}</span>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Chart draw-on-scroll: length set per-path, animation toggled by IO class.
+     We reuse the global .draw keyframes but trigger via .in-view (this section
+     uses motion/react Reveal which does NOT add .is-in). */
+  .pw-line { --draw-len: 760; }
+  .pw-area { opacity: 0; transition: opacity 600ms var(--ease-out) 500ms; }
+  .pw-dot { opacity: 0; transition: opacity 300ms var(--ease-out); }
+
+  [data-chart].in-view .pw-line { animation: draw 1.4s var(--ease-out) forwards; }
+  [data-chart].in-view .pw-area { opacity: 1; }
+  [data-chart].in-view .pw-dot { opacity: 1; }
+  [data-chart].in-view .pw-dot:nth-of-type(1) { transition-delay: 700ms; }
+  [data-chart].in-view .pw-dot:nth-of-type(2) { transition-delay: 800ms; }
+  [data-chart].in-view .pw-dot:nth-of-type(3) { transition-delay: 900ms; }
+  [data-chart].in-view .pw-dot:nth-of-type(4) { transition-delay: 1000ms; }
+  [data-chart].in-view .pw-dot:nth-of-type(5) { transition-delay: 1100ms; }
+  [data-chart].in-view .pw-dot:nth-of-type(6) { transition-delay: 1200ms; }
+  [data-chart].in-view .pw-dot:nth-of-type(7) { transition-delay: 1300ms; }
+  [data-chart].in-view .pw-dot-last { transition-delay: 1450ms; }
+
+  [data-chart].in-view .pw-ping {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pw-ping 2.2s var(--ease-out) 1.5s infinite;
+  }
+  @keyframes pw-ping {
+    0%   { opacity: 0.6; transform: scale(1); }
+    70%, 100% { opacity: 0; transform: scale(2.4); }
+  }
+
+  /* Apple Watch activity ring (placeholder — conic-gradient, lime + sky). */
+  .watch-ring {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background:
+      conic-gradient(var(--color-accent) 0% 72%, var(--color-line) 72% 100%);
+    -webkit-mask: radial-gradient(circle 11px at 50% 50%, transparent 98%, #000 100%);
+            mask: radial-gradient(circle 11px at 50% 50%, transparent 98%, #000 100%);
+    box-shadow: 0 0 14px var(--color-accent-glow);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pw-line { animation: none !important; stroke-dashoffset: 0 !important; }
+    .pw-area, .pw-dot { opacity: 1 !important; transition: none !important; }
+    .pw-ping { animation: none !important; }
+  }
+</style>
+
+<script>
+  // Trigger the chart draw once it scrolls into view (Reveal uses motion/react,
+  // which doesn't emit the global .is-in hook the .draw util listens for).
+  const chart = document.querySelector('[data-chart]');
+  if (chart) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      chart.classList.add('in-view');
+    } else {
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('in-view');
+            io.unobserve(e.target);
+          }
+        }
+      }, { threshold: 0.4 });
+      io.observe(chart);
+    }
+  }
+</script>
