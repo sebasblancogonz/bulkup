@@ -98,6 +98,7 @@ class WorkoutSessionManager: ObservableObject {
             dayName: dayName,
             state: WorkoutActivityController.contentState(from: live)
         )
+        PhoneWCManager.shared.broadcast()
     }
 
     /// Mark sets as completed if they already have weight data saved
@@ -163,6 +164,7 @@ class WorkoutSessionManager: ObservableObject {
             WorkoutActivityController.shared.finish(state: finished)
         }
         SharedWorkoutStore.save(nil)
+        PhoneWCManager.shared.broadcast()
         return summary
     }
 
@@ -382,6 +384,7 @@ class WorkoutSessionManager: ObservableObject {
         WorkoutActivityController.shared.update(
             WorkoutActivityController.contentState(from: w)
         )
+        PhoneWCManager.shared.broadcast()
     }
 
     /// Rebuild the shared store's per-set weight/reps/completed from the current
@@ -488,6 +491,7 @@ class WorkoutSessionManager: ObservableObject {
         WorkoutActivityController.shared.update(
             WorkoutActivityController.contentState(from: w)
         )
+        PhoneWCManager.shared.broadcast()
     }
 
     // MARK: - Darwin Bridge
@@ -663,12 +667,14 @@ class WorkoutSessionManager: ObservableObject {
         restTimerRemaining = 0
         restEndTime = nil
         restTimer?.cancel()
+        PhoneWCManager.shared.broadcast()
     }
 
     func addRestTime(seconds: Int) {
         restTimerRemaining += seconds
         restTimerTotal += seconds
         restEndTime = (restEndTime ?? Date()).addingTimeInterval(TimeInterval(seconds))
+        PhoneWCManager.shared.broadcast()
     }
 
     // MARK: - Elapsed Timer
