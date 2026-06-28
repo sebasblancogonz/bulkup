@@ -63,7 +63,8 @@ export async function sendWithRetry(
       if (error) {
         const name = (error as { name?: string }).name ?? '';
         if (RETRYABLE_NAMES.has(name) && !last) {
-          await sleep(baseDelayMs * 2 ** attempt);
+          const delay = baseDelayMs * 2 ** attempt;
+          await sleep(delay + (delay > 0 ? Math.floor(Math.random() * 250) : 0));
           continue;
         }
         // Permanent error — throw a sentinel that bypasses the retry catch.
@@ -76,7 +77,8 @@ export async function sendWithRetry(
 
       // Network / timeout error — retry if not last attempt.
       if (!last) {
-        await sleep(baseDelayMs * 2 ** attempt);
+        const delay = baseDelayMs * 2 ** attempt;
+        await sleep(delay + (delay > 0 ? Math.floor(Math.random() * 250) : 0));
         continue;
       }
       throw e;
