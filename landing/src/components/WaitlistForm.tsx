@@ -13,6 +13,7 @@ export default function WaitlistForm({
 }: Props) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<'idle' | 'loading' | 'success' | 'error' | 'rate' | 'invalid'>('idle');
+  const retryLabel = locale === 'es' ? 'Reintentar' : 'Try again';
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -52,7 +53,7 @@ export default function WaitlistForm({
             />
             <button type="submit" disabled={state === 'loading'}
               className="sweep press rounded-[var(--radius-btn)] bg-[var(--color-accent)] text-[var(--color-bg)] font-bold uppercase tracking-[0.04em] font-[var(--font-display)] text-[1.05rem] px-7 py-3.5 disabled:opacity-60 whitespace-nowrap">
-              {state === 'loading' ? (loadingMsg ?? '…') : ctaLabel}
+              {state === 'loading' ? (loadingMsg ?? '…') : (state === 'error' || state === 'rate') ? retryLabel : ctaLabel}
             </button>
           </form>
           {state === 'invalid' && <p className="text-[#F59E0B] text-sm mt-2" role="alert">{invalidMsg}</p>}

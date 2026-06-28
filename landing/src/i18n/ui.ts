@@ -15,7 +15,7 @@ export const ui = {
     // HERO
     'hero.eyebrow': 'TRAIN. LOG. PROGRESS.',
     'hero.title': 'Your plan, turned into an app that measures.',
-    'hero.subtitle': 'Drop a photo or PDF of your plan. The app does the rest: every set, every meal, every kilo — logged. No copying it by hand into a notebook or a spreadsheet.',
+    'hero.subtitle': 'Drop a photo or the PDF and the app logs every set, meal and kilo for you.',
     'hero.cta': 'I want in',
     'hero.placeholder': 'you@email.com',
     'hero.reassure': 'No spam. Just the launch heads-up.',
@@ -94,7 +94,7 @@ export const ui = {
     // HERO
     'hero.eyebrow': 'ENTRENA. REGISTRA. PROGRESA.',
     'hero.title': 'Tu plan, convertido en una app que mide.',
-    'hero.subtitle': 'Sube una foto o el PDF de tu plan. Lo demás lo hace la app: registras cada serie, cada comida y cada kilo. Sin copiarlo a mano a una libreta ni a un Excel.',
+    'hero.subtitle': 'Sube una foto o el PDF y la app registra cada serie, comida y kilo por ti.',
     'hero.cta': 'Quiero probarlo',
     'hero.placeholder': 'tu@email.com',
     'hero.reassure': 'Sin spam. Solo el aviso de lanzamiento.',
