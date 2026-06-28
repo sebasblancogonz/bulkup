@@ -84,7 +84,13 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
             SharedWorkoutStore.skipRest()
         case .addRest(let s):
             SharedWorkoutStore.addRest(s)
-        case .finishWorkout(let metrics):
+        case .finishWorkout(let live, let metrics):
+            if let live {
+                // Adopt the watch's authoritative final state (offline-completed sets + weights)
+                // into the live session before finishing, so the saved record is correct.
+                SharedWorkoutStore.save(live)
+                wsm.reconcileFromStore(trainingManager: tm)
+            }
             WorkoutSessionManager.shared.pendingWatchMetrics = metrics
             _ = wsm.finishWorkout(trainingManager: tm)
             wsm.saveSessionToBackend(

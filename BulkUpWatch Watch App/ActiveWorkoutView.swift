@@ -44,7 +44,7 @@ struct ActiveWorkoutView: View {
                             finishing = true
                             Task {
                                 let m = await metrics.end()
-                                wc.send(.finishWorkout(metrics: m))
+                                wc.finishWorkout(metrics: m)
                             }
                         }
                         .disabled(finishing)

@@ -9,7 +9,7 @@ enum WatchMessage: Codable, Equatable {
     case adjustReps(delta: Int)
     case skipRest
     case addRest(seconds: Int)
-    case finishWorkout(metrics: WorkoutMetrics?)
+    case finishWorkout(live: LiveWorkout?, metrics: WorkoutMetrics?)
     case requestSync                 // ask the phone to re-send context
 }
 
@@ -33,12 +33,18 @@ enum WatchSync {
     #if DEBUG
     static func runSelfCheck() {
         // WatchMessage round-trip for every case.
+        let sampleLive = LiveWorkout(
+            dayName: "lunes", workoutName: "Push", startDate: Date(timeIntervalSince1970: 1_700_000_000),
+            isPaused: false, weightUnit: "kg", weightStep: 2.5, repStep: 1,
+            sets: [LiveWorkout.LiveSet(exerciseIndex: 0, exerciseName: "Press", setIndex: 0,
+                   setsTotalForExercise: 1, weight: 40, reps: 10, restSeconds: 60, completed: true)],
+            cursor: 1, restEndDate: nil)
         let msgs: [WatchMessage] = [
             .startWorkout(day: "Lunes"), .completeSet, .uncompleteSet,
             .adjustWeight(delta: 2.5), .adjustReps(delta: -1), .skipRest,
             .addRest(seconds: 30),
-            .finishWorkout(metrics: WorkoutMetrics(avgHeartRate: 142, maxHeartRate: 171, activeEnergyKcal: 320.5)),
-            .finishWorkout(metrics: nil),
+            .finishWorkout(live: sampleLive, metrics: WorkoutMetrics(avgHeartRate: 142, maxHeartRate: 171, activeEnergyKcal: 320.5)),
+            .finishWorkout(live: nil, metrics: nil),
             .requestSync,
         ]
         for m in msgs {
