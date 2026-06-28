@@ -5,6 +5,8 @@ describe('ratelimit (unconfigured)', () => {
   beforeEach(() => {
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.KV_REST_API_URL;
+    delete process.env.KV_REST_API_TOKEN;
   });
 
   it('allows (no-ops) when Upstash env is not configured', async () => {
