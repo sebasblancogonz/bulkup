@@ -37,8 +37,8 @@ const adherenceLabel = locale === 'es' ? '% de cumplimiento real' : 'real adhere
 
             <!-- Honest, datapoint-driven facts (no invented numbers) -->
             <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-1 border-t pt-5" style="border-color: var(--color-line);">
-              <dt class="mono text-lg" style="color: var(--color-accent); font-weight: 700;">100%</dt>
-              <dt class="mono text-lg" style="color: var(--color-fg); font-weight: 700;">1×día</dt>
+              <dt class="mono text-lg" style="color: var(--color-accent); font-weight: 700;">{locale === 'es' ? 'Tu %' : 'Your %'}</dt>
+              <dt class="mono text-lg" style="color: var(--color-fg); font-weight: 700;">{locale === 'es' ? '1×/día' : '1×/day'}</dt>
               <dd class="text-xs" style="color: var(--color-muted);">{adherenceLabel}</dd>
               <dd class="text-xs" style="color: var(--color-muted);">{checkLabel}</dd>
             </dl>
@@ -66,7 +66,7 @@ const adherenceLabel = locale === 'es' ? '% de cumplimiento real' : 'real adhere
               loading="lazy"
               decoding="async"
               class="block h-full w-full object-cover"
-              style="filter: grayscale(0.35) contrast(1.05) brightness(0.78) saturate(0.9);"
+              style="filter: grayscale(0.28) contrast(1.04) brightness(0.86) saturate(1.0);"
             />
             <!-- Overlay grafito: funde la stock con el fondo y mantiene legible el texto -->
             <div
@@ -86,7 +86,7 @@ const adherenceLabel = locale === 'es' ? '% de cumplimiento real' : 'real adhere
           <!-- Phone mockup overlapping the photo, real shadow -->
           <figure class="phone lift absolute -bottom-10 -left-2 w-[40%] max-w-[200px] sm:-left-6">
             <img
-              src="/continue_workout.png"
+              src="/continue_workout.webp"
               alt={locale === 'es'
                 ? 'Pantalla de BulkUp con el check-in diario y el porcentaje de cumplimiento del grupo'
                 : "BulkUp screen showing the daily check-in and the group's adherence percentage"}
