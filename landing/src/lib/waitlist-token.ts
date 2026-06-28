@@ -39,14 +39,13 @@ export function verifyWaitlistToken(token: string): VerifyResult {
   if (parts.length !== 2 || !parts[0] || !parts[1]) return { ok: false };
   const [body, sig] = parts;
 
-  let expected: string;
+  let expBuf: Buffer;
   try {
-    expected = b64url(crypto.createHmac('sha256', getSecret()).update(body).digest());
+    expBuf = crypto.createHmac('sha256', getSecret()).update(body).digest();
   } catch {
     return { ok: false };
   }
-  const sigBuf = Buffer.from(sig);
-  const expBuf = Buffer.from(expected);
+  const sigBuf = fromB64url(sig);
   if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
     return { ok: false };
   }

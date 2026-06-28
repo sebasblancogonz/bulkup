@@ -32,6 +32,13 @@ describe('waitlist-token', () => {
     expect(verifyWaitlistToken(token)).toEqual({ ok: false });
   });
 
+  it('rejects a valid-length but wrong signature', () => {
+    const a = signWaitlistToken('a@b.com', 'en');
+    const b = signWaitlistToken('c@d.com', 'en'); // different signature, same length
+    const forged = `${a.split('.')[0]}.${b.split('.')[1]}`;
+    expect(verifyWaitlistToken(forged)).toEqual({ ok: false });
+  });
+
   it('rejects malformed input', () => {
     expect(verifyWaitlistToken('garbage')).toEqual({ ok: false });
     expect(verifyWaitlistToken('')).toEqual({ ok: false });
