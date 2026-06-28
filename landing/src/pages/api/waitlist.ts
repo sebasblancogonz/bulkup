@@ -5,6 +5,7 @@ import { validateWaitlist } from '../../lib/waitlist';
 import { checkWaitlistRateLimit } from '../../lib/ratelimit';
 import { signWaitlistToken } from '../../lib/waitlist-token';
 import { sendWithRetry } from '../../lib/send-email';
+import { publicOrigin } from '../../lib/origin';
 import { WaitlistConfirmEmail } from '../../../emails/waitlist-confirm';
 
 export const prerender = false;
@@ -17,7 +18,7 @@ const SUBJECT = {
   es: 'Confirma tu correo — BulkUp',
 } as const;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, site }) => {
   let body: Record<string, string> = {};
   const ct = request.headers.get('content-type') ?? '';
   try {
@@ -51,7 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
   // user confirms (see api/waitlist/confirm.ts). No contact is created here.
   try {
     const token = signWaitlistToken(result.email, locale);
-    const origin = new URL(request.url).origin;
+    const origin = publicOrigin({ site, request, isDev: import.meta.env.DEV });
     const confirmUrl = `${origin}/api/waitlist/confirm?token=${encodeURIComponent(token)}`;
     const idempotencyKey = 'wl-' + crypto.createHash('sha256').update(token).digest('hex');
 
