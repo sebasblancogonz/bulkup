@@ -35,6 +35,27 @@ struct LiveWorkout: Codable, Equatable {
         while i < sets.count && sets[i].completed { i += 1 }
         cursor = i
     }
+
+    mutating func completeCurrentSet() {
+        guard let s0 = current else { return }
+        var s = s0
+        s.completed = true
+        sets[cursor] = s
+        restEndDate = s.restSeconds > 0 ? Date().addingTimeInterval(TimeInterval(s.restSeconds)) : nil
+        advanceCursor()
+    }
+    mutating func adjustWeight(_ delta: Double) {
+        guard current != nil else { return }
+        sets[cursor].weight = max(0, sets[cursor].weight + delta)
+    }
+    mutating func adjustReps(_ delta: Int) {
+        guard current != nil else { return }
+        sets[cursor].reps = max(0, sets[cursor].reps + delta)
+    }
+    mutating func skipRest() { restEndDate = nil }
+    mutating func addRest(_ seconds: Int) {
+        restEndDate = (restEndDate ?? Date()).addingTimeInterval(TimeInterval(seconds))
+    }
 }
 
 enum SharedWorkoutStore {
@@ -58,31 +79,11 @@ enum SharedWorkoutStore {
     }
 
     // MARK: Pure mutations (used by intents AND the app)
-    static func completeCurrentSet() {
-        guard var w = load(), let s0 = w.current else { return }
-        var s = s0
-        s.completed = true
-        w.sets[w.cursor] = s
-        w.restEndDate = s.restSeconds > 0 ? Date().addingTimeInterval(TimeInterval(s.restSeconds)) : nil
-        w.advanceCursor()
-        save(w)
-    }
-    static func adjustWeight(_ delta: Double) {
-        guard var w = load(), w.current != nil else { return }
-        w.sets[w.cursor].weight = max(0, w.sets[w.cursor].weight + delta)
-        save(w)
-    }
-    static func adjustReps(_ delta: Int) {
-        guard var w = load(), w.current != nil else { return }
-        w.sets[w.cursor].reps = max(0, w.sets[w.cursor].reps + delta)
-        save(w)
-    }
-    static func skipRest() { guard var w = load() else { return }; w.restEndDate = nil; save(w) }
-    static func addRest(_ seconds: Int) {
-        guard var w = load() else { return }
-        w.restEndDate = (w.restEndDate ?? Date()).addingTimeInterval(TimeInterval(seconds))
-        save(w)
-    }
+    static func completeCurrentSet() { guard var w = load(), w.current != nil else { return }; w.completeCurrentSet(); save(w) }
+    static func adjustWeight(_ delta: Double) { guard var w = load(), w.current != nil else { return }; w.adjustWeight(delta); save(w) }
+    static func adjustReps(_ delta: Int) { guard var w = load(), w.current != nil else { return }; w.adjustReps(delta); save(w) }
+    static func skipRest() { guard var w = load() else { return }; w.skipRest(); save(w) }
+    static func addRest(_ seconds: Int) { guard var w = load() else { return }; w.addRest(seconds); save(w) }
 }
 
 #if DEBUG
@@ -120,6 +121,30 @@ extension SharedWorkoutStore {
             cursor: 0, restEndDate: nil
         )
         assert(fresh.current?.exerciseName == "Press", "fresh start must show the first exercise")
+
+        // Slice 3a: LiveWorkout instance mutations.
+        var lm = LiveWorkout(
+            dayName: "Lunes", workoutName: "Push", startDate: Date(), isPaused: false,
+            weightUnit: "kg", weightStep: 2.5, repStep: 1,
+            sets: [
+                .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 2,
+                      weight: 40, reps: 10, restSeconds: 90, completed: false),
+                .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 1, setsTotalForExercise: 2,
+                      weight: 40, reps: 10, restSeconds: 0, completed: false),
+            ],
+            cursor: 0, restEndDate: nil)
+        lm.completeCurrentSet()
+        assert(lm.sets[0].completed && lm.cursor == 1 && lm.restEndDate != nil, "complete advances + sets rest")
+        lm.adjustWeight(-1000)
+        assert(lm.sets[1].weight == 0, "weight clamps at 0")
+        lm.adjustReps(5)
+        assert(lm.sets[1].reps == 15, "reps adjust")
+        lm.skipRest()
+        assert(lm.restEndDate == nil, "skipRest nils restEndDate")
+        lm.addRest(30)
+        assert(lm.restEndDate != nil, "addRest sets restEndDate")
+        lm.completeCurrentSet()
+        assert(lm.isFinished, "second complete -> finished")
     }
 }
 #endif
