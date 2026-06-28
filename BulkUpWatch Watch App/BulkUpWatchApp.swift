@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct BulkUpWatch_Watch_AppApp: App {
+    @StateObject private var wc = WatchWCManager()
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .environmentObject(wc)
+                .onAppear { wc.activate() }
         }
     }
 }

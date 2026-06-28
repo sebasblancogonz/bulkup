@@ -1,0 +1,52 @@
+//
+//  WatchWCManager.swift
+//  BulkUpWatch Watch App
+//
+
+import Foundation
+import WatchConnectivity
+
+@MainActor
+final class WatchWCManager: NSObject, ObservableObject, WCSessionDelegate {
+    @Published var ctx: WatchContext?
+    private var lastSeq = -1
+    private var session: WCSession? { WCSession.isSupported() ? WCSession.default : nil }
+
+    func activate() {
+        guard let session else { return }
+        session.delegate = self
+        session.activate()
+    }
+
+    /// Send an action to the phone. Prefer sendMessage when reachable; otherwise
+    /// queue with transferUserInfo so completions aren't lost.
+    func send(_ msg: WatchMessage) {
+        guard let session, let data = WatchSync.encode(msg) else { return }
+        if session.isReachable {
+            session.sendMessage([WatchSync.messageKey: data], replyHandler: nil, errorHandler: { _ in
+                session.transferUserInfo([WatchSync.messageKey: data])
+            })
+        } else {
+            session.transferUserInfo([WatchSync.messageKey: data])
+        }
+    }
+
+    private func apply(_ data: Data?) {
+        guard let next = WatchSync.decode(WatchContext.self, from: data), next.seq > lastSeq else { return }
+        lastSeq = next.seq
+        ctx = next
+    }
+
+    nonisolated func session(_ s: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
+        let data = applicationContext[WatchSync.contextKey] as? Data
+        Task { @MainActor in self.apply(data) }
+    }
+    nonisolated func session(_ s: WCSession, activationDidCompleteWith state: WCSessionActivationState, error: Error?) {
+        // Pull the latest applicationContext + ask for a fresh broadcast.
+        let data = s.receivedApplicationContext[WatchSync.contextKey] as? Data
+        Task { @MainActor in
+            self.apply(data)
+            self.send(.requestSync)
+        }
+    }
+}
