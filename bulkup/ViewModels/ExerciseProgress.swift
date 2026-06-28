@@ -23,10 +23,10 @@ enum ExerciseProgress {
     /// Per-week points for ONE exercise, sorted by weekStart ascending, with PR flags
     /// (a week is a PR if it beats every earlier week on top set / est-1RM).
     static func points(from records: [ServerWeightHistoryItem],
-                       exerciseName: String, exerciseIndex: Int) -> [ExerciseWeekPoint] {
+                       exerciseName: String, exerciseIndex: Int, planId: String) -> [ExerciseWeekPoint] {
         let target = fold(exerciseName)
         var byWeek: [String: ExerciseWeekPoint] = [:]
-        for r in records where fold(r.exerciseName) == target {
+        for r in records where fold(r.exerciseName) == target && (planId.isEmpty || r.planId == planId) {
             let sets = r.sets ?? []
             guard !sets.isEmpty else { continue }
             let top = sets.map(\.weight).max() ?? 0
@@ -64,7 +64,7 @@ extension ExerciseProgress {
             item("2026-05-25", "Press Bánca", [(70, 5)]),        // accented name still matches; PR
             item("2026-05-11", "Sentadilla", [(100, 5)]),        // other exercise, ignored
         ]
-        let p = points(from: recs, exerciseName: "press banca", exerciseIndex: 0)
+        let p = points(from: recs, exerciseName: "press banca", exerciseIndex: 0, planId: "p1")
         assert(p.count == 4, "4 weeks for Press Banca")
         assert(p.map(\.weekStart) == ["2026-05-04", "2026-05-11", "2026-05-18", "2026-05-25"], "sorted by week")
         assert(p[0].topSet == 62.5 && p[1].topSet == 65 && p[3].topSet == 70, "top set per week")

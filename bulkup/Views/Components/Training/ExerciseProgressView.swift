@@ -85,7 +85,11 @@ struct ExerciseProgressView: View {
     }
 
     private func isPR(_ p: ExerciseWeekPoint) -> Bool {
-        metric == .rm ? p.isEst1RMPR : p.isWeightPR
+        switch metric {
+        case .weight: return p.isWeightPR
+        case .rm: return p.isEst1RMPR
+        case .volume: return false
+        }
     }
 
     @ViewBuilder private var prList: some View {
@@ -109,7 +113,7 @@ struct ExerciseProgressView: View {
         defer { loading = false }
         guard weightTracking, let userId = AuthManager.shared.user?.id else { return }
         let recs = (try? await APIService.shared.loadWeightHistory(userId: userId, planId: planId)) ?? []
-        points = ExerciseProgress.points(from: recs, exerciseName: exerciseName, exerciseIndex: exerciseIndex)
+        points = ExerciseProgress.points(from: recs, exerciseName: exerciseName, exerciseIndex: exerciseIndex, planId: planId)
     }
 
     private func fmt(_ w: Double) -> String {
