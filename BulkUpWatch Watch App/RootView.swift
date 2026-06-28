@@ -13,9 +13,11 @@ struct RootView: View {
         } else if let plan = wc.ctx?.todaysPlan, !plan.exercises.isEmpty {
             TodayView(plan: plan)
         } else {
-            VStack(spacing: 8) {
-                Image(systemName: "iphone").font(.title2)
-                Text("Open BulkUp on your iPhone").font(.footnote).multilineTextAlignment(.center)
+            VStack(spacing: 10) {
+                Image(systemName: "dumbbell.fill").font(.title2).foregroundStyle(Color.lime)
+                Text("Open BulkUp on your iPhone")
+                    .font(.footnote).multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
             }.padding()
         }
     }

@@ -21,8 +21,10 @@ struct WatchContext: Codable, Equatable {
 }
 
 enum WatchSync {
-    static let messageKey = "msg"    // WCSession payload key for a WatchMessage
-    static let contextKey = "ctx"    // WCSession payload key for a WatchContext
+    // nonisolated: read from WCSession delegate methods + the @Sendable errorHandler
+    // closure, which are nonisolated even under the watch target's MainActor-by-default.
+    nonisolated static let messageKey = "msg"    // WCSession payload key for a WatchMessage
+    nonisolated static let contextKey = "ctx"    // WCSession payload key for a WatchContext
 
     static func encode<T: Encodable>(_ value: T) -> Data? { try? JSONEncoder().encode(value) }
     static func decode<T: Decodable>(_ type: T.Type, from data: Data?) -> T? {

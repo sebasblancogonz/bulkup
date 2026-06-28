@@ -5,6 +5,7 @@
 
 import Foundation
 import WatchConnectivity
+internal import Combine
 
 @MainActor
 final class WatchWCManager: NSObject, ObservableObject, WCSessionDelegate {
