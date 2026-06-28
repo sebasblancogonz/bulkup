@@ -70,7 +70,10 @@ extension ExerciseProgress {
         assert(p[0].topSet == 62.5 && p[1].topSet == 65 && p[3].topSet == 70, "top set per week")
         assert(p[0].volume == 60*10 + 62.5*8, "volume Σ w×reps")
         assert(p[0].isWeightPR && p[1].isWeightPR && !p[2].isWeightPR && p[3].isWeightPR, "PR flags")
-        assert(p[3].est1RM >= p[1].est1RM, "est-1RM rises into the PR week")
+        // Week 4 (70×5) is a WEIGHT PR but NOT a 1RM PR — fewer reps estimates a lower 1RM
+        // than week 2 (65×8), so the two PR kinds genuinely diverge.
+        assert(p[3].isWeightPR && !p[3].isEst1RMPR, "70×5 is a weight PR but not a 1RM PR")
+        assert(p[1].isEst1RMPR && p[1].est1RM > p[3].est1RM, "the 65×8 week holds the est-1RM PR")
     }
 }
 #endif
