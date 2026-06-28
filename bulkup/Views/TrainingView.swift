@@ -760,6 +760,17 @@ struct TrainingView: View {
                     )
                     .environmentObject(trainingManager)
                     .environmentObject(authManager)
+                    .contextMenu {
+                        NavigationLink {
+                            ExerciseProgressView(
+                                exerciseName: exercise.name,
+                                exerciseIndex: exercise.orderIndex,
+                                planId: trainingManager.trainingPlanId ?? "",
+                                weightTracking: exercise.weightTracking)
+                        } label: {
+                            Label("Ver progreso", systemImage: "chart.line.uptrend.xyaxis")
+                        }
+                    }
                 }
             }
         } else {
