@@ -39,6 +39,9 @@ final class WatchWCManager: NSObject, ObservableObject, WCSessionDelegate {
     func adjustReps(_ d: Int) { live?.adjustReps(d); send(.adjustReps(delta: d)) }
     func skipRest() { live?.skipRest(); send(.skipRest) }
     func addRest(_ s: Int) { live?.addRest(s); send(.addRest(seconds: s)) }
+    /// Finish: send the watch's authoritative LiveWorkout snapshot so the phone
+    /// persists the correct final state even if it was unreachable during the workout.
+    func finishWorkout(metrics: WorkoutMetrics?) { send(.finishWorkout(live: live, metrics: metrics)) }
 
     private func apply(_ data: Data?) {
         guard let next = WatchSync.decode(WatchContext.self, from: data), next.seq > lastSeq else { return }
