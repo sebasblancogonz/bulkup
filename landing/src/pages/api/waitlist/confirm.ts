@@ -23,8 +23,14 @@ export const GET: APIRoute = async ({ request }) => {
   if (apiKey) {
     try {
       const resend = new Resend(apiKey);
+      // Optional: bucket the confirmed signup into a Resend Segment.
+      const segmentId = import.meta.env.RESEND_SEGMENT_ID ?? process.env.RESEND_SEGMENT_ID;
       // Idempotent: re-confirming or an existing contact both land on success.
-      const { error } = await resend.contacts.create({ email: result.email, unsubscribed: false });
+      const { error } = await resend.contacts.create({
+        email: result.email,
+        unsubscribed: false,
+        ...(segmentId ? { segments: [{ id: segmentId }] } : {}),
+      });
       if (error) console.error('waitlist confirm contact error', error);
     } catch (e) {
       console.error('waitlist confirm threw', e);

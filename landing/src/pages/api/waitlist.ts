@@ -9,7 +9,9 @@ import { WaitlistConfirmEmail } from '../../../emails/waitlist-confirm';
 
 export const prerender = false;
 
-const FROM = 'BulkUp <waitlist@getbulkup.com>';
+// Configurable sender (must be a verified Resend domain); falls back to the brand default.
+const FROM =
+  import.meta.env.RESEND_FROM ?? process.env.RESEND_FROM ?? 'BulkUp <waitlist@getbulkup.com>';
 const SUBJECT = {
   en: 'Confirm your email — BulkUp',
   es: 'Confirma tu correo — BulkUp',
@@ -31,7 +33,7 @@ export const POST: APIRoute = async ({ request }) => {
   const result = validateWaitlist({
     email: String(body.email ?? ''),
     locale,
-    honeypot: String(body.website ?? ''),
+    honeypot: String(body.website ?? ''), // hidden field named "website"
   });
   if (!result.ok) {
     if (result.reason === 'spam') return json({ ok: true }, 200); // no signal to bots
@@ -45,6 +47,8 @@ export const POST: APIRoute = async ({ request }) => {
   const apiKey = import.meta.env.RESEND_API_KEY;
   if (!apiKey) return json({ ok: false, reason: 'server' }, 500);
 
+  // Double opt-in: send a confirmation email. The contact is created only after the
+  // user confirms (see api/waitlist/confirm.ts). No contact is created here.
   try {
     const token = signWaitlistToken(result.email, locale);
     const origin = new URL(request.url).origin;
