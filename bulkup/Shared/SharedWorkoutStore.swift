@@ -79,9 +79,9 @@ enum SharedWorkoutStore {
     }
 
     // MARK: Pure mutations (used by intents AND the app)
-    static func completeCurrentSet() { guard var w = load() else { return }; w.completeCurrentSet(); save(w) }
-    static func adjustWeight(_ delta: Double) { guard var w = load() else { return }; w.adjustWeight(delta); save(w) }
-    static func adjustReps(_ delta: Int) { guard var w = load() else { return }; w.adjustReps(delta); save(w) }
+    static func completeCurrentSet() { guard var w = load(), w.current != nil else { return }; w.completeCurrentSet(); save(w) }
+    static func adjustWeight(_ delta: Double) { guard var w = load(), w.current != nil else { return }; w.adjustWeight(delta); save(w) }
+    static func adjustReps(_ delta: Int) { guard var w = load(), w.current != nil else { return }; w.adjustReps(delta); save(w) }
     static func skipRest() { guard var w = load() else { return }; w.skipRest(); save(w) }
     static func addRest(_ seconds: Int) { guard var w = load() else { return }; w.addRest(seconds); save(w) }
 }
