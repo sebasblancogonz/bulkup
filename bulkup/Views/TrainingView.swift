@@ -254,6 +254,16 @@ struct TrainingView: View {
     private func markWorkoutComplete() {
         guard let userId = authManager.user?.id else { return }
 
+        // Persist the completed day so the Workouts ring counts it even when
+        // no weight was logged (pure-bodyweight days).
+        if let dayName = currentTrainingDay {
+            CompletedDaysStore.markCompleted(
+                planId: trainingManager.trainingPlanId,
+                weekStart: trainingManager.selectedWeek,
+                day: dayName
+            )
+        }
+
         Task {
             await friendsManager.toggleTodayCompletion(
                 userId: userId,
