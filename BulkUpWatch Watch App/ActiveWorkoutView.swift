@@ -26,6 +26,14 @@ struct ActiveWorkoutView: View {
                             .padding(.horizontal, 10).padding(.vertical, 3)
                             .background(Color.lime, in: Capsule())
 
+                        HStack(spacing: 4) {
+                            Image(systemName: "stopwatch")
+                            Text(timerInterval: live.startDate...Date.distantFuture, countsDown: false)
+                                .monospacedDigit()
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
                         if metrics.isRunning {
                             HStack(spacing: 16) {
                                 Label("\(metrics.heartRate)", systemImage: "heart.fill")
