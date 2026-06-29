@@ -35,7 +35,11 @@ final class WatchWCManager: NSObject, ObservableObject, WCSessionDelegate {
 
     // Optimistic: mutate the local working copy for instant UI, and send the action to
     // the phone (which stays authoritative — its next broadcast reconciles `live`).
-    func completeSet() { live?.completeCurrentSet(); send(.completeSet) }
+    func completeSet() {
+        guard let s = live?.current else { return }
+        live?.completeCurrentSet()
+        send(.completeSet(exerciseIndex: s.exerciseIndex, setIndex: s.setIndex, weight: s.weight, reps: s.reps))
+    }
     func adjustWeight(_ d: Double) { live?.adjustWeight(d); send(.adjustWeight(delta: d)) }
     func adjustReps(_ d: Int) { live?.adjustReps(d); send(.adjustReps(delta: d)) }
     func skipRest() { live?.skipRest(); send(.skipRest) }
