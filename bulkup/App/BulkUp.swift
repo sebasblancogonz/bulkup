@@ -26,6 +26,7 @@ struct BulkUp: App {
         ExerciseWeightLogger.runSelfCheck()
         APIService.runDateParsingSelfCheck()
         WorkoutVideoStore.runSelfCheck()
+        CompletedDaysStore.runSelfCheck()
         ExerciseProgress.runSelfCheck()
 #endif
 

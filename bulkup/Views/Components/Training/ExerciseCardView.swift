@@ -350,6 +350,27 @@ struct ExerciseWeightLogger: View {
                 } else {
                     normalModeContent
                 }
+            } else if isWorkoutMode {
+                // Non-weight exercise in active workout: show per-set completion rows
+                VStack(spacing: 8) {
+                    ForEach(0..<totalSetsCount, id: \.self) { setIndex in
+                        HStack {
+                            Text("Serie \(setIndex + 1)")
+                                .font(BulkUpFont.body())
+                                .foregroundColor(BulkUpColors.textPrimary)
+                            Spacer()
+                            completeButton(setIndex: setIndex)
+                        }
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 4)
+                        .background(
+                            workoutSession.isSetCompleted(
+                                day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex
+                            ) ? BulkUpColors.accent.opacity(0.04) : Color.clear
+                        )
+                        .cornerRadius(8)
+                    }
+                }
             } else {
                 Text("Sin seguimiento de peso")
                     .font(BulkUpFont.caption())
@@ -504,6 +525,44 @@ struct ExerciseWeightLogger: View {
         }
     }
 
+    /// Shared check button used both in `workoutSetRow` (weight-tracking exercises)
+    /// and in the non-weight per-set completion rows. Tapping toggles `completedSetIds`
+    /// via the existing `completeSetAndSave` / `uncompleteSet` path.
+    @ViewBuilder
+    private func completeButton(setIndex: Int) -> some View {
+        let isCompleted = workoutSession.isSetCompleted(
+            day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex
+        )
+        Button {
+            if isCompleted {
+                workoutSession.uncompleteSet(
+                    day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex
+                )
+            } else {
+                completeSetAndSave(setIndex: setIndex)
+            }
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(isCompleted ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
+                    .frame(width: 32, height: 32)
+                if isCompleted {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(BulkUpColors.onAccent)
+                }
+            }
+            .overlay(
+                Circle()
+                    .stroke(
+                        isCompleted ? BulkUpColors.accent : BulkUpColors.textTertiary.opacity(0.3),
+                        lineWidth: 1.5
+                    )
+            )
+        }
+        .frame(width: SetCol.check, alignment: .center)
+    }
+
     @ViewBuilder
     private func workoutSetRow(setIndex: Int) -> some View {
         let isCompleted = workoutSession.isSetCompleted(
@@ -638,35 +697,8 @@ struct ExerciseWeightLogger: View {
                     .contentShape(Rectangle())
             }
 
-            // Check button
-            Button {
-                if isCompleted {
-                    workoutSession.uncompleteSet(
-                        day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex
-                    )
-                } else {
-                    completeSetAndSave(setIndex: setIndex)
-                }
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(isCompleted ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
-                        .frame(width: 32, height: 32)
-                    if isCompleted {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(BulkUpColors.onAccent)
-                    }
-                }
-                .overlay(
-                    Circle()
-                        .stroke(
-                            isCompleted ? BulkUpColors.accent : BulkUpColors.textTertiary.opacity(0.3),
-                            lineWidth: 1.5
-                        )
-                )
-            }
-            .frame(width: SetCol.check, alignment: .center)
+            // Check button (shared with non-weight per-set rows via completeButton helper)
+            completeButton(setIndex: setIndex)
         }
         .padding(.vertical, 2)
         .background(
@@ -745,6 +777,15 @@ struct ExerciseWeightLogger: View {
                     Text("ant. \(formatWeight(prev)) kg")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(BulkUpColors.textTertiary)
+                }
+
+                if WorkoutVideoStore.hasVideo(for: videoKey(setIndex)) {
+                    Button { playerSet = setIndex } label: {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(BulkUpColors.accent)
+                    }
+                    .accessibilityLabel("Ver vídeo de la serie \(setIndex + 1)")
                 }
             }
         }

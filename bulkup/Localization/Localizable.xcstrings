@@ -5732,6 +5732,16 @@
         }
       }
     },
+    "No se pudo guardar tu entreno" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save your workout"
+          }
+        }
+      }
+    },
     "No tienes un plan activo" : {
       "localizations" : {
         "en" : {

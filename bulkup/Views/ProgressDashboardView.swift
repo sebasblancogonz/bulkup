@@ -825,6 +825,15 @@ struct ProgressDashboardView: View {
                 return true
             }
         }
+        // Also count days finished via per-set checks with no logged weight
+        // (e.g. pure-bodyweight days). CompletedDaysStore persists those.
+        if CompletedDaysStore.isCompleted(
+            planId: trainingManager.trainingPlanId,
+            weekStart: trainingManager.selectedWeek,
+            day: day.day
+        ) {
+            return true
+        }
         return false
     }
 
