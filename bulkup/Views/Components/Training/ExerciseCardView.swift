@@ -31,6 +31,7 @@ struct ExerciseCardView: View {
     let currentDate: Date
     let isExpanded: Bool
     let onToggleExpand: () -> Void
+    var onShowProgress: (() -> Void)? = nil
 
     @EnvironmentObject var trainingManager: TrainingManager
     @EnvironmentObject var authManager: AuthManager
@@ -202,6 +203,29 @@ struct ExerciseCardView: View {
                 .frame(maxHeight: isExpanded ? nil : 0)
                 .clipped()
                 .opacity(isExpanded ? 1 : 0)
+            }
+
+            // Progress button — only rendered when the caller opts in (TrainingView)
+            if let onShowProgress, isExpanded, !isSkipped {
+                Divider()
+                    .background(BulkUpColors.border)
+                    .padding(.horizontal, Spacing.md)
+
+                Button(action: onShowProgress) {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                            .font(.system(size: 12, weight: .medium))
+                        Text("Ver progreso")
+                            .font(BulkUpFont.caption())
+                    }
+                    .foregroundColor(BulkUpColors.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.sm)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, Spacing.md)
+                .padding(.bottom, Spacing.sm)
             }
         }
         .background(BulkUpColors.surface)

@@ -26,6 +26,7 @@ struct BulkUp: App {
         ExerciseWeightLogger.runSelfCheck()
         APIService.runDateParsingSelfCheck()
         WorkoutVideoStore.runSelfCheck()
+        ExerciseProgress.runSelfCheck()
 #endif
 
         PhoneWCManager.shared.activate()

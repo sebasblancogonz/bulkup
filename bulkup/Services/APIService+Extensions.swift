@@ -183,6 +183,16 @@ extension APIService {
         return outerResponse.data
     }
 
+    func loadWeightHistory(userId: String, planId: String) async throws -> [ServerWeightHistoryItem] {
+        let requestBody = ["userId": userId, "planId": planId]
+        let outer: WeightHistoryOuterResponse = try await requestWithBody(
+            endpoint: "load-weight-history",
+            method: .POST,
+            body: requestBody
+        )
+        return outer.data.records ?? []
+    }
+
     func listTrainingPlans(userId: String) async throws -> [ServerWorkout] {
         let request = LoadPlanRequest(userId: userId)
 
