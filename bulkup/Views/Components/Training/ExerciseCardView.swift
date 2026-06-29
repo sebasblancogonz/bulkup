@@ -754,6 +754,15 @@ struct ExerciseWeightLogger: View {
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(BulkUpColors.textTertiary)
                 }
+
+                if WorkoutVideoStore.hasVideo(for: videoKey(setIndex)) {
+                    Button { playerSet = setIndex } label: {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(BulkUpColors.accent)
+                    }
+                    .accessibilityLabel("Ver vídeo de la serie \(setIndex + 1)")
+                }
             }
         }
 
