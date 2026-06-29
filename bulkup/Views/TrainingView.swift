@@ -1127,7 +1127,7 @@ extension Comparable {
 /// Lightweight Identifiable carrier used for navigationDestination(item:)
 /// so TrainingView can push ExerciseProgressView without embedding a NavigationLink
 /// inside ExerciseCardView (which is reused outside NavigationStacks).
-struct ProgressExerciseSelection: Identifiable {
+struct ProgressExerciseSelection: Identifiable, Hashable {
     let id = UUID()
     let name: String
     let orderIndex: Int
