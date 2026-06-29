@@ -15,6 +15,9 @@ struct TrainingView: View {
     // Date navigation
     @State private var currentDate: Date = Date()
 
+    // Exercise progress navigation
+    @State private var progressExercise: ProgressExerciseSelection? = nil
+
     // Workout completion prompt
     @State private var showingCompletionPrompt = false
     @State private var completionExerciseCount = 0
@@ -219,6 +222,15 @@ struct TrainingView: View {
             if workoutSession.isActive {
                 finishWorkoutSession()
             }
+        }
+        // Exercise progress navigation (driven by the visible "Ver progreso" button in ExerciseCardView)
+        .navigationDestination(item: $progressExercise) { selection in
+            ExerciseProgressView(
+                exerciseName: selection.name,
+                exerciseIndex: selection.orderIndex,
+                planId: selection.planId,
+                weightTracking: selection.weightTracking
+            )
         }
     }
 
@@ -781,6 +793,14 @@ struct TrainingView: View {
                                     expandedExercises.insert(rowId)
                                 }
                             }
+                        },
+                        onShowProgress: {
+                            progressExercise = ProgressExerciseSelection(
+                                name: exercise.name,
+                                orderIndex: exercise.orderIndex,
+                                planId: trainingManager.trainingPlanId ?? "",
+                                weightTracking: exercise.weightTracking
+                            )
                         }
                     )
                     .environmentObject(trainingManager)
@@ -1100,4 +1120,17 @@ extension Comparable {
     func clamped(to limits: ClosedRange<Self>) -> Self {
         return min(max(self, limits.lowerBound), limits.upperBound)
     }
+}
+
+// MARK: - Progress Exercise Selection
+
+/// Lightweight Identifiable carrier used for navigationDestination(item:)
+/// so TrainingView can push ExerciseProgressView without embedding a NavigationLink
+/// inside ExerciseCardView (which is reused outside NavigationStacks).
+struct ProgressExerciseSelection: Identifiable {
+    let id = UUID()
+    let name: String
+    let orderIndex: Int
+    let planId: String
+    let weightTracking: Bool
 }
