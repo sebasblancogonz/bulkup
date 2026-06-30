@@ -764,6 +764,8 @@ struct TrainingView: View {
 
             Spacer()
         }
+        .disabled(workoutSession.isActive)
+        .opacity(workoutSession.isActive ? 0.4 : 1)
     }
 
     // MARK: - Day View

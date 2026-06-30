@@ -70,7 +70,8 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
         switch msg {
         case .startWorkout(let day):
             wsm.startWorkout(dayName: day, workoutName: nil, trainingManager: tm)
-        case .completeSet:
+        case .completeSet(let exerciseIndex, let setIndex, let weight, let reps):
+            SharedWorkoutStore.applySetValue(exerciseIndex: exerciseIndex, setIndex: setIndex, weight: weight, reps: reps)
             SharedWorkoutStore.completeCurrentSet()
             wsm.reconcileFromStore(trainingManager: tm)
         case .uncompleteSet:
@@ -78,8 +79,10 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
             wsm.reconcileFromStore(trainingManager: tm)
         case .adjustWeight(let d):
             SharedWorkoutStore.adjustWeight(d)
+            wsm.reconcileFromStore(trainingManager: tm)
         case .adjustReps(let d):
             SharedWorkoutStore.adjustReps(d)
+            wsm.reconcileFromStore(trainingManager: tm)
         case .skipRest:
             SharedWorkoutStore.skipRest()
         case .addRest(let s):

@@ -757,6 +757,7 @@ class TrainingManager: ObservableObject {
     }
 
     func changeWeek(direction: WeekDirection) async {
+        guard !WorkoutSessionManager.shared.isActive else { return }
         let currentWeekStart = getWeekStart(selectedWeek)
         let newWeek: Date
 

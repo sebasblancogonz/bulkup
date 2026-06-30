@@ -114,7 +114,7 @@ class WorkoutSessionManager: ObservableObject {
                 .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
         }) else { return }
 
-        for exercise in dayData.exercises {
+        for exercise in dayData.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }) {
             for setIdx in 0..<exercise.sets {
                 let weightKey = trainingManager.generateWeightKey(
                     day: normalizedDay,
@@ -199,7 +199,7 @@ class WorkoutSessionManager: ObservableObject {
             $0.day.lowercased()
                 .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
         }) {
-            for exercise in dayData.exercises {
+            for exercise in dayData.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }) {
                 let skipped = isExerciseSkipped(day: normalizedDay, exerciseIndex: exercise.orderIndex)
                 let total = exercise.sets + extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex)
                 let done = skipped ? 0 : completedSetsCount(day: normalizedDay, exerciseIndex: exercise.orderIndex, totalSets: total)
@@ -745,7 +745,7 @@ class WorkoutSessionManager: ObservableObject {
         var exercisesCompleted = 0
         var skippedCount = 0
 
-        for exercise in dayData.exercises {
+        for exercise in dayData.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }) {
             // Skip discarded exercises
             if isExerciseSkipped(day: normalizedDay, exerciseIndex: exercise.orderIndex) {
                 skippedCount += 1
@@ -810,7 +810,7 @@ class WorkoutSessionManager: ObservableObject {
             $0.day.lowercased()
                 .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
         }) {
-            for exercise in dayData.exercises {
+            for exercise in dayData.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }) {
                 let totalSets = exercise.sets
                 for setIdx in 0..<totalSets {
                     let weightKey = trainingManager.generateWeightKey(

@@ -52,6 +52,14 @@ struct LiveWorkout: Codable, Equatable {
         guard current != nil else { return }
         sets[cursor].reps = max(0, sets[cursor].reps + delta)
     }
+    /// Set an exact weight/reps for the set with this identity (used by the watch's
+    /// self-contained completeSet, so persistence doesn't depend on delta delivery).
+    mutating func setValue(exerciseIndex: Int, setIndex: Int, weight: Double, reps: Int) {
+        if let i = sets.firstIndex(where: { $0.exerciseIndex == exerciseIndex && $0.setIndex == setIndex }) {
+            sets[i].weight = max(0, weight)
+            sets[i].reps = max(0, reps)
+        }
+    }
     mutating func skipRest() { restEndDate = nil }
     mutating func addRest(_ seconds: Int) {
         restEndDate = (restEndDate ?? Date()).addingTimeInterval(TimeInterval(seconds))
@@ -82,6 +90,11 @@ enum SharedWorkoutStore {
     static func completeCurrentSet() { guard var w = load(), w.current != nil else { return }; w.completeCurrentSet(); save(w) }
     static func adjustWeight(_ delta: Double) { guard var w = load(), w.current != nil else { return }; w.adjustWeight(delta); save(w) }
     static func adjustReps(_ delta: Int) { guard var w = load(), w.current != nil else { return }; w.adjustReps(delta); save(w) }
+    static func applySetValue(exerciseIndex: Int, setIndex: Int, weight: Double, reps: Int) {
+        guard var w = load() else { return }
+        w.setValue(exerciseIndex: exerciseIndex, setIndex: setIndex, weight: weight, reps: reps)
+        save(w)
+    }
     static func skipRest() { guard var w = load() else { return }; w.skipRest(); save(w) }
     static func addRest(_ seconds: Int) { guard var w = load() else { return }; w.addRest(seconds); save(w) }
 }
@@ -145,6 +158,21 @@ extension SharedWorkoutStore {
         assert(lm.restEndDate != nil, "addRest sets restEndDate")
         lm.completeCurrentSet()
         assert(lm.isFinished, "second complete -> finished")
+
+        // setValue applies by identity (the self-contained completeSet path).
+        var sv = LiveWorkout(
+            dayName: "Lunes", workoutName: "Push", startDate: Date(), isPaused: false,
+            weightUnit: "kg", weightStep: 2.5, repStep: 1,
+            sets: [
+                .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 2,
+                      weight: 0, reps: 0, restSeconds: 60, completed: false),
+                .init(exerciseIndex: 1, exerciseName: "Curl", setIndex: 0, setsTotalForExercise: 1,
+                      weight: 0, reps: 0, restSeconds: 60, completed: false),
+            ],
+            cursor: 0, restEndDate: nil)
+        sv.setValue(exerciseIndex: 1, setIndex: 0, weight: 22.5, reps: 12)
+        assert(sv.sets[1].weight == 22.5 && sv.sets[1].reps == 12, "setValue hits the identity-matched set")
+        assert(sv.sets[0].weight == 0, "setValue must not touch other sets")
     }
 }
 #endif

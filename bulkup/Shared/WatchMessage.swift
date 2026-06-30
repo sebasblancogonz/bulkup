@@ -3,7 +3,7 @@ import Foundation
 /// Watch → phone actions. The phone routes each into its existing workout methods.
 enum WatchMessage: Codable, Equatable {
     case startWorkout(day: String)   // day = the display day (TrainingDay.day)
-    case completeSet
+    case completeSet(exerciseIndex: Int, setIndex: Int, weight: Double, reps: Int)
     case uncompleteSet
     case adjustWeight(delta: Double)
     case adjustReps(delta: Int)
@@ -42,7 +42,7 @@ enum WatchSync {
                    setsTotalForExercise: 1, weight: 40, reps: 10, restSeconds: 60, completed: true)],
             cursor: 1, restEndDate: nil)
         let msgs: [WatchMessage] = [
-            .startWorkout(day: "Lunes"), .completeSet, .uncompleteSet,
+            .startWorkout(day: "Lunes"), .completeSet(exerciseIndex: 0, setIndex: 0, weight: 40, reps: 10), .uncompleteSet,
             .adjustWeight(delta: 2.5), .adjustReps(delta: -1), .skipRest,
             .addRest(seconds: 30),
             .finishWorkout(live: sampleLive, metrics: WorkoutMetrics(avgHeartRate: 142, maxHeartRate: 171, activeEnergyKcal: 320.5)),
