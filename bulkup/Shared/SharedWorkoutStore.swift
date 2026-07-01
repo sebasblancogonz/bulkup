@@ -24,6 +24,7 @@ struct LiveWorkout: Codable, Equatable {
         var reps: Int
         var restSeconds: Int
         var completed: Bool
+        var weightTracking: Bool?   // nil (old persisted data) treated as true = requires a weight
     }
 
     var completedCount: Int { sets.filter(\.completed).count }
@@ -107,9 +108,9 @@ extension SharedWorkoutStore {
             weightUnit: "kg", weightStep: 2.5, repStep: 1,
             sets: [
                 .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 2,
-                      weight: 40, reps: 10, restSeconds: 60, completed: false),
+                      weight: 40, reps: 10, restSeconds: 60, completed: false, weightTracking: true),
                 .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 1, setsTotalForExercise: 2,
-                      weight: 40, reps: 10, restSeconds: 60, completed: false),
+                      weight: 40, reps: 10, restSeconds: 60, completed: false, weightTracking: true),
             ],
             cursor: 0, restEndDate: nil
         )
@@ -127,9 +128,9 @@ extension SharedWorkoutStore {
             weightUnit: "kg", weightStep: 2.5, repStep: 1,
             sets: [
                 .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 1,
-                      weight: 40, reps: 10, restSeconds: 60, completed: true),
+                      weight: 40, reps: 10, restSeconds: 60, completed: true, weightTracking: true),
                 .init(exerciseIndex: 1, exerciseName: "Curl", setIndex: 0, setsTotalForExercise: 1,
-                      weight: 20, reps: 12, restSeconds: 60, completed: false),
+                      weight: 20, reps: 12, restSeconds: 60, completed: false, weightTracking: true),
             ],
             cursor: 0, restEndDate: nil
         )
@@ -141,9 +142,9 @@ extension SharedWorkoutStore {
             weightUnit: "kg", weightStep: 2.5, repStep: 1,
             sets: [
                 .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 2,
-                      weight: 40, reps: 10, restSeconds: 90, completed: false),
+                      weight: 40, reps: 10, restSeconds: 90, completed: false, weightTracking: true),
                 .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 1, setsTotalForExercise: 2,
-                      weight: 40, reps: 10, restSeconds: 0, completed: false),
+                      weight: 40, reps: 10, restSeconds: 0, completed: false, weightTracking: true),
             ],
             cursor: 0, restEndDate: nil)
         lm.completeCurrentSet()
@@ -165,9 +166,9 @@ extension SharedWorkoutStore {
             weightUnit: "kg", weightStep: 2.5, repStep: 1,
             sets: [
                 .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 2,
-                      weight: 0, reps: 0, restSeconds: 60, completed: false),
+                      weight: 0, reps: 0, restSeconds: 60, completed: false, weightTracking: true),
                 .init(exerciseIndex: 1, exerciseName: "Curl", setIndex: 0, setsTotalForExercise: 1,
-                      weight: 0, reps: 0, restSeconds: 60, completed: false),
+                      weight: 0, reps: 0, restSeconds: 60, completed: false, weightTracking: true),
             ],
             cursor: 0, restEndDate: nil)
         sv.setValue(exerciseIndex: 1, setIndex: 0, weight: 22.5, reps: 12)

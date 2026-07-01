@@ -836,7 +836,8 @@ class WorkoutSessionManager: ObservableObject {
                         weight: weight,
                         reps: reps,
                         restSeconds: exercise.restSeconds,
-                        completed: completed
+                        completed: completed,
+                        weightTracking: exercise.weightTracking
                     ))
                 }
             }
