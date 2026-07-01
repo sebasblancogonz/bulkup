@@ -93,9 +93,13 @@ class WorkoutSessionManager: ObservableObject {
         startElapsedTimer()
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
 
-        // Seed the shared store and start the Live Activity
+        // Seed the shared store and start the Live Activity.
+        // "Comenzar" (fresh, nothing pre-marked) → cursor at the first exercise.
+        // "Continuar" (sets already logged this week were pre-marked complete by
+        // prePopulateFromWeights) → cursor at the first INCOMPLETE set (resume).
         let tm = trainingManager ?? TrainingManager.shared
-        let live = buildLiveWorkout(dayName: dayName, trainingManager: tm, seedCursorAtZero: true)
+        let isResume = !completedSetIds.isEmpty
+        let live = buildLiveWorkout(dayName: dayName, trainingManager: tm, seedCursorAtZero: !isResume)
         SharedWorkoutStore.save(live)
         WorkoutActivityController.shared.start(
             dayName: dayName,
