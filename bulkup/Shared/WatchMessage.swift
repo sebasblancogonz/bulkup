@@ -39,7 +39,7 @@ enum WatchSync {
             dayName: "lunes", workoutName: "Push", startDate: Date(timeIntervalSince1970: 1_700_000_000),
             isPaused: false, weightUnit: "kg", weightStep: 2.5, repStep: 1,
             sets: [LiveWorkout.LiveSet(exerciseIndex: 0, exerciseName: "Press", setIndex: 0,
-                   setsTotalForExercise: 1, weight: 40, reps: 10, restSeconds: 60, completed: true)],
+                   setsTotalForExercise: 1, weight: 40, reps: 10, restSeconds: 60, completed: true, weightTracking: true)],
             cursor: 1, restEndDate: nil)
         let msgs: [WatchMessage] = [
             .startWorkout(day: "Lunes"), .completeSet(exerciseIndex: 0, setIndex: 0, weight: 40, reps: 10), .uncompleteSet,
@@ -58,7 +58,7 @@ enum WatchSync {
             dayName: "Lunes", workoutName: "Push", startDate: Date(), isPaused: false,
             weightUnit: "kg", weightStep: 2.5, repStep: 1,
             sets: [.init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 1,
-                         weight: 40, reps: 10, restSeconds: 60, completed: false)],
+                         weight: 40, reps: 10, restSeconds: 60, completed: false, weightTracking: true)],
             cursor: 0, restEndDate: nil)
         let plan = TodaysPlan(planId: "p1", dayName: "lunes", dayDisplay: "Lunes", weekStart: "2026-06-22",
             exercises: [.init(orderIndex: 0, name: "Press", sets: 3, reps: "10, 8, 6", restSeconds: 90, weightTracking: true)])

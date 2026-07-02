@@ -740,6 +740,16 @@
         }
       }
     },
+    "🏆 %@ kg × %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "🏆 %1$@ kg × %2$lld"
+          }
+        }
+      }
+    },
     "0" : {
       "localizations" : {
         "en" : {
@@ -3195,6 +3205,9 @@
         }
       }
     },
+    "Editar sensaciones" : {
+
+    },
     "Efectos de Sonido" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5393,6 +5406,9 @@
         }
       }
     },
+    "Métrica" : {
+
+    },
     "Métrico (kg, cm)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6656,6 +6672,9 @@
         }
       }
     },
+    "PRs" : {
+
+    },
     "Prueba con otros términos de búsqueda o ajusta los filtros" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6993,6 +7012,9 @@
         }
       }
     },
+    "Registrar sensaciones" : {
+
+    },
     "Registro de peso, cintura, cuello y mas" : {
       "localizations" : {
         "en" : {
@@ -7328,6 +7350,9 @@
           }
         }
       }
+    },
+    "Semana" : {
+
     },
     "Semana del %@" : {
       "localizations" : {
@@ -8238,6 +8263,9 @@
         }
       }
     },
+    "Ver progreso" : {
+
+    },
     "Ver todos" : {
       "localizations" : {
         "en" : {
@@ -8247,6 +8275,9 @@
           }
         }
       }
+    },
+    "Ver vídeo de la serie %lld" : {
+
     },
     "Versión %@" : {
       "localizations" : {

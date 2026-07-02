@@ -856,6 +856,15 @@ struct ExerciseWeightLogger: View {
     // MARK: - Workout Mode Actions
 
     private func completeSetAndSave(setIndex: Int) {
+        // Block completing a weight-tracking set with no weight entered.
+        // Non-weight exercises (weightTracking == false) skip this guard.
+        let weightValue = Double(safeGetWeightText(setIndex)) ?? 0
+        guard !exercise.weightTracking || weightValue > 0 else {
+            focusedSet = setIndex
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            return
+        }
+
         // Mark complete in session
         let nextSetIdx = setIndex + 1
         let nextInfo: String?
@@ -875,8 +884,7 @@ struct ExerciseWeightLogger: View {
             nextInfo: nextInfo
         )
 
-        // Update weight in training manager
-        let weightValue = Double(safeGetWeightText(setIndex)) ?? 0
+        // Update weight in training manager (weightValue already computed above)
         if weightValue > 0 {
             trainingManager.updateWeight(
                 day: normalizedDay,
