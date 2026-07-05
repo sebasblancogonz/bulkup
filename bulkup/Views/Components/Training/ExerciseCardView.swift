@@ -386,6 +386,12 @@ struct ExerciseWeightLogger: View {
         .onChange(of: trainingManager.selectedWeek) { _, _ in
             loadInitialData()
         }
+        .onChange(of: trainingManager.weights) { _, _ in
+            // A set completed from the watch/widget writes trainingManager.weights
+            // (via reconcileFromStore) but not this card's local weightTexts, so the
+            // field would read empty until a full reload. Fill the empties in place.
+            syncWeightTextsFromManager()
+        }
         .photosPicker(
             isPresented: $showVideoPicker,
             selection: $selectedVideoItem,
@@ -858,7 +864,21 @@ struct ExerciseWeightLogger: View {
     private func completeSetAndSave(setIndex: Int) {
         // Block completing a weight-tracking set with no weight entered.
         // Non-weight exercises (weightTracking == false) skip this guard.
-        let weightValue = Double(safeGetWeightText(setIndex)) ?? 0
+        var weightValue = Double(safeGetWeightText(setIndex)) ?? 0
+        if weightValue <= 0 {
+            // The weight may have been logged from the watch/widget: reconcile writes
+            // trainingManager.weights, not this view's local text state.
+            let key = trainingManager.generateWeightKey(
+                day: normalizedDay,
+                exerciseIndex: exercise.orderIndex,
+                exerciseName: exercise.name,
+                setIndex: setIndex
+            )
+            weightValue = trainingManager.weights[key] ?? 0
+            if weightValue > 0, setIndex < weightTexts.count {
+                weightTexts[setIndex] = formatWeight(weightValue)
+            }
+        }
         guard !exercise.weightTracking || weightValue > 0 else {
             focusedSet = setIndex
             UINotificationFeedbackGenerator().notificationOccurred(.warning)
@@ -930,6 +950,7 @@ struct ExerciseWeightLogger: View {
             setIndex: setIndex,
             weight: newVal
         )
+        workoutSession.syncStoreFromSession(trainingManager: trainingManager)
     }
 
     private func adjustReps(setIndex: Int, delta: Int) {
@@ -1025,6 +1046,25 @@ struct ExerciseWeightLogger: View {
         refreshVideoSets()
     }
 
+    /// Refresh weight fields from persisted weights without a full reload, filling
+    /// only empty fields so it never overwrites in-progress typing or a field the
+    /// user just cleared. Picks up weights logged from the watch/widget mid-session.
+    private func syncWeightTextsFromManager() {
+        ensureArrayCapacity()
+        let stored: [Double?] = (0..<weightTexts.count).map { setIndex in
+            let key = trainingManager.generateWeightKey(
+                day: normalizedDay,
+                exerciseIndex: exercise.orderIndex,
+                exerciseName: exercise.name,
+                setIndex: setIndex,
+                weekStart: currentWeekString
+            )
+            return trainingManager.weights[key]
+        }
+        let merged = Self.mergingEmptyWeights(weightTexts, from: stored)
+        if merged != weightTexts { weightTexts = merged }
+    }
+
     private func loadExerciseNote() {
         if let backendNote = trainingManager.backendExerciseNotes[exerciseKey] {
             localNote = backendNote
@@ -1092,6 +1132,9 @@ struct ExerciseWeightLogger: View {
                     setIndex: setIndex,
                     weight: weight
                 )
+                // Mirror typed weights into the shared store so the watch/widget
+                // see them (their completion guard reads the store's weight).
+                workoutSession.syncStoreFromSession(trainingManager: trainingManager)
             }
         )
     }
@@ -1110,6 +1153,7 @@ struct ExerciseWeightLogger: View {
                 )
             }
         }
+        workoutSession.syncStoreFromSession(trainingManager: trainingManager)
     }
 
     private func saveWeights() {
@@ -1132,8 +1176,19 @@ struct ExerciseWeightLogger: View {
         }
     }
 
-    private func formatWeight(_ w: Double) -> String {
+    private func formatWeight(_ w: Double) -> String { Self.formatWeightString(w) }
+
+    static func formatWeightString(_ w: Double) -> String {
         String(format: "%.1f", w).replacingOccurrences(of: ".0", with: "")
+    }
+
+    /// Fill empty weight fields from persisted weights; leave non-empty fields and
+    /// zero/absent weights untouched. Pure so the watch-sync path stays testable.
+    static func mergingEmptyWeights(_ texts: [String], from stored: [Double?]) -> [String] {
+        zip(texts, stored).map { text, weight in
+            guard text.isEmpty, let w = weight, w > 0 else { return text }
+            return formatWeightString(w)
+        }
     }
 
     // MARK: - Video Player Sheet
@@ -1196,6 +1251,13 @@ extension ExerciseWeightLogger {
         assert(perSetReps(from: "8-12", count: 3, fallback: "12") == ["12", "12", "12"])
         assert(perSetReps(from: "12", count: 2, fallback: "12") == ["12", "12"])
         assert(perSetReps(from: "12, 10-8", count: 2, fallback: "12") == ["12", "8"])
+
+        // Watch/widget completes a set → weight lands in trainingManager.weights but
+        // this card's empty text field must adopt it, without touching typed/cleared ones.
+        assert(mergingEmptyWeights(["", "80", ""], from: [50, 60, nil]) == ["50", "80", ""],
+               "fills empty from stored, keeps typed value, leaves empty when nothing stored")
+        assert(mergingEmptyWeights([""], from: [0]) == [""], "a zero weight never fills a field")
+        assert(mergingEmptyWeights(["70"], from: [50]) == ["70"], "never overwrites an existing value")
     }
     #endif
 }

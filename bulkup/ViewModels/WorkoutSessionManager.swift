@@ -118,8 +118,10 @@ class WorkoutSessionManager: ObservableObject {
                 .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
         }) else { return }
 
+        var totalSets = 0
         for exercise in dayData.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }) {
             for setIdx in 0..<exercise.sets {
+                totalSets += 1
                 let weightKey = trainingManager.generateWeightKey(
                     day: normalizedDay,
                     exerciseIndex: exercise.orderIndex,
@@ -131,6 +133,13 @@ class WorkoutSessionManager: ObservableObject {
                     completedSetIds.insert(key)
                 }
             }
+        }
+
+        // Every set already logged → the user is redoing the day, not resuming.
+        // Start fresh instead of seeding an instantly-finished session (the watch
+        // would otherwise open on "Workout complete" with no way to do anything).
+        if totalSets > 0 && completedSetIds.count == totalSets {
+            completedSetIds.removeAll()
         }
     }
 
@@ -415,6 +424,9 @@ class WorkoutSessionManager: ObservableObject {
         WorkoutActivityController.shared.update(
             WorkoutActivityController.contentState(from: live)
         )
+        // The watch reads the same live state — without this, weights typed on the
+        // phone never reach it and its completion guard blocks a valid set.
+        PhoneWCManager.shared.broadcast()
     }
 
     // MARK: - Store → App Reconciliation (widget mutations)
@@ -427,8 +439,8 @@ class WorkoutSessionManager: ObservableObject {
     ///   (day = normalized `currentDayName`) is NOT already in `completedSetIds`:
     ///   insert into `completedSetIds`, record `actualReps[key] = liveSet.reps`,
     ///   and push `liveSet.weight` into `trainingManager.weights` via `updateWeight`.
-    /// - For the CURRENT (incomplete) cursor set, mirror its weight/reps so live
-    ///   widget adjustments show in-app even before completion.
+    /// - Incomplete sets are NOT mirrored: their store weight may be a seeded
+    ///   previous-week prefill, which must only persist on completion.
     /// - Each exercise that gained newly-completed sets is persisted via
     ///   `saveWeightsToDatabase` (skipped if no authenticated userId).
     func reconcileFromStore(trainingManager: TrainingManager) {
@@ -469,17 +481,6 @@ class WorkoutSessionManager: ObservableObject {
                     actualReps[key] = liveSet.reps
                 }
             }
-        }
-
-        // Mirror the current (incomplete) cursor set's adjustments in-app.
-        if let current = w.current, !current.completed, current.weight > 0 {
-            trainingManager.updateWeight(
-                day: normalizedDay,
-                exerciseIndex: current.exerciseIndex,
-                exerciseName: current.exerciseName,
-                setIndex: current.setIndex,
-                weight: current.weight
-            )
         }
 
         // Persist exercises that gained completed sets (if authenticated).
@@ -823,7 +824,14 @@ class WorkoutSessionManager: ObservableObject {
                         exerciseName: exercise.name,
                         setIndex: setIdx
                     )
-                    let weight = trainingManager.weights[weightKey] ?? 0
+                    // Fall back to the last logged weight (up to 4 weeks back) so the
+                    // watch/widget steppers start from a real value instead of 0 —
+                    // completion requires weight > 0 and their only input is ±step.
+                    let weight = trainingManager.weights[weightKey]
+                        ?? previousWeekWeight(trainingManager: trainingManager, day: normalizedDay,
+                                              exerciseIndex: exercise.orderIndex, exerciseName: exercise.name,
+                                              setIndex: setIdx)
+                        ?? 0
                     let reps = parseReps(exercise.reps)
                     let key = setKey(day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIdx)
                     let completed = completedSetIds.contains(key)
@@ -857,6 +865,27 @@ class WorkoutSessionManager: ObservableObject {
         )
         if !seedCursorAtZero { live.advanceCursor() }
         return live
+    }
+
+    /// Last logged weight for this set in the 4 weeks before the selected week
+    /// (same lookup as ExerciseCardView.loadPreviousWeights).
+    private func previousWeekWeight(trainingManager: TrainingManager, day: String,
+                                    exerciseIndex: Int, exerciseName: String, setIndex: Int) -> Double? {
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd"
+        var checkWeek = trainingManager.selectedWeek
+        for _ in 0..<4 {
+            checkWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: checkWeek) ?? checkWeek
+            let key = trainingManager.generateWeightKey(
+                day: day,
+                exerciseIndex: exerciseIndex,
+                exerciseName: exerciseName,
+                setIndex: setIndex,
+                weekStart: df.string(from: trainingManager.getWeekStart(checkWeek))
+            )
+            if let w = trainingManager.weights[key], w > 0 { return w }
+        }
+        return nil
     }
 
     private func parseReps(_ repsString: String) -> Int {

@@ -113,15 +113,18 @@ struct WorkoutLockScreenView: View {
                         minWidth: 64)
             }
 
+            // The intent itself also refuses 0-weight completions (LiveWorkout guard);
+            // this just makes the blocked state visible.
             Button(intent: CompleteCurrentSetIntent()) {
-                Text("Completar serie")
+                Text(state.needsWeight ? "Ajusta el peso" : "Completar serie")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(WidgetTheme.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 9)
-                    .background(WidgetTheme.accent, in: Capsule())
+                    .background(WidgetTheme.accent.opacity(state.needsWeight ? 0.4 : 1), in: Capsule())
             }
             .buttonStyle(.plain)
+            .disabled(state.needsWeight)
         }
     }
 
