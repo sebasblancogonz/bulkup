@@ -54,9 +54,7 @@ struct ActiveWorkoutView: View {
                                 emphasized: false,
                                 minus: { wc.adjustReps(-1) }, plus: { wc.adjustReps(1) })
 
-                        // weightTracking nil (old data) defaults to true; bodyweight (false) can complete at 0.
-                        let needsWeight = (s.weightTracking ?? true) && s.weight <= 0
-                        if needsWeight {
+                        if s.needsWeight {
                             Text("Ajusta el peso")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -66,7 +64,7 @@ struct ActiveWorkoutView: View {
                                 .fontWeight(.semibold).frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent).tint(Color.lime).foregroundStyle(.black)
-                        .disabled(needsWeight)
+                        .disabled(s.needsWeight)
 
                         ProgressView(value: Double(live.completedCount), total: Double(max(live.sets.count, 1)))
                             .tint(Color.lime)

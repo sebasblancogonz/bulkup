@@ -24,7 +24,11 @@ struct LiveWorkout: Codable, Equatable {
         var reps: Int
         var restSeconds: Int
         var completed: Bool
-        var weightTracking: Bool?   // nil (old persisted data) treated as true = requires a weight
+        var weightTracking: Bool?   // nil (old persisted data) treated as false = completable at 0
+
+        /// A weight-tracking set with no weight can't be completed. nil weightTracking
+        /// (pre-update payloads) is permissive so old data keeps working.
+        var needsWeight: Bool { (weightTracking ?? false) && weight <= 0 }
     }
 
     var completedCount: Int { sets.filter(\.completed).count }
@@ -38,7 +42,9 @@ struct LiveWorkout: Codable, Equatable {
     }
 
     mutating func completeCurrentSet() {
-        guard let s0 = current else { return }
+        // Guard here (not just in each UI) so every surface — app, watch,
+        // lock-screen widget intent — enforces "no completion without weight".
+        guard let s0 = current, !s0.needsWeight else { return }
         var s = s0
         s.completed = true
         sets[cursor] = s
@@ -158,7 +164,26 @@ extension SharedWorkoutStore {
         lm.addRest(30)
         assert(lm.restEndDate != nil, "addRest sets restEndDate")
         lm.completeCurrentSet()
+        assert(!lm.sets[1].completed && !lm.isFinished, "weight-tracking set at 0 must not complete")
+        lm.adjustWeight(2.5)
+        lm.completeCurrentSet()
         assert(lm.isFinished, "second complete -> finished")
+
+        // Bodyweight (weightTracking false) and old payloads (nil) complete at 0.
+        var bw = LiveWorkout(
+            dayName: "Lunes", workoutName: "Push", startDate: Date(), isPaused: false,
+            weightUnit: "kg", weightStep: 2.5, repStep: 1,
+            sets: [
+                .init(exerciseIndex: 0, exerciseName: "Dominadas", setIndex: 0, setsTotalForExercise: 1,
+                      weight: 0, reps: 10, restSeconds: 0, completed: false, weightTracking: false),
+                .init(exerciseIndex: 1, exerciseName: "Fondos", setIndex: 0, setsTotalForExercise: 1,
+                      weight: 0, reps: 10, restSeconds: 0, completed: false, weightTracking: nil),
+            ],
+            cursor: 0, restEndDate: nil)
+        bw.completeCurrentSet()
+        assert(bw.sets[0].completed, "bodyweight set completes at 0")
+        bw.completeCurrentSet()
+        assert(bw.sets[1].completed && bw.isFinished, "nil weightTracking (old data) completes at 0")
 
         // setValue applies by identity (the self-contained completeSet path).
         var sv = LiveWorkout(

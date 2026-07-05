@@ -17,6 +17,7 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var weight: Double
         var reps: Int
         var weightUnit: String       // "kg" or "lb"
+        var needsWeight: Bool        // weight-tracking set at 0 — completion blocked
 
         // Progress
         var completedSets: Int
@@ -41,6 +42,7 @@ extension WorkoutActivityAttributes.ContentState {
             exerciseName: cur?.exerciseName ?? "", setIndex: cur?.setIndex ?? 0,
             setsTotal: cur?.setsTotalForExercise ?? 0,
             weight: cur?.weight ?? 0, reps: cur?.reps ?? 0, weightUnit: w.weightUnit,
+            needsWeight: cur?.needsWeight ?? false,
             completedSets: w.completedCount, totalSets: w.sets.count,
             isResting: w.restEndDate.map { $0 > Date() } ?? false,
             restEndDate: w.restEndDate, isFinished: w.isFinished
