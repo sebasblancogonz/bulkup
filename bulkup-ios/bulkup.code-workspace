@@ -1,0 +1,14 @@
+{
+  "folders": [
+	{
+		"path": "bulkup"
+	},
+	{
+		"path": "weight-tracker-backend"
+	},
+	{
+		"path": "free-exercise-db"
+	}
+],
+  "settings": {}
+}
