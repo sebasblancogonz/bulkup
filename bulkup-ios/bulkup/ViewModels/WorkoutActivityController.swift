@@ -34,6 +34,17 @@ final class WorkoutActivityController {
         }
     }
 
+    /// After a process relaunch the Live Activity may still be on screen but our
+    /// `activity` reference is gone — re-adopt it instead of stacking a new one.
+    func adoptOrStart(dayName: String, state: WorkoutActivityAttributes.ContentState) {
+        if let existing = Activity<WorkoutActivityAttributes>.activities.first {
+            activity = existing
+            update(state)
+        } else {
+            start(dayName: dayName, state: state)
+        }
+    }
+
     func update(_ state: WorkoutActivityAttributes.ContentState) {
         Task {
             let content = ActivityContent(state: state, staleDate: nil)

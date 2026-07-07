@@ -46,11 +46,16 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            // Reconcile any widget-side mutations when returning to foreground.
-            if newPhase == .active, WorkoutSessionManager.shared.isActive {
-                WorkoutSessionManager.shared.reconcileFromStore(
-                    trainingManager: .shared
-                )
+            if newPhase == .active {
+                // If iOS killed the app mid-workout, rebuild the session from the
+                // shared store (includes its own reconcile + broadcast).
+                WorkoutSessionManager.shared.restoreIfNeeded(trainingManager: .shared)
+                // Reconcile any widget-side mutations when returning to foreground.
+                if WorkoutSessionManager.shared.isActive {
+                    WorkoutSessionManager.shared.reconcileFromStore(
+                        trainingManager: .shared
+                    )
+                }
             }
         }
         .animation(.easeInOut(duration: 0.3), value: authManager.isAuthenticated)

@@ -67,6 +67,18 @@ struct LiveWorkout: Codable, Equatable {
             sets[i].reps = max(0, reps)
         }
     }
+    /// Complete the set with this identity (not the cursor's). Idempotent: a
+    /// duplicate delivery of the same completion is a no-op, so the watch's
+    /// sendMessage→transferUserInfo fallback can't complete two sets for one tap.
+    mutating func complete(exerciseIndex: Int, setIndex: Int) {
+        guard let i = sets.firstIndex(where: { $0.exerciseIndex == exerciseIndex && $0.setIndex == setIndex }),
+              !sets[i].completed, !sets[i].needsWeight else { return }
+        sets[i].completed = true
+        restEndDate = sets[i].restSeconds > 0
+            ? Date().addingTimeInterval(TimeInterval(sets[i].restSeconds))
+            : nil
+        advanceCursor()
+    }
     mutating func skipRest() { restEndDate = nil }
     mutating func addRest(_ seconds: Int) {
         restEndDate = (restEndDate ?? Date()).addingTimeInterval(TimeInterval(seconds))
@@ -100,6 +112,14 @@ enum SharedWorkoutStore {
     static func applySetValue(exerciseIndex: Int, setIndex: Int, weight: Double, reps: Int) {
         guard var w = load() else { return }
         w.setValue(exerciseIndex: exerciseIndex, setIndex: setIndex, weight: weight, reps: reps)
+        save(w)
+    }
+    /// Watch completions carry the set's identity + final values; apply both in
+    /// one load/save so the completion can never land on a diverged cursor.
+    static func completeSet(exerciseIndex: Int, setIndex: Int, weight: Double, reps: Int) {
+        guard var w = load() else { return }
+        w.setValue(exerciseIndex: exerciseIndex, setIndex: setIndex, weight: weight, reps: reps)
+        w.complete(exerciseIndex: exerciseIndex, setIndex: setIndex)
         save(w)
     }
     static func skipRest() { guard var w = load() else { return }; w.skipRest(); save(w) }
@@ -199,6 +219,31 @@ extension SharedWorkoutStore {
         sv.setValue(exerciseIndex: 1, setIndex: 0, weight: 22.5, reps: 12)
         assert(sv.sets[1].weight == 22.5 && sv.sets[1].reps == 12, "setValue hits the identity-matched set")
         assert(sv.sets[0].weight == 0, "setValue must not touch other sets")
+
+        // Identity-based complete: lands on the named set even if the cursor is
+        // elsewhere, and a duplicate delivery is a no-op.
+        var ic = LiveWorkout(
+            dayName: "Lunes", workoutName: "Push", startDate: Date(), isPaused: false,
+            weightUnit: "kg", weightStep: 2.5, repStep: 1,
+            sets: [
+                .init(exerciseIndex: 0, exerciseName: "Press", setIndex: 0, setsTotalForExercise: 1,
+                      weight: 40, reps: 10, restSeconds: 60, completed: false, weightTracking: true),
+                .init(exerciseIndex: 1, exerciseName: "Curl", setIndex: 0, setsTotalForExercise: 1,
+                      weight: 20, reps: 12, restSeconds: 90, completed: false, weightTracking: true),
+            ],
+            cursor: 0, restEndDate: nil)
+        ic.complete(exerciseIndex: 1, setIndex: 0)
+        assert(ic.sets[1].completed && !ic.sets[0].completed, "complete(identity) hits the named set, not the cursor")
+        assert(ic.cursor == 0, "cursor stays on the first incomplete set")
+        ic.restEndDate = nil
+        ic.complete(exerciseIndex: 1, setIndex: 0) // duplicate delivery
+        assert(ic.restEndDate == nil, "duplicate completion is a no-op (rest not re-armed)")
+        ic.complete(exerciseIndex: 0, setIndex: 0)
+        assert(ic.isFinished, "completing the last incomplete set finishes the workout")
+        var icw = ic
+        icw.sets[0].completed = false; icw.sets[0].weight = 0; icw.cursor = 0
+        icw.complete(exerciseIndex: 0, setIndex: 0)
+        assert(!icw.sets[0].completed, "identity complete still enforces needsWeight")
     }
 }
 #endif

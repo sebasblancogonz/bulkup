@@ -25,7 +25,11 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
     /// Re-send the latest plan + live state to the watch (coalesced, latest-wins).
     func broadcast() {
         guard let session, session.activationState == .activated else { return }
-        seq += 1
+        // Timestamp-seeded so seq stays monotonic across app relaunches: the watch
+        // drops any context whose seq isn't greater than the last one it applied,
+        // and a plain counter restarts at 0 when iOS terminates the app mid-workout
+        // (the watch would then ignore every broadcast and keep showing stale sets).
+        seq = max(seq + 1, Int(Date().timeIntervalSince1970))
         let ctx = WatchContext(seq: seq, todaysPlan: currentTodaysPlan(), live: SharedWorkoutStore.load())
         guard let data = WatchSync.encode(ctx) else { return }
         try? session.updateApplicationContext([WatchSync.contextKey: data])
@@ -67,12 +71,17 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
         guard let msg = WatchSync.decode(WatchMessage.self, from: data) else { return }
         let tm = TrainingManager.shared
         let wsm = WorkoutSessionManager.shared
+        // If iOS terminated the app mid-workout, this delivery relaunched it in the
+        // background with a blank session — rebuild it from the store first so the
+        // action (especially finishWorkout) lands on real state instead of zeros.
+        wsm.restoreIfNeeded(trainingManager: tm)
         switch msg {
         case .startWorkout(let day):
             wsm.startWorkout(dayName: day, workoutName: nil, trainingManager: tm)
         case .completeSet(let exerciseIndex, let setIndex, let weight, let reps):
-            SharedWorkoutStore.applySetValue(exerciseIndex: exerciseIndex, setIndex: setIndex, weight: weight, reps: reps)
-            SharedWorkoutStore.completeCurrentSet()
+            // Complete by identity, not cursor: the watch names the set it finished,
+            // and duplicate deliveries (sendMessage + transferUserInfo fallback) no-op.
+            SharedWorkoutStore.completeSet(exerciseIndex: exerciseIndex, setIndex: setIndex, weight: weight, reps: reps)
             wsm.reconcileFromStore(trainingManager: tm)
         case .uncompleteSet:
             // No store primitive for uncomplete in slice 1; reconcile is a no-op fallback.

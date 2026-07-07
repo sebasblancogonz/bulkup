@@ -108,6 +108,57 @@ class WorkoutSessionManager: ObservableObject {
         PhoneWCManager.shared.broadcast()
     }
 
+    // MARK: - Session Restoration (process death mid-workout)
+
+    /// The session lives in memory and dies with the process; the shared store
+    /// does not. If iOS terminated the app during a workout (routine after an
+    /// hour+ in the background), rebuild the session from the store on return
+    /// so the workout isn't lost. Safe to call any time: no-ops when a session
+    /// is already active or nothing is stored.
+    func restoreIfNeeded(trainingManager: TrainingManager) {
+        guard !isActive, let live = SharedWorkoutStore.load() else { return }
+        // ponytail: 8h cutoff — a workout abandoned that long ago is garbage, not a resume.
+        guard Date().timeIntervalSince(live.startDate) < 8 * 3600 else {
+            SharedWorkoutStore.save(nil)
+            WorkoutActivityController.shared.end()
+            return
+        }
+        restore(from: live)
+        WorkoutActivityController.shared.adoptOrStart(
+            dayName: live.dayName,
+            state: WorkoutActivityController.contentState(from: live)
+        )
+        // Pushes the restored completions/weights into TrainingManager and re-broadcasts.
+        reconcileFromStore(trainingManager: trainingManager)
+    }
+
+    /// Rebuild in-memory session state from a stored LiveWorkout. Pure state —
+    /// no store/activity side effects (kept separate for the DEBUG self-check).
+    func restore(from live: LiveWorkout) {
+        isActive = true
+        startTime = live.startDate
+        elapsedSeconds = max(0, Int(Date().timeIntervalSince(live.startDate)))
+        isPaused = false
+        currentDayName = live.dayName
+        workoutName = live.workoutName
+        completedSetIds.removeAll()
+        failedSetIds.removeAll()
+        skippedExercises.removeAll()
+        addedSets.removeAll()
+        actualReps.removeAll()
+        totalPausedSeconds = 0 // ponytail: pause spans don't survive relaunch; elapsed runs from startDate
+        summaryData = nil
+        showSummary = false
+        let day = live.dayName.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+        for s in live.sets where s.completed {
+            let key = setKey(day: day, exerciseIndex: s.exerciseIndex, setIndex: s.setIndex)
+            completedSetIds.insert(key)
+            actualReps[key] = s.reps
+        }
+        startElapsedTimer()
+    }
+
     /// Mark sets as completed if they already have weight data saved
     private func prePopulateFromWeights(dayName: String, trainingManager: TrainingManager) {
         let normalizedDay = dayName.lowercased()
@@ -322,6 +373,8 @@ class WorkoutSessionManager: ObservableObject {
         pendingSaveRequest = nil
         SharedWorkoutStore.save(nil)
         WorkoutActivityController.shared.end()
+        // Without this, a discarded workout stays on the watch until the next broadcast.
+        PhoneWCManager.shared.broadcast()
     }
 
     // MARK: - Set Completion
@@ -628,6 +681,27 @@ class WorkoutSessionManager: ObservableObject {
         assert(m.saveState == .idle, "save state starts idle")
         m.retrySave() // no pending request → no-op, stays idle
         assert(m.saveState == .idle, "retry with nothing pending is a no-op")
+
+        // Restoration: a stored LiveWorkout rebuilds the in-memory session.
+        let r = WorkoutSessionManager()
+        let live = LiveWorkout(
+            dayName: "Miércoles", workoutName: "Pull", startDate: Date().addingTimeInterval(-1800),
+            isPaused: false, weightUnit: "kg", weightStep: 2.5, repStep: 1,
+            sets: [
+                .init(exerciseIndex: 0, exerciseName: "Remo", setIndex: 0, setsTotalForExercise: 2,
+                      weight: 60, reps: 8, restSeconds: 90, completed: true, weightTracking: true),
+                .init(exerciseIndex: 0, exerciseName: "Remo", setIndex: 1, setsTotalForExercise: 2,
+                      weight: 60, reps: 8, restSeconds: 90, completed: false, weightTracking: true),
+            ],
+            cursor: 1, restEndDate: nil
+        )
+        r.restore(from: live)
+        assert(r.isActive, "restore reactivates the session")
+        assert(r.currentDayName == "Miércoles" && r.workoutName == "Pull", "restore recovers identity")
+        assert(r.isSetCompleted(day: "miercoles", exerciseIndex: 0, setIndex: 0), "restore rebuilds completed sets (folded day key)")
+        assert(!r.isSetCompleted(day: "miercoles", exerciseIndex: 0, setIndex: 1), "incomplete sets stay incomplete")
+        assert(r.getActualReps(day: "miercoles", exerciseIndex: 0, setIndex: 0) == 8, "restore recovers reps")
+        assert(r.elapsedSeconds >= 1799, "elapsed resumes from the original start date")
     }
     #endif
 
