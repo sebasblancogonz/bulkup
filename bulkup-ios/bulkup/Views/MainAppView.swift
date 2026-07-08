@@ -194,10 +194,7 @@ struct MainAppView: View {
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(BulkUpColors.onAccent)
 
-                            Text(workoutSession.formattedElapsed())
-                                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                .monospacedDigit()
-                                .foregroundColor(BulkUpColors.onAccent)
+                            FABElapsedLabel()
                         }
                     }
                 }
@@ -206,6 +203,19 @@ struct MainAppView: View {
             .padding(.bottom, 16)
         }
         .padding(.horizontal, Spacing.screenH)
+    }
+
+    /// Isolated so the 1 Hz elapsed tick re-renders only this label,
+    /// not the whole tab container.
+    private struct FABElapsedLabel: View {
+        @ObservedObject private var ticker = WorkoutSessionManager.shared.ticker
+
+        var body: some View {
+            Text(WorkoutSessionManager.shared.formattedElapsed())
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .monospacedDigit()
+                .foregroundColor(BulkUpColors.onAccent)
+        }
     }
 
     // MARK: - Workout Menu Items

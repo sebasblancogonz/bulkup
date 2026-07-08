@@ -9,6 +9,8 @@ import SwiftUI
 
 struct RestTimerSheet: View {
     @ObservedObject var session: WorkoutSessionManager
+    // Drives the per-second countdown refresh (session itself no longer ticks).
+    @ObservedObject private var ticker = WorkoutSessionManager.shared.ticker
 
     private var progress: CGFloat {
         guard session.restTimerTotal > 0 else { return 0 }
@@ -105,6 +107,8 @@ struct RestTimerSheet: View {
 /// re-opens the sheet.
 struct RestTimerBanner: View {
     @ObservedObject var session: WorkoutSessionManager
+    // Drives the per-second countdown refresh (session itself no longer ticks).
+    @ObservedObject private var ticker = WorkoutSessionManager.shared.ticker
 
     private var progress: Double {
         guard session.restTimerTotal > 0 else { return 0 }

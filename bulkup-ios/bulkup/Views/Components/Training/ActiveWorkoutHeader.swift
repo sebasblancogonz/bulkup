@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ActiveWorkoutHeader: View {
     @ObservedObject var session: WorkoutSessionManager
+    // Drives the per-second elapsed refresh (session itself no longer ticks).
+    @ObservedObject private var ticker = WorkoutSessionManager.shared.ticker
     var onFinish: () -> Void
     var onDiscard: () -> Void
 

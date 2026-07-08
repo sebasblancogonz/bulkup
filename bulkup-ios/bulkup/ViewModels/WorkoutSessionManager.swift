@@ -9,6 +9,17 @@
 import Combine
 import SwiftUI
 
+/// The 1 Hz values (elapsed, rest remaining) live in their own observable so
+/// the per-second tick only re-renders the few views that display them
+/// (header, FAB label, rest sheet/banner) — NOT every exercise card. Publishing
+/// them from WorkoutSessionManager itself made the whole workout screen rebuild
+/// every second, which showed up as scroll hitches.
+@MainActor
+final class WorkoutTicker: ObservableObject {
+    @Published var elapsedSeconds = 0
+    @Published var restRemaining = 0
+}
+
 @MainActor
 class WorkoutSessionManager: ObservableObject {
     static let shared = WorkoutSessionManager()
@@ -21,8 +32,11 @@ class WorkoutSessionManager: ObservableObject {
 
     @Published var isActive = false
     @Published var startTime: Date?
-    @Published var elapsedSeconds: Int = 0
+    /// Not @Published on purpose — ticks every second; observe `ticker` to display it.
+    var elapsedSeconds: Int = 0 { didSet { ticker.elapsedSeconds = elapsedSeconds } }
     @Published var isPaused = false
+
+    let ticker = WorkoutTicker()
     @Published var currentDayName: String?
     @Published var workoutName: String?
 
@@ -35,7 +49,8 @@ class WorkoutSessionManager: ObservableObject {
 
     // Rest timer
     @Published var restTimerActive = false
-    @Published var restTimerRemaining: Int = 0
+    /// Not @Published on purpose — ticks every second; observe `ticker` to display it.
+    var restTimerRemaining: Int = 0 { didSet { ticker.restRemaining = restTimerRemaining } }
     @Published var restTimerTotal: Int = 0
     @Published var nextSetInfo: String?
 
