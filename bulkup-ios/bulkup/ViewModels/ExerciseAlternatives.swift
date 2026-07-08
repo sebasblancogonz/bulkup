@@ -10,11 +10,62 @@ import Foundation
 
 enum ExerciseAlternatives {
 
-    /// Find the DB entry for a plan exercise by folded name (plans may store
-    /// either the English or Spanish name).
+    /// Find the DB entry for a plan exercise. Plan names are free text — typed
+    /// by the user or extracted from a PDF — so after an exact folded-name pass
+    /// we fall back to token matching: at least 60% of the plan name's tokens
+    /// (stopwords removed, naive plural-stripped) must appear in a DB name,
+    /// best coverage wins, closest-length name breaks ties.
     static func match(planName: String, in all: [RMExerciseFull]) -> RMExerciseFull? {
         let target = fold(planName)
-        return all.first { fold($0.name) == target || fold($0.nameEs) == target }
+        if let exact = all.first(where: { fold($0.name) == target || fold($0.nameEs) == target }) {
+            return exact
+        }
+
+        let targetTokens = tokens(target)
+        guard !targetTokens.isEmpty else { return nil }
+
+        var best: (exercise: RMExerciseFull, coverage: Double, extra: Int)?
+        for ex in all {
+            for candidateName in [fold(ex.name), fold(ex.nameEs)] {
+                let candidateTokens = tokens(candidateName)
+                guard !candidateTokens.isEmpty else { continue }
+                let covered = targetTokens.filter { t in
+                    candidateTokens.contains { tokenMatches(t, $0) }
+                }.count
+                let coverage = Double(covered) / Double(targetTokens.count)
+                let extra = candidateTokens.filter { c in
+                    !targetTokens.contains { tokenMatches(c, $0) }
+                }.count
+                if coverage > (best?.coverage ?? 0) ||
+                    (coverage == best?.coverage && extra < best!.extra) {
+                    best = (ex, coverage, extra)
+                }
+            }
+        }
+        if let best, best.coverage >= 0.6 { return best.exercise }
+        return nil
+    }
+
+    /// Meaningful word set of a folded name (stopwords removed).
+    private static let stopwords: Set<String> = [
+        "de", "con", "en", "el", "la", "los", "las", "al", "del", "y", "a", "un", "una",
+        "of", "with", "the", "on", "in", "and", "to"
+    ]
+    private static func tokens(_ folded: String) -> Set<String> {
+        Set(
+            folded.split(whereSeparator: { !$0.isLetter && !$0.isNumber })
+                .map(String.init)
+                .filter { !stopwords.contains($0) }
+        )
+    }
+
+    /// Plural/inflection-tolerant token equality: "sentadilla(s)", "raise(s)",
+    /// "extension(es)" all match. ponytail: prefix + ≤2 trailing chars; a real
+    /// stemmer if PDF plans still miss too often.
+    private static func tokenMatches(_ a: String, _ b: String) -> Bool {
+        if a == b { return true }
+        let (short, long) = a.count <= b.count ? (a, b) : (b, a)
+        return short.count >= 4 && long.hasPrefix(short) && long.count - short.count <= 2
     }
 
     /// Top substitutes for `current`: same first primary muscle (required),
@@ -77,6 +128,20 @@ extension ExerciseAlternatives {
         assert(match(planName: "press de banca", in: all)?.id == "bench", "matches folded Spanish name")
         assert(match(planName: "Barbell Bench Press", in: all)?.id == "bench", "matches English name")
         assert(match(planName: "no existe", in: all) == nil, "unknown name -> nil")
+
+        // Fuzzy matching: plan names are free text (typed or PDF-extracted).
+        assert(match(planName: "Press banca", in: all)?.id == "bench",
+               "stopwords ignored: 'Press banca' hits 'Press de banca'")
+        assert(match(planName: "PRESS DE BANCA CON BARRA", in: all)?.id == "bench",
+               "extra words still hit the closest name")
+        let squats = ex("squat2", name: "Barbell Squat", nameEs: "Sentadilla con barra", muscle: "quadriceps")
+        assert(match(planName: "Sentadillas", in: all + [squats])?.id != nil,
+               "plural tolerated: Sentadillas -> Sentadilla")
+        assert(match(planName: "Curl de biceps", in: all) == nil,
+               "half-overlapping name (fly/curl world) must not false-match")
+        let curlFem = ex("curl-fem", name: "Leg Curl", nameEs: "Curl femoral", muscle: "hamstrings")
+        assert(match(planName: "Curl de biceps", in: all + [curlFem]) == nil,
+               "'Curl de biceps' must not match 'Curl femoral' (coverage 50% < 60%)")
 
         let ranked = rank(for: bench, in: all)
         assert(!ranked.contains { $0.id == "bench" }, "never suggests itself")
