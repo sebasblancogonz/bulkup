@@ -15,12 +15,12 @@ import AVKit
 /// stay aligned. Steppers are sized for comfortable tapping mid-workout.
 private enum SetCol {
     static let gap: CGFloat = 8         // breathing room between SERIE / KG / REPS
-    static let serie: CGFloat = 26
+    static let serie: CGFloat = 30      // fits the 28pt set-number circle
     static let rowH: CGFloat = 38
     static let stepper: CGFloat = 32    // +/- tap target width — do not slim (accessibility)
     static let stepperIcon: CGFloat = 13
     static let kg: CGFloat = 110        // stepper + field(46, fits "102.5") + stepper
-    static let reps: CGFloat = 96       // stepper + field(32) + stepper
+    static let reps: CGFloat = 92       // stepper + field(28, reps are 1-2 digits) + stepper
     static let check: CGFloat = 36
 }
 
@@ -228,6 +228,30 @@ struct ExerciseCardView: View {
                 .frame(maxHeight: isExpanded ? nil : 0)
                 .clipped()
                 .opacity(isExpanded ? 1 : 0)
+            }
+
+            // Alternatives — visible entry point during a workout (the context
+            // menu duplicate stays for long-press users).
+            if workoutSession.isActive, isExpanded, !isSkipped {
+                Divider()
+                    .background(BulkUpColors.border)
+                    .padding(.horizontal, Spacing.md)
+
+                Button { showAlternatives = true } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 12, weight: .medium))
+                        Text("Alternativas")
+                            .font(BulkUpFont.caption())
+                    }
+                    .foregroundColor(BulkUpColors.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.sm)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, Spacing.md)
+                .padding(.bottom, onShowProgress == nil ? Spacing.sm : 0)
             }
 
             // Progress button — only rendered when the caller opts in (TrainingView)
@@ -499,6 +523,7 @@ struct ExerciseWeightLogger: View {
         // Table header
         HStack(spacing: SetCol.gap) {
             Text("SERIE")
+                .fixedSize()   // never truncate — may overflow slightly into the gap
                 .frame(width: SetCol.serie, alignment: .leading)
             Text("KG")
                 .frame(width: SetCol.kg, alignment: .center)
