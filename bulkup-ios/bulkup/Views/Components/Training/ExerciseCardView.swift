@@ -14,12 +14,12 @@ import AVKit
 /// Shared column geometry for the set-logging table so the header and every row
 /// stay aligned. Steppers are sized for comfortable tapping mid-workout.
 private enum SetCol {
-    static let gap: CGFloat = 10        // breathing room between SERIE / KG / REPS
-    static let serie: CGFloat = 30
+    static let gap: CGFloat = 8         // breathing room between SERIE / KG / REPS
+    static let serie: CGFloat = 26
     static let rowH: CGFloat = 38
-    static let stepper: CGFloat = 32    // +/- tap target width
+    static let stepper: CGFloat = 32    // +/- tap target width — do not slim (accessibility)
     static let stepperIcon: CGFloat = 13
-    static let kg: CGFloat = 100        // stepper + field(36) + stepper
+    static let kg: CGFloat = 110        // stepper + field(46, fits "102.5") + stepper
     static let reps: CGFloat = 96       // stepper + field(32) + stepper
     static let check: CGFloat = 36
 }
@@ -36,17 +36,25 @@ struct ExerciseCardView: View {
     @EnvironmentObject var trainingManager: TrainingManager
     @EnvironmentObject var authManager: AuthManager
     @ObservedObject var workoutSession: WorkoutSessionManager = .shared
+    @State private var showAlternatives = false
 
     private var normalizedDayName: String {
         dayName.lowercased()
             .folding(options: .diacriticInsensitive, locale: .current)
     }
 
+    /// Plan name unless a session-only alternative was chosen for this slot.
+    private var effectiveName: String {
+        workoutSession.effectiveExerciseName(
+            day: normalizedDayName, exerciseIndex: exercise.orderIndex, planName: exercise.name
+        )
+    }
+
     private var completedSets: Int {
         trainingManager.getCompletedSets(
             day: normalizedDayName,
             exerciseIndex: exercise.orderIndex,
-            exerciseName: exercise.name,
+            exerciseName: effectiveName,
             totalSets: exercise.sets
         )
     }
@@ -119,7 +127,7 @@ struct ExerciseCardView: View {
                     // Exercise name + metadata
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: Spacing.xs) {
-                            Text(exercise.name)
+                            Text(effectiveName)
                                 .font(BulkUpFont.cardTitle())
                                 .foregroundColor(
                                     isSkipped ? BulkUpColors.textTertiary : BulkUpColors.textPrimary
@@ -182,6 +190,11 @@ struct ExerciseCardView: View {
                             Label("Restaurar ejercicio", systemImage: "arrow.uturn.backward")
                         }
                     } else {
+                        Button {
+                            showAlternatives = true
+                        } label: {
+                            Label("Cambiar ejercicio", systemImage: "arrow.triangle.2.circlepath")
+                        }
                         Button(role: .destructive) {
                             workoutSession.skipExercise(day: normalizedDayName, exerciseIndex: exercise.orderIndex)
                         } label: {
@@ -189,6 +202,18 @@ struct ExerciseCardView: View {
                         }
                     }
                 }
+            }
+            .sheet(isPresented: $showAlternatives) {
+                ExerciseAlternativesSheet(currentName: effectiveName) { alt in
+                    workoutSession.overrideExercise(
+                        day: normalizedDayName,
+                        exerciseIndex: exercise.orderIndex,
+                        name: alt.localizedName
+                    )
+                    // Push the swap into the shared store → watch + Live Activity.
+                    workoutSession.syncStoreFromSession(trainingManager: trainingManager)
+                }
+                .presentationDetents([.medium])
             }
 
             // Expanded weight logger (hidden when skipped)
@@ -300,6 +325,13 @@ struct ExerciseWeightLogger: View {
         dayName.lowercased().folding(options: .diacriticInsensitive, locale: .current)
     }
 
+    /// Plan name unless a session-only alternative was chosen for this slot.
+    private var effectiveName: String {
+        workoutSession.effectiveExerciseName(
+            day: normalizedDay, exerciseIndex: exercise.orderIndex, planName: exercise.name
+        )
+    }
+
     private var currentWeekString: String {
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd"
@@ -310,7 +342,7 @@ struct ExerciseWeightLogger: View {
         trainingManager.generateWeightKey(
             day: normalizedDay,
             exerciseIndex: exercise.orderIndex,
-            exerciseName: exercise.name,
+            exerciseName: effectiveName,
             weekStart: currentWeekString
         )
     }
@@ -871,7 +903,7 @@ struct ExerciseWeightLogger: View {
             let key = trainingManager.generateWeightKey(
                 day: normalizedDay,
                 exerciseIndex: exercise.orderIndex,
-                exerciseName: exercise.name,
+                exerciseName: effectiveName,
                 setIndex: setIndex
             )
             weightValue = trainingManager.weights[key] ?? 0
@@ -909,7 +941,7 @@ struct ExerciseWeightLogger: View {
             trainingManager.updateWeight(
                 day: normalizedDay,
                 exerciseIndex: exercise.orderIndex,
-                exerciseName: exercise.name,
+                exerciseName: effectiveName,
                 setIndex: setIndex,
                 weight: weightValue
             )
@@ -946,7 +978,7 @@ struct ExerciseWeightLogger: View {
         trainingManager.updateWeight(
             day: normalizedDay,
             exerciseIndex: exercise.orderIndex,
-            exerciseName: exercise.name,
+            exerciseName: effectiveName,
             setIndex: setIndex,
             weight: newVal
         )
@@ -991,7 +1023,7 @@ struct ExerciseWeightLogger: View {
         if removedIndex >= 0 {
             let key = trainingManager.generateWeightKey(
                 day: normalizedDay, exerciseIndex: exercise.orderIndex,
-                exerciseName: exercise.name, setIndex: removedIndex, weekStart: currentWeekString
+                exerciseName: effectiveName, setIndex: removedIndex, weekStart: currentWeekString
             )
             trainingManager.weights[key] = nil
             WorkoutVideoStore.delete(for: videoKey(removedIndex))
@@ -1006,7 +1038,7 @@ struct ExerciseWeightLogger: View {
     private func videoKey(_ setIndex: Int) -> String {
         trainingManager.generateWeightKey(
             day: normalizedDay, exerciseIndex: exercise.orderIndex,
-            exerciseName: exercise.name, setIndex: setIndex, weekStart: currentWeekString
+            exerciseName: effectiveName, setIndex: setIndex, weekStart: currentWeekString
         )
     }
 
@@ -1031,7 +1063,7 @@ struct ExerciseWeightLogger: View {
             let key = trainingManager.generateWeightKey(
                 day: normalizedDay,
                 exerciseIndex: exercise.orderIndex,
-                exerciseName: exercise.name,
+                exerciseName: effectiveName,
                 setIndex: setIndex,
                 weekStart: currentWeekString
             )
@@ -1055,7 +1087,7 @@ struct ExerciseWeightLogger: View {
             let key = trainingManager.generateWeightKey(
                 day: normalizedDay,
                 exerciseIndex: exercise.orderIndex,
-                exerciseName: exercise.name,
+                exerciseName: effectiveName,
                 setIndex: setIndex,
                 weekStart: currentWeekString
             )
@@ -1085,7 +1117,7 @@ struct ExerciseWeightLogger: View {
                 let key = trainingManager.generateWeightKey(
                     day: normalizedDay,
                     exerciseIndex: exercise.orderIndex,
-                    exerciseName: exercise.name,
+                    exerciseName: effectiveName,
                     setIndex: setIndex,
                     weekStart: weekStr
                 )
@@ -1128,7 +1160,7 @@ struct ExerciseWeightLogger: View {
                 trainingManager.updateWeight(
                     day: normalizedDay,
                     exerciseIndex: exercise.orderIndex,
-                    exerciseName: exercise.name,
+                    exerciseName: effectiveName,
                     setIndex: setIndex,
                     weight: weight
                 )
@@ -1147,7 +1179,7 @@ struct ExerciseWeightLogger: View {
                 trainingManager.updateWeight(
                     day: normalizedDay,
                     exerciseIndex: exercise.orderIndex,
-                    exerciseName: exercise.name,
+                    exerciseName: effectiveName,
                     setIndex: i,
                     weight: prev
                 )
@@ -1164,7 +1196,7 @@ struct ExerciseWeightLogger: View {
             await trainingManager.saveWeightsToDatabase(
                 day: normalizedDay,
                 exerciseIndex: exercise.orderIndex,
-                exerciseName: exercise.name,
+                exerciseName: effectiveName,
                 note: localNote,
                 userId: user.id
             )

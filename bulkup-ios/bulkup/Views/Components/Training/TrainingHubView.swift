@@ -12,6 +12,7 @@ struct TrainingHubView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var trainingManager: TrainingManager
     @ObservedObject private var storeKit = StoreKitManager.shared
+    @ObservedObject private var workoutSession = WorkoutSessionManager.shared
     @State private var selectedView: TrainingHubSection = .active
     @AppStorage("trainingViewMode") private var trainingViewMode: TrainingView.ViewMode = .day
     @State private var showingPlanEditor = false
@@ -42,8 +43,11 @@ struct TrainingHubView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Section Picker
-            sectionPicker
+            // Section Picker — hidden during an active workout to remove
+            // distractions (focus mode).
+            if !workoutSession.isActive {
+                sectionPicker
+            }
 
             // Content based on selection
             Group {
@@ -700,6 +704,7 @@ struct TrainingPlanCard: View {
     var onUpdated: () -> Void = {}
     @EnvironmentObject var authManager: AuthManager
     @ObservedObject private var storeKit = StoreKitManager.shared
+    @ObservedObject private var workoutSession = WorkoutSessionManager.shared
 
     @State private var showingDeleteAlert = false
     @State private var showingEditor = false

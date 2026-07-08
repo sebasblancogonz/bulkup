@@ -31,22 +31,6 @@ struct RestTimerSheet: View {
 
             // Circular progress + countdown
             ZStack {
-                // Dark fill behind the ring for contrast
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                BulkUpColors.shadow.opacity(0.4),
-                                BulkUpColors.shadow.opacity(0.15),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 30,
-                            endRadius: 70
-                        )
-                    )
-                    .frame(width: 140, height: 140)
-
                 Circle()
                     .stroke(BulkUpColors.border, lineWidth: 8)
                     .frame(width: 120, height: 120)
@@ -113,5 +97,56 @@ struct RestTimerSheet: View {
         }
         .frame(maxWidth: .infinity)
         .background(BulkUpColors.background)
+    }
+}
+
+/// Compact rest countdown pinned under the workout header while the sheet is
+/// dismissed — the timer never disappears from view mid-rest. Tapping the time
+/// re-opens the sheet.
+struct RestTimerBanner: View {
+    @ObservedObject var session: WorkoutSessionManager
+
+    private var progress: Double {
+        guard session.restTimerTotal > 0 else { return 0 }
+        return Double(session.restTimerTotal - session.restTimerRemaining) / Double(session.restTimerTotal)
+    }
+
+    var body: some View {
+        HStack(spacing: Spacing.md) {
+            Button {
+                session.restSheetVisible = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "timer")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(BulkUpColors.accent)
+                    Text(WorkoutSessionManager.formatTime(session.restTimerRemaining))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundColor(BulkUpColors.textPrimary)
+                }
+            }
+            .buttonStyle(.plain)
+
+            ProgressView(value: progress)
+                .tint(BulkUpColors.accent)
+
+            Button("Saltar") { session.skipRest() }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(BulkUpColors.accent)
+
+            Button("+30s") { session.addRestTime(seconds: 30) }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(BulkUpColors.textSecondary)
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: 12).fill(BulkUpColors.surfaceElevated)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(BulkUpColors.accent.opacity(0.25), lineWidth: 1)
+        )
     }
 }

@@ -42,6 +42,16 @@ class WorkoutSessionManager: ObservableObject {
     /// Extra sets added per exercise: key = "{day}-{exerciseIndex}"
     @Published var addedSets: [String: Int] = [:]
 
+    /// Session-only exercise swaps (machine occupied → alternative): key =
+    /// "{day}-{exerciseIndex}" → alternative display name. The plan is never
+    /// mutated; weights/history persist under the alternative's own name.
+    /// ponytail: in-memory only — lost on process-death restore (plan names return).
+    @Published var exerciseOverrides: [String: String] = [:]
+
+    /// Whether the rest sheet is on screen. Separate from restTimerActive so
+    /// dismissing the sheet doesn't hide the countdown (a banner takes over).
+    @Published var restSheetVisible = false
+
     /// Reps actually performed per set (overrides plan reps)
     @Published var actualReps: [String: Int] = [:]
 
@@ -81,6 +91,7 @@ class WorkoutSessionManager: ObservableObject {
         skippedExercises.removeAll()
         addedSets.removeAll()
         actualReps.removeAll()
+        exerciseOverrides.removeAll()
         totalPausedSeconds = 0
         summaryData = nil
         showSummary = false
@@ -215,6 +226,7 @@ class WorkoutSessionManager: ObservableObject {
         elapsedTimer?.cancel()
         restTimer?.cancel()
         restTimerActive = false
+        restSheetVisible = false
 
         let duration = elapsedSeconds
         let summary = buildSummary(
@@ -267,6 +279,9 @@ class WorkoutSessionManager: ObservableObject {
                 let skipped = isExerciseSkipped(day: normalizedDay, exerciseIndex: exercise.orderIndex)
                 let total = exercise.sets + extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex)
                 let done = skipped ? 0 : completedSetsCount(day: normalizedDay, exerciseIndex: exercise.orderIndex, totalSets: total)
+                let name = effectiveExerciseName(day: normalizedDay,
+                                                 exerciseIndex: exercise.orderIndex,
+                                                 planName: exercise.name)
 
                 var volume: Double = 0
                 if !skipped {
@@ -276,7 +291,7 @@ class WorkoutSessionManager: ObservableObject {
                             let weightKey = trainingManager.generateWeightKey(
                                 day: normalizedDay,
                                 exerciseIndex: exercise.orderIndex,
-                                exerciseName: exercise.name,
+                                exerciseName: name,
                                 setIndex: setIdx
                             )
                             let weight = trainingManager.weights[weightKey] ?? 0
@@ -287,7 +302,7 @@ class WorkoutSessionManager: ObservableObject {
                 }
 
                 exerciseData.append(ExerciseSessionData(
-                    name: exercise.name,
+                    name: name,
                     exerciseIndex: exercise.orderIndex,
                     setsCompleted: done,
                     setsTotal: total,
@@ -360,7 +375,9 @@ class WorkoutSessionManager: ObservableObject {
         skippedExercises.removeAll()
         addedSets.removeAll()
         actualReps.removeAll()
+        exerciseOverrides.removeAll()
         restTimerActive = false
+        restSheetVisible = false
         restTimerRemaining = 0
         restTimerTotal = 0
         restEndTime = nil
@@ -375,6 +392,18 @@ class WorkoutSessionManager: ObservableObject {
         WorkoutActivityController.shared.end()
         // Without this, a discarded workout stays on the watch until the next broadcast.
         PhoneWCManager.shared.broadcast()
+    }
+
+    // MARK: - Exercise Overrides (session-only alternatives)
+
+    func overrideExercise(day: String, exerciseIndex: Int, name: String) {
+        exerciseOverrides[exerciseKey(day: day, exerciseIndex: exerciseIndex)] = name
+    }
+
+    /// The name the session is actually performing for this slot: the swapped
+    /// alternative if one was chosen, otherwise the plan's exercise name.
+    func effectiveExerciseName(day: String, exerciseIndex: Int, planName: String) -> String {
+        exerciseOverrides[exerciseKey(day: day, exerciseIndex: exerciseIndex)] ?? planName
     }
 
     // MARK: - Set Completion
@@ -677,6 +706,13 @@ class WorkoutSessionManager: ObservableObject {
         m.removeLastSet(day: "lunes", exerciseIndex: 0, plannedSets: 3) // floor at 0
         assert(m.extraSets(day: "lunes", exerciseIndex: 0) == 0)
 
+        // Session-only exercise overrides
+        assert(m.effectiveExerciseName(day: "lunes", exerciseIndex: 2, planName: "Press banca") == "Press banca")
+        m.overrideExercise(day: "lunes", exerciseIndex: 2, name: "Press mancuernas")
+        assert(m.effectiveExerciseName(day: "lunes", exerciseIndex: 2, planName: "Press banca") == "Press mancuernas")
+        assert(m.effectiveExerciseName(day: "lunes", exerciseIndex: 3, planName: "Sentadilla") == "Sentadilla",
+               "override is scoped to its exercise slot")
+
         // Save-state checks
         assert(m.saveState == .idle, "save state starts idle")
         m.retrySave() // no pending request → no-op, stays idle
@@ -725,6 +761,7 @@ class WorkoutSessionManager: ObservableObject {
         restEndTime = Date().addingTimeInterval(TimeInterval(seconds))
         self.nextSetInfo = nextSetInfo
         restTimerActive = true
+        restSheetVisible = true
 
         restTimer = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
@@ -743,6 +780,7 @@ class WorkoutSessionManager: ObservableObject {
         } else {
             restTimerRemaining = 0
             restTimerActive = false
+            restSheetVisible = false
             restTimer?.cancel()
             restEndTime = nil
             UINotificationFeedbackGenerator().notificationOccurred(.warning)
@@ -751,6 +789,7 @@ class WorkoutSessionManager: ObservableObject {
 
     func skipRest() {
         restTimerActive = false
+        restSheetVisible = false
         restTimerRemaining = 0
         restEndTime = nil
         restTimer?.cancel()
@@ -844,7 +883,9 @@ class WorkoutSessionManager: ObservableObject {
                     let weightKey = trainingManager.generateWeightKey(
                         day: normalizedDay,
                         exerciseIndex: exercise.orderIndex,
-                        exerciseName: exercise.name,
+                        exerciseName: effectiveExerciseName(day: normalizedDay,
+                                                            exerciseIndex: exercise.orderIndex,
+                                                            planName: exercise.name),
                         setIndex: setIdx
                     )
                     let weight = trainingManager.weights[weightKey] ?? 0
@@ -891,11 +932,14 @@ class WorkoutSessionManager: ObservableObject {
         }) {
             for exercise in dayData.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }) {
                 let totalSets = exercise.sets
+                let name = effectiveExerciseName(day: normalizedDay,
+                                                 exerciseIndex: exercise.orderIndex,
+                                                 planName: exercise.name)
                 for setIdx in 0..<totalSets {
                     let weightKey = trainingManager.generateWeightKey(
                         day: normalizedDay,
                         exerciseIndex: exercise.orderIndex,
-                        exerciseName: exercise.name,
+                        exerciseName: name,
                         setIndex: setIdx
                     )
                     // Fall back to the last logged weight (up to 4 weeks back) so the
@@ -903,7 +947,7 @@ class WorkoutSessionManager: ObservableObject {
                     // completion requires weight > 0 and their only input is ±step.
                     let weight = trainingManager.weights[weightKey]
                         ?? previousWeekWeight(trainingManager: trainingManager, day: normalizedDay,
-                                              exerciseIndex: exercise.orderIndex, exerciseName: exercise.name,
+                                              exerciseIndex: exercise.orderIndex, exerciseName: name,
                                               setIndex: setIdx)
                         ?? 0
                     let reps = parseReps(exercise.reps)
@@ -912,7 +956,7 @@ class WorkoutSessionManager: ObservableObject {
 
                     liveSets.append(LiveWorkout.LiveSet(
                         exerciseIndex: exercise.orderIndex,
-                        exerciseName: exercise.name,
+                        exerciseName: name,
                         setIndex: setIdx,
                         setsTotalForExercise: totalSets,
                         weight: weight,

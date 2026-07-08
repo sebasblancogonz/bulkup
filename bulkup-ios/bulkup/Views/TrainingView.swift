@@ -208,8 +208,9 @@ struct TrainingView: View {
             )
             .presentationDetents([.medium])
         }
-        // Rest timer sheet
-        .sheet(isPresented: $workoutSession.restTimerActive) {
+        // Rest timer sheet. Bound to restSheetVisible (not restTimerActive) so a
+        // swipe-down hides only the sheet — the countdown continues in the banner.
+        .sheet(isPresented: $workoutSession.restSheetVisible) {
             RestTimerSheet(session: workoutSession)
                 .presentationDetents([.height(320)])
                 .presentationDragIndicator(.hidden)
@@ -382,6 +383,17 @@ struct TrainingView: View {
                 }
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar(.hidden, for: .navigationBar)
+                // Rest countdown stays pinned on top while the sheet is dismissed,
+                // so it survives scrolling through the exercise list.
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    if workoutSession.isActive, workoutSession.restTimerActive,
+                       !workoutSession.restSheetVisible {
+                        RestTimerBanner(session: workoutSession)
+                            .padding(.horizontal, Spacing.screenH)
+                            .padding(.vertical, Spacing.xs)
+                            .background(BulkUpColors.background)
+                    }
+                }
                 .refreshable {
                     if let user = authManager.user {
                         await trainingManager.loadActiveTrainingPlan(userId: user.id)
