@@ -145,12 +145,16 @@ struct WorkoutLockScreenView: View {
 
     // MARK: During rest
     private func restControls(end: Date) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        // Single `now` + clamp: the widget can re-render after `end` has passed
+        // (isResting was computed at the last activity update) and a reversed
+        // range in Text(timerInterval:) is a runtime crash.
+        let now = Date()
+        return VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Text("DESCANSO")
                     .font(.caption.weight(.bold)).tracking(1.5)
                     .foregroundStyle(WidgetTheme.textSecondary)
-                Text(timerInterval: Date()...end, countsDown: true)
+                Text(timerInterval: now...max(end, now), countsDown: true)
                     .font(WidgetTheme.number(28))
                     .foregroundStyle(WidgetTheme.accent)
             }

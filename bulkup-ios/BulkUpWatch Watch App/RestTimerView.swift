@@ -7,11 +7,15 @@ struct RestTimerView: View {
     @State private var firedHaptic = false
 
     var body: some View {
+        // Single `now` + clamp: the body can re-render after `end` has passed
+        // (RootView's `restEnd > Date()` guard ran earlier), and a reversed
+        // range in Text(timerInterval:) is a runtime crash.
+        let now = Date()
         VStack(spacing: 12) {
             Text("REST").font(.caption2).fontWeight(.semibold).tracking(2)
                 .foregroundStyle(Color.lime)
             // Wall-clock countdown; survives backgrounding because it's derived from `end`.
-            Text(timerInterval: Date()...end, countsDown: true)
+            Text(timerInterval: now...max(end, now), countsDown: true)
                 .font(.system(size: 34, weight: .bold, design: .rounded)).monospacedDigit()
                 .foregroundStyle(.white)
             HStack(spacing: 8) {

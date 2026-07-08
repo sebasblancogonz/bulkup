@@ -1222,6 +1222,9 @@
         }
       }
     },
+    "Alternativas" : {
+
+    },
     "Altura" : {
       "localizations" : {
         "en" : {
@@ -1808,6 +1811,9 @@
           }
         }
       }
+    },
+    "Cambiar ejercicio" : {
+
     },
     "Cambiar opciones" : {
 
@@ -3370,6 +3376,9 @@
           }
         }
       }
+    },
+    "El cambio solo afecta al entreno de hoy; tu plan no se modifica." : {
+
     },
     "Elige las opciones que tengas o te apetezcan." : {
 
@@ -5494,6 +5503,9 @@
           }
         }
       }
+    },
+    "Mismo músculo y estímulo que %@" : {
+
     },
     "Modificar % Grasa Corporal" : {
       "localizations" : {
