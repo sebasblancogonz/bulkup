@@ -374,6 +374,11 @@ class TrainingManager: ObservableObject {
             return
         }
 
+        // Every reload starts "not loaded" so the false→true transition reliably
+        // re-runs each exercise card's loadInitialData for the new week (some
+        // reload paths set selectedWeek directly without going through changeWeek).
+        isFullyLoaded = false
+
         do {
             let weekStartDate = getWeekStart(weekStart)
             let dateFormatter = DateFormatter()
@@ -756,13 +761,6 @@ class TrainingManager: ObservableObject {
         return calendar.date(from: components) ?? date
     }
 
-    /// True while the selected week is the real current week or earlier — i.e.
-    /// advancing is allowed. You can't have trained in a future week, so we never
-    /// navigate past it (which is also what let users log/complete future weeks).
-    var canAdvanceWeek: Bool {
-        getWeekStart(selectedWeek) < getWeekStart(Date())
-    }
-
     func changeWeek(direction: WeekDirection) async {
         guard !WorkoutSessionManager.shared.isActive else { return }
         let currentWeekStart = getWeekStart(selectedWeek)
@@ -777,10 +775,6 @@ class TrainingManager: ObservableObject {
                     to: currentWeekStart
                 ) ?? currentWeekStart
         case .next:
-            // Never advance past the real current week: future weeks can't have
-            // been trained, and logging into them is what produced "next week
-            // shows completed with this week's weights".
-            guard canAdvanceWeek else { return }
             newWeek =
                 Calendar.current.date(
                     byAdding: .day,
@@ -791,6 +785,19 @@ class TrainingManager: ObservableObject {
             newWeek = getWeekStart(Date())
         }
 
+        await selectWeek(newWeek)
+    }
+
+    /// Jump directly to the week containing `date` (used by the tappable weekly
+    /// strip). Shares the reload path with the nav arrows.
+    func selectWeek(_ date: Date) async {
+        guard !WorkoutSessionManager.shared.isActive else { return }
+        let newWeek = getWeekStart(date)
+        guard newWeek != getWeekStart(selectedWeek) else { return }
+        await applyWeekChange(to: newWeek)
+    }
+
+    private func applyWeekChange(to newWeek: Date) async {
         selectedWeek = newWeek
 
         await MainActor.run {

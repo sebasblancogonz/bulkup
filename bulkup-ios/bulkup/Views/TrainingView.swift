@@ -187,6 +187,15 @@ struct TrainingView: View {
                 await trainingManager.loadWeightsForWeek(newWeek)
             }
         }
+        // Day/strip navigation moves `currentDate`; the weights + completion are
+        // scoped to `selectedWeek`. Without this sync, browsing to another week
+        // kept showing the original week's weights (and its "anterior" history).
+        .onChange(of: currentDate) { _, newDate in
+            let newWeek = trainingManager.getWeekStart(newDate)
+            if newWeek != trainingManager.getWeekStart(trainingManager.selectedWeek) {
+                trainingManager.selectedWeek = newWeek
+            }
+        }
         .onChange(of: trainingManager.trainingData) { _, _ in
             expandedDay = nil
             expandedExercises.removeAll()
@@ -773,9 +782,6 @@ struct TrainingView: View {
                     .background(BulkUpColors.surfaceElevated)
                     .clipShape(Circle())
             }
-            // Can't train in the future — no navigating past the current week.
-            .disabled(!trainingManager.canAdvanceWeek)
-            .opacity(trainingManager.canAdvanceWeek ? 1 : 0.35)
 
             Spacer()
         }
