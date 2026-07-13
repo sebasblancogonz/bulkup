@@ -756,6 +756,13 @@ class TrainingManager: ObservableObject {
         return calendar.date(from: components) ?? date
     }
 
+    /// True while the selected week is the real current week or earlier — i.e.
+    /// advancing is allowed. You can't have trained in a future week, so we never
+    /// navigate past it (which is also what let users log/complete future weeks).
+    var canAdvanceWeek: Bool {
+        getWeekStart(selectedWeek) < getWeekStart(Date())
+    }
+
     func changeWeek(direction: WeekDirection) async {
         guard !WorkoutSessionManager.shared.isActive else { return }
         let currentWeekStart = getWeekStart(selectedWeek)
@@ -770,6 +777,10 @@ class TrainingManager: ObservableObject {
                     to: currentWeekStart
                 ) ?? currentWeekStart
         case .next:
+            // Never advance past the real current week: future weeks can't have
+            // been trained, and logging into them is what produced "next week
+            // shows completed with this week's weights".
+            guard canAdvanceWeek else { return }
             newWeek =
                 Calendar.current.date(
                     byAdding: .day,

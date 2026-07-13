@@ -773,6 +773,9 @@ struct TrainingView: View {
                     .background(BulkUpColors.surfaceElevated)
                     .clipShape(Circle())
             }
+            // Can't train in the future — no navigating past the current week.
+            .disabled(!trainingManager.canAdvanceWeek)
+            .opacity(trainingManager.canAdvanceWeek ? 1 : 0.35)
 
             Spacer()
         }
