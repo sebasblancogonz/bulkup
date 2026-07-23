@@ -5,8 +5,8 @@ import { buildAlternates, softwareAppLd, organizationLd, faqLd } from '../lib/se
 import JsonLd from '../components/seo/JsonLd.astro';
 import ScrollProgress from '../components/ScrollProgress.tsx';
 
-interface Props { locale: Locale; path: string; title?: string; description?: string }
-const { locale, path, title, description } = Astro.props;
+interface Props { locale: Locale; path: string; title?: string; description?: string; enOnly?: boolean }
+const { locale, path, title, description, enOnly = false } = Astro.props;
 const t = useT(locale);
 const pageTitle = title ?? t('meta.title');
 const pageDesc = description ?? t('meta.description');
@@ -23,7 +23,7 @@ const ogImage = 'https://getbulkup.com/og-default.png';
     <title>{pageTitle}</title>
     <meta name="description" content={pageDesc} />
     <link rel="canonical" href={canonical} />
-    {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
+    {!enOnly && alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={pageTitle} />
@@ -42,7 +42,8 @@ const ogImage = 'https://getbulkup.com/og-default.png';
     <meta name="theme-color" content="#0E1110" />
     <JsonLd data={softwareAppLd(locale)} />
     <JsonLd data={organizationLd()} />
-    <JsonLd data={faqLd(locale)} />
+    {!enOnly && <JsonLd data={faqLd(locale)} />}
+    <slot name="head" />
   </head>
   <body class="antialiased">
     <ScrollProgress client:load />

@@ -4,8 +4,8 @@ export const defaultLocale: Locale = 'en';
 
 export const ui = {
   en: {
-    'meta.title': 'BulkUp — your training and diet plan, finally measurable set by set',
-    'meta.description': 'Import your coach\'s PDF or photo and track every set, weight, PR and meal on iOS + Apple Watch. Measurable training and diet in one app — join the waitlist for founder access.',
+    'meta.title': 'BulkUp — Workout Tracker for iOS & Apple Watch | Import Your Coach\'s Plan from PDF',
+    'meta.description': 'The workout and diet tracker that imports your coach\'s plan from a PDF or photo. Log every set, weight, PR and meal on iPhone and Apple Watch. Join the waitlist for founder pricing.',
 
     // NAV
     'nav.features': 'Features',

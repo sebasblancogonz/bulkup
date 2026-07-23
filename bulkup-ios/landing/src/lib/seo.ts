@@ -25,6 +25,18 @@ export function softwareAppLd(locale: Locale) {
   };
 }
 
+export function articleLd(title: string, description: string, path: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description,
+    url: `${SITE}${path}`,
+    author: { '@type': 'Organization', name: 'BulkUp', url: SITE },
+    publisher: { '@type': 'Organization', name: 'BulkUp', url: SITE },
+  };
+}
+
 export function organizationLd() {
   return {
     '@context': 'https://schema.org',
