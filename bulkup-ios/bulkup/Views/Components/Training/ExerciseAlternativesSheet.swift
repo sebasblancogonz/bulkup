@@ -12,10 +12,12 @@ import SwiftUI
 struct ExerciseAlternativesSheet: View {
     /// The name currently being performed (plan name or an earlier swap).
     let currentName: String
-    let onSelect: (RMExerciseFull) -> Void
+    /// Receives the chosen exercise name — a ranked suggestion or a typed one.
+    let onSelect: (String) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var explorer = ExerciseExplorerManager.shared
+    @State private var customName: String = ""
 
     private var suggestions: [RMExerciseFull]? {
         guard let current = ExerciseAlternatives.match(planName: currentName, in: explorer.exercises)
@@ -23,7 +25,27 @@ struct ExerciseAlternativesSheet: View {
         return ExerciseAlternatives.rank(for: current, in: explorer.exercises)
     }
 
+    private var trimmedCustom: String {
+        customName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     var body: some View {
+        ScrollView {
+            content
+                .padding(Spacing.screenH)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(BulkUpColors.background)
+        .task {
+            if explorer.exercises.isEmpty {
+                await explorer.fetchExercises()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         VStack(alignment: .leading, spacing: Spacing.lg) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Alternativas")
@@ -33,6 +55,8 @@ struct ExerciseAlternativesSheet: View {
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }
+
+            customSection
 
             if explorer.exercises.isEmpty {
                 if explorer.loading {
@@ -49,7 +73,7 @@ struct ExerciseAlternativesSheet: View {
                 VStack(spacing: Spacing.sm) {
                     ForEach(suggestions) { alt in
                         Button {
-                            onSelect(alt)
+                            onSelect(alt.localizedName)
                             dismiss()
                         } label: {
                             row(for: alt)
@@ -66,14 +90,54 @@ struct ExerciseAlternativesSheet: View {
 
             Spacer(minLength: 0)
         }
-        .padding(Spacing.screenH)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(BulkUpColors.background)
-        .task {
-            if explorer.exercises.isEmpty {
-                await explorer.fetchExercises()
+    }
+
+    /// Escape hatch when the DB has nothing suitable: type any exercise name.
+    private var customSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("Otra alternativa")
+                .font(BulkUpFont.badge())
+                .tracking(0.5)
+                .foregroundColor(BulkUpColors.textTertiary)
+
+            HStack(spacing: Spacing.sm) {
+                TextField("Escribe un ejercicio...", text: $customName)
+                    .font(.system(size: 15))
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .autocorrectionDisabled()
+                    .submitLabel(.done)
+                    .onSubmit(applyCustom)
+                    .padding(.horizontal, Spacing.md)
+                    .frame(height: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12).fill(BulkUpColors.surfaceElevated)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(BulkUpColors.textTertiary.opacity(0.15), lineWidth: 1)
+                    )
+
+                Button(action: applyCustom) {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(BulkUpColors.onAccent)
+                        .frame(width: 44, height: 44)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12).fill(BulkUpColors.accent)
+                        )
+                }
+                .disabled(trimmedCustom.isEmpty)
+                .opacity(trimmedCustom.isEmpty ? 0.4 : 1)
+                .accessibilityLabel("Usar alternativa personalizada")
             }
         }
+    }
+
+    private func applyCustom() {
+        let name = trimmedCustom
+        guard !name.isEmpty else { return }
+        onSelect(name)
+        dismiss()
     }
 
     private func row(for alt: RMExerciseFull) -> some View {

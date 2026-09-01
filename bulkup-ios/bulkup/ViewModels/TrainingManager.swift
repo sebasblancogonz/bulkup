@@ -22,11 +22,24 @@ class TrainingManager: ObservableObject {
 
     // Estado para pesos - SIEMPRE incluir la fecha de la semana
     @Published var weights: [String: Double] = [:]
+    /// Reps actually logged per set, same key scheme as `weights`.
+    @Published var setReps: [String: Int] = [:]
     @Published var selectedWeek: Date = Date()
     @Published var exerciseNotes: [String: String] = [:]
     @Published var backendExerciseNotes: [String: String] = [:]
     @Published var savedWeights: [String: Bool] = [:]
     @Published var savingWeights: [String: Bool] = [:]
+
+    // Cross-plan mirror of weights/setReps keyed only by folded exercise name +
+    // set + week. A new plan changes planId/day/orderIndex, which breaks every
+    // generateWeightKey lookup; this mirror lets "anterior" find weights the
+    // same exercise logged under any previous plan.
+    var weightsByName: [String: Double] = [:]
+    var repsByName: [String: Int] = [:]
+
+    static func nameKey(exerciseName: String, setIndex: Int, weekStart: String) -> String {
+        "\(ExerciseProgress.fold(exerciseName))|\(setIndex)|\(weekStart)"
+    }
 
     private let modelContext: ModelContext
     private let apiService = APIService.shared
@@ -251,6 +264,41 @@ class TrainingManager: ObservableObject {
     }
     
     // Helper para obtener la fecha de la semana actual como string
+    /// Per-set planned reps parsed from the plan's reps string. Handles per-set
+    /// comma lists ("10, 8, 6"), ranges ("8-12" → upper bound), and plain values.
+    /// Extra sets beyond a comma list reuse its last entry. Mirrors
+    /// ExerciseCardView.perSetReps' semantics.
+    static func plannedReps(_ plan: String, setIndex: Int) -> Int {
+        var parts = plan.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        guard let first = parts.first, !first.isEmpty else { return 0 }
+        // Dash-separated per-set lists ("8-12-10"): 3+ numbers is a list, not a
+        // range — exactly two ("8-12") keeps meaning a range (upper bound).
+        if parts.count == 1 {
+            let dashed = first.split(separator: "-").map { $0.trimmingCharacters(in: .whitespaces) }
+            if dashed.count >= 3, dashed.allSatisfy({ Int($0) != nil }) { parts = dashed }
+        }
+        let part = parts.count > 1 ? parts[min(setIndex, parts.count - 1)] : parts[0]
+        let upper = part.contains("-") ? String(part.split(separator: "-").last ?? "") : part
+        return Int(upper) ?? 0
+    }
+
+    #if DEBUG
+    static func runSelfCheck() {
+        assert(plannedReps("10, 8, 6", setIndex: 0) == 10)
+        assert(plannedReps("10, 8, 6", setIndex: 2) == 6)
+        assert(plannedReps("10, 8, 6", setIndex: 3) == 6, "extra sets reuse the last entry")
+        assert(plannedReps("8-12", setIndex: 1) == 12, "range takes the upper bound")
+        assert(plannedReps("12", setIndex: 0) == 12)
+        assert(plannedReps("12, 10-8", setIndex: 1) == 8)
+        assert(plannedReps("", setIndex: 0) == 0)
+        assert(plannedReps("8-12-10", setIndex: 0) == 8, "3+ dashed numbers is a per-set list")
+        assert(plannedReps("8-12-10", setIndex: 1) == 12)
+        assert(plannedReps("8-12-10", setIndex: 2) == 10)
+        assert(plannedReps("8-12-10", setIndex: 3) == 10, "extra sets reuse the last entry")
+        assert(plannedReps("8-12", setIndex: 0) == 12, "two dashed numbers is still a range")
+    }
+    #endif
+
     private func getCurrentWeekString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -277,6 +325,28 @@ class TrainingManager: ObservableObject {
             weights[key] = weight
         } else {
             weights.removeValue(forKey: key)
+        }
+    }
+
+    func updateReps(
+        day: String,
+        exerciseIndex: Int,
+        exerciseName: String,
+        setIndex: Int,
+        reps: Int
+    ) {
+        let key = generateWeightKey(
+            day: day,
+            exerciseIndex: exerciseIndex,
+            exerciseName: exerciseName,
+            setIndex: setIndex,
+            weekStart: getCurrentWeekString()
+        )
+
+        if reps > 0 {
+            setReps[key] = reps
+        } else {
+            setReps.removeValue(forKey: key)
         }
     }
 
@@ -406,6 +476,10 @@ class TrainingManager: ObservableObject {
                 for key in keysToRemove {
                     self.weights.removeValue(forKey: key)
                 }
+                for key in self.weightsByName.keys where key.hasSuffix("|\(weekStartString)") {
+                    self.weightsByName.removeValue(forKey: key)
+                    self.repsByName.removeValue(forKey: key)
+                }
                 
                 // Limpiar notas solo de la semana actual
                 let noteKeysToRemove = self.backendExerciseNotes.keys.filter { key in
@@ -439,7 +513,10 @@ class TrainingManager: ObservableObject {
                 
                 if let serverWeights = response.weights, !serverWeights.isEmpty {
                     var newWeights: [String: Double] = [:]
+                    var newReps: [String: Int] = [:]
                     var newNotes: [String: String] = [:]
+                    var newWeightsByName: [String: Double] = [:]
+                    var newRepsByName: [String: Int] = [:]
 
                     for record in serverWeights {
                         if let sets = record.sets {
@@ -466,6 +543,23 @@ class TrainingManager: ObservableObject {
                                 if weightSet.weight > 0 {
                                     newWeights[key] = weightSet.weight
                                 }
+                                if weightSet.reps > 0 {
+                                    newReps[key] = weightSet.reps
+                                }
+
+                                // ponytail: last record wins if the same exercise
+                                // shows up twice in one week (e.g. two plans/days)
+                                let nameKey = Self.nameKey(
+                                    exerciseName: record.exerciseName,
+                                    setIndex: actualSetIndex,
+                                    weekStart: week
+                                )
+                                if weightSet.weight > 0 {
+                                    newWeightsByName[nameKey] = weightSet.weight
+                                }
+                                if weightSet.reps > 0 {
+                                    newRepsByName[nameKey] = weightSet.reps
+                                }
                             }
                         }
 
@@ -486,8 +580,17 @@ class TrainingManager: ObservableObject {
                         for (key, weight) in newWeights {
                             self.weights[key] = weight
                         }
+                        for (key, reps) in newReps {
+                            self.setReps[key] = reps
+                        }
                         for (key, note) in newNotes {
                             self.backendExerciseNotes[key] = note
+                        }
+                        for (key, weight) in newWeightsByName {
+                            self.weightsByName[key] = weight
+                        }
+                        for (key, reps) in newRepsByName {
+                            self.repsByName[key] = reps
                         }
                     }
 
@@ -561,6 +664,21 @@ class TrainingManager: ObservableObject {
                     if weights[key] == nil {
                         weights[key] = weightSet.weight
                     }
+                    if setReps[key] == nil, weightSet.reps > 0 {
+                        setReps[key] = weightSet.reps
+                    }
+
+                    let nameKey = Self.nameKey(
+                        exerciseName: record.exerciseName,
+                        setIndex: setIndex,
+                        weekStart: weekStartString
+                    )
+                    if weightsByName[nameKey] == nil, weightSet.weight > 0 {
+                        weightsByName[nameKey] = weightSet.weight
+                    }
+                    if repsByName[nameKey] == nil, weightSet.reps > 0 {
+                        repsByName[nameKey] = weightSet.reps
+                    }
                 }
 
                 // Load note for current week
@@ -592,7 +710,12 @@ class TrainingManager: ObservableObject {
         exerciseIndex: Int,
         exerciseName: String,
         note: String,
-        userId: String
+        userId: String,
+        // Authoritative per-set values (setIndex → weight/reps). The watch path
+        // passes these from the live store snapshot: reading `weights` here races
+        // with loadWeightsForWeek's clear-then-refetch and used to save zeros
+        // over just-logged sets when the app was woken in the background.
+        setOverrides: [Int: (weight: Double, reps: Int)]? = nil
     ) async {
         let currentWeekString = getCurrentWeekString()
         let key = generateWeightKey(
@@ -643,14 +766,15 @@ class TrainingManager: ObservableObject {
                     weekStart: currentWeekString
                 )
 
-                let weight = weights[weightKey] ?? 0
+                let weight = setOverrides?[setIndex]?.weight ?? weights[weightKey] ?? 0
 
-                var reps: Int = 0
-                if exercise.reps.contains("-") {
-                    let lastPart = exercise.reps.split(separator: "-").last
-                    reps = lastPart.flatMap { Int($0) } ?? 0
-                } else if !exercise.reps.isEmpty {
-                    reps = Int(exercise.reps) ?? 0
+                // Reps the user logged for this set; fall back to the plan's
+                // per-set target. The old fallback couldn't parse comma lists
+                // ("10, 8, 6") and stored reps=0, which is why previous-week
+                // reps never came back on "Usar anterior".
+                var reps: Int = setOverrides?[setIndex]?.reps ?? setReps[weightKey] ?? 0
+                if reps == 0 {
+                    reps = Self.plannedReps(exercise.reps, setIndex: setIndex)
                 }
 
                 weightSets.append(

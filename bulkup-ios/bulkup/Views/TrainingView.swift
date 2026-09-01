@@ -24,6 +24,14 @@ struct TrainingView: View {
     @State private var completionTotalSets = 0
     @State private var showFeedback = false
     @State private var feedbackDayName = ""
+    // Item-driven (not isPresented+String) so the sheet content is always built
+    // with the tapped day — the isPresented variant can present with the stale
+    // previous value and render an empty (blank) sheet.
+    private struct RecapSelection: Identifiable {
+        let day: String
+        var id: String { day }
+    }
+    @State private var recapSelection: RecapSelection?
     @AppStorage("lastCompletionPromptDate") private var lastCompletionPromptDate: String = ""
 
     enum ViewMode: String, CaseIterable {
@@ -173,9 +181,18 @@ struct TrainingView: View {
                 currentDayIndex = 0
             }
 
+            syncToActiveSessionDay()
+
             Task {
                 await friendsManager.loadTodayStatus()
             }
+        }
+        // A session restored after process death keeps its own day (e.g. the user
+        // was doing yesterday's workout). currentDate resets to today on relaunch,
+        // so without this the UI renders today's plan against a session keyed to
+        // another day.
+        .onChange(of: workoutSession.isActive) { _, isActive in
+            if isActive { syncToActiveSessionDay() }
         }
         .refreshable {
             if let user = authManager.user {
@@ -238,7 +255,6 @@ struct TrainingView: View {
             ExerciseProgressView(
                 exerciseName: selection.name,
                 exerciseIndex: selection.orderIndex,
-                planId: selection.planId,
                 weightTracking: selection.weightTracking
             )
         }
@@ -442,6 +458,18 @@ struct TrainingView: View {
         .sheet(isPresented: $showFeedback) {
             WorkoutFeedbackView(dayName: feedbackDayName, planId: trainingManager.trainingPlanId)
         }
+        .sheet(item: $recapSelection) { selection in
+            if let dayData = trainingManager.trainingData.first(where: { $0.day == selection.day }) {
+                WorkoutRecapSheet(dayData: dayData)
+                    .environmentObject(trainingManager)
+                    .environmentObject(authManager)
+            } else {
+                // Shouldn't happen (the day came from trainingData); visible > blank.
+                Text("No se pudo cargar el resumen")
+                    .foregroundColor(BulkUpColors.textSecondary)
+                    .padding()
+            }
+        }
     }
 
     // MARK: - CTA Button
@@ -493,25 +521,21 @@ struct TrainingView: View {
                 Text("Completado")
                     .font(.system(size: 17, weight: .bold))
                 Spacer()
+                if let emoji = savedEmoji {
+                    Text(emoji).font(.system(size: 18))
+                }
             }
             .foregroundColor(BulkUpColors.success)
 
-            // On-demand sensations button
+            // Recap: totals, sensations and every logged set (editable)
             Button {
-                feedbackDayName = day
-                showFeedback = true
+                recapSelection = RecapSelection(day: day)
             } label: {
                 HStack(spacing: Spacing.xs) {
-                    if let emoji = savedEmoji {
-                        Text(emoji).font(.system(size: 18))
-                        Text("Editar sensaciones")
-                            .font(.system(size: 15, weight: .medium))
-                    } else {
-                        Image(systemName: "heart.fill")
-                            .font(.system(size: 14))
-                        Text("Registrar sensaciones")
-                            .font(.system(size: 15, weight: .medium))
-                    }
+                    Image(systemName: "list.clipboard.fill")
+                        .font(.system(size: 14))
+                    Text("Ver resumen")
+                        .font(.system(size: 15, weight: .medium))
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
                         .opacity(0.6)
@@ -559,6 +583,22 @@ struct TrainingView: View {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
                 let rowId = exerciseRowId(firstIncomplete, day: trainingDay)
                 expandedExercises.insert(rowId)
+            }
+        }
+    }
+
+    /// Point the browsed date at the active session's day. The session day is
+    /// today or a recent past day (8h restore cutoff), so a short backwards walk
+    /// finds the matching date.
+    private func syncToActiveSessionDay() {
+        guard workoutSession.isActive,
+              let sessionDay = workoutSession.currentDayName,
+              currentTrainingDay != sessionDay else { return }
+        for offset in 0...6 {
+            if let d = calendar.date(byAdding: .day, value: -offset, to: Date()),
+               getTrainingDayForDate(d) == sessionDay {
+                currentDate = d
+                return
             }
         }
     }
@@ -821,7 +861,6 @@ struct TrainingView: View {
                             progressExercise = ProgressExerciseSelection(
                                 name: exercise.name,
                                 orderIndex: exercise.orderIndex,
-                                planId: trainingManager.trainingPlanId ?? "",
                                 weightTracking: exercise.weightTracking
                             )
                         }
@@ -1154,6 +1193,5 @@ struct ProgressExerciseSelection: Identifiable, Hashable {
     let id = UUID()
     let name: String
     let orderIndex: Int
-    let planId: String
     let weightTracking: Bool
 }

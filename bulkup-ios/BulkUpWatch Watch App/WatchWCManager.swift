@@ -22,14 +22,19 @@ final class WatchWCManager: NSObject, ObservableObject, WCSessionDelegate {
 
     /// Send an action to the phone. Prefer sendMessage when reachable; otherwise
     /// queue with transferUserInfo so completions aren't lost.
-    func send(_ msg: WatchMessage) {
+    /// `queueOnFailure: false` for non-idempotent deltas (adjustWeight/adjustReps):
+    /// a duplicate or minutes-late queued delivery lands on whatever set the
+    /// cursor points at by then and corrupts its weight. completeSet carries
+    /// absolute weight/reps, so deltas are best-effort UI sync only.
+    func send(_ msg: WatchMessage, queueOnFailure: Bool = true) {
         guard let session, let data = WatchSync.encode(msg) else { return }
+        let payload = [WatchSync.messageKey: data]
         if session.isReachable {
-            session.sendMessage([WatchSync.messageKey: data], replyHandler: nil, errorHandler: { _ in
-                session.transferUserInfo([WatchSync.messageKey: data])
+            session.sendMessage(payload, replyHandler: nil, errorHandler: { _ in
+                if queueOnFailure { session.transferUserInfo(payload) }
             })
-        } else {
-            session.transferUserInfo([WatchSync.messageKey: data])
+        } else if queueOnFailure {
+            session.transferUserInfo(payload)
         }
     }
 
@@ -40,13 +45,23 @@ final class WatchWCManager: NSObject, ObservableObject, WCSessionDelegate {
         live?.completeCurrentSet()
         send(.completeSet(exerciseIndex: s.exerciseIndex, setIndex: s.setIndex, weight: s.weight, reps: s.reps))
     }
-    func adjustWeight(_ d: Double) { live?.adjustWeight(d); send(.adjustWeight(delta: d)) }
-    func adjustReps(_ d: Int) { live?.adjustReps(d); send(.adjustReps(delta: d)) }
+    func adjustWeight(_ d: Double) { live?.adjustWeight(d); send(.adjustWeight(delta: d), queueOnFailure: false) }
+    func adjustReps(_ d: Int) { live?.adjustReps(d); send(.adjustReps(delta: d), queueOnFailure: false) }
     func skipRest() { live?.skipRest(); send(.skipRest) }
     func addRest(_ s: Int) { live?.addRest(s); send(.addRest(seconds: s)) }
     /// Finish: send the watch's authoritative LiveWorkout snapshot so the phone
     /// persists the correct final state even if it was unreachable during the workout.
     func finishWorkout(metrics: WorkoutMetrics?) { send(.finishWorkout(live: live, metrics: metrics)) }
+
+    /// Optimistic meal toggle: flip locally for instant UI, send the absolute
+    /// state; the phone's next broadcast reconciles.
+    func toggleMeal(order: Int) {
+        guard var meals = ctx?.meals, let date = ctx?.mealsDate,
+              let i = meals.firstIndex(where: { $0.order == order }) else { return }
+        meals[i].completed.toggle()
+        ctx?.meals = meals
+        send(.setMealCompleted(order: order, date: date, completed: meals[i].completed))
+    }
 
     private func apply(_ data: Data?) {
         guard let next = WatchSync.decode(WatchContext.self, from: data), next.seq > lastSeq else { return }

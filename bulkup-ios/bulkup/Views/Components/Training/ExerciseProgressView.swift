@@ -9,7 +9,6 @@ import Charts
 struct ExerciseProgressView: View {
     let exerciseName: String
     let exerciseIndex: Int
-    let planId: String
     let weightTracking: Bool
 
     @State private var points: [ExerciseWeekPoint] = []
@@ -112,8 +111,10 @@ struct ExerciseProgressView: View {
         loading = true
         defer { loading = false }
         guard weightTracking, let userId = AuthManager.shared.user?.id else { return }
-        let recs = (try? await APIService.shared.loadWeightHistory(userId: userId, planId: planId)) ?? []
-        points = ExerciseProgress.points(from: recs, exerciseName: exerciseName, exerciseIndex: exerciseIndex, planId: planId)
+        // Cross-plan: progress follows the exercise name, not the plan it was logged
+        // under, so uploading a new plan keeps the history of repeated exercises.
+        let recs = (try? await APIService.shared.loadWeightHistory(userId: userId, planId: "")) ?? []
+        points = ExerciseProgress.points(from: recs, exerciseName: exerciseName, exerciseIndex: exerciseIndex, planId: "")
     }
 
     private func fmt(_ w: Double) -> String {

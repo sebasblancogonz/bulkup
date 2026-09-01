@@ -204,16 +204,16 @@ struct ExerciseCardView: View {
                 }
             }
             .sheet(isPresented: $showAlternatives) {
-                ExerciseAlternativesSheet(currentName: effectiveName) { alt in
+                ExerciseAlternativesSheet(currentName: effectiveName) { name in
                     workoutSession.overrideExercise(
                         day: normalizedDayName,
                         exerciseIndex: exercise.orderIndex,
-                        name: alt.localizedName
+                        name: name
                     )
                     // Push the swap into the shared store → watch + Live Activity.
                     workoutSession.syncStoreFromSession(trainingManager: trainingManager)
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
             }
 
             // Expanded weight logger (hidden when skipped)
@@ -332,6 +332,7 @@ struct ExerciseWeightLogger: View {
     @State private var weightTexts: [String] = []
     @State private var repsTexts: [String] = []
     @State private var previousWeights: [Double?] = []
+    @State private var previousReps: [Int?] = []
     @State private var localNote: String = ""
     @State private var isSaving = false
     @State private var showSaved = false
@@ -508,16 +509,32 @@ struct ExerciseWeightLogger: View {
 
     @ViewBuilder
     private var workoutModeContent: some View {
-        // Previous weights banner
+        // Previous weights banner — tappable: copies last week's kg + reps in.
         if hasPreviousWeights {
-            HStack(spacing: Spacing.xs) {
-                Image(systemName: "clock.arrow.circlepath")
-                    .font(.system(size: 10))
-                Text("ANTERIOR")
-                    .font(.system(size: 11, weight: .bold))
-                    .tracking(0.5)
+            HStack {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.system(size: 10))
+                    Text("ANTERIOR")
+                        .font(.system(size: 11, weight: .bold))
+                        .tracking(0.5)
+                }
+                .foregroundColor(BulkUpColors.textTertiary)
+
+                Spacer()
+
+                Button {
+                    fillFromPrevious()
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 10))
+                        Text("Usar anterior")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                    .foregroundColor(BulkUpColors.accent)
+                }
             }
-            .foregroundColor(BulkUpColors.textTertiary)
         }
 
         // Table header
@@ -794,6 +811,8 @@ struct ExerciseWeightLogger: View {
                 .frame(width: 44, alignment: .leading)
             Text("PESO")
                 .frame(width: 64, alignment: .center)
+            Text("REPS")
+                .frame(width: 56, alignment: .center)
             Text("ANTERIOR")
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
@@ -834,10 +853,26 @@ struct ExerciseWeightLogger: View {
                             )
                     )
 
+                TextField(defaultReps, text: repsBinding(for: setIndex))
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.center)
+                    .font(.system(size: 15, weight: .medium, design: .monospaced))
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .frame(width: 48, height: 36)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(BulkUpColors.surfaceElevated)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(BulkUpColors.textTertiary.opacity(0.15), lineWidth: 1)
+                    )
+                    .frame(width: 56)
+
                 Spacer()
 
                 if let prev = safeGetPrevWeight(setIndex), prev > 0 {
-                    Text("ant. \(formatWeight(prev)) kg")
+                    Text(previousLabel(setIndex: setIndex, weight: prev))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(BulkUpColors.textTertiary)
                 }
@@ -978,6 +1013,10 @@ struct ExerciseWeightLogger: View {
                 day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex, reps: reps
             )
         }
+        // Persist the reps the user actually saw: setReps was only written on
+        // manual edits, so accepted prefills saved reps=0 for comma-format plans
+        // and "Usar anterior" had no reps to reuse the following week.
+        persistReps(setIndex: setIndex, text: safeGetRepsText(setIndex))
 
         // Auto-save to backend
         focusedSet = nil
@@ -1016,6 +1055,7 @@ struct ExerciseWeightLogger: View {
         let current = Int(repsTexts[setIndex]) ?? (Int(defaultReps) ?? 0)
         let newVal = max(0, current + delta)
         repsTexts[setIndex] = "\(newVal)"
+        persistReps(setIndex: setIndex, text: repsTexts[setIndex])
     }
 
     private func repsBinding(for setIndex: Int) -> Binding<String> {
@@ -1028,7 +1068,20 @@ struct ExerciseWeightLogger: View {
                 ensureArrayCapacity()
                 guard setIndex < repsTexts.count else { return }
                 repsTexts[setIndex] = newValue
+                persistReps(setIndex: setIndex, text: newValue)
             }
+        )
+    }
+
+    /// Keep logged reps in the manager so they're saved with the weights and
+    /// can be reused next week.
+    private func persistReps(setIndex: Int, text: String) {
+        trainingManager.updateReps(
+            day: normalizedDay,
+            exerciseIndex: exercise.orderIndex,
+            exerciseName: effectiveName,
+            setIndex: setIndex,
+            reps: Int(text) ?? 0
         )
     }
 
@@ -1097,7 +1150,18 @@ struct ExerciseWeightLogger: View {
             }
             return ""
         }
-        repsTexts = Self.perSetReps(from: exercise.reps, count: setsCount, fallback: defaultReps)
+        let planReps = Self.perSetReps(from: exercise.reps, count: setsCount, fallback: defaultReps)
+        let loggedReps: [Int?] = (0..<setsCount).map { setIndex in
+            let key = trainingManager.generateWeightKey(
+                day: normalizedDay,
+                exerciseIndex: exercise.orderIndex,
+                exerciseName: effectiveName,
+                setIndex: setIndex,
+                weekStart: currentWeekString
+            )
+            return trainingManager.setReps[key]
+        }
+        repsTexts = Self.mergingLoggedReps(planReps, from: loggedReps)
         loadPreviousWeights()
         loadExerciseNote()
         refreshVideoSets()
@@ -1134,7 +1198,10 @@ struct ExerciseWeightLogger: View {
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd"
 
-        previousWeights = (0..<exercise.sets).map { setIndex in
+        // One backwards scan per set: the first week with a logged weight also
+        // supplies that set's reps, so weight and reps always come from the
+        // same session instead of two different weeks.
+        let found: [(Double, Int?)?] = (0..<exercise.sets).map { setIndex in
             var checkWeek = trainingManager.selectedWeek
             for _ in 0..<4 {
                 checkWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: checkWeek) ?? checkWeek
@@ -1147,15 +1214,34 @@ struct ExerciseWeightLogger: View {
                     weekStart: weekStr
                 )
                 if let w = trainingManager.weights[key], w > 0 {
-                    return w
+                    return (w, trainingManager.setReps[key])
+                }
+                // Cross-plan fallback: a previous plan stored this exercise under
+                // a different planId/day/orderIndex, so the exact key misses;
+                // the name-keyed mirror still finds it.
+                let nameKey = TrainingManager.nameKey(
+                    exerciseName: effectiveName, setIndex: setIndex, weekStart: weekStr)
+                if let w = trainingManager.weightsByName[nameKey], w > 0 {
+                    return (w, trainingManager.repsByName[nameKey])
                 }
             }
             return nil
         }
+        previousWeights = found.map { $0?.0 }
+        previousReps = found.map { $0?.1 }
     }
 
     private var hasPreviousWeights: Bool {
         previousWeights.contains(where: { $0 != nil })
+    }
+
+    /// "ant. 60 kg × 10" when last session's reps are known, "ant. 60 kg" otherwise.
+    private func previousLabel(setIndex: Int, weight: Double) -> String {
+        let base = "ant. \(formatWeight(weight)) kg"
+        guard setIndex < previousReps.count, let reps = previousReps[setIndex], reps > 0 else {
+            return base
+        }
+        return "\(base) × \(reps)"
     }
 
     private func safeGetPrevWeight(_ index: Int) -> Double? {
@@ -1197,6 +1283,7 @@ struct ExerciseWeightLogger: View {
     }
 
     private func fillFromPrevious() {
+        ensureArrayCapacity()
         for i in 0..<exercise.sets {
             if let prev = safeGetPrevWeight(i), prev > 0,
                i < weightTexts.count, weightTexts[i].isEmpty {
@@ -1208,6 +1295,14 @@ struct ExerciseWeightLogger: View {
                     setIndex: i,
                     weight: prev
                 )
+            }
+            // Reps always take the previous value: tapping the button is an
+            // explicit "repeat last week", and the field is never empty
+            // (it's pre-filled from the plan) so an emptiness check never fires.
+            if i < previousReps.count, let prevReps = previousReps[i], prevReps > 0,
+               i < repsTexts.count {
+                repsTexts[i] = "\(prevReps)"
+                persistReps(setIndex: i, text: repsTexts[i])
             }
         }
         workoutSession.syncStoreFromSession(trainingManager: trainingManager)
@@ -1237,6 +1332,15 @@ struct ExerciseWeightLogger: View {
 
     static func formatWeightString(_ w: Double) -> String {
         String(format: "%.1f", w).replacingOccurrences(of: ".0", with: "")
+    }
+
+    /// Reps actually logged for this week win over the plan's prescription;
+    /// absent or zero logged reps fall back to the plan.
+    static func mergingLoggedReps(_ planned: [String], from logged: [Int?]) -> [String] {
+        zip(planned, logged).map { plan, reps in
+            guard let r = reps, r > 0 else { return plan }
+            return "\(r)"
+        }
     }
 
     /// Fill empty weight fields from persisted weights; leave non-empty fields and
@@ -1290,8 +1394,15 @@ extension ExerciseWeightLogger {
     /// "8-12" resolves to its upper bound; a single value repeats for every set.
     static func perSetReps(from reps: String, count: Int, fallback: String) -> [String] {
         guard count > 0 else { return [] }
-        let parts = reps.components(separatedBy: ",")
+        var parts = reps.components(separatedBy: ",")
             .map { $0.trimmingCharacters(in: .whitespaces) }
+        // "8-12-10" (3+ dashed numbers, no commas) is a per-set list, not a
+        // range; exactly two ("8-12") keeps meaning a range. Same rule as
+        // TrainingManager.plannedReps so fields and saves agree.
+        if parts.count == 1 {
+            let dashed = parts[0].split(separator: "-").map { $0.trimmingCharacters(in: .whitespaces) }
+            if dashed.count >= 3, dashed.allSatisfy({ Int($0) != nil }) { parts = dashed }
+        }
         func upperBound(_ s: String) -> String {
             s.contains("-") ? (s.split(separator: "-").last.map(String.init) ?? s) : s
         }
@@ -1308,6 +1419,10 @@ extension ExerciseWeightLogger {
         assert(perSetReps(from: "8-12", count: 3, fallback: "12") == ["12", "12", "12"])
         assert(perSetReps(from: "12", count: 2, fallback: "12") == ["12", "12"])
         assert(perSetReps(from: "12, 10-8", count: 2, fallback: "12") == ["12", "8"])
+        assert(perSetReps(from: "8-12-10", count: 3, fallback: "10") == ["8", "12", "10"])
+        assert(perSetReps(from: "8-12-10", count: 4, fallback: "10") == ["8", "12", "10", "10"])
+        assert(perSetReps(from: "8-12", count: 2, fallback: "12") == ["12", "12"],
+               "two dashed numbers stays a range")
 
         // Watch/widget completes a set → weight lands in trainingManager.weights but
         // this card's empty text field must adopt it, without touching typed/cleared ones.
@@ -1315,6 +1430,10 @@ extension ExerciseWeightLogger {
                "fills empty from stored, keeps typed value, leaves empty when nothing stored")
         assert(mergingEmptyWeights([""], from: [0]) == [""], "a zero weight never fills a field")
         assert(mergingEmptyWeights(["70"], from: [50]) == ["70"], "never overwrites an existing value")
+
+        // Reps logged last session must reappear instead of the plan's prescription.
+        assert(mergingLoggedReps(["12", "12", "12"], from: [10, nil, 0]) == ["10", "12", "12"],
+               "logged reps win; nil and zero fall back to the plan")
     }
     #endif
 }

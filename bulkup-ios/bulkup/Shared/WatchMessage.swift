@@ -10,7 +10,18 @@ enum WatchMessage: Codable, Equatable {
     case skipRest
     case addRest(seconds: Int)
     case finishWorkout(live: LiveWorkout?, metrics: WorkoutMetrics?)
+    // Absolute (not a toggle) so duplicate deliveries are idempotent; carries the
+    // date the watch saw so a message queued overnight can't mark the wrong day.
+    case setMealCompleted(order: Int, date: String, completed: Bool)
     case requestSync                 // ask the phone to re-send context
+}
+
+/// One meal of today's diet, for the watch list.
+struct MealStatus: Codable, Equatable {
+    var order: Int
+    var name: String
+    var time: String?
+    var completed: Bool
 }
 
 /// Phone → watch state. Coalesced latest-state via updateApplicationContext.
@@ -18,6 +29,9 @@ struct WatchContext: Codable, Equatable {
     var seq: Int
     var todaysPlan: TodaysPlan?
     var live: LiveWorkout?           // from SharedWorkoutStore.swift (same target)
+    // Optional so payloads from older phone builds still decode.
+    var mealsDate: String?           // "yyyy-MM-dd" the meals list refers to
+    var meals: [MealStatus]?
 }
 
 enum WatchSync {
@@ -47,6 +61,7 @@ enum WatchSync {
             .addRest(seconds: 30),
             .finishWorkout(live: sampleLive, metrics: WorkoutMetrics(avgHeartRate: 142, maxHeartRate: 171, activeEnergyKcal: 320.5)),
             .finishWorkout(live: nil, metrics: nil),
+            .setMealCompleted(order: 2, date: "2026-07-23", completed: true),
             .requestSync,
         ]
         for m in msgs {
@@ -62,9 +77,13 @@ enum WatchSync {
             cursor: 0, restEndDate: nil)
         let plan = TodaysPlan(planId: "p1", dayName: "lunes", dayDisplay: "Lunes", weekStart: "2026-06-22",
             exercises: [.init(orderIndex: 0, name: "Press", sets: 3, reps: "10, 8, 6", restSeconds: 90, weightTracking: true)])
-        let ctx = WatchContext(seq: 7, todaysPlan: plan, live: live)
+        let ctx = WatchContext(seq: 7, todaysPlan: plan, live: live, mealsDate: "2026-07-23",
+                               meals: [MealStatus(order: 1, name: "Desayuno", time: "08:00", completed: true)])
         let backCtx = decode(WatchContext.self, from: encode(ctx))
         assert(backCtx == ctx, "WatchContext round-trip failed")
+        // Old-phone payload (no meals fields) must still decode on the watch.
+        let legacy = "{\"seq\":1}".data(using: .utf8)
+        assert(decode(WatchContext.self, from: legacy)?.meals == nil, "legacy context must decode with nil meals")
     }
     #endif
 }

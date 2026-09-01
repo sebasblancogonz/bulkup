@@ -24,6 +24,8 @@ struct BulkUp: App {
         WorkoutSessionManager.runSelfCheck()
         ExerciseAlternatives.runSelfCheck()
         WatchSync.runSelfCheck()
+        PhoneWCManager.runSelfCheck()
+        TrainingManager.runSelfCheck()
         ExerciseWeightLogger.runSelfCheck()
         APIService.runDateParsingSelfCheck()
         WorkoutVideoStore.runSelfCheck()

@@ -74,6 +74,12 @@ extension ExerciseProgress {
         // than week 2 (65×8), so the two PR kinds genuinely diverge.
         assert(p[3].isWeightPR && !p[3].isEst1RMPR, "70×5 is a weight PR but not a 1RM PR")
         assert(p[1].isEst1RMPR && p[1].est1RM > p[3].est1RM, "the 65×8 week holds the est-1RM PR")
+        // Cross-plan: empty planId merges history from every plan (new-plan upload keeps progress)
+        let old = ServerWeightHistoryItem(
+            weekStart: "2026-04-27", day: "lunes", exerciseName: "Press Banca", exerciseIndex: 2,
+            sets: [ServerWeightSet(setNumber: 0, weight: 55, reps: 10)], planId: "p0")
+        let merged = points(from: recs + [old], exerciseName: "Press Banca", exerciseIndex: 0, planId: "")
+        assert(merged.count == 5 && merged.first?.topSet == 55, "planId \"\" pulls the old plan's week in")
     }
 }
 #endif

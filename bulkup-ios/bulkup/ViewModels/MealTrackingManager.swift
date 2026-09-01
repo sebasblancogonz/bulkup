@@ -85,6 +85,49 @@ class MealTrackingManager: ObservableObject {
         )
         todayTracking = (try? modelContext.fetch(descriptor)) ?? []
         isLoading = false
+        PhoneWCManager.shared.broadcast()
+    }
+
+    // MARK: - Watch bridge
+
+    /// Records for a date straight from the store. `todayTracking` only holds the
+    /// last-loaded date and is empty when the app is woken in the background.
+    func records(for date: String) -> [MealTrackingRecord] {
+        let d = date
+        let descriptor = FetchDescriptor<MealTrackingRecord>(
+            predicate: #Predicate { $0.date == d },
+            sortBy: [SortDescriptor(\.mealOrder)]
+        )
+        return (try? modelContext.fetch(descriptor)) ?? []
+    }
+
+    /// Watch toggle: find-or-create the record and set an absolute completed
+    /// state (idempotent — a duplicate delivery re-sets the same value).
+    func setMealCompleted(order: Int, date: String, completed: Bool, userId: String,
+                          dayName: String, planId: String?, mealType: String) async {
+        let recordId = "\(date)_\(order)"
+        let descriptor = FetchDescriptor<MealTrackingRecord>(
+            predicate: #Predicate { $0.id == recordId }
+        )
+        let record: MealTrackingRecord
+        if let existing = (try? modelContext.fetch(descriptor))?.first {
+            record = existing
+        } else {
+            record = MealTrackingRecord(
+                date: date, dayName: dayName, planId: planId,
+                mealType: mealType, mealOrder: order
+            )
+            modelContext.insert(record)
+        }
+        guard record.completed != completed else { return }
+        record.completed = completed
+        record.completedAt = completed ? Date() : nil
+        record.needsSync = true
+        try? modelContext.save()
+
+        refreshLocalTracking(for: date)
+        PhoneWCManager.shared.broadcast()
+        await syncToServer(userId: userId, date: date)
     }
 
     // MARK: - Toggle meal completion
@@ -97,6 +140,7 @@ class MealTrackingManager: ObservableObject {
 
         // Update local published state
         refreshLocalTracking(for: record.date)
+        PhoneWCManager.shared.broadcast()
 
         // Sync to server
         await syncToServer(userId: userId, date: record.date)

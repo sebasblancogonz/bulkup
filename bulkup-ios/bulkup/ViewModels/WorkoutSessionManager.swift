@@ -310,7 +310,7 @@ class WorkoutSessionManager: ObservableObject {
                                 setIndex: setIdx
                             )
                             let weight = trainingManager.weights[weightKey] ?? 0
-                            let reps = actualReps[key] ?? parseReps(exercise.reps)
+                            let reps = actualReps[key] ?? TrainingManager.plannedReps(exercise.reps, setIndex: setIdx)
                             volume += weight * Double(reps)
                         }
                     }
@@ -550,6 +550,10 @@ class WorkoutSessionManager: ObservableObject {
         var newlyCompleted = false
         // exerciseIndex -> exerciseName, for exercises that gained completed sets
         var exercisesToPersist: [Int: String] = [:]
+        // exerciseIndex -> (setIndex -> weight/reps): the store's authoritative
+        // values for completed sets, passed to the save so it doesn't re-read
+        // the `weights` dict (which loadWeightsForWeek can clear mid-flight).
+        var setValuesByExercise: [Int: [Int: (weight: Double, reps: Int)]] = [:]
 
         for liveSet in w.sets {
             let key = setKey(
@@ -559,6 +563,8 @@ class WorkoutSessionManager: ObservableObject {
             )
 
             if liveSet.completed {
+                setValuesByExercise[liveSet.exerciseIndex, default: [:]][liveSet.setIndex] =
+                    (weight: liveSet.weight, reps: liveSet.reps)
                 // Always reflect the widget's weight/reps for completed sets.
                 if liveSet.weight > 0 {
                     trainingManager.updateWeight(
@@ -567,6 +573,18 @@ class WorkoutSessionManager: ObservableObject {
                         exerciseName: liveSet.exerciseName,
                         setIndex: liveSet.setIndex,
                         weight: liveSet.weight
+                    )
+                }
+                // Reps too — without this, sets completed on the watch keep the
+                // plan's reps in the app (setReps is what the cards/recap read
+                // and what saveWeightsToDatabase falls back to).
+                if liveSet.reps > 0 {
+                    trainingManager.updateReps(
+                        day: normalizedDay,
+                        exerciseIndex: liveSet.exerciseIndex,
+                        exerciseName: liveSet.exerciseName,
+                        setIndex: liveSet.setIndex,
+                        reps: liveSet.reps
                     )
                 }
                 if !completedSetIds.contains(key) {
@@ -585,13 +603,15 @@ class WorkoutSessionManager: ObservableObject {
             for (exerciseIndex, exerciseName) in exercisesToPersist {
                 let name = exerciseName
                 let idx = exerciseIndex
+                let setValues = setValuesByExercise[idx]
                 Task {
                     await trainingManager.saveWeightsToDatabase(
                         day: normalizedDay,
                         exerciseIndex: idx,
                         exerciseName: name,
                         note: "",
-                        userId: userId
+                        userId: userId,
+                        setOverrides: setValues
                     )
                 }
             }
@@ -904,7 +924,7 @@ class WorkoutSessionManager: ObservableObject {
                         setIndex: setIdx
                     )
                     let weight = trainingManager.weights[weightKey] ?? 0
-                    let reps = actualReps[key] ?? parseReps(exercise.reps)
+                    let reps = actualReps[key] ?? TrainingManager.plannedReps(exercise.reps, setIndex: setIdx)
                     totalVolume += weight * Double(reps)
                 }
             }
@@ -965,7 +985,8 @@ class WorkoutSessionManager: ObservableObject {
                                               exerciseIndex: exercise.orderIndex, exerciseName: name,
                                               setIndex: setIdx)
                         ?? 0
-                    let reps = parseReps(exercise.reps)
+                    // Per-set target: "10, 8, 6" → 10/8/6, "8-12-10" → 8/12/10.
+                    let reps = TrainingManager.plannedReps(exercise.reps, setIndex: setIdx)
                     let key = setKey(day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIdx)
                     let completed = completedSetIds.contains(key)
 
@@ -1019,18 +1040,6 @@ class WorkoutSessionManager: ObservableObject {
             if let w = trainingManager.weights[key], w > 0 { return w }
         }
         return nil
-    }
-
-    private func parseReps(_ repsString: String) -> Int {
-        // Handle "8-12" → take higher, "10" → 10, "10, 8, 6" → average
-        let cleaned = repsString.components(separatedBy: ",").first?
-            .trimmingCharacters(in: .whitespaces) ?? repsString
-
-        if cleaned.contains("-") {
-            let parts = cleaned.split(separator: "-")
-            return parts.last.flatMap { Int($0) } ?? 0
-        }
-        return Int(cleaned) ?? 0
     }
 
     // MARK: - Exercise completion helpers

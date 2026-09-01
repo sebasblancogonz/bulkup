@@ -527,6 +527,9 @@
         }
       }
     },
+    "%lld foto(s)" : {
+
+    },
     "%lld kcal" : {
 
     },
@@ -708,6 +711,9 @@
           }
         }
       }
+    },
+    "×" : {
+
     },
     "✓" : {
       "localizations" : {
@@ -1397,6 +1403,7 @@
       }
     },
     "ant. %@ kg" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3211,9 +3218,6 @@
         }
       }
     },
-    "Editar sensaciones" : {
-
-    },
     "Efectos de Sonido" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3776,6 +3780,9 @@
           }
         }
       }
+    },
+    "Escribe un ejercicio..." : {
+
     },
     "Escribe un nombre para el plan antes de subir el archivo" : {
       "localizations" : {
@@ -5760,6 +5767,9 @@
         }
       }
     },
+    "No se pudo cargar el resumen" : {
+
+    },
     "No se pudo guardar tu entreno" : {
       "localizations" : {
         "en" : {
@@ -6082,6 +6092,9 @@
           }
         }
       }
+    },
+    "Otra alternativa" : {
+
     },
     "Otro" : {
       "extractionState" : "manual",
@@ -7024,9 +7037,6 @@
         }
       }
     },
-    "Registrar sensaciones" : {
-
-    },
     "Registro de peso, cintura, cuello y mas" : {
       "localizations" : {
         "en" : {
@@ -7078,6 +7088,9 @@
           }
         }
       }
+    },
+    "reps" : {
+
     },
     "REPS" : {
       "localizations" : {
@@ -7406,6 +7419,9 @@
         }
       }
     },
+    "SENSACIONES" : {
+
+    },
     "SERIE" : {
       "localizations" : {
         "en" : {
@@ -7583,6 +7599,9 @@
           }
         }
       }
+    },
+    "Sin registrar" : {
+
     },
     "Sin seguimiento de peso" : {
       "localizations" : {
@@ -8192,6 +8211,9 @@
         }
       }
     },
+    "Usar alternativa personalizada" : {
+
+    },
     "Usar anterior" : {
       "localizations" : {
         "en" : {
@@ -8276,6 +8298,9 @@
       }
     },
     "Ver progreso" : {
+
+    },
+    "Ver resumen" : {
 
     },
     "Ver todos" : {

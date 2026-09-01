@@ -30,9 +30,29 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
         // and a plain counter restarts at 0 when iOS terminates the app mid-workout
         // (the watch would then ignore every broadcast and keep showing stale sets).
         seq = max(seq + 1, Int(Date().timeIntervalSince1970))
-        let ctx = WatchContext(seq: seq, todaysPlan: currentTodaysPlan(), live: SharedWorkoutStore.load())
+        let meals = currentMeals()
+        let ctx = WatchContext(seq: seq, todaysPlan: currentTodaysPlan(), live: SharedWorkoutStore.load(),
+                               mealsDate: meals?.date, meals: meals?.items)
         guard let data = WatchSync.encode(ctx) else { return }
         try? session.updateApplicationContext([WatchSync.contextKey: data])
+    }
+
+    private func todaysDietDay() -> DietDay? {
+        todaysDay(DietManager.shared.dietData, name: { $0.day })
+    }
+
+    private func currentMeals() -> (date: String, items: [MealStatus])? {
+        guard let day = todaysDietDay(), !day.meals.isEmpty else { return nil }
+        let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
+        let date = df.string(from: Date())
+        // Read records straight from the store: the published todayTracking is
+        // empty when a watch message wakes the app in the background.
+        let records = MealTrackingManager.shared.records(for: date)
+        let items = day.meals.sorted { $0.orderIndex < $1.orderIndex }.map { meal in
+            MealStatus(order: meal.order, name: meal.type, time: meal.time.isEmpty ? nil : meal.time,
+                       completed: records.first { $0.mealOrder == meal.order }?.completed ?? false)
+        }
+        return (date, items)
     }
 
     /// Build today's plan from TrainingManager. Maps the SwiftData TrainingDay/Exercise
@@ -43,8 +63,7 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
         guard let planId = tm.trainingPlanId, !tm.trainingData.isEmpty else { return nil }
         let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
         let weekStart = df.string(from: tm.getWeekStart(tm.selectedWeek))
-        // Match by folded day name against the localized current weekday; fallback to first.
-        let day = tm.trainingData.first(where: { fold($0.day) == foldedWeekday() }) ?? tm.trainingData[0]
+        let day = todaysDay(tm.trainingData, name: { $0.day }) ?? tm.trainingData[0]
         return TodaysPlan(
             planId: planId,
             dayName: fold(day.day),
@@ -61,8 +80,39 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
         s.lowercased().folding(options: .diacriticInsensitive, locale: .current)
     }
     private func foldedWeekday() -> String {
-        let f = DateFormatter(); f.locale = .current; f.dateFormat = "EEEE"
+        // Matched against the plan's Spanish day-name data — must stay Spanish,
+        // NOT the device locale (English would yield "wednesday" ≠ "miercoles").
+        let f = DateFormatter(); f.locale = Locale(identifier: "es_ES"); f.dateFormat = "EEEE"
         return fold(f.string(from: Date()))
+    }
+
+    // MARK: - Day matching (mirrors TodayView: Spanish names + "Día N" fallback)
+
+    private static let spanishDayOrder: [String: Int] = [
+        "lunes": 0, "martes": 1, "miercoles": 2, "jueves": 3,
+        "viernes": 4, "sabado": 5, "domingo": 6,
+    ]
+
+    private func weekdayIndex(for dayString: String) -> Int? {
+        let norm = fold(dayString)
+        if let idx = Self.spanishDayOrder[norm] { return idx }
+        let stripped = norm.replacingOccurrences(of: "dia", with: "")
+            .trimmingCharacters(in: .whitespaces)
+        if let num = Int(stripped) { return (num - 1) % 7 }
+        return nil
+    }
+
+    private var todayWeekdayIndex: Int {
+        (Calendar.current.component(.weekday, from: Date()) + 5) % 7  // Monday = 0
+    }
+
+    /// Today's entry in a per-day plan: single-day plans apply every day,
+    /// then match by Spanish day name, then by weekday index ("Día N" plans).
+    private func todaysDay<T>(_ data: [T], name: (T) -> String) -> T? {
+        guard !data.isEmpty else { return nil }
+        if data.count == 1 { return data.first }
+        if let match = data.first(where: { fold(name($0)) == foldedWeekday() }) { return match }
+        return data.first { weekdayIndex(for: name($0)) == todayWeekdayIndex }
     }
 
     // MARK: - Watch → phone
@@ -110,6 +160,18 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
                 planId: tm.trainingPlanId,
                 trainingManager: tm
             )
+        case .setMealCompleted(let order, let date, let completed):
+            guard let userId = AuthManager.shared.user?.id else { break }
+            let day = todaysDietDay()
+            let mealType = day?.meals.first { $0.order == order }?.type ?? "Comida"
+            Task { @MainActor in
+                // Broadcasts again itself once the record is saved.
+                await MealTrackingManager.shared.setMealCompleted(
+                    order: order, date: date, completed: completed, userId: userId,
+                    dayName: day?.day ?? "", planId: DietManager.shared.dietPlanId,
+                    mealType: mealType
+                )
+            }
         case .requestSync:
             break
         }
@@ -133,6 +195,22 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
     nonisolated func session(_ session: WCSession, activationDidCompleteWith state: WCSessionActivationState, error: Error?) {
         Task { @MainActor in self.broadcast() }
     }
+
+    #if DEBUG
+    static func runSelfCheck() {
+        let m = PhoneWCManager()
+        assert(m.weekdayIndex(for: "Miércoles") == 2, "accented Spanish day maps to its index")
+        assert(m.weekdayIndex(for: "sabado") == 5, "unaccented day maps too")
+        assert(m.weekdayIndex(for: "Día 1") == 0 && m.weekdayIndex(for: "dia 8") == 0,
+               "Día N wraps to Monday-based index")
+        assert(m.weekdayIndex(for: "descanso") == nil, "unknown labels don't match")
+        struct D { let day: String }
+        let single = m.todaysDay([D(day: "Dieta Semanal")], name: { $0.day })
+        assert(single?.day == "Dieta Semanal", "single-day plans apply every day")
+        let numbered = (1...7).map { D(day: "Día \($0)") }
+        assert(m.todaysDay(numbered, name: { $0.day }) != nil, "Día N plans always resolve a day")
+    }
+    #endif
 
     // Required iOS-only delegate stubs (not needed on watchOS).
     nonisolated func sessionDidBecomeInactive(_ session: WCSession) {}
