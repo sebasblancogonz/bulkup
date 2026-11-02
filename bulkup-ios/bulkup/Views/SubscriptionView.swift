@@ -108,7 +108,7 @@ struct SubscriptionView: View {
                         .padding(Spacing.lg)
                         .background(BulkUpColors.surface)
                         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-                        .hairline()
+                        .lift()
                     }
                 }
             }
@@ -150,16 +150,14 @@ struct SubscriptionView: View {
             proofDivider
             proofItem(value: "iOS + Watch", label: "en la muñeca")
         }
-        .padding(.vertical, Spacing.md)
-        .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .top)
-        .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .bottom)
+        .padding(.vertical, Spacing.sm)
     }
 
     private func proofItem(value: String, label: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(value)
-                .font(BulkUpFont.mono(15, weight: .semibold, relativeTo: .subheadline))
-                .foregroundColor(BulkUpColors.accentText)
+                .font(BulkUpFont.numeric(.title3, weight: .semibold))
+                .foregroundColor(BulkUpColors.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             Text(label)
@@ -183,7 +181,8 @@ struct SubscriptionView: View {
     private var unlockList: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Lo que desbloqueas")
-                .microLabel()
+                .font(.system(.headline, weight: .semibold))
+                .foregroundColor(BulkUpColors.textPrimary)
                 .padding(.bottom, Spacing.sm)
 
             unlockRow(icon: "doc.viewfinder", title: "Importación con IA",
@@ -248,7 +247,7 @@ struct SubscriptionView: View {
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                     Text(expirationDate.formatted(date: .abbreviated, time: .omitted))
-                        .font(BulkUpFont.mono(13, relativeTo: .footnote))
+                        .font(BulkUpFont.numeric(.footnote, weight: .medium))
                         .foregroundColor(BulkUpColors.textPrimary)
                 }
             }
@@ -263,7 +262,7 @@ struct SubscriptionView: View {
         .padding(Spacing.md)
         .background(BulkUpColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-        .hairline()
+        .lift()
     }
 
     // MARK: - Plans + CTA (pinned)
@@ -367,10 +366,11 @@ struct SubscriptionView: View {
             ? NSLocalizedString("al año", comment: "")
             : NSLocalizedString("al mes", comment: "")
         let price = "\(storeManager.priceString(for: product)) \(period)"
+        let cancel = NSLocalizedString("Cancela cuando quieras.", comment: "")
         if storeManager.trialDescription(for: product) != nil {
-            return String(format: NSLocalizedString("Después, %@.", comment: "after trial"), price)
+            return String(format: NSLocalizedString("Después, %@.", comment: "after trial"), price) + " " + cancel
         }
-        return String(format: NSLocalizedString("%@.", comment: "price period"), price)
+        return String(format: NSLocalizedString("%@.", comment: "price period"), price) + " " + cancel
     }
 
     /// nil outside DEBUG design previews.
@@ -590,9 +590,7 @@ struct PlanRowContent: View {
                             .foregroundColor(BulkUpColors.textPrimary)
                         if model.isBestValue {
                             Text("Mejor valor")
-                                .font(.system(.caption2, weight: .bold))
-                                .textCase(.uppercase)
-                                .tracking(0.8)
+                                .font(.system(.caption2, weight: .semibold))
                                 .foregroundColor(BulkUpColors.onAccent)
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 3)
@@ -613,16 +611,17 @@ struct PlanRowContent: View {
                         .foregroundColor(BulkUpColors.textPrimary)
                     if let perMonth = model.perMonth {
                         Text(perMonth)
-                            .font(BulkUpFont.mono(12, relativeTo: .caption))
+                            .font(BulkUpFont.numeric(.caption, weight: .medium))
                             .foregroundColor(model.highlightPerMonth ? BulkUpColors.accentText : BulkUpColors.textSecondary)
                     }
                 }
             }
             .padding(Spacing.md)
             .frame(minHeight: 64)
-            .background(isSelected ? BulkUpColors.surfaceElevated : BulkUpColors.surface)
+            .background(isSelected ? BulkUpColors.accent.opacity(0.10) : Color.clear)
+            .background(BulkUpColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-            .hairline(color: isSelected ? BulkUpColors.accent : BulkUpColors.line)
+            .lift(stroke: isSelected ? BulkUpColors.accent : nil)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

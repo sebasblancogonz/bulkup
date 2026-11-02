@@ -118,7 +118,8 @@ struct MainAppView: View {
                     .tint(BulkUpColors.accentText)
 
                     // Floating workout FAB when session active (hidden while summary is shown)
-                    if workoutSession.isActive && !workoutSession.showSummary {
+                    // Not on the Entreno tab: the header there already carries the session.
+                    if workoutSession.isActive && !workoutSession.showSummary && selectedTab != .training {
                         workoutFAB
                     }
                 }
@@ -208,7 +209,7 @@ struct MainAppView: View {
 
         var body: some View {
             Text(WorkoutSessionManager.shared.formattedElapsed())
-                .font(BulkUpFont.mono(11, weight: .semibold, relativeTo: .caption2))
+                .font(BulkUpFont.numeric(.caption2, weight: .bold))
                 .foregroundColor(BulkUpColors.onAccent)
         }
     }
@@ -301,10 +302,7 @@ struct MainAppView: View {
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
                     .fill(.ultraThinMaterial)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .stroke(BulkUpColors.border, lineWidth: 0.5)
-            )
+            .lift(CornerRadius.medium)
         }
         .buttonStyle(.plain)
     }

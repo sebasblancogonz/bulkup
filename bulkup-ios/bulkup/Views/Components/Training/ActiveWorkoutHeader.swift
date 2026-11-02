@@ -42,7 +42,7 @@ struct ActiveWorkoutHeader: View {
             // Workout name
             if let name = session.workoutName {
                 Text(name)
-                    .displayVoice(20, weight: .bold, relativeTo: .headline)
+                    .font(.system(.headline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -64,7 +64,6 @@ struct ActiveWorkoutHeader: View {
                     .frame(width: 36, height: 36)
                     .background(session.isPaused ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-                    .hairline(CornerRadius.medium, color: session.isPaused ? BulkUpColors.accent : BulkUpColors.line)
             }
             .accessibilityLabel(session.isPaused ? "Continuar" : "Pausar o finalizar")
         }

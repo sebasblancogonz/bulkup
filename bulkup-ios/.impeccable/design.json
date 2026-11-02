@@ -1,206 +1,209 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-02T00:00:00Z",
+  "generatedAt": "2026-11-02T23:30:00Z",
   "title": "Design System: BulkUp iOS",
   "extensions": {
-    "platform": "ios",
     "colorMeta": {
-      "voltage-dark": { "role": "primary", "displayName": "Voltage Lime (dark)", "canonical": "#B4FF2E", "pair": "voltage-light", "tonalRamp": ["#1E2E00", "#3E5C00", "#5E8A00", "#7EB800", "#93D414", "#B4FF2E", "#C9FF66", "#E8FFB8"] },
-      "voltage-light": { "role": "primary", "displayName": "Voltage Lime (light)", "canonical": "#8FDC14", "pair": "voltage-dark", "tonalRamp": ["#1E2E00", "#3E7000", "#5A9E08", "#6DB10C", "#8FDC14", "#A8E83A", "#C6F27A", "#E6FAC2"] },
-      "voltage-pressed-dark": { "role": "primary", "displayName": "Voltage Pressed (dark)", "canonical": "#93D414", "pair": "voltage-pressed-light", "tonalRamp": ["#1A2600", "#334C00", "#4D7200", "#669800", "#80BE00", "#93D414", "#B3E54A", "#D6F29A"] },
-      "voltage-pressed-light": { "role": "primary", "displayName": "Voltage Pressed (light)", "canonical": "#6DB10C", "pair": "voltage-pressed-dark", "tonalRamp": ["#142200", "#284400", "#3D6600", "#518800", "#6DB10C", "#8BC93A", "#AEDC72", "#D3EEB0"] },
-      "voltage-glow-dark": { "role": "primary", "displayName": "Voltage Glow (dark)", "canonical": "#C9FF66", "pair": "voltage-glow-light", "tonalRamp": ["#263300", "#4C6600", "#729900", "#98CC00", "#B4FF2E", "#C9FF66", "#DBFF99", "#EDFFCC"] },
-      "voltage-glow-light": { "role": "primary", "displayName": "Voltage Glow (light)", "canonical": "#A8E83A", "pair": "voltage-glow-dark", "tonalRamp": ["#1F2E00", "#3E5C00", "#5E8A00", "#7EB810", "#A8E83A", "#BDEE66", "#D2F492", "#E8FABE"] },
-      "voltage-text-dark": { "role": "primary", "displayName": "Voltage Text (dark)", "canonical": "#B4FF2E", "pair": "voltage-text-light", "tonalRamp": ["#1E2E00", "#3E5C00", "#5E8A00", "#7EB800", "#93D414", "#B4FF2E", "#C9FF66", "#E8FFB8"] },
-      "voltage-text-light": { "role": "primary", "displayName": "Voltage Text (light)", "canonical": "#3E7000", "pair": "voltage-text-dark", "tonalRamp": ["#122000", "#243F00", "#3E7000", "#56940A", "#6DB10C", "#8FDC14", "#B6E866", "#DDF4B8"] },
-      "on-voltage": { "role": "primary", "displayName": "On Voltage (graphite)", "canonical": "#0E1110", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
-      "sky-done-dark": { "role": "secondary", "displayName": "Sky Done (dark)", "canonical": "#00A9DD", "pair": "sky-done-light", "tonalRamp": ["#00222D", "#00445A", "#006688", "#007DA8", "#00A9DD", "#33BCE5", "#73D2EE", "#B8E9F7"] },
-      "sky-done-light": { "role": "secondary", "displayName": "Sky Done (light)", "canonical": "#007DA8", "pair": "sky-done-dark", "tonalRamp": ["#001A24", "#003548", "#00516E", "#007DA8", "#0095C6", "#00A9DD", "#5CC8EA", "#B0E4F5"] },
-      "amber-error-dark": { "role": "tertiary", "displayName": "Amber Error (dark)", "canonical": "#F5A524", "pair": "amber-error-light", "tonalRamp": ["#331F00", "#663E00", "#995D00", "#CC7C00", "#F5A524", "#F7B64F", "#FAC97E", "#FCE4BE"] },
-      "amber-error-light": { "role": "tertiary", "displayName": "Amber Error (light)", "canonical": "#A86400", "pair": "amber-error-dark", "tonalRamp": ["#2B1A00", "#553300", "#804C00", "#A86400", "#D08200", "#F5A524", "#F8C36E", "#FBE2B8"] },
-      "graphite-ground-dark": { "role": "neutral", "displayName": "Graphite Ground", "canonical": "#0E1110", "pair": "bone-ground-light", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
-      "graphite-glow-dark": { "role": "neutral", "displayName": "Graphite Glow", "canonical": "#181D1E", "pair": "bone-glow-light", "tonalRamp": ["#0E1110", "#181D1E", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
-      "graphite-surface-dark": { "role": "neutral", "displayName": "Graphite Surface", "canonical": "#15191A", "pair": "bone-surface-light", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
-      "graphite-raised-dark": { "role": "neutral", "displayName": "Graphite Raised", "canonical": "#1D2224", "pair": "bone-raised-light", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
-      "graphite-line-dark": { "role": "neutral", "displayName": "Graphite Line (hairline)", "canonical": "#2A3033", "pair": "bone-line-light", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
-      "bone-text-dark": { "role": "neutral", "displayName": "Bone Text", "canonical": "#F2F4F1", "pair": "graphite-text-light", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#7C8581", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1"] },
-      "ash-text-secondary-dark": { "role": "neutral", "displayName": "Ash Secondary (dark)", "canonical": "#9BA39E", "pair": "ash-text-secondary-light", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#747C78", "#9BA39E", "#B8BFBA", "#D3D8D2", "#F2F4F1"] },
-      "ash-text-tertiary-dark": { "role": "neutral", "displayName": "Ash Tertiary (dark)", "canonical": "#7C8581", "pair": "ash-text-tertiary-light", "tonalRamp": ["#0E1110", "#2A3033", "#4A524E", "#5B635E", "#7C8581", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
-      "bone-ground-light": { "role": "neutral", "displayName": "Bone Ground", "canonical": "#F2F4F1", "pair": "graphite-ground-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#747C78", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1"] },
-      "bone-glow-light": { "role": "neutral", "displayName": "Bone Glow", "canonical": "#FFFFFF", "pair": "graphite-glow-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1", "#FFFFFF"] },
-      "bone-surface-light": { "role": "neutral", "displayName": "Bone Surface", "canonical": "#FFFFFF", "pair": "graphite-surface-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1", "#FFFFFF"] },
-      "bone-raised-light": { "role": "neutral", "displayName": "Bone Raised", "canonical": "#E8EBE6", "pair": "graphite-raised-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1", "#FFFFFF"] },
-      "bone-line-light": { "role": "neutral", "displayName": "Bone Line (hairline)", "canonical": "#D3D8D2", "pair": "graphite-line-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1", "#FFFFFF"] },
-      "graphite-text-light": { "role": "neutral", "displayName": "Graphite Text", "canonical": "#0E1110", "pair": "bone-text-dark", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
-      "ash-text-secondary-light": { "role": "neutral", "displayName": "Ash Secondary (light)", "canonical": "#5B635E", "pair": "ash-text-secondary-dark", "tonalRamp": ["#0E1110", "#2A3033", "#464D49", "#5B635E", "#747C78", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
-      "ash-text-tertiary-light": { "role": "neutral", "displayName": "Ash Tertiary (light)", "canonical": "#747C78", "pair": "ash-text-tertiary-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#747C78", "#8C9490", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
-      "shadow-dark": { "role": "neutral", "displayName": "Shadow (dark)", "canonical": "#000000", "pair": "shadow-light", "tonalRamp": ["#000000", "#0E1110", "#15191A", "#1D2224", "#2A3033", "#5B635E", "#9BA39E", "#F2F4F1"] },
-      "shadow-light": { "role": "neutral", "displayName": "Shadow (light)", "canonical": "#1A1F1C", "pair": "shadow-dark", "tonalRamp": ["#0E1110", "#1A1F1C", "#2A3033", "#464D49", "#5B635E", "#9BA39E", "#D3D8D2", "#F2F4F1"] }
+      "voltage-dark": { "role": "primary", "displayName": "Voltage", "canonical": "#B4FF2E", "tonalRamp": ["#1E3300", "#3E7000", "#5C9A08", "#6DB10C", "#8FDC14", "#B4FF2E", "#C9FF66", "#E6FFB8"] },
+      "voltage-light": { "role": "primary", "displayName": "Voltage (light appearance)", "canonical": "#8FDC14", "tonalRamp": ["#1E3300", "#3E7000", "#5C9A08", "#6DB10C", "#8FDC14", "#B4FF2E", "#C9FF66", "#E6FFB8"] },
+      "voltage-text-light": { "role": "primary", "displayName": "Voltage as text (light)", "canonical": "#3E7000", "tonalRamp": ["#1E3300", "#3E7000", "#5C9A08", "#6DB10C", "#8FDC14", "#B4FF2E", "#C9FF66", "#E6FFB8"] },
+      "on-voltage": { "role": "primary", "displayName": "On Voltage (graphite glyph)", "canonical": "#0E0F0C", "tonalRamp": ["#0E0F0C", "#1A1B17", "#272923", "#3A3C35", "#5C5E56", "#8E9086", "#A6A89D", "#F3F1EA"] },
+      "sky-done-dark": { "role": "secondary", "displayName": "Sky, done", "canonical": "#00A9DD", "tonalRamp": ["#00384F", "#00546E", "#00729A", "#008DB8", "#00A9DD", "#33BBE5", "#7AD3EE", "#C2ECF8"] },
+      "sky-done-light": { "role": "secondary", "displayName": "Sky, done (light appearance)", "canonical": "#00729A", "tonalRamp": ["#00384F", "#00546E", "#00729A", "#008DB8", "#00A9DD", "#33BBE5", "#7AD3EE", "#C2ECF8"] },
+      "amber-error-dark": { "role": "tertiary", "displayName": "Amber (only error colour)", "canonical": "#F5A524", "tonalRamp": ["#3D2400", "#6E4100", "#A86400", "#CF8210", "#F5A524", "#F8B94F", "#FBD38A", "#FDEBC9"] },
+      "amber-error-light": { "role": "tertiary", "displayName": "Amber (light appearance)", "canonical": "#A86400", "tonalRamp": ["#3D2400", "#6E4100", "#A86400", "#CF8210", "#F5A524", "#F8B94F", "#FBD38A", "#FDEBC9"] },
+      "graphite-ground-dark": { "role": "neutral", "displayName": "Graphite ground", "canonical": "#0E0F0C", "tonalRamp": ["#0E0F0C", "#1A1B17", "#1C1E19", "#272923", "#2C2E27", "#8E9086", "#A6A89D", "#F3F1EA"] },
+      "graphite-glow-dark": { "role": "neutral", "displayName": "Graphite glow (top of screen)", "canonical": "#1C1E19", "tonalRamp": ["#0E0F0C", "#1A1B17", "#1C1E19", "#272923", "#2C2E27", "#8E9086", "#A6A89D", "#F3F1EA"] },
+      "graphite-surface-dark": { "role": "neutral", "displayName": "Graphite surface", "canonical": "#1A1B17", "tonalRamp": ["#0E0F0C", "#1A1B17", "#1C1E19", "#272923", "#2C2E27", "#8E9086", "#A6A89D", "#F3F1EA"] },
+      "graphite-raised-dark": { "role": "neutral", "displayName": "Graphite raised", "canonical": "#272923", "tonalRamp": ["#0E0F0C", "#1A1B17", "#1C1E19", "#272923", "#2C2E27", "#8E9086", "#A6A89D", "#F3F1EA"] },
+      "graphite-line-dark": { "role": "neutral", "displayName": "Graphite line (separators)", "canonical": "#2C2E27", "tonalRamp": ["#0E0F0C", "#1A1B17", "#1C1E19", "#272923", "#2C2E27", "#8E9086", "#A6A89D", "#F3F1EA"] },
+      "bone-text-dark": { "role": "neutral", "displayName": "Bone text", "canonical": "#F3F1EA", "tonalRamp": ["#0E0F0C", "#272923", "#5C5E56", "#8E9086", "#A6A89D", "#DCD9D1", "#F0EEE8", "#F3F1EA"] },
+      "ash-text-secondary-dark": { "role": "neutral", "displayName": "Ash secondary text", "canonical": "#A6A89D", "tonalRamp": ["#0E0F0C", "#272923", "#5C5E56", "#8E9086", "#A6A89D", "#DCD9D1", "#F0EEE8", "#F3F1EA"] },
+      "ash-text-tertiary-dark": { "role": "neutral", "displayName": "Ash tertiary text", "canonical": "#8E9086", "tonalRamp": ["#0E0F0C", "#272923", "#5C5E56", "#8E9086", "#A6A89D", "#DCD9D1", "#F0EEE8", "#F3F1EA"] },
+      "bone-ground-light": { "role": "neutral", "displayName": "Bone ground", "canonical": "#F0EEE8", "tonalRamp": ["#141510", "#3A3C35", "#5C5E56", "#66685F", "#DCD9D1", "#F0EEE8", "#F3F1EB", "#FDFCF8"] },
+      "bone-glow-light": { "role": "neutral", "displayName": "Bone glow (top of screen)", "canonical": "#FAF9F6", "tonalRamp": ["#141510", "#3A3C35", "#5C5E56", "#66685F", "#DCD9D1", "#F0EEE8", "#F3F1EB", "#FDFCF8"] },
+      "bone-surface-light": { "role": "neutral", "displayName": "Bone surface", "canonical": "#FDFCF8", "tonalRamp": ["#141510", "#3A3C35", "#5C5E56", "#66685F", "#DCD9D1", "#F0EEE8", "#F3F1EB", "#FDFCF8"] },
+      "bone-raised-light": { "role": "neutral", "displayName": "Bone raised", "canonical": "#F3F1EB", "tonalRamp": ["#141510", "#3A3C35", "#5C5E56", "#66685F", "#DCD9D1", "#F0EEE8", "#F3F1EB", "#FDFCF8"] },
+      "bone-line-light": { "role": "neutral", "displayName": "Bone line (separators)", "canonical": "#DCD9D1", "tonalRamp": ["#141510", "#3A3C35", "#5C5E56", "#66685F", "#DCD9D1", "#F0EEE8", "#F3F1EB", "#FDFCF8"] },
+      "graphite-text-light": { "role": "neutral", "displayName": "Graphite text", "canonical": "#141510", "tonalRamp": ["#141510", "#3A3C35", "#5C5E56", "#66685F", "#DCD9D1", "#F0EEE8", "#F3F1EB", "#FDFCF8"] },
+      "ash-text-secondary-light": { "role": "neutral", "displayName": "Ash secondary text (light)", "canonical": "#5C5E56", "tonalRamp": ["#141510", "#3A3C35", "#5C5E56", "#66685F", "#DCD9D1", "#F0EEE8", "#F3F1EB", "#FDFCF8"] },
+      "ash-text-tertiary-light": { "role": "neutral", "displayName": "Ash tertiary text (light)", "canonical": "#66685F", "tonalRamp": ["#141510", "#3A3C35", "#5C5E56", "#66685F", "#DCD9D1", "#F0EEE8", "#F3F1EB", "#FDFCF8"] },
+      "shadow-light": { "role": "neutral", "displayName": "Warm shadow (light lift)", "canonical": "#2A2A22", "tonalRamp": ["#141510", "#2A2A22", "#3A3C35", "#5C5E56", "#8E9086", "#DCD9D1", "#F0EEE8", "#FDFCF8"] }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "The one headline of a screen: workout name, paywall headline, summary title. Saira Condensed ExtraBold 40pt uppercase, relativeTo largeTitle, lineSpacing -4." },
-      "display-section": { "displayName": "Display Section", "purpose": "Day name on Training, PRO gate title (34-36pt), completed-day block (32pt)." },
-      "display-inline": { "displayName": "Display Inline", "purpose": "Live-session header name (20pt Bold) and the primary button label (19pt SemiBold, tracking 0.8)." },
-      "headline": { "displayName": "Section Header", "purpose": "sectionHeader(): SF title3 Semibold." },
-      "title": { "displayName": "Card Title", "purpose": "cardTitle(): exercise names, plan names, unlock titles. SF headline Semibold." },
-      "body": { "displayName": "Body", "purpose": "body(): the sub-line under a headline, feature rows. SF subheadline Regular." },
-      "caption": { "displayName": "Caption", "purpose": "caption(): meta, rest hints, renewal copy. SF footnote Medium. The workhorse (250 uses)." },
-      "label": { "displayName": "Micro Label", "purpose": "microLabel(): column headers, data-strip and section labels. SF caption2 Bold, tracking 1.4, uppercase. Badge text same face at tracking 1.0." },
-      "data": { "displayName": "Data", "purpose": "Set-row kg/reps fields, counts. JetBrains Mono Medium 15pt relativeTo subheadline." },
-      "data-small": { "displayName": "Data Small", "purpose": "Previous-set hints, week-strip numbers, dates, per-month price. Mono 12-13pt." },
-      "data-strong": { "displayName": "Data Strong", "purpose": "Prices, elapsed time, data-strip values. Mono SemiBold 16-17pt." },
-      "data-stat": { "displayName": "Data Stat", "purpose": "StatCard and summary grid values. Mono SemiBold 26-28pt." },
-      "data-hero": { "displayName": "Data Hero", "purpose": "Rest countdown 64pt; heroStat 44pt; heroStatMedium 36pt. Mono SemiBold relativeTo largeTitle." }
+      "poster": { "displayName": "Poster (Saira Condensed)", "purpose": "Two homes only: \"TU PROGRESO, VISIBLE.\" on the paywall and \"ENTRENO COMPLETADO\" on the summary. Set uppercase at the call site via .displayVoice(40, weight: .extraBold)." },
+      "title": { "displayName": "Title voice (SF bold condensed)", "purpose": "The day's workout name, screen titles, the PRO gate. Sentence case, .fontWidth(.condensed), tracking -0.3." },
+      "title-compact": { "displayName": "Title voice, 28pt", "purpose": "A plan name inside a card (.titleVoice(.title))." },
+      "headline": { "displayName": "Section header", "purpose": "\"Ejercicios\", \"Lo que desbloqueas\"." },
+      "card-title": { "displayName": "Card title / button label", "purpose": "Exercise and plan names, the active header name, every button label (sentence case)." },
+      "body": { "displayName": "Body", "purpose": "Paywall sub, gate copy, unlock descriptions." },
+      "caption": { "displayName": "Caption", "purpose": "Stat labels, meta lines." },
+      "numeric": { "displayName": "Numeric (SF tabular)", "purpose": "A number inside a sentence or label; set numbers; calendar day numbers; deltas." },
+      "column-label": { "displayName": "Column label", "purpose": "SERIE / KG / REPS table header and tags only. Never above a heading." },
+      "mono-hero": { "displayName": "Mono hero (44pt)", "purpose": "Summary volume and other hero stats." },
+      "mono-countdown": { "displayName": "Mono countdown (64pt)", "purpose": "Rest timer sheet." },
+      "mono-stat": { "displayName": "Mono stat (22pt)", "purpose": "Summary stats strip values." },
+      "mono-field": { "displayName": "Mono field (16pt)", "purpose": "Kg and reps fields in the set table. The mono floor." },
+      "mono-inline": { "displayName": "Mono inline (17pt)", "purpose": "Elapsed timer, rest banner time, plan prices." }
     },
     "shadows": [
-      { "name": "card-shadow", "value": "0 6px 12px rgba(0,0,0,0.18)", "purpose": "cardShadow(): floating elements only (sheets, floating controls); not on content cards at rest. Light mode uses #1A1F1C at 18%." },
-      { "name": "accent-glow", "value": "0 0 16px rgba(180,255,46,0.35)", "purpose": "accentGlowShadow(): lime halo for a floating lime control (live-session mini timer)." },
-      { "name": "scrim-modal", "value": "rgba(0,0,0,0.55)", "purpose": "Full-screen dim under the purchasing spinner (shadow colour at 55%)." },
-      { "name": "scrim-gate", "value": "rgba(14,17,16,0.92)", "purpose": "PRO gate overlay: ground colour at 92% over locked content." },
-      { "name": "ground-glow", "value": "radial-gradient(460px at 50% 0%, rgba(24,29,30,0.85), transparent)", "purpose": "BulkUpGround: the top radial that keeps the canvas from reading as a flat swatch. Light: #FFFFFF at 85%." }
+      { "name": "lift-light", "value": "0 3px 12px rgba(42, 42, 34, 0.07)", "purpose": "Every lifted container in the light appearance (LiftModifier)." },
+      { "name": "lift-dark-edge", "value": "inset 0 1px 0 rgba(255,255,255,0.09)", "purpose": "Dark appearance: no shadow; a 1pt top-edge light catch fading from white 9% to 1.5% at the bottom edge (LiftModifier)." },
+      { "name": "state-stroke", "value": "1px solid <tint>", "purpose": "Replaces the edge light on a state: sky 60% done card, lime 50% compact PRO gate, lime 100% selected plan row." },
+      { "name": "float", "value": "0 10px 20px rgba(42, 42, 34, 0.28)", "purpose": "cardShadow() helper for things that float; not used on the shipped v2 screens." },
+      { "name": "accent-glow", "value": "0 0 16px rgba(180, 255, 46, 0.35)", "purpose": "accentGlowShadow() helper; not used on the shipped v2 screens." }
     ],
     "motion": [
-      { "name": "press", "value": "spring(response 0.3, damping 0.7) scale 0.97", "purpose": "pressable(): scale-on-press for CTAs and tappable cards." },
-      { "name": "progress-rule", "value": "easeOut 0.4s (day progress) / linear 1s (rest drain) / easeOut 0.8s (ring)", "purpose": "Progress rule and ring fills." },
-      { "name": "countdown", "value": "contentTransition numericText(countsDown) + linear 0.3s", "purpose": "Rest timer digits." },
-      { "name": "live-dot", "value": "easeInOut 1s repeatForever autoreverses, scale 1.3 / opacity 0.6", "purpose": "Pulsing lime dot beside the elapsed session time." },
-      { "name": "summary-reveal", "value": "spring(0.6, 0.7) for the done mark; spring(0.5, 0.8) delayed 0.6s for title, grid and actions (offset 20-30pt)", "purpose": "Workout summary entrance." }
+      { "name": "spring-row", "value": "spring(response: 0.35, dampingFraction: 0.85)", "purpose": "The next set row stepping forward (ExerciseCardView)." },
+      { "name": "spring-check", "value": "spring(response: 0.5, dampingFraction: 0.6)", "purpose": "Summary done mark scaling in from 0.3." },
+      { "name": "spring-card", "value": "spring(response: 0.5, dampingFraction: 0.85) delay 0.35", "purpose": "Summary content fading and rising in (16-30pt offsets)." },
+      { "name": "spring-press", "value": "spring(response: 0.3, dampingFraction: 0.7)", "purpose": "Pressable buttons scale to 0.97." },
+      { "name": "spring-ui", "value": "spring(response: 0.35, dampingFraction: 0.82)", "purpose": "Expand/collapse and selection changes on Today and Training." },
+      { "name": "countdown-linear", "value": "linear 1s (rule) / linear 0.3s numericText (digits)", "purpose": "Rest rule draining and countdown digits." },
+      { "name": "pulse", "value": "easeInOut 1s repeatForever autoreverses, scale 1.0→1.3, opacity 1→0.6", "purpose": "The 8pt lime session dot in the active header." },
+      { "name": "ring-fill", "value": "easeOut 0.8s", "purpose": "GradientProgressRing progress." },
+      { "name": "haptic-success", "value": "UINotificationFeedbackGenerator(.success)", "purpose": "Set completed, workout completed, summary appear." },
+      { "name": "haptic-warning", "value": "UINotificationFeedbackGenerator(.warning)", "purpose": "Set marked as failure." },
+      { "name": "haptic-impact", "value": "UIImpactFeedbackGenerator(.medium / .light)", "purpose": "Starting a workout (.medium), tab and menu taps (.light)." }
     ],
-    "breakpoints": [],
-    "sizing": [
-      { "name": "touch-min", "value": "44pt", "purpose": "Every mid-set control." },
-      { "name": "cta-height", "value": "54pt", "purpose": "Primary button min height." },
-      { "name": "secondary-height", "value": "48pt", "purpose": "Secondary and outline buttons." },
-      { "name": "set-row-height", "value": "40pt", "purpose": "kg / reps fields." },
-      { "name": "set-check", "value": "34pt square in a 44pt target, 8pt radius", "purpose": "Per-set check." },
-      { "name": "calendar-day", "value": "32pt square, 8pt radius", "purpose": "Week strip today square." },
-      { "name": "progress-rule", "value": "4pt", "purpose": "Lime / sky progress rules." },
-      { "name": "hairline", "value": "1pt", "purpose": "All separators and card strokes." }
-    ]
+    "breakpoints": []
   },
   "components": [
     {
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one lime CTA per screen: Saira Condensed SemiBold 19pt uppercase on a lime fill, 54pt, 10pt continuous radius. Pressed scales to 0.97.",
+      "description": "Lime slab, graphite label, SF headline sentence case, 54pt, 12pt radius. The CTA on every screen.",
       "html": "<button class=\"ds-btn-primary\">Continuar entreno</button>",
-      "css": ".ds-btn-primary { display:block; width:100%; min-height:54px; background:#B4FF2E; color:#0E1110; font-family:'Saira Condensed', system-ui, sans-serif; font-weight:600; font-size:19px; letter-spacing:0.8px; text-transform:uppercase; border:none; border-radius:10px; padding:0 16px; cursor:pointer; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); } .ds-btn-primary:hover { background:#C9FF66; } .ds-btn-primary:active { transform:scale(0.97); } .ds-btn-primary:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; } @media (prefers-color-scheme: light) { .ds-btn-primary { background:#8FDC14; } .ds-btn-primary:hover { background:#A8E83A; } }"
+      "css": ".ds-btn-primary { display:block; width:100%; min-height:54px; padding:0 20px; background:#B4FF2E; color:#0E0F0C; font-family:-apple-system,'SF Pro',system-ui,sans-serif; font-size:17px; font-weight:600; border:none; border-radius:12px; transition:transform .3s cubic-bezier(.2,.9,.3,1.2); } .ds-btn-primary:hover { background:#C9FF66; } .ds-btn-primary:active { transform:scale(.97); background:#93D414; } .ds-btn-primary:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; }"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Raised surface with a 1pt hairline, SF subheadline Semibold, 48pt. '+30 s', 'Gestionar suscripción', 'Reintentar'.",
+      "description": "Raised fill, primary text, 50pt. \"+30 s\", \"Sensaciones, notas y fotos\".",
       "html": "<button class=\"ds-btn-secondary\">+30 s</button>",
-      "css": ".ds-btn-secondary { display:block; width:100%; min-height:48px; background:#1D2224; color:#F2F4F1; font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:600; font-size:15px; border:1px solid #2A3033; border-radius:10px; padding:0 16px; cursor:pointer; } .ds-btn-secondary:hover { border-color:#9BA39E; } .ds-btn-secondary:active { transform:scale(0.97); } .ds-btn-secondary:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; } @media (prefers-color-scheme: light) { .ds-btn-secondary { background:#E8EBE6; color:#0E1110; border-color:#D3D8D2; } }"
+      "css": ".ds-btn-secondary { display:block; width:100%; min-height:50px; padding:0 20px; background:#272923; color:#F3F1EA; font-family:-apple-system,'SF Pro',system-ui,sans-serif; font-size:17px; font-weight:600; border:none; border-radius:12px; transition:transform .3s; } .ds-btn-secondary:hover { background:#2C2E27; } .ds-btn-secondary:active { transform:scale(.97); } .ds-btn-secondary:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; }"
     },
     {
       "name": "Outline Button",
       "kind": "button",
       "refersTo": "button-outline",
-      "description": "Transparent with a lime 70% hairline and lime text, 48pt. 'Saltar' in the rest sheet.",
+      "description": "Transparent, lime-text label with a 1pt lime-text 60% hairline. One of the two surviving hairline roles. \"Saltar\".",
       "html": "<button class=\"ds-btn-outline\">Saltar</button>",
-      "css": ".ds-btn-outline { display:block; width:100%; min-height:48px; background:transparent; color:#B4FF2E; font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:600; font-size:15px; border:1px solid rgba(180,255,46,0.7); border-radius:10px; padding:0 16px; cursor:pointer; } .ds-btn-outline:hover { border-color:#B4FF2E; } .ds-btn-outline:active { transform:scale(0.97); } .ds-btn-outline:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; } @media (prefers-color-scheme: light) { .ds-btn-outline { color:#3E7000; border-color:rgba(143,220,20,0.7); } }"
+      "css": ".ds-btn-outline { display:block; width:100%; min-height:50px; padding:0 20px; background:transparent; color:#B4FF2E; font-family:-apple-system,'SF Pro',system-ui,sans-serif; font-size:17px; font-weight:600; border:1px solid rgba(180,255,46,0.6); border-radius:12px; transition:transform .3s, border-color .2s; } .ds-btn-outline:hover { border-color:#B4FF2E; } .ds-btn-outline:active { transform:scale(.97); } .ds-btn-outline:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; }"
     },
     {
-      "name": "Card",
+      "name": "Lifted Card",
       "kind": "card",
       "refersTo": "card",
-      "description": "Surface fill, 14pt continuous radius, 1pt line hairline, 16pt padding. No shadow at rest; state is a tinted hairline.",
+      "description": "Surface slab on the ground, 16pt radius, lifted by a 1pt top-edge light (dark) or a 7% warm shadow (light). No outline.",
       "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Press inclinado en multipower</div><div class=\"ds-card-meta\">90s descanso</div></div>",
-      "css": ".ds-card { background:#15191A; border:1px solid #2A3033; border-radius:14px; padding:16px; color:#F2F4F1; } .ds-card-title { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:600; font-size:17px; } .ds-card-meta { font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:500; font-size:12px; color:#9BA39E; margin-top:3px; } .ds-card.ds-card--active { border-color:rgba(180,255,46,0.7); } .ds-card.ds-card--done { border-color:rgba(0,169,221,0.6); } @media (prefers-color-scheme: light) { .ds-card { background:#FFFFFF; border-color:#D3D8D2; color:#0E1110; } .ds-card-meta { color:#5B635E; } }"
+      "css": ".ds-card { position:relative; padding:16px; background:#1A1B17; color:#F3F1EA; border-radius:16px; font-family:-apple-system,'SF Pro',system-ui,sans-serif; } .ds-card::before { content:''; position:absolute; inset:0; border-radius:16px; padding:1px; background:linear-gradient(to bottom, rgba(255,255,255,0.09), rgba(255,255,255,0.015)); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; } .ds-card-title { font-size:17px; font-weight:600; } .ds-card-meta { margin-top:4px; font-size:13px; font-weight:500; color:#A6A89D; } @media (prefers-color-scheme: light) { .ds-card { background:#FDFCF8; color:#141510; box-shadow:0 3px 12px rgba(42,42,34,0.07); } .ds-card::before { display:none; } .ds-card-meta { color:#5C5E56; } }"
+    },
+    {
+      "name": "Mono Field with Steppers",
+      "kind": "input",
+      "refersTo": "field-mono",
+      "description": "Raised 8pt pocket, 44pt tall, JetBrains Mono 16 centred, 36pt steppers either side, no stroke; lime 1.5pt stroke on focus only.",
+      "html": "<div class=\"ds-field\"><button class=\"ds-field-step\" aria-label=\"menos\">−</button><input class=\"ds-field-input\" value=\"62.5\" placeholder=\"60\" inputmode=\"decimal\"><button class=\"ds-field-step\" aria-label=\"más\">+</button></div>",
+      "css": ".ds-field { display:inline-flex; align-items:center; height:44px; width:118px; background:#272923; border-radius:8px; border:1.5px solid transparent; transition:border-color .15s; } .ds-field:focus-within { border-color:#B4FF2E; } .ds-field-step { width:36px; height:44px; background:none; border:none; color:#A6A89D; font-size:13px; font-weight:700; cursor:pointer; } .ds-field-step:hover { color:#F3F1EA; } .ds-field-input { width:46px; height:44px; background:none; border:none; text-align:center; color:#F3F1EA; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:16px; font-weight:600; outline:none; } .ds-field-input::placeholder { color:#8E9086; }"
+    },
+    {
+      "name": "Set Row (active / done / pending)",
+      "kind": "custom",
+      "refersTo": "set-row-active",
+      "description": "The instrument. The next set steps forward on a raised 12pt fill with a lime-stroked check; done rows get a sky check with a graphite tick; pending rows sit at 72%.",
+      "html": "<div class=\"ds-set\"><div class=\"ds-set-row ds-set-done\"><span class=\"ds-set-n\">1</span><span class=\"ds-set-val\">60</span><span class=\"ds-set-val ds-set-val-sm\">12</span><span class=\"ds-set-check\">✓</span></div><div class=\"ds-set-row ds-set-active\"><span class=\"ds-set-n\">2</span><span class=\"ds-set-val\">62.5</span><span class=\"ds-set-val ds-set-val-sm\">10</span><span class=\"ds-set-check\"></span></div><div class=\"ds-set-row ds-set-pending\"><span class=\"ds-set-n\">3</span><span class=\"ds-set-val\">60</span><span class=\"ds-set-val ds-set-val-sm\">8</span><span class=\"ds-set-check\"></span></div></div>",
+      "css": ".ds-set { display:flex; flex-direction:column; gap:6px; padding:0; font-family:-apple-system,'SF Pro',system-ui,sans-serif; } .ds-set-row { display:flex; align-items:center; gap:8px; padding:4px 6px; border-radius:12px; transition:background .35s cubic-bezier(.2,.8,.3,1.1), opacity .35s; } .ds-set-n { width:28px; font-size:15px; font-weight:600; font-variant-numeric:tabular-nums; color:#8E9086; } .ds-set-val { flex:0 0 118px; height:44px; line-height:44px; text-align:center; background:#272923; border-radius:8px; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:16px; font-weight:600; color:#F3F1EA; } .ds-set-val-sm { flex-basis:100px; } .ds-set-check { margin-left:auto; width:36px; height:36px; border-radius:8px; border:1.5px solid rgba(142,144,134,0.5); background:#1A1B17; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; } .ds-set-active { background:#272923; } .ds-set-active .ds-set-n { color:#F3F1EA; } .ds-set-active .ds-set-val { background:#1A1B17; } .ds-set-active .ds-set-check { background:rgba(180,255,46,0.14); border-color:#B4FF2E; } .ds-set-done .ds-set-n { color:#00A9DD; } .ds-set-done .ds-set-val { color:#A6A89D; } .ds-set-done .ds-set-check { background:#00A9DD; border-color:#00A9DD; color:#0E0F0C; } .ds-set-pending { opacity:.72; } .ds-set-check:hover { border-color:#B4FF2E; }"
+    },
+    {
+      "name": "Done Check",
+      "kind": "chip",
+      "refersTo": "check-done",
+      "description": "36pt sky square with a graphite checkmark (onFill threshold L > 0.30). Sky means done, never lime.",
+      "html": "<span class=\"ds-check-done\" role=\"img\" aria-label=\"Serie completada\">✓</span>",
+      "css": ".ds-check-done { display:inline-flex; width:36px; height:36px; align-items:center; justify-content:center; background:#00A9DD; color:#0E0F0C; border-radius:8px; font-weight:700; font-size:13px; font-family:-apple-system,'SF Pro',system-ui,sans-serif; } @media (prefers-color-scheme: light) { .ds-check-done { background:#00729A; } }"
     },
     {
       "name": "Pill Badge",
       "kind": "chip",
-      "refersTo": "chip-pill",
-      "description": "The only capsule: colour at 15% fill, colour text, SF caption2 Bold uppercase tracking 1. 'MEJOR VALOR' is the solid-lime variant.",
-      "html": "<span class=\"ds-chip\">PRO</span> <span class=\"ds-chip ds-chip--solid\">Mejor valor</span>",
-      "css": ".ds-chip { display:inline-block; padding:5px 10px; border-radius:9999px; background:rgba(180,255,46,0.15); color:#B4FF2E; font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:700; font-size:11px; letter-spacing:1px; text-transform:uppercase; } .ds-chip--solid { background:#B4FF2E; color:#0E1110; padding:3px 7px; letter-spacing:0.8px; } @media (prefers-color-scheme: light) { .ds-chip { background:rgba(143,220,20,0.15); color:#3E7000; } .ds-chip--solid { background:#8FDC14; color:#0E1110; } }"
-    },
-    {
-      "name": "Set Row Field",
-      "kind": "input",
-      "refersTo": "input-set",
-      "description": "Raised fill, 8pt radius, 40pt, mono 15pt centred, 1pt line stroke; sky stroke once the set is logged. Steppers sit inside the same container.",
-      "html": "<div class=\"ds-set-field\"><button class=\"ds-step\">−</button><input class=\"ds-set-input\" value=\"62.5\" inputmode=\"decimal\" /><button class=\"ds-step\">+</button></div> <div class=\"ds-set-field ds-set-field--done\"><button class=\"ds-step\">−</button><input class=\"ds-set-input\" value=\"60\" /><button class=\"ds-step\">+</button></div>",
-      "css": ".ds-set-field { display:inline-flex; align-items:center; height:40px; width:110px; background:#1D2224; border:1px solid #2A3033; border-radius:8px; overflow:hidden; vertical-align:middle; } .ds-set-field--done { border-color:rgba(0,169,221,0.6); } .ds-step { width:32px; height:40px; background:transparent; border:none; color:#9BA39E; font-weight:700; font-size:13px; cursor:pointer; } .ds-set-input { width:46px; height:40px; background:transparent; border:none; text-align:center; color:#F2F4F1; font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:500; font-size:15px; } .ds-set-input::placeholder { color:#7C8581; } .ds-set-field:focus-within { border-color:#B4FF2E; } @media (prefers-color-scheme: light) { .ds-set-field { background:#E8EBE6; border-color:#D3D8D2; } .ds-set-input { color:#0E1110; } .ds-set-field--done { border-color:rgba(0,125,168,0.6); } .ds-set-field:focus-within { border-color:#8FDC14; } }"
-    },
-    {
-      "name": "Set Check",
-      "kind": "custom",
-      "refersTo": "check-done",
-      "description": "34pt square at 8pt radius inside a 44pt target: raised fill with a 1.5pt lime stroke when pending, sky fill with a bone check when done. Sky, never lime, means done.",
-      "html": "<button class=\"ds-check\" aria-label=\"Marcar serie\"></button> <button class=\"ds-check ds-check--done\" aria-label=\"Serie hecha\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg></button>",
-      "css": ".ds-check { width:34px; height:34px; margin:5px; background:#1D2224; border:1.5px solid #B4FF2E; border-radius:8px; color:#F2F4F1; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0; vertical-align:middle; } .ds-check--done { background:#00A9DD; border-color:#00A9DD; color:#F2F4F1; } .ds-check:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; } @media (prefers-color-scheme: light) { .ds-check { background:#E8EBE6; border-color:#8FDC14; } .ds-check--done { background:#007DA8; border-color:#007DA8; color:#F2F4F1; } }"
-    },
-    {
-      "name": "Week Strip Day",
-      "kind": "nav",
-      "refersTo": "calendar-day-today",
-      "description": "Day letter in SF 13pt, day number in mono 13pt inside a 32pt square (lime fill, 8pt radius, graphite text for today), a 5pt sky dot under logged days.",
-      "html": "<div class=\"ds-week\"><div class=\"ds-day ds-day--today\"><span class=\"ds-day-letter\">L</span><span class=\"ds-day-num\">2</span><span class=\"ds-day-dot\"></span></div><div class=\"ds-day\"><span class=\"ds-day-letter\">M</span><span class=\"ds-day-num\">3</span><span class=\"ds-day-dot ds-day-dot--on\"></span></div><div class=\"ds-day\"><span class=\"ds-day-letter\">X</span><span class=\"ds-day-num\">4</span><span class=\"ds-day-dot\"></span></div></div>",
-      "css": ".ds-week { display:flex; border-top:1px solid #2A3033; border-bottom:1px solid #2A3033; padding:12px 0; } .ds-day { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; } .ds-day-letter { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:13px; font-weight:500; color:#9BA39E; } .ds-day--today .ds-day-letter { font-weight:700; color:#F2F4F1; } .ds-day-num { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px; font-family:'JetBrains Mono', ui-monospace, monospace; font-size:13px; font-weight:500; color:#F2F4F1; } .ds-day--today .ds-day-num { background:#B4FF2E; color:#0E1110; font-weight:600; } .ds-day-dot { width:5px; height:5px; border-radius:50%; background:transparent; } .ds-day-dot--on { background:#00A9DD; } @media (prefers-color-scheme: light) { .ds-week { border-color:#D3D8D2; } .ds-day-letter { color:#5B635E; } .ds-day--today .ds-day-letter, .ds-day-num { color:#0E1110; } .ds-day--today .ds-day-num { background:#8FDC14; } .ds-day-dot--on { background:#007DA8; } }"
-    },
-    {
-      "name": "Display Block + Progress Rule",
-      "kind": "custom",
-      "refersTo": "display",
-      "description": "Micro label, the workout name in Saira Condensed ExtraBold 40pt uppercase, a mono count, and a 4pt rule: line track, lime fill by progress, full sky when done.",
-      "html": "<div class=\"ds-display\"><div class=\"ds-display-label\">Hoy</div><h1 class=\"ds-display-title\">Pecho y hombros</h1><div class=\"ds-display-count\"><strong>6</strong> ejercicios · <strong>21</strong> series</div><div class=\"ds-rule\"><div class=\"ds-rule-fill\" style=\"width:17%\"></div></div><div class=\"ds-display-sub\"><span class=\"ds-mono\">1/6</span> ejercicios registrados</div></div>",
-      "css": ".ds-display { color:#F2F4F1; } .ds-display-label { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:11px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:#B4FF2E; margin-bottom:8px; } .ds-display-title { font-family:'Saira Condensed', system-ui, sans-serif; font-weight:800; font-size:40px; line-height:0.95; letter-spacing:-0.2px; text-transform:uppercase; margin:0 0 8px; } .ds-display-count { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:15px; color:#9BA39E; } .ds-display-count strong { font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:600; color:#F2F4F1; } .ds-rule { height:4px; background:#2A3033; margin:12px 0 8px; } .ds-rule-fill { height:100%; background:#B4FF2E; transition:width 0.4s ease-out; } .ds-rule--done .ds-rule-fill { background:#00A9DD; width:100%; } .ds-display-sub { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:12px; color:#9BA39E; } .ds-mono { font-family:'JetBrains Mono', ui-monospace, monospace; color:#F2F4F1; } @media (prefers-color-scheme: light) { .ds-display, .ds-display-count strong, .ds-mono { color:#0E1110; } .ds-display-label { color:#3E7000; } .ds-display-count, .ds-display-sub { color:#5B635E; } .ds-rule { background:#D3D8D2; } .ds-rule-fill { background:#8FDC14; } .ds-rule--done .ds-rule-fill { background:#007DA8; } }"
+      "refersTo": "pill-badge",
+      "description": "Capsule tag. Solid variant (\"Mejor valor\") is lime with graphite 11pt; tinted variant is colour at 15% with colour text, uppercase tracking 1.",
+      "html": "<span class=\"ds-pill ds-pill-solid\">Mejor valor</span> <span class=\"ds-pill\">PRO</span>",
+      "css": ".ds-pill { display:inline-block; padding:5px 10px; border-radius:9999px; background:rgba(180,255,46,0.15); color:#B4FF2E; font-family:-apple-system,'SF Pro',system-ui,sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; } .ds-pill-solid { padding:3px 7px; background:#B4FF2E; color:#0E0F0C; font-weight:600; letter-spacing:0; text-transform:none; } @media (prefers-color-scheme: light) { .ds-pill { color:#3E7000; background:rgba(143,220,20,0.15); } .ds-pill-solid { background:#8FDC14; color:#0E0F0C; } }"
     },
     {
       "name": "Plan Row",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Paywall plan slab: surface, 16pt radius, 64pt min, lifted. Selected adds a lime 10% tint and a 1pt lime stroke; price in mono 17.",
+      "html": "<div class=\"ds-plan ds-plan-selected\"><span class=\"ds-plan-radio\"></span><div class=\"ds-plan-body\"><div class=\"ds-plan-title\">Anual <span class=\"ds-pill ds-pill-solid\">Mejor valor</span></div><div class=\"ds-plan-detail\">7 días gratis · Ahorra 44 %</div></div><div class=\"ds-plan-price\"><div class=\"ds-plan-amount\">39,99 €</div><div class=\"ds-plan-month\">3,33 €/mes</div></div></div>",
+      "css": ".ds-plan { display:flex; align-items:center; gap:16px; padding:16px; min-height:64px; background:#1A1B17; color:#F3F1EA; border-radius:16px; border:1px solid transparent; font-family:-apple-system,'SF Pro',system-ui,sans-serif; cursor:pointer; transition:border-color .2s, background .2s; } .ds-plan:hover { border-color:rgba(180,255,46,0.4); } .ds-plan-selected { background:linear-gradient(rgba(180,255,46,0.10), rgba(180,255,46,0.10)), #1A1B17; border-color:#B4FF2E; } .ds-plan-radio { width:22px; height:22px; border-radius:50%; border:1.5px solid #8E9086; position:relative; flex:none; } .ds-plan-selected .ds-plan-radio { border-color:#B4FF2E; } .ds-plan-selected .ds-plan-radio::after { content:''; position:absolute; inset:3.5px; border-radius:50%; background:#B4FF2E; } .ds-plan-body { flex:1; } .ds-plan-title { font-size:17px; font-weight:600; display:flex; gap:8px; align-items:center; } .ds-plan-detail { font-size:13px; font-weight:500; color:#A6A89D; margin-top:3px; } .ds-plan-price { text-align:right; } .ds-plan-amount { font-family:'JetBrains Mono',ui-monospace,monospace; font-size:17px; font-weight:600; } .ds-plan-month { font-size:13px; font-weight:500; color:#B4FF2E; font-variant-numeric:tabular-nums; margin-top:2px; } .ds-pill { display:inline-block; padding:3px 7px; border-radius:9999px; background:#B4FF2E; color:#0E0F0C; font-size:11px; font-weight:600; } @media (prefers-color-scheme: light) { .ds-plan { background:#FDFCF8; color:#141510; box-shadow:0 3px 12px rgba(42,42,34,0.07); } .ds-plan-selected { background:linear-gradient(rgba(143,220,20,0.10), rgba(143,220,20,0.10)), #FDFCF8; border-color:#8FDC14; } .ds-plan-month { color:#3E7000; } .ds-plan-detail { color:#5C5E56; } }"
+    },
+    {
+      "name": "Calendar Day",
       "kind": "custom",
-      "refersTo": "plan-row",
-      "description": "Selectable paywall row: 22pt radio with a 12pt lime dot, title + detail, price in mono 17pt SemiBold with per-month in mono 12pt lime text. Selected: raised fill and a solid lime hairline.",
-      "html": "<div class=\"ds-plan ds-plan--selected\"><span class=\"ds-radio\"></span><div class=\"ds-plan-main\"><div class=\"ds-plan-title\">Anual <span class=\"ds-chip ds-chip--solid\">Mejor valor</span></div><div class=\"ds-plan-detail\">7 días gratis · Ahorra 44 %</div></div><div class=\"ds-plan-price\"><div class=\"ds-price\">39,99 €</div><div class=\"ds-per-month\">3,33 €/mes</div></div></div>",
-      "css": ".ds-plan { display:flex; align-items:center; gap:16px; min-height:64px; padding:16px; background:#15191A; border:1px solid #2A3033; border-radius:14px; color:#F2F4F1; cursor:pointer; } .ds-plan--selected { background:#1D2224; border-color:#B4FF2E; } .ds-radio { width:22px; height:22px; border-radius:50%; border:1.5px solid #7C8581; flex:none; position:relative; } .ds-plan--selected .ds-radio { border-color:#B4FF2E; } .ds-plan--selected .ds-radio::after { content:''; position:absolute; inset:4px; border-radius:50%; background:#B4FF2E; } .ds-plan-main { flex:1; } .ds-plan-title { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:600; font-size:17px; display:flex; align-items:center; gap:8px; } .ds-plan-detail { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:13px; font-weight:500; color:#9BA39E; margin-top:3px; } .ds-plan-price { text-align:right; } .ds-price { font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:600; font-size:17px; } .ds-per-month { font-family:'JetBrains Mono', ui-monospace, monospace; font-size:12px; color:#B4FF2E; margin-top:2px; } .ds-chip--solid { display:inline-block; padding:3px 7px; border-radius:9999px; background:#B4FF2E; color:#0E1110; font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; } @media (prefers-color-scheme: light) { .ds-plan { background:#FFFFFF; border-color:#D3D8D2; color:#0E1110; } .ds-plan--selected { background:#E8EBE6; border-color:#8FDC14; } .ds-plan--selected .ds-radio { border-color:#8FDC14; } .ds-plan--selected .ds-radio::after, .ds-chip--solid { background:#8FDC14; } .ds-plan-detail { color:#5B635E; } .ds-per-month { color:#3E7000; } }"
+      "refersTo": "calendar-day-today",
+      "description": "Week strip day: letter, 32pt 8pt-radius square (lime on today with graphite numeral), 5pt sky dot under a logged day.",
+      "html": "<div class=\"ds-days\"><div class=\"ds-day ds-day-today\"><span class=\"ds-day-l\">L</span><span class=\"ds-day-n\">2</span><span class=\"ds-day-dot\"></span></div><div class=\"ds-day ds-day-logged\"><span class=\"ds-day-l\">M</span><span class=\"ds-day-n\">3</span><span class=\"ds-day-dot\"></span></div><div class=\"ds-day\"><span class=\"ds-day-l\">X</span><span class=\"ds-day-n\">4</span><span class=\"ds-day-dot\"></span></div></div>",
+      "css": ".ds-days { display:flex; gap:16px; font-family:-apple-system,'SF Pro',system-ui,sans-serif; } .ds-day { display:flex; flex-direction:column; align-items:center; gap:6px; } .ds-day-l { font-size:11px; font-weight:500; color:#8E9086; } .ds-day-n { width:32px; height:32px; line-height:32px; text-align:center; border-radius:8px; font-size:15px; font-weight:500; color:#F3F1EA; font-variant-numeric:tabular-nums; } .ds-day-dot { width:5px; height:5px; border-radius:50%; background:transparent; } .ds-day-today .ds-day-l { color:#F3F1EA; font-weight:700; } .ds-day-today .ds-day-n { background:#B4FF2E; color:#0E0F0C; font-weight:700; } .ds-day-logged .ds-day-dot { background:#00A9DD; } @media (prefers-color-scheme: light) { .ds-day-n { color:#141510; } .ds-day-today .ds-day-n { background:#8FDC14; } .ds-day-today .ds-day-l { color:#141510; } .ds-day-logged .ds-day-dot { background:#00729A; } }"
+    },
+    {
+      "name": "Rest Banner",
+      "kind": "nav",
+      "refersTo": "card-flat",
+      "description": "Raised 12pt slab pinned under the active header while the rest sheet is dismissed: timer glyph in lime-text, mono 17 time, lime progress, Saltar / +30 s.",
+      "html": "<div class=\"ds-rest\"><span class=\"ds-rest-time\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#B4FF2E\" stroke-width=\"2.5\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"13\" r=\"8\"/><path d=\"M12 9v4l2 2M9 2h6\"/></svg> 1:12</span><span class=\"ds-rest-bar\"><span class=\"ds-rest-fill\"></span></span><button class=\"ds-rest-btn ds-rest-skip\">Saltar</button><button class=\"ds-rest-btn\">+30 s</button></div>",
+      "css": ".ds-rest { display:flex; align-items:center; gap:16px; padding:8px 16px; background:#272923; border-radius:12px; position:relative; font-family:-apple-system,'SF Pro',system-ui,sans-serif; } .ds-rest::before { content:''; position:absolute; inset:0; border-radius:12px; padding:1px; background:linear-gradient(to bottom, rgba(255,255,255,0.09), rgba(255,255,255,0.015)); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; } .ds-rest-time { display:inline-flex; align-items:center; gap:6px; color:#F3F1EA; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:17px; font-weight:600; } .ds-rest-bar { flex:1; height:4px; background:#2C2E27; border-radius:2px; overflow:hidden; } .ds-rest-fill { display:block; width:40%; height:100%; background:#B4FF2E; transition:width 1s linear; } .ds-rest-btn { background:none; border:none; font-size:13px; font-weight:600; color:#A6A89D; cursor:pointer; } .ds-rest-skip { color:#B4FF2E; } .ds-rest-btn:hover { color:#F3F1EA; } @media (prefers-color-scheme: light) { .ds-rest { background:#F3F1EB; box-shadow:0 3px 12px rgba(42,42,34,0.07); } .ds-rest::before { display:none; } .ds-rest-time { color:#141510; } .ds-rest-skip { color:#3E7000; } .ds-rest-fill { background:#8FDC14; } .ds-rest-bar { background:#DCD9D1; } }"
     }
   ],
   "narrative": {
-    "northStar": "The Instrument Panel",
-    "overview": "BulkUp on iOS is the landing's \"Graphite & Voltage\" world (landing/DESIGN.md) translated into native SwiftUI. The screen is a gym instrument, not a feed: a graphite (dark) or bone (light) ground that is never pure black or white, hairlines instead of shadows between blocks, numbers set in a monospace face so kilos, reps, timers and prices line up like a readout, and one electric-lime razor that fires only where there is action (the CTA, today's square in the week strip, the progress rule) or progress (the draining rest rule). Sky is the only other chroma, and it means exactly one thing: done.\n\nDensity is operational. The set table is the hero of the training screen; everything around it (segmented plan picker, date nav, week strip) is quiet chrome in secondary ash. Display moments are rare and loud: Saira Condensed, uppercase, ExtraBold at 40pt for the workout name or the paywall headline, with a lime progress rule underneath. Everything else is SF Pro at Dynamic Type sizes, so the brand lives in the three voices (display, UI, data), the tint discipline and the hairline, not in custom chrome. System navigation, tab bar and sheets stay native.\n\nThe build confirmed a few things the contract only proposed: cards are surface + 1pt hairline at 14pt, with no accent side-stripes; progress is a 4pt rule, not a ring, on every screen sampled; chips in set rows are square-ish (6–8pt) and only true chips (badges, \"MEJOR VALOR\", drag handle) are capsules.",
+    "northStar": "Graphite & Voltage — light instead of lines",
+    "overview": "This is the landing's Graphite & Voltage world carried onto native iOS, in its second pass. The first pass drew every container with a hairline and the screens read as wireframes on a cold, narrow ramp (critique .impeccable/critique/2026-11-02T21-07-35Z__bulkup-views.md, P0 \"depth\"). The second pass replaced the lines with light: the ground is warm graphite that is visibly lighter at the top of every screen (BulkUpGround), containers are lighter slabs that catch a 1pt light along their top edge in the dark appearance and cast a soft shadow in the light appearance (LiftModifier), and the ramp was widened and warmed so a card separates from the ground by tone alone. The only structural lines left are list separators and the outline button.\n\nLime is still a razor. It fires only where the next action or live progress lives: the primary CTA, the progress rule, today's square in the week strip, the pulsing session dot, the stroke around the one set the lifter should do next, the selected plan row. Sky means done. Amber is the only error colour. Three type voices each own a small territory: SF Pro (bold condensed for the day's name and screen titles) carries everything people read, Saira Condensed is a poster used in exactly two places, and JetBrains Mono carries numbers that stand alone (fields, timers, prices, big stats). Operate screens are dense and quiet; the two moments of persuasion and reward (paywall, summary) are the only ones allowed to raise their voice.",
     "keyCharacteristics": [
-      "Graphite / bone ground with a faint radial glow at the top (`BulkUpGround`), never a flat swatch, never #000 or #FFF.",
-      "Two greens with two meanings: lime is action and progress, sky is done and logged. They never swap.",
-      "Amber is the only error / warning colour; no red anywhere.",
-      "Three type voices: Saira Condensed uppercase (display), SF Pro text styles (UI), JetBrains Mono (every datapoint).",
-      "1pt hairlines are the structural grammar; shadows are earned by floating controls and sheets only.",
-      "Hierarchised radii 14 / 10 / 8 (cards / buttons & inputs / fields & small squares); capsules only for chips."
+      "Warm graphite ground lit from the top; warm bone by day. Never pure black or white on the canvas.",
+      "Depth by light: top-edge light catch (dark) or a soft offset shadow (light). Container outlines are gone.",
+      "Hairlines survive only as 1pt list separators and the outline button's border.",
+      "One lime object of consequence per region; sky for done; amber for wrong.",
+      "SF Pro bold condensed titles in sentence case; Saira Condensed posters in two homes; JetBrains Mono ≥16pt only where the number is the element.",
+      "CTAs in sentence case, 54pt lime slabs, 12pt radius.",
+      "The set table is an instrument: the active row steps forward on a raised fill; done rows get a sky check; pending rows sit at 72 %."
     ],
     "rules": [
-      { "name": "The Two-Greens Rule", "body": "Lime means action or progress; sky means done or logged. A checked set, a finished day, a logged meal turn sky; the CTA, today's square and the in-progress rule stay lime. Neither colour ever takes the other's job.", "section": "colors" },
-      { "name": "The Razor Rule", "body": "Lime covers ≤10% of any screen. One filled CTA per screen; everything else lime is a 1pt stroke, a 4pt rule, a 12pt radio dot, or text in `accentText`.", "section": "colors" },
-      { "name": "The Amber-Only Rule", "body": "Amber is the sole error and warning colour in both appearances. No red, no second alarm colour.", "section": "colors" },
-      { "name": "The Never-Pure Rule", "body": "The ground is graphite (#0E1110) or bone (#F2F4F1), never #000000 or #FFFFFF, and it always carries the top radial glow from `BulkUpGround`.", "section": "colors" },
-      { "name": "The Mono-For-Numbers Rule", "body": "Every kilo, rep, %, timer, price, date-number and streak is set in JetBrains Mono. A number in SF Pro is a defect.", "section": "typography" },
-      { "name": "The One-Shout Rule", "body": "Saira Condensed appears once per screen as the headline (plus the CTA label and the live-session header name). Section titles, card titles and body are SF Pro.", "section": "typography" },
-      { "name": "The Relative-To Rule", "body": "Custom faces are always declared `relativeTo:` a system text style so Dynamic Type scales them; raw point sizes without a style are not used.", "section": "typography" },
-      { "name": "The Hairline-Over-Shadow Rule", "body": "A 1pt stroke in `line` (or a tinted hairline for state) separates and contains; shadows are reserved for things that genuinely float above the scroll (sheets, floating timers). A content card with a drop shadow is a defect.", "section": "elevation" },
-      { "name": "The Tinted-Edge Rule", "body": "State lives in the hairline colour, not in a side stripe or a tinted fill: lime 60–70% for active, sky 60% for done, solid lime for selected.", "section": "elevation" }
+      { "name": "The Two-Greens Rule", "body": "Lime means action or progress; sky means done or logged. A finished set, a logged day, a completed exercise is sky, never lime. A thing you should tap next is lime, never sky.", "section": "colors" },
+      { "name": "The One Razor Rule", "body": "Lime covers ≤10 % of any screen and names one object of consequence per region: the CTA, the next check, the rule, today. The summary is the single exception where lime may own a region, as a 16 % → 0 % glow over the first 420pt.", "section": "colors" },
+      { "name": "The On-Fill Rule", "body": "Glyphs on a filled element are chosen by WCAG luminance with the threshold at L > 0.30 (Color.onFill): lime and sky both get graphite glyphs (#0E0F0C); only a fill darker than that gets bone (#F3F1EA). Never put white on sky.", "section": "colors" },
+      { "name": "The Never-Pure Rule", "body": "No #000000 or #FFFFFF on the canvas, a container, or text. The ground stops at #0E0F0C, the lightest surface at #FDFCF8.", "section": "colors" },
+      { "name": "The Two Homes Rule", "body": "Saira Condensed appears in exactly two strings: \"TU PROGRESO, VISIBLE.\" and \"ENTRENO COMPLETADO\". A third poster is a system change, not an extension.", "section": "typography" },
+      { "name": "The Mono Floor Rule", "body": "JetBrains Mono never goes below 16pt and never sits inside a sentence. A number next to words uses SF with tabular figures. Prices, timers, fields and hero stats are the whole mono vocabulary.", "section": "typography" },
+      { "name": "The Sentence-Case CTA Rule", "body": "Every button label is SF headline semibold in sentence case (\"Continuar entreno\", \"Guardar y salir\", \"Empezar 7 días gratis\"). The brand lives in the lime fill, not in a shout.", "section": "typography" },
+      { "name": "The Light-Not-Lines Rule", "body": "A container is separated from the ground by its fill and its top-edge light (or light-mode shadow), never by a hairline border. Hairlines are allowed in exactly two roles: a 1pt line Rectangle between list rows, and the 1pt border of the outline button.", "section": "elevation" },
+      { "name": "The Earned Shadow Rule", "body": "Shadows in dark mode are zero. In light mode the only shadow is the 7 % lift; nothing heavier ships.", "section": "elevation" }
     ],
     "dos": [
-      "Do put every number in JetBrains Mono via `BulkUpFont.mono(_:weight:relativeTo:)`, including dates, counts, prices and timers.",
-      "Do limit each screen to one Saira Condensed headline (40pt ExtraBold, uppercase via `displayVoice`) and one lime-filled CTA (`primaryButtonStyle`, 54pt).",
-      "Do separate rows and bound strips with 1pt `BulkUpColors.line` Rectangles; contain cards with `hairline()` at 14pt.",
-      "Do turn things sky (`BulkUpColors.complete`) when they are done: set checks, logged squares, finished-day rule, week-strip dots.",
-      "Do use `accentText` (not `accent`) for lime text and icons on the ground so light mode stays ≥4.5:1.",
-      "Do declare custom fonts `relativeTo:` a text style and keep mid-set controls at ≥44pt.",
-      "Do start every top-level screen on `BulkUpGround()` and hide the nav-bar background so the glow runs under it.",
-      "Do show state in the hairline colour: lime 60–70% active, sky 60% done, solid lime selected."
+      "Do lift every container with .lift(): top-edge white 9 % → 1.5 % 1pt stroke in dark, #2A2A22 7 % r12 y3 shadow in light. No outline.",
+      "Do keep hairlines to two roles: 1pt line separators between list rows, and the outline button's 1pt border.",
+      "Do keep lime on one object per region and sky on everything finished (the Two-Greens Rule).",
+      "Do put graphite glyphs on lime and sky fills via Color.onFill (threshold L > 0.30).",
+      "Do set the day's name and screen titles in SF bold, condensed width, sentence case (.titleVoice).",
+      "Do use JetBrains Mono ≥16pt only where the number is the element: fields, timers, prices, hero and strip stats; use SF monospacedDigit() for a number inside a sentence.",
+      "Do write every CTA in sentence case on a 54pt lime slab with 12pt radius.",
+      "Do make the next set's row step forward (raised fill, primary number, lime-stroked check) and keep every table control 44pt tall.",
+      "Do mark success with a spring (0.35–0.5s, 0.6–0.85 damping) and a success notification haptic.",
+      "Do use the warm ramp as shipped; never pure black or white on canvas, container or text."
     ],
     "donts": [
-      "Don't use pure black or pure white as a ground, or a flat swatch without the top radial glow.",
-      "Don't use lime to mean \"done\" or sky to mean \"go\": the two greens never swap jobs.",
-      "Don't use red; amber (`warning` / `error`) is the only alarm colour.",
-      "Don't put drop shadows on content cards or use glass on content; both belong to floating controls and the navigation layer only.",
-      "Don't add accent side-stripes, gradient text, gradient rings or crown/trophy badges to cards and headers.",
-      "Don't use capsules for anything but chips, tags and the drag indicator; buttons, inputs and squares are 10pt / 8pt continuous rectangles.",
-      "Don't nest a card inside a card; nested content uses `flatCardStyle` (raised fill, 10pt, no hairline) or a hairline list.",
-      "Don't set a number in SF Pro or a display headline in a weight lighter than SemiBold."
+      "Don't put a kicker or eyebrow above a heading; the 11pt tracked uppercase label exists for table column headers and tags only.",
+      "Don't outline a container with a hairline; depth comes from fill and light.",
+      "Don't shout a CTA, title or badge in Title Case or uppercase SF; only the two Saira posters are uppercase.",
+      "Don't use mono as costume: no mono under 16pt, no mono in sentences, labels, dates or weekday letters, no mono for words (\"iOS + Watch\" is SF).",
+      "Don't add a third Saira Condensed home.",
+      "Don't draw side stripes, accent bars or gradient text; gradients are the ground's glow, the summary's lime region and the paywall's 28pt content fade only.",
+      "Don't use sky for an action or lime for a done state.",
+      "Don't use red; amber is the only error and warning colour.",
+      "Don't stroke a field at rest; lime stroke on focus only, nothing when done.",
+      "Don't stack shadows in dark mode or exceed the 7 % lift in light mode."
     ]
   }
 }

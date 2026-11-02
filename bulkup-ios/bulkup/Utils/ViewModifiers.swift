@@ -2,24 +2,24 @@
 //  ViewModifiers.swift
 //  bulkup
 //
-//  Shared component grammar for the "Graphite & Voltage" system: hairline
-//  cards, squared lime buttons, mono data, sky for done.
+//  Shared component grammar for "Graphite & Voltage": lifted cards (light
+//  instead of lines), lime buttons in sentence case, sky for done.
 //
 
 import SwiftUI
 
 // MARK: - Liquid Glass Note
 // Glass effects (.glassEffect()) are ONLY for navigation layer elements.
-// Content cards use opaque surfaces with depth via elevation + borders.
+// Content cards are opaque slabs lifted by light (see `.lift()`).
 
-// MARK: - Elevated Card (primary content container)
+// MARK: - Card (primary content container)
 struct CardStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(Spacing.md)
             .background(BulkUpColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-            .hairline()
+            .lift()
     }
 }
 
@@ -29,7 +29,7 @@ struct FlatCardStyle: ViewModifier {
         content
             .padding(Spacing.md)
             .background(BulkUpColors.surfaceElevated)
-            .cornerRadius(CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
     }
 }
 
@@ -42,11 +42,11 @@ struct AccentCardStyle: ViewModifier {
             .padding(Spacing.md)
             .background(BulkUpColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-            .hairline(color: color.opacity(0.6))
+            .lift(stroke: color.opacity(0.55))
     }
 }
 
-// MARK: - Active Card (in-progress items: tinted hairline, no side stripe)
+// MARK: - Active Card (in-progress items: tinted stroke, no side stripe)
 struct ActiveCardStyle: ViewModifier {
     var color: Color = BulkUpColors.accent
 
@@ -55,7 +55,7 @@ struct ActiveCardStyle: ViewModifier {
             .padding(Spacing.md)
             .background(BulkUpColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-            .hairline(color: color.opacity(0.7))
+            .lift(stroke: color.opacity(0.65))
     }
 }
 
@@ -72,14 +72,14 @@ struct PhotoCardModifier: ViewModifier {
 }
 
 // MARK: - Primary CTA Button
+/// Lime slab, SF headline in sentence case: the brand lives in the colour,
+/// not in a shout.
 struct PrimaryButtonModifier: ViewModifier {
     var color: Color = BulkUpColors.accent
 
     func body(content: Content) -> some View {
         content
-            .font(BulkUpFont.display(19, weight: .semibold, relativeTo: .headline))
-            .textCase(.uppercase)
-            .tracking(0.8)
+            .font(.system(.headline, weight: .semibold))
             .foregroundColor(Color.onFill(color))
             .frame(maxWidth: .infinity)
             .frame(minHeight: 54)
@@ -92,29 +92,28 @@ struct PrimaryButtonModifier: ViewModifier {
 struct SecondaryButtonModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(.subheadline, weight: .semibold))
+            .font(.system(.headline, weight: .semibold))
             .foregroundColor(BulkUpColors.textPrimary)
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 48)
+            .frame(minHeight: 50)
             .background(BulkUpColors.surfaceElevated)
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-            .hairline(CornerRadius.medium)
     }
 }
 
 // MARK: - Outline Button (e.g. "Skip Rest")
 struct OutlineButtonModifier: ViewModifier {
-    var color: Color = BulkUpColors.accent
+    var color: Color = BulkUpColors.accentText
 
     func body(content: Content) -> some View {
         content
-            .font(.system(.subheadline, weight: .semibold))
+            .font(.system(.headline, weight: .semibold))
             .foregroundColor(color)
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 48)
+            .frame(minHeight: 50)
             .background(Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-            .hairline(CornerRadius.medium, color: color.opacity(0.7))
+            .hairline(CornerRadius.medium, color: color.opacity(0.6))
     }
 }
 
@@ -127,7 +126,7 @@ struct SectionHeaderStyle: ViewModifier {
     }
 }
 
-// MARK: - Gradient Progress Ring
+// MARK: - Progress Ring (flat, brand line track)
 struct GradientProgressRing: View {
     let progress: CGFloat
     var lineWidth: CGFloat = 6
@@ -140,7 +139,7 @@ struct GradientProgressRing: View {
                 .stroke(BulkUpColors.line, lineWidth: lineWidth)
             Circle()
                 .trim(from: 0, to: max(0, min(1, progress)))
-                .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
+                .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .animation(.easeOut(duration: 0.8), value: progress)
         }
@@ -196,14 +195,12 @@ struct StatCard: View {
                     .minimumScaleFactor(0.6)
                 if let trend {
                     Text(trend)
-                        .font(BulkUpFont.caption())
+                        .font(BulkUpFont.numeric(.footnote, weight: .medium))
                         .foregroundColor(trendUp ? BulkUpColors.success : BulkUpColors.error)
                 }
             }
             Text(LocalizedStringKey(label))
-                .textCase(.uppercase)
-                .font(BulkUpFont.badge())
-                .tracking(0.5)
+                .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -223,15 +220,15 @@ struct CalendarDayView: View {
     var body: some View {
         VStack(spacing: 6) {
             Text(dayLetter)
-                .font(.system(size: 13, weight: isToday ? .bold : .medium))
-                .foregroundColor(isToday ? BulkUpColors.textPrimary : BulkUpColors.textSecondary)
+                .font(.system(.caption2, weight: isToday ? .bold : .medium))
+                .foregroundColor(isToday ? BulkUpColors.textPrimary : BulkUpColors.textTertiary)
 
             ZStack {
                 RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
                     .fill(isToday ? BulkUpColors.accent : Color.clear)
                     .frame(width: 32, height: 32)
                 Text(dayNumber)
-                    .font(BulkUpFont.mono(13, weight: isToday ? .semibold : .medium, relativeTo: .footnote))
+                    .font(BulkUpFont.numeric(.subheadline, weight: isToday ? .bold : .medium))
                     .foregroundColor(isToday ? BulkUpColors.onAccent : BulkUpColors.textPrimary)
             }
 
@@ -274,7 +271,7 @@ extension View {
         modifier(SecondaryButtonModifier())
     }
 
-    func outlineButtonStyle(color: Color = BulkUpColors.accent) -> some View {
+    func outlineButtonStyle(color: Color = BulkUpColors.accentText) -> some View {
         modifier(OutlineButtonModifier(color: color))
     }
 
@@ -297,9 +294,9 @@ extension View {
         }
     }
 
-    /// Soft adaptive card shadow (deep in dark, soft warm-gray in light).
-    func cardShadow(radius: CGFloat = 12, y: CGFloat = 6) -> some View {
-        shadow(color: BulkUpColors.shadow.opacity(0.18), radius: radius, x: 0, y: y)
+    /// Soft offset shadow for anything that floats above the content.
+    func cardShadow(radius: CGFloat = 20, y: CGFloat = 10) -> some View {
+        shadow(color: BulkUpColors.shadow.opacity(0.28), radius: radius, x: 0, y: y)
     }
 
     /// Accent glow that reads in both modes.

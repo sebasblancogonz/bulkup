@@ -29,11 +29,11 @@ struct TodayView: View {
         return cal
     }
 
-    /// "lunes 14" — lowercase day name + day number
+    /// "lunes 14 nov" — same shape as the Entreno date nav
     private var compactDate: String {
         let f = DateFormatter()
         f.locale = LanguageManager.shared.locale
-        f.dateFormat = "EEEE d"
+        f.dateFormat = "EEEE d MMM"
         return f.string(from: Date()).lowercased()
     }
 
@@ -229,43 +229,38 @@ struct TodayView: View {
     // MARK: - Greeting Header
 
     private var greetingHeader: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(compactDate)
-                    .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
-                    .textCase(.uppercase)
-                    .tracking(1.2)
-                    .foregroundColor(BulkUpColors.textSecondary)
-                Spacer()
-                if streakCount > 0 {
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(.caption2, weight: .bold))
-                        Text("\(streakCount)")
-                            .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
-                        Text("días")
-                            .font(.system(.caption2, weight: .semibold))
-                    }
-                    .foregroundColor(BulkUpColors.accentText)
-                    .accessibilityLabel(Text("\(streakCount)-day streak"))
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
+            greetingTextView
+                .font(.system(.subheadline, weight: .medium))
+                .foregroundColor(BulkUpColors.textSecondary)
+                .lineLimit(1)
+
+            Spacer(minLength: Spacing.sm)
+
+            if streakCount > 0 {
+                HStack(spacing: 3) {
+                    Image(systemName: "flame.fill")
+                        .font(.system(.caption2, weight: .bold))
+                    Text("\(streakCount)")
+                        .font(BulkUpFont.numeric(.footnote, weight: .semibold))
+                    Text("días")
+                        .font(.system(.footnote, weight: .medium))
                 }
+                .foregroundColor(BulkUpColors.accentText)
+                .accessibilityLabel(Text("\(streakCount)-day streak"))
             }
 
-            HStack(alignment: .firstTextBaseline) {
-                greetingTextView
-                    .font(.system(.title2, weight: .semibold))
-                    .foregroundColor(BulkUpColors.textPrimary)
-
-                Spacer()
-
-                if friendsManager.todayCompleted {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(.title3))
-                        .foregroundColor(BulkUpColors.complete)
-                        .transition(.scale.combined(with: .opacity))
-                        .accessibilityLabel("Entreno de hoy completado")
-                }
+            if friendsManager.todayCompleted {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(.footnote))
+                    .foregroundColor(BulkUpColors.complete)
+                    .transition(.scale.combined(with: .opacity))
+                    .accessibilityLabel("Entreno de hoy completado")
             }
+
+            Text(compactDate)
+                .font(BulkUpFont.numeric(.footnote, weight: .medium))
+                .foregroundColor(BulkUpColors.textTertiary)
         }
     }
 
@@ -302,8 +297,10 @@ struct TodayView: View {
             }
         }
         .padding(.vertical, 10)
-        .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .top)
-        .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .bottom)
+        .padding(.horizontal, Spacing.sm)
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .lift()
     }
 
     // MARK: - Today's workout
@@ -327,37 +324,20 @@ struct TodayView: View {
             let isDone = friendsManager.todayCompleted || trainingManager.isDayCompleted(day: day.day)
 
             VStack(alignment: .leading, spacing: Spacing.md) {
-                if isDone {
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "checkmark")
-                            .font(.system(.caption2, weight: .bold))
-                        Text("Completado")
-                            .microLabel(color: BulkUpColors.complete)
-                    }
-                    .foregroundColor(BulkUpColors.complete)
-                }
-
                 Text(dayLabel)
-                    .displayVoice(40, weight: .extraBold, relativeTo: .largeTitle)
+                    .titleVoice(.largeTitle)
                     .foregroundColor(BulkUpColors.textPrimary)
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
                     .fixedSize(horizontal: false, vertical: true)
 
-                HStack(spacing: Spacing.xs) {
-                    Text("\(totalExercises)")
-                        .font(BulkUpFont.mono(15, weight: .semibold, relativeTo: .subheadline))
-                        .foregroundColor(BulkUpColors.textPrimary)
-                    Text("ejercicios")
-                        .font(BulkUpFont.body())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                    Text("·")
-                        .foregroundColor(BulkUpColors.textTertiary)
-                    Text("\(totalSets)")
-                        .font(BulkUpFont.mono(15, weight: .semibold, relativeTo: .subheadline))
-                        .foregroundColor(BulkUpColors.textPrimary)
-                    Text("series")
-                        .font(BulkUpFont.body())
+                if isDone {
+                    Text("Completado · \(totalExercises) ejercicios · \(totalSets) series")
+                        .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
+                        .foregroundColor(BulkUpColors.complete)
+                } else {
+                    Text("\(totalExercises) ejercicios · \(totalSets) series")
+                        .font(BulkUpFont.numeric(.subheadline, weight: .medium))
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
 
@@ -375,11 +355,8 @@ struct TodayView: View {
                     .frame(height: 3)
 
                     HStack {
-                        Text("\(loggedExercises)/\(totalExercises)")
-                            .font(BulkUpFont.mono(12, relativeTo: .caption))
-                            .foregroundColor(BulkUpColors.textSecondary)
-                        Text("ejercicios registrados")
-                            .font(.system(.caption2))
+                        Text("\(loggedExercises)/\(totalExercises) ejercicios registrados")
+                            .font(BulkUpFont.numeric(.footnote))
                             .foregroundColor(BulkUpColors.textSecondary)
                         Spacer()
                     }
@@ -406,7 +383,7 @@ struct TodayView: View {
     private var restDayHero: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Text("Descanso")
-                .displayVoice(40, weight: .extraBold, relativeTo: .largeTitle)
+                .titleVoice(.largeTitle)
                 .foregroundColor(BulkUpColors.textPrimary)
             Text("Recupera energía para mañana")
                 .font(BulkUpFont.body())
@@ -418,16 +395,14 @@ struct TodayView: View {
 
     // MARK: - Quick Stats Row
 
-    /// One hairline strip of evidence: this week's workouts, diet adherence,
-    /// last weight. Numbers in mono; no tiles.
+    /// One line of evidence under the day's block: this week's workouts, diet
+    /// adherence, last weight. Tabular SF; no tiles, no strip.
     private var statItems: [(value: String, label: LocalizedStringKey)] {
         var items: [(value: String, label: LocalizedStringKey)] = []
         let week = weeklyTrainingSummary
         if week.total > 0 { items.append(("\(week.completed)/\(week.total)", "entrenos")) }
         if let rate = weeklyComplianceRate { items.append(("\(Int(rate * 100))%", "dieta")) }
-        // Weight always has a cell: "—" until a measurement exists, so the strip
-        // keeps its three-part rhythm and the gap is a visible invitation.
-        items.append((latestWeight.map { String(format: "%.1f kg", $0) } ?? "—", "peso"))
+        if let w = latestWeight { items.append((String(format: "%.1f kg", w), "peso")) }
         return items
     }
 
@@ -435,29 +410,25 @@ struct TodayView: View {
     private var quickStatsRow: some View {
         let items = statItems
         if !items.isEmpty {
-            HStack(spacing: 0) {
+            HStack(spacing: Spacing.xs) {
+                Text("Esta semana")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textTertiary)
                 ForEach(items.indices, id: \.self) { i in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(items[i].value)
-                            .font(BulkUpFont.mono(17, weight: .semibold, relativeTo: .headline))
-                            .foregroundColor(BulkUpColors.textPrimary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                        Text(items[i].label)
-                            .microLabel()
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    if i < items.count - 1 {
-                        Rectangle()
-                            .fill(BulkUpColors.line)
-                            .frame(width: 1, height: 30)
-                            .padding(.trailing, Spacing.md)
-                    }
+                    Text("·")
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textTertiary)
+                    Text(items[i].value)
+                        .font(BulkUpFont.numeric(.footnote, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textPrimary)
+                    Text(items[i].label)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
+                Spacer(minLength: 0)
             }
-            .padding(.vertical, Spacing.md)
-            .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .top)
-            .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .bottom)
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
             .opacity(animateStats ? 1 : 0)
         }
     }
@@ -505,10 +476,11 @@ struct TodayView: View {
             // Section header
             HStack {
                 Text("Ejercicios")
-                    .microLabel()
+                    .font(.system(.headline, weight: .semibold))
+                    .foregroundColor(BulkUpColors.textPrimary)
                 Spacer()
                 Text("\(loggedExercises)/\(totalExercises)")
-                    .font(BulkUpFont.mono(13, weight: .semibold, relativeTo: .footnote))
+                    .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textSecondary)
                     .contentTransition(.numericText())
             }
@@ -517,10 +489,12 @@ struct TodayView: View {
 
             // Exercise list
             VStack(spacing: 0) {
-                ForEach(day.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }), id: \.id) { exercise in
+                let sorted = day.exercises.sorted(by: { $0.orderIndex < $1.orderIndex })
+                ForEach(Array(sorted.enumerated()), id: \.element.id) { index, exercise in
                     InlineExerciseRow(
                         exercise: exercise,
                         dayName: day.day,
+                        showsSeparator: index < sorted.count - 1,
                         isExpanded: expandedExercises.contains(exerciseRowId(exercise, day: day.day)),
                         onToggleExpand: {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
@@ -537,6 +511,10 @@ struct TodayView: View {
                     .environmentObject(authManager)
                 }
             }
+            .background(BulkUpColors.surface)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+            .lift()
+            .padding(.horizontal, Spacing.screenH)
 
             // Complete workout action
             if allLogged && !friendsManager.todayCompleted {
@@ -613,11 +591,12 @@ struct TodayView: View {
             // Section header
             HStack {
                 Text("Comidas")
-                    .microLabel()
+                    .font(.system(.headline, weight: .semibold))
+                    .foregroundColor(BulkUpColors.textPrimary)
                 Spacer()
                 if totalMeals > 0 {
                     Text("\(completedCount)/\(totalMeals)")
-                        .font(BulkUpFont.mono(13, weight: .semibold, relativeTo: .footnote))
+                        .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
                         .foregroundColor(
                             completedCount == totalMeals
                                 ? BulkUpColors.complete
@@ -654,8 +633,10 @@ struct TodayView: View {
                     }
                 }
             }
-            .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .top)
-            .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .bottom)
+            .padding(.horizontal, Spacing.md)
+            .background(BulkUpColors.surface)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+            .lift()
         }
     }
 
@@ -689,7 +670,7 @@ struct TodayView: View {
             .padding(Spacing.md)
             .background(BulkUpColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-            .hairline()
+            .lift()
         }
         .pressable()
     }
@@ -727,6 +708,7 @@ struct TodayView: View {
 private struct InlineExerciseRow: View {
     let exercise: Exercise
     let dayName: String
+    var showsSeparator: Bool = true
     let isExpanded: Bool
     let onToggleExpand: () -> Void
 
@@ -777,7 +759,7 @@ private struct InlineExerciseRow: View {
                                 .foregroundColor(Color.onFill(BulkUpColors.complete))
                         } else if completedSets > 0 {
                             Text("\(completedSets)")
-                                .font(BulkUpFont.mono(11, weight: .semibold, relativeTo: .caption2))
+                                .font(BulkUpFont.numeric(.caption2, weight: .bold))
                                 .foregroundColor(BulkUpColors.accentText)
                         }
                     }
@@ -793,7 +775,7 @@ private struct InlineExerciseRow: View {
                             .lineLimit(1)
 
                         Text("\(totalSets) × \(exercise.reps)")
-                            .font(BulkUpFont.mono(12, relativeTo: .caption))
+                            .font(BulkUpFont.numeric(.footnote))
                             .foregroundColor(BulkUpColors.textSecondary)
                     }
 
@@ -804,7 +786,7 @@ private struct InlineExerciseRow: View {
                         .foregroundColor(BulkUpColors.textTertiary)
                         .frame(width: 24, height: 24)
                 }
-                .padding(.horizontal, Spacing.screenH)
+                .padding(.horizontal, Spacing.md)
                 .padding(.vertical, 14)
                 .contentShape(Rectangle())
             }
@@ -824,9 +806,11 @@ private struct InlineExerciseRow: View {
                 ))
             }
         }
-        .background(isExpanded ? BulkUpColors.surface : Color.clear)
+        .background(isExpanded ? BulkUpColors.surfaceElevated.opacity(0.5) : Color.clear)
         .overlay(alignment: .bottom) {
-            Rectangle().fill(BulkUpColors.line).frame(height: 1).padding(.leading, Spacing.screenH)
+            if showsSeparator {
+                Rectangle().fill(BulkUpColors.line).frame(height: 1).padding(.leading, Spacing.md)
+            }
         }
     }
 }
@@ -878,12 +862,12 @@ private struct InlineWeightLogger: View {
                         ForEach(0..<setsCount, id: \.self) { setIndex in
                             VStack(spacing: 4) {
                                 Text("S\(setIndex + 1)")
-                                    .font(.system(size: 10, weight: .bold))
+                                    .font(.system(.caption2, weight: .semibold))
                                     .foregroundColor(BulkUpColors.textTertiary)
 
                                 if let prev = safeGetPrevWeight(setIndex), prev > 0 {
                                     Text("ant. \(formatWeight(prev))")
-                                        .font(.system(size: 9, weight: .medium))
+                                        .font(BulkUpFont.numeric(.caption2))
                                         .foregroundColor(BulkUpColors.textTertiary)
                                 }
 
@@ -891,18 +875,18 @@ private struct InlineWeightLogger: View {
                                     .keyboardType(.decimalPad)
                                     .focused($focusedSet, equals: setIndex)
                                     .multilineTextAlignment(.center)
-                                    .font(BulkUpFont.mono(15, relativeTo: .subheadline))
+                                    .font(BulkUpFont.mono(16, weight: .semibold, relativeTo: .body))
                                     .foregroundColor(BulkUpColors.textPrimary)
-                                    .frame(width: 60, height: 44)
+                                    .frame(width: 64, height: 44)
                                     .background(
                                         RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
                                             .fill(BulkUpColors.surfaceElevated)
                                     )
                                     .overlay(
                                         RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                                            .stroke(
-                                                hasWeight(setIndex) ? BulkUpColors.complete : BulkUpColors.line,
-                                                lineWidth: 1
+                                            .strokeBorder(
+                                                focusedSet == setIndex ? BulkUpColors.accent : Color.clear,
+                                                lineWidth: 1.5
                                             )
                                     )
                             }
@@ -930,21 +914,21 @@ private struct InlineWeightLogger: View {
                         } label: {
                             VStack(spacing: 4) {
                                 Text("S\(setsCount + 1)")
-                                    .font(.system(size: 10, weight: .bold))
+                                    .font(.system(.caption2, weight: .semibold))
                                     .foregroundColor(BulkUpColors.textTertiary)
                                 Image(systemName: "plus")
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(BulkUpColors.accentText)
-                                    .frame(width: 56, height: 40)
+                                    .foregroundColor(BulkUpColors.textSecondary)
+                                    .frame(width: 56, height: 44)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(BulkUpColors.accent.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                                        RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                                            .stroke(BulkUpColors.textTertiary.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                                     )
                             }
                         }
                         .accessibilityLabel("Añadir serie")
                     }
-                    .padding(.horizontal, Spacing.screenH)
+                    .padding(.horizontal, Spacing.sm)
                 }
 
                 // Save row
@@ -957,7 +941,7 @@ private struct InlineWeightLogger: View {
                                 Image(systemName: "arrow.clockwise")
                                     .font(.system(size: 10))
                                 Text("Usar anterior")
-                                    .font(.system(size: 11, weight: .medium))
+                                    .font(.system(.footnote, weight: .medium))
                             }
                             .foregroundColor(BulkUpColors.accentText)
                         }
@@ -984,18 +968,17 @@ private struct InlineWeightLogger: View {
                                     .foregroundColor(BulkUpColors.accentText)
                             }
                             Text(showSaved ? "Guardado" : "Guardar")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(showSaved ? BulkUpColors.success : BulkUpColors.accent)
+                                .font(.system(.footnote, weight: .semibold))
+                                .foregroundColor(showSaved ? BulkUpColors.success : BulkUpColors.accentText)
                         }
                         .padding(.horizontal, Spacing.md)
                         .padding(.vertical, Spacing.sm)
                         .background(BulkUpColors.surfaceElevated)
                         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-                        .hairline(CornerRadius.medium)
                     }
                     .disabled(isSaving)
                 }
-                .padding(.horizontal, Spacing.screenH)
+                .padding(.horizontal, Spacing.sm)
             } else {
                 Text("Sin seguimiento de peso")
                     .font(BulkUpFont.caption())
@@ -1175,7 +1158,7 @@ private struct InlineMealRow: View {
 
                 if !time.isEmpty {
                     Text(time)
-                        .font(BulkUpFont.mono(13, relativeTo: .footnote))
+                        .font(BulkUpFont.numeric(.footnote, weight: .medium))
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
             }

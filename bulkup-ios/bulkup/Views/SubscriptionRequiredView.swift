@@ -32,10 +32,10 @@ struct SubscriptionRequiredView: View {
 
     private var fullContent: some View {
         VStack(alignment: .leading, spacing: Spacing.lg) {
-            Spacer(minLength: 0)
+            Spacer().frame(height: Spacing.xxl)
 
             Text(title)
-                .displayVoice(36, weight: .extraBold, relativeTo: .largeTitle)
+                .titleVoice(.largeTitle)
                 .foregroundColor(BulkUpColors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -102,7 +102,7 @@ struct SubscriptionRequiredView: View {
         .padding(Spacing.md)
         .background(BulkUpColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-        .hairline(color: BulkUpColors.accent.opacity(0.5))
+        .lift(stroke: BulkUpColors.accent.opacity(0.5))
     }
 }
 

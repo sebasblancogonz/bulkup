@@ -151,6 +151,36 @@
         }
       }
     },
+    "%@ menos que la última vez" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ less than last time"
+          }
+        }
+      }
+    },
+    "%@ más lento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ slower"
+          }
+        }
+      }
+    },
+    "%@ más rápido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ faster"
+          }
+        }
+      }
+    },
     "%@%@ %@ vs último" : {
       "localizations" : {
         "en" : {
@@ -279,6 +309,16 @@
         }
       }
     },
+    "%lld de %lld ejercicios completados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld exercises completed"
+          }
+        }
+      }
+    },
     "%lld días" : {
       "localizations" : {
         "en" : {
@@ -335,6 +375,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld exercises"
+          }
+        }
+      }
+    },
+    "%lld ejercicios · %lld series" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld exercises · %lld sets"
           }
         }
       }
@@ -462,6 +512,16 @@
         }
       }
     },
+    "%lld/%lld ejercicios registrados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld/%lld exercises logged"
+          }
+        }
+      }
+    },
     "%lldg" : {
       "localizations" : {
         "en" : {
@@ -544,6 +604,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "(you)"
+          }
+        }
+      }
+    },
+    "+%@ más que la última vez" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%@ more than last time"
           }
         }
       }
@@ -1725,6 +1795,16 @@
         }
       }
     },
+    "Cancela cuando quieras." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel anytime."
+          }
+        }
+      }
+    },
     "Cancela en cualquier momento" : {
       "localizations" : {
         "en" : {
@@ -2134,6 +2214,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Completed"
+          }
+        }
+      }
+    },
+    "Completado · %lld ejercicios · %lld series" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completed · %lld exercises · %lld sets"
           }
         }
       }
@@ -3479,6 +3569,16 @@
         }
       }
     },
+    "En gris, lo de la última vez" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Greyed out: last time's numbers"
+          }
+        }
+      }
+    },
     "Energía" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3853,6 +3953,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This feature requires a PRO subscription"
+          }
+        }
+      }
+    },
+    "Esta semana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This week"
           }
         }
       }
@@ -4367,6 +4477,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Glutes"
+          }
+        }
+      }
+    },
+    "Grabar vídeo de la serie" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record a video of this set"
           }
         }
       }
@@ -5446,12 +5566,32 @@
         }
       }
     },
+    "Mis planes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My plans"
+          }
+        }
+      }
+    },
     "Mismo músculo y estímulo que %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Same muscle and stimulus as %@"
+          }
+        }
+      }
+    },
+    "Mismo volumen que la última vez" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same volume as last time"
           }
         }
       }
@@ -8610,6 +8750,16 @@
         }
       }
     },
+    "Ver vídeo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch video"
+          }
+        }
+      }
+    },
     "Ver vídeo de la serie %lld" : {
       "localizations" : {
         "en" : {
@@ -8701,6 +8851,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weekly volume, composition and trends."
+          }
+        }
+      }
+    },
+    "Volumen total · primera sesión de este día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total volume · first session of this day"
           }
         }
       }
@@ -8974,6 +9134,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "g"
+          }
+        }
+      }
+    },
+    "igual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "same"
           }
         }
       }

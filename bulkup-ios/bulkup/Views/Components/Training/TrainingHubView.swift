@@ -34,8 +34,8 @@ struct TrainingHubView: View {
 
         var displayName: LocalizedStringKey {
             switch self {
-            case .active: return "Plan Activo"
-            case .library: return "Mis Planes"
+            case .active: return "Plan activo"
+            case .library: return "Mis planes"
             }
         }
 
@@ -137,19 +137,19 @@ struct TrainingHubView: View {
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: section.icon)
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(.footnote, weight: .semibold))
 
                             Text(section.displayName)
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.system(.subheadline, weight: .bold))
                         }
                         .foregroundColor(
-                            isActive ? BulkUpColors.textPrimary : BulkUpColors.textSecondary
+                            isActive ? BulkUpColors.accentText : BulkUpColors.textSecondary
                         )
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 40)
                         .background(
                             RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                                .fill(isActive ? BulkUpColors.surfaceElevated : Color.clear)
+                                .fill(isActive ? BulkUpColors.accent.opacity(0.16) : Color.clear)
                         )
                         .contentShape(RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous))
                     }
@@ -160,7 +160,7 @@ struct TrainingHubView: View {
                 RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
                     .fill(BulkUpColors.surface)
             )
-            .hairline(CornerRadius.medium)
+            .lift(CornerRadius.medium)
 
             Menu {
                 if selectedView == .active {
@@ -201,7 +201,7 @@ struct TrainingHubView: View {
                     .frame(width: 46, height: 46)
                     .background(BulkUpColors.surface)
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-                    .hairline(CornerRadius.medium)
+                    .lift(CornerRadius.medium)
             }
             .padding(.leading, Spacing.sm)
         }
@@ -379,7 +379,7 @@ struct TrainingHubView: View {
                             RoundedRectangle(cornerRadius: CornerRadius.medium)
                                 .fill(BulkUpColors.surface)
                         )
-                        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+                        .lift(CornerRadius.medium)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -442,7 +442,7 @@ struct TrainingHubView: View {
             RoundedRectangle(cornerRadius: CornerRadius.medium)
                 .fill(BulkUpColors.surface)
         )
-        .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+        .lift(CornerRadius.medium)
         .contentShape(Rectangle())
     }
 }

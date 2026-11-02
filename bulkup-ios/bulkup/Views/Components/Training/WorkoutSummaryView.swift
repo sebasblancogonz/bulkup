@@ -2,7 +2,8 @@
 //  WorkoutSummaryView.swift
 //  bulkup
 //
-//  Full-screen celebration overlay after finishing a workout session.
+//  Full-screen close after a workout: the peak-end of the session. Leads with
+//  the one number that moved (volume) and says, in a sentence, how it moved.
 //
 
 import SwiftUI
@@ -25,26 +26,36 @@ struct WorkoutSummaryView: View {
     @State private var previous: WorkoutSessionRecord?
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             BulkUpColors.background
                 .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: Spacing.xl) {
-                Spacer()
+            // The one screen where lime may own a region: a warm glow from the
+            // top that fades into the ground before the actions.
+            LinearGradient(
+                colors: [BulkUpColors.accent.opacity(0.16), BulkUpColors.accent.opacity(0.0)],
+                startPoint: .top, endPoint: .bottom
+            )
+            .frame(height: 420)
+            .ignoresSafeArea()
+            .opacity(showCard ? 1 : 0)
+
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                Spacer().frame(height: Spacing.xl)
 
                 // Done mark
                 ZStack {
                     RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous)
                         .fill(BulkUpColors.complete)
-                        .frame(width: 64, height: 64)
+                        .frame(width: 56, height: 56)
                         .scaleEffect(showCheck ? 1.0 : 0.3)
                     Image(systemName: "checkmark")
-                        .font(.system(.title, weight: .bold))
+                        .font(.system(.title2, weight: .bold))
                         .foregroundColor(Color.onFill(BulkUpColors.complete))
                         .scaleEffect(showCheck ? 1.0 : 0.0)
                 }
 
-                // Title
+                // Poster
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Text("Entreno completado")
                         .displayVoice(40, weight: .extraBold, relativeTo: .largeTitle)
@@ -52,28 +63,38 @@ struct WorkoutSummaryView: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     if summary.isPartialCompletion {
-                        HStack(spacing: Spacing.xs) {
-                            Text("\(summary.exercisesCompleted)/\(summary.exercisesTotal)")
-                                .font(BulkUpFont.mono(15, weight: .semibold, relativeTo: .subheadline))
-                                .foregroundColor(BulkUpColors.textPrimary)
-                            Text("ejercicios completados")
-                                .font(BulkUpFont.body())
-                                .foregroundColor(BulkUpColors.textSecondary)
-                        }
+                        Text("\(summary.exercisesCompleted) de \(summary.exercisesTotal) ejercicios completados")
+                            .font(BulkUpFont.numeric(.subheadline))
+                            .foregroundColor(BulkUpColors.textSecondary)
                     }
                 }
                 .opacity(showCard ? 1 : 0)
-                .offset(y: showCard ? 0 : 20)
+                .offset(y: showCard ? 0 : 16)
 
-                // Stats grid
-                statsGrid
+                // The number that moved
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(volumeString)
+                        .font(BulkUpFont.heroStat())
+                        .foregroundColor(BulkUpColors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    Text(volumeSentence)
+                        .font(.system(.title3, weight: .semibold))
+                        .foregroundColor(volumeImproved ? BulkUpColors.accentText : BulkUpColors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .opacity(showCard ? 1 : 0)
+                .offset(y: showCard ? 0 : 24)
+
+                // The rest of the evidence, one strip
+                statsStrip
                     .opacity(showCard ? 1 : 0)
                     .offset(y: showCard ? 0 : 30)
 
-                Spacer()
+                Spacer(minLength: Spacing.lg)
 
                 // Actions
-                VStack(spacing: Spacing.md) {
+                VStack(spacing: Spacing.sm + 2) {
                     if saveState == .saving {
                         Text("Guardando...")
                             .font(BulkUpFont.caption())
@@ -115,22 +136,57 @@ struct WorkoutSummaryView: View {
                 .opacity(showCard ? 1 : 0)
 
                 Spacer()
-                    .frame(height: 40)
+                    .frame(height: Spacing.lg)
             }
             .padding(.horizontal, Spacing.screenH)
         }
         .task { await loadPreviousSession() }
         .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
                 showCheck = true
             }
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.6)) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.85).delay(0.35)) {
                 showCard = true
             }
         }
     }
 
-    // MARK: - Stats Grid
+    // MARK: - Volume
+
+    private static let volumeFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.maximumFractionDigits = 0
+        f.usesGroupingSeparator = true
+        return f
+    }()
+
+    private func kilos(_ value: Double) -> String {
+        let n = Self.volumeFormatter.string(from: NSNumber(value: value.rounded())) ?? "\(Int(value.rounded()))"
+        return "\(n) kg"
+    }
+
+    private var volumeString: String { kilos(summary.totalVolume) }
+
+    private var volumeImproved: Bool {
+        guard let previous else { return false }
+        return summary.totalVolume - previous.totalVolume >= 0.5
+    }
+
+    private var volumeSentence: String {
+        guard let previous else {
+            return NSLocalizedString("Volumen total · primera sesión de este día", comment: "")
+        }
+        let diff = summary.totalVolume - previous.totalVolume
+        if abs(diff) < 0.5 {
+            return NSLocalizedString("Mismo volumen que la última vez", comment: "")
+        }
+        if diff > 0 {
+            return String(format: NSLocalizedString("+%@ más que la última vez", comment: "volume delta up"), kilos(diff))
+        }
+        return String(format: NSLocalizedString("%@ menos que la última vez", comment: "volume delta down"), kilos(-diff))
+    }
 
     // MARK: - Previous session (the numbers as proof)
 
@@ -152,77 +208,67 @@ struct WorkoutSummaryView: View {
             .first
     }
 
-    private func delta(_ value: Double, unit: String, fraction: Int = 0) -> String? {
-        guard abs(value) >= 0.5 else { return NSLocalizedString("igual que el último", comment: "") }
-        let sign = value > 0 ? "+" : "−"
-        let number = String(format: "%.\(fraction)f", abs(value))
-        return String(format: NSLocalizedString("%@%@ %@ vs último", comment: "delta vs last session"), sign, number, unit)
+    private func countDelta(_ value: Int) -> (text: String, up: Bool)? {
+        guard previous != nil else { return nil }
+        if value == 0 { return (NSLocalizedString("igual", comment: "same as last time"), false) }
+        return (value > 0 ? "+\(value)" : "−\(abs(value))", value > 0)
     }
 
-    private func durationDelta() -> String? {
+    private func durationDelta() -> (text: String, up: Bool)? {
         guard let previous else { return nil }
         let diff = summary.duration - previous.durationSeconds
-        guard abs(diff) >= 30 else { return NSLocalizedString("igual que el último", comment: "") }
-        let sign = diff > 0 ? "+" : "−"
-        return String(format: NSLocalizedString("%@%@ vs último", comment: "delta vs last session"),
-                      sign, WorkoutSummary.format(seconds: abs(diff)))
-    }
-
-    private var statsGrid: some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible(), spacing: 0),
-            GridItem(.flexible(), spacing: 0),
-        ], spacing: 0) {
-            statCell(
-                value: summary.formattedDuration,
-                label: "Duración",
-                icon: "clock.fill",
-                delta: durationDelta()
-            )
-            statCell(
-                value: "\(summary.formattedVolume) kg",
-                label: "Volumen",
-                icon: "scalemass.fill",
-                delta: previous.map { delta(summary.totalVolume - $0.totalVolume, unit: "kg") } ?? nil
-            )
-            statCell(
-                value: "\(summary.totalSets)",
-                label: "Series",
-                icon: "number",
-                delta: previous.map { delta(Double(summary.totalSets - $0.totalSets), unit: NSLocalizedString("series", comment: "")) } ?? nil
-            )
-            statCell(
-                value: "\(summary.exercisesCompleted)",
-                label: "Ejercicios",
-                icon: "figure.strengthtraining.traditional",
-                delta: previous.map { delta(Double(summary.exercisesCompleted - $0.exercisesCompleted), unit: NSLocalizedString("ej.", comment: "")) } ?? nil
-            )
+        if abs(diff) < 30 { return (NSLocalizedString("igual", comment: "same as last time"), false) }
+        let t = WorkoutSummary.format(seconds: abs(diff))
+        if diff < 0 {
+            return (String(format: NSLocalizedString("%@ más rápido", comment: "faster by"), t), true)
         }
-        .background(BulkUpColors.line)   // 1pt gutters read as hairlines
-        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-        .hairline()
+        return (String(format: NSLocalizedString("%@ más lento", comment: "slower by"), t), false)
     }
 
-    private func statCell(value: String, label: LocalizedStringKey, icon: String, delta: String? = nil) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text(label)
-                .microLabel()
+    // MARK: - Stats strip
+
+    private var statsStrip: some View {
+        HStack(alignment: .top, spacing: 0) {
+            statCell(value: summary.formattedDuration, label: "Duración", delta: durationDelta())
+            stripDivider
+            statCell(value: "\(summary.totalSets)", label: "Series",
+                     delta: previous.map { countDelta(summary.totalSets - $0.totalSets) } ?? nil)
+            stripDivider
+            statCell(value: "\(summary.exercisesCompleted)", label: "Ejercicios",
+                     delta: previous.map { countDelta(summary.exercisesCompleted - $0.exercisesCompleted) } ?? nil)
+        }
+        .padding(.vertical, Spacing.md)
+        .padding(.horizontal, Spacing.md)
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .lift()
+    }
+
+    private var stripDivider: some View {
+        Rectangle()
+            .fill(BulkUpColors.line)
+            .frame(width: 1, height: 44)
+            .padding(.trailing, Spacing.md)
+    }
+
+    private func statCell(value: String, label: LocalizedStringKey, delta: (text: String, up: Bool)?) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
             Text(value)
-                .font(BulkUpFont.mono(26, weight: .semibold, relativeTo: .title2))
+                .font(BulkUpFont.mono(22, weight: .semibold, relativeTo: .title2))
                 .foregroundColor(BulkUpColors.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+            Text(label)
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
             if let delta {
-                Text(delta)
-                    .font(BulkUpFont.mono(11, relativeTo: .caption2))
-                    .foregroundColor(delta.hasPrefix("+") ? BulkUpColors.accentText : BulkUpColors.textSecondary)
+                Text(delta.text)
+                    .font(BulkUpFont.numeric(.caption2, weight: .semibold))
+                    .foregroundColor(delta.up ? BulkUpColors.accentText : BulkUpColors.textTertiary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.md)
-        .background(BulkUpColors.surface)
-        .padding(0.5)
     }
 }

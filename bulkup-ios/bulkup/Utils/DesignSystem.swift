@@ -2,11 +2,13 @@
 //  DesignSystem.swift
 //  bulkup
 //
-//  "Graphite & Voltage": the brand system shared with getbulkup.com, translated
-//  to native iOS. Graphite ground (never pure black), bone-white text, one
-//  electric-lime accent that fires only where there is action or progress,
-//  sky for "done", amber for the only error colour. Saira Condensed carries the
-//  display moments, SF Pro carries the UI, JetBrains Mono carries every number.
+//  "Graphite & Voltage" on native iOS, second pass: light instead of lines.
+//  Warm graphite ground that is lighter where it is nearer, bone-white text,
+//  one electric-lime accent that fires only where there is action or
+//  progress, sky for "done", amber as the only error colour. Three voices,
+//  each with a small territory: SF Pro (condensed-bold for the day's name)
+//  carries the UI, Saira Condensed is reserved for two posters, JetBrains Mono
+//  carries numbers that stand alone (fields, timers, prices, big stats).
 //
 
 import SwiftUI
@@ -70,28 +72,34 @@ extension Color {
             c.getRed(&r, green: &g, blue: &b, alpha: &a)
             func lin(_ v: CGFloat) -> CGFloat { v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4) }
             let L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
-            return L > 0.45 ? UIColor(hex: "#0E1110") : UIColor(hex: "#F2F4F1")
+            return L > 0.30 ? UIColor(hex: "#0E0F0C") : UIColor(hex: "#F3F1EA")
         })
     }
 }
 
 // MARK: - Color Tokens
+/// The ramp is wide enough to carry depth on its own (≥6 L* between adjacent
+/// steps) and leans one step warm, so emptiness reads as calm, not as cold.
 enum BulkUpColors {
-    // Ground — graphite at night, bone by day. Never pure black or pure white.
-    static let background = Color.adaptive(dark: "#0E1110", light: "#F2F4F1")
-    /// Slightly lighter graphite the top of a screen fades from (the canvas is
-    /// never a flat swatch).
-    static let backgroundGlow = Color.adaptive(dark: "#181D1E", light: "#FFFFFF")
-    static let surface = Color.adaptive(dark: "#15191A", light: "#FFFFFF")
-    static let surfaceElevated = Color.adaptive(dark: "#1D2224", light: "#E8EBE6")
-    /// 1pt hairline: the structural grammar between blocks.
-    static let line = Color.adaptive(dark: "#2A3033", light: "#D3D8D2")
+    // Ground — warm graphite at night, warm bone by day. Never pure black or white.
+    static let background = Color.adaptive(dark: "#0E0F0C", light: "#F0EEE8")
+    /// Where the ground is nearest the light: the top of every screen fades
+    /// from this to `background`.
+    static let backgroundGlow = Color.adaptive(dark: "#1C1E19", light: "#FAF9F6")
+    /// Content containers sit on the ground as a lighter slab.
+    static let surface = Color.adaptive(dark: "#1A1B17", light: "#FDFCF8")
+    /// Fills inside a container (fields, chips, segments), and the active row.
+    static let surfaceElevated = Color.adaptive(dark: "#272923", light: "#F3F1EB")
+    /// 1pt structural line: list separators only, never a container border.
+    static let line = Color.adaptive(dark: "#2C2E27", light: "#DCD9D1")
     static let border = line
+    /// Top-edge light catch on a lifted container (dark appearance only).
+    static let edgeLight = Color.white.opacity(0.09)
 
     // Text
-    static let textPrimary = Color.adaptive(dark: "#F2F4F1", light: "#0E1110")
-    static let textSecondary = Color.adaptive(dark: "#9BA39E", light: "#5B635E")
-    static let textTertiary = Color.adaptive(dark: "#7C8581", light: "#747C78")
+    static let textPrimary = Color.adaptive(dark: "#F3F1EA", light: "#141510")
+    static let textSecondary = Color.adaptive(dark: "#A6A89D", light: "#5C5E56")
+    static let textTertiary = Color.adaptive(dark: "#8E9086", light: "#66685F")
 
     // Voltage — electric lime, rationed to action and progress (≤10% of a screen).
     static let accent = Color.adaptive(dark: "#B4FF2E", light: "#8FDC14")
@@ -105,12 +113,12 @@ enum BulkUpColors {
         startPoint: .leading, endPoint: .trailing
     )
     /// Text/icons on a lime fill: always graphite.
-    static let onAccent = Color.adaptive(dark: "#0E1110", light: "#0E1110")
+    static let onAccent = Color.adaptive(dark: "#0E0F0C", light: "#0E0F0C")
     /// Small "PRO" tags and locked-feature hints.
     static let secondary = accentMuted
 
     // Two-greens rule: lime means action/progress, sky means done/logged.
-    static let complete = Color.adaptive(dark: "#00A9DD", light: "#007DA8")
+    static let complete = Color.adaptive(dark: "#00A9DD", light: "#00729A")
     static let success = complete
     /// Amber is the only error/warning colour; lime is never "wrong" and red
     /// never competes with it.
@@ -125,24 +133,23 @@ enum BulkUpColors {
     static let muscleDefault = surfaceElevated
     static let muscleActive = accent.opacity(0.9)
 
-    // Shadow (earned only: sheets, floating controls)
-    static let shadow = Color.adaptive(dark: "#000000", light: "#1A1F1C")
+    // Shadow: earned by whatever floats, and the light-mode lift of a container.
+    static let shadow = Color.adaptive(dark: "#000000", light: "#2A2A22")
 }
 
 // MARK: - Ground
-/// The screen canvas: graphite with a faint lighter radial at the top so the
-/// surface reads as material, not a flat swatch. Use behind every top-level screen.
+/// The screen canvas: graphite lit from the top. A real luminance step (not a
+/// faint radial) so the surface reads as material, not a flat swatch.
 struct BulkUpGround: View {
     var body: some View {
-        ZStack {
-            BulkUpColors.background
-            RadialGradient(
-                colors: [BulkUpColors.backgroundGlow.opacity(0.85), .clear],
-                center: UnitPoint(x: 0.5, y: 0),
-                startRadius: 0,
-                endRadius: 460
-            )
-        }
+        LinearGradient(
+            stops: [
+                .init(color: BulkUpColors.backgroundGlow, location: 0),
+                .init(color: BulkUpColors.background, location: 0.42),
+                .init(color: BulkUpColors.background, location: 1),
+            ],
+            startPoint: .top, endPoint: .bottom
+        )
         .ignoresSafeArea()
     }
 }
@@ -167,8 +174,14 @@ enum ThemeSelfCheck {
 #endif
 
 // MARK: - Typography
-/// Three voices: Saira Condensed for display moments (uppercase, tight), SF Pro
-/// text styles for the UI (Dynamic Type), JetBrains Mono for every datapoint.
+/// Roles, not sizes:
+/// - poster   — Saira Condensed, uppercase. Two homes only: the paywall headline
+///              and "Entreno completado".
+/// - title    — SF, bold, condensed width: the day's workout name, screen titles.
+/// - UI       — SF text styles (Dynamic Type) for everything people read.
+/// - numeric  — SF with tabular figures where a number sits inside a sentence.
+/// - mono     — JetBrains Mono where a number *is* the element: fields,
+///              timers, prices, big stats. Never below 16pt.
 enum BulkUpFont {
     enum DisplayWeight {
         case semibold, bold, extraBold
@@ -191,26 +204,31 @@ enum BulkUpFont {
         }
     }
 
-    /// Display voice — set uppercase at the call site. Scales with Dynamic Type.
+    /// Poster voice — Saira Condensed, set uppercase at the call site.
     static func display(_ size: CGFloat, weight: DisplayWeight = .bold,
                         relativeTo style: Font.TextStyle = .title) -> Font {
         .custom(weight.name, size: size, relativeTo: style)
     }
 
-    /// Data voice — kilos, reps, %, timers, prices, streaks.
+    /// Data voice — kilos, reps, timers, prices, big stats. Keep ≥16pt.
     static func mono(_ size: CGFloat, weight: MonoWeight = .medium,
                      relativeTo style: Font.TextStyle = .body) -> Font {
         .custom(weight.name, size: size, relativeTo: style)
+    }
+
+    /// A number inside a sentence or a label: SF with tabular figures.
+    static func numeric(_ style: Font.TextStyle = .body, weight: Font.Weight = .regular) -> Font {
+        .system(style, weight: weight).monospacedDigit()
     }
 
     /// 44pt mono — hero numbers (timer, big stat)
     static func heroStat() -> Font { mono(44, weight: .semibold, relativeTo: .largeTitle) }
     /// 36pt mono — secondary hero numbers
     static func heroStatMedium() -> Font { mono(36, weight: .semibold, relativeTo: .largeTitle) }
-    /// Display 30pt — screen titles
-    static func screenTitle() -> Font { display(30, weight: .bold, relativeTo: .title) }
-    /// Display 26pt — workout / plan names
-    static func largeTitle() -> Font { display(26, weight: .bold, relativeTo: .title2) }
+    /// Screen titles — SF large title, bold (pair with `.fontWidth(.condensed)`)
+    static func screenTitle() -> Font { .system(.largeTitle, weight: .bold) }
+    /// Workout / plan names — SF title, bold (pair with `.fontWidth(.condensed)`)
+    static func largeTitle() -> Font { .system(.title, weight: .bold) }
     /// 20pt semibold — section headers
     static func sectionHeader() -> Font { .system(.title3, weight: .semibold) }
     /// 13pt bold — section label (use with .tracking(1.5) and .uppercased())
@@ -221,8 +239,8 @@ enum BulkUpFont {
     static func body() -> Font { .system(.subheadline, weight: .regular) }
     /// 13pt medium — captions/meta
     static func caption() -> Font { .system(.footnote, weight: .medium) }
-    /// 13pt mono — data labels
-    static func dataLabel() -> Font { mono(13, relativeTo: .footnote) }
+    /// 13pt — data labels inside sentences (tabular SF, not mono)
+    static func dataLabel() -> Font { numeric(.footnote, weight: .medium) }
     /// 11pt bold — badge/pill text (use with .tracking(1) and .uppercased)
     static func badge() -> Font { .system(.caption2, weight: .bold) }
 }
@@ -241,26 +259,65 @@ enum Spacing {
 }
 
 // MARK: - Corner Radius
-/// Hierarchised radii: 8 fields/chips-in-rows, 10 buttons & inputs, 14 cards,
-/// 18 sheets and hero blocks. Pills (capsules) are for chips only.
+/// Hierarchised radii: 8 fields/chips-in-rows, 12 buttons & inputs, 16 cards,
+/// 20 sheets and hero blocks. Pills (capsules) are for chips only.
 enum CornerRadius {
     static let small: CGFloat = 8
-    static let medium: CGFloat = 10
-    static let large: CGFloat = 14
-    static let xl: CGFloat = 18
+    static let medium: CGFloat = 12
+    static let large: CGFloat = 16
+    static let xl: CGFloat = 20
 }
 
-// MARK: - Hairline
+// MARK: - Lift (light instead of lines)
+/// A container's depth: in the dark appearance a 1pt light catch along the
+/// top edge (brighter where it is nearer), in the light appearance a soft
+/// offset shadow. Neither draws an outline; the fill does the separating.
+struct LiftModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+    var radius: CGFloat
+    /// Optional tinted 1pt stroke for a state (active, done, locked).
+    var stroke: Color?
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+                if let stroke {
+                    shape.strokeBorder(stroke, lineWidth: 1)
+                } else if colorScheme == .dark {
+                    shape.strokeBorder(
+                        LinearGradient(
+                            colors: [BulkUpColors.edgeLight, Color.white.opacity(0.015)],
+                            startPoint: .top, endPoint: .bottom
+                        ),
+                        lineWidth: 1
+                    )
+                }
+            }
+            .shadow(
+                color: colorScheme == .dark ? Color.clear : BulkUpColors.shadow.opacity(0.07),
+                radius: colorScheme == .dark ? 0 : 12, x: 0, y: colorScheme == .dark ? 0 : 3
+            )
+    }
+}
+
+// MARK: - View helpers
 extension View {
-    /// 1pt structural border in the brand line colour.
+    /// Depth for a container: top-edge light (dark) or a soft shadow (light).
+    func lift(_ radius: CGFloat = CornerRadius.large, stroke: Color? = nil) -> some View {
+        modifier(LiftModifier(radius: radius, stroke: stroke))
+    }
+
+    /// 1pt border in the brand line colour. For outline buttons and the few
+    /// places a border is the point; separators use a 1pt Rectangle.
     func hairline(_ radius: CGFloat = CornerRadius.large, color: Color = BulkUpColors.line) -> some View {
         overlay(
             RoundedRectangle(cornerRadius: radius, style: .continuous)
-                .stroke(color, lineWidth: 1)
+                .strokeBorder(color, lineWidth: 1)
         )
     }
 
-    /// Display-voice text: Saira Condensed, uppercase, tight tracking.
+    /// Poster voice: Saira Condensed, uppercase, tight tracking. Two homes.
     func displayVoice(_ size: CGFloat = 26, weight: BulkUpFont.DisplayWeight = .bold,
                       relativeTo style: Font.TextStyle = .title2) -> some View {
         self.font(BulkUpFont.display(size, weight: weight, relativeTo: style))
@@ -268,10 +325,19 @@ extension View {
             .tracking(-0.2)
     }
 
-    /// Uppercase micro label: 11pt bold SF with wide tracking.
+    /// Title voice: SF bold, condensed width, sentence case. The day's name,
+    /// screen titles, the PRO gate.
+    func titleVoice(_ style: Font.TextStyle = .largeTitle) -> some View {
+        self.font(.system(style, weight: .bold))
+            .fontWidth(.condensed)
+            .tracking(-0.3)
+    }
+
+    /// Uppercase micro label: 11pt bold SF with wide tracking. Table column
+    /// headers and tags only, never above a heading.
     func microLabel(color: Color = BulkUpColors.textSecondary) -> some View {
         self.font(BulkUpFont.badge())
-            .tracking(1.4)
+            .tracking(1.2)
             .textCase(.uppercase)
             .foregroundColor(color)
     }

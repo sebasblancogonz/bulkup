@@ -15,12 +15,12 @@ import AVKit
 /// stay aligned. Steppers are sized for comfortable tapping mid-workout.
 private enum SetCol {
     static let gap: CGFloat = 8         // breathing room between SERIE / KG / REPS
-    static let serie: CGFloat = 30      // fits the 28pt set-number circle
-    static let rowH: CGFloat = 38
-    static let stepper: CGFloat = 32    // +/- tap target width — do not slim (accessibility)
+    static let serie: CGFloat = 28      // set number column
+    static let rowH: CGFloat = 44       // every control in the row is a 44pt target
+    static let stepper: CGFloat = 36    // +/- tap target width — do not slim (accessibility)
     static let stepperIcon: CGFloat = 13
-    static let kg: CGFloat = 110        // stepper + field(46, fits "102.5") + stepper
-    static let reps: CGFloat = 92       // stepper + field(28, reps are 1-2 digits) + stepper
+    static let kg: CGFloat = 118        // stepper + field(46, fits "102.5") + stepper
+    static let reps: CGFloat = 100      // stepper + field(28, reps are 1-2 digits) + stepper
     static let check: CGFloat = 36
 }
 
@@ -115,12 +115,12 @@ struct ExerciseCardView: View {
                             let done = workoutSession.completedSetsCount(day: normalizedDayName, exerciseIndex: exercise.orderIndex, totalSets: totalSets)
                             if done > 0 {
                                 Text("\(done)")
-                                    .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
+                                    .font(BulkUpFont.numeric(.caption, weight: .semibold))
                                     .foregroundColor(BulkUpColors.accentText)
                             }
                         } else if completedSets > 0 {
                             Text("\(completedSets)")
-                                .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
+                                .font(BulkUpFont.numeric(.caption, weight: .semibold))
                                 .foregroundColor(BulkUpColors.accentText)
                         }
                     }
@@ -152,7 +152,7 @@ struct ExerciseCardView: View {
                             HStack(spacing: Spacing.xs) {
                                 if exercise.restSeconds > 0 {
                                     Text("\(exercise.restSeconds)s")
-                                        .font(BulkUpFont.mono(12, relativeTo: .caption))
+                                        .font(BulkUpFont.numeric(.caption))
                                         .foregroundColor(BulkUpColors.textSecondary)
                                     Text("descanso")
                                         .font(.system(.caption, weight: .medium))
@@ -163,7 +163,7 @@ struct ExerciseCardView: View {
                                     Text("·")
                                         .foregroundColor(BulkUpColors.textTertiary)
                                     Text(tempo)
-                                        .font(BulkUpFont.mono(12, relativeTo: .caption))
+                                        .font(BulkUpFont.numeric(.caption))
                                         .foregroundColor(BulkUpColors.textSecondary)
                                 }
                             }
@@ -187,15 +187,20 @@ struct ExerciseCardView: View {
             }
             .buttonStyle(.plain)
             // Context menu for skip/unskip during workout
-            .if(workoutSession.isActive) { view in
-                view.contextMenu {
-                    if isSkipped {
-                        Button {
-                            workoutSession.unskipExercise(day: normalizedDayName, exerciseIndex: exercise.orderIndex)
-                        } label: {
-                            Label("Restaurar ejercicio", systemImage: "arrow.uturn.backward")
+            .contextMenu {
+                if isSkipped {
+                    Button {
+                        workoutSession.unskipExercise(day: normalizedDayName, exerciseIndex: exercise.orderIndex)
+                    } label: {
+                        Label("Restaurar ejercicio", systemImage: "arrow.uturn.backward")
+                    }
+                } else {
+                    if let onShowProgress {
+                        Button(action: onShowProgress) {
+                            Label("Ver progreso", systemImage: "chart.line.uptrend.xyaxis")
                         }
-                    } else {
+                    }
+                    if workoutSession.isActive {
                         Button {
                             showAlternatives = true
                         } label: {
@@ -236,58 +241,49 @@ struct ExerciseCardView: View {
                 .opacity(isExpanded ? 1 : 0)
             }
 
-            // Alternatives — visible entry point during a workout (the context
-            // menu duplicate stays for long-press users).
-            if workoutSession.isActive, isExpanded, !isSkipped {
+            // Secondary links: one quiet row (alternatives during a workout,
+            // progress when the caller opts in). Both also live in the context menu.
+            if isExpanded, !isSkipped, workoutSession.isActive || onShowProgress != nil {
                 Divider()
                     .background(BulkUpColors.border)
                     .padding(.horizontal, Spacing.md)
 
-                Button { showAlternatives = true } label: {
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 12, weight: .medium))
-                        Text("Alternativas")
-                            .font(BulkUpFont.caption())
+                HStack(spacing: 0) {
+                    if workoutSession.isActive {
+                        cardLink("Alternativas", icon: "arrow.triangle.2.circlepath") { showAlternatives = true }
                     }
-                    .foregroundColor(BulkUpColors.textSecondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.sm)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, Spacing.md)
-                .padding(.bottom, onShowProgress == nil ? Spacing.sm : 0)
-            }
-
-            // Progress button — only rendered when the caller opts in (TrainingView)
-            if let onShowProgress, isExpanded, !isSkipped {
-                Divider()
-                    .background(BulkUpColors.border)
-                    .padding(.horizontal, Spacing.md)
-
-                Button(action: onShowProgress) {
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                            .font(.system(size: 12, weight: .medium))
-                        Text("Ver progreso")
-                            .font(BulkUpFont.caption())
+                    if workoutSession.isActive, onShowProgress != nil {
+                        Rectangle().fill(BulkUpColors.line).frame(width: 1, height: 18)
                     }
-                    .foregroundColor(BulkUpColors.textSecondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.sm)
-                    .contentShape(Rectangle())
+                    if let onShowProgress {
+                        cardLink("Ver progreso", icon: "chart.line.uptrend.xyaxis", action: onShowProgress)
+                    }
                 }
-                .buttonStyle(.plain)
                 .padding(.horizontal, Spacing.md)
-                .padding(.bottom, Spacing.sm)
+                .padding(.bottom, Spacing.xs)
             }
         }
         .background(BulkUpColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-        .hairline()
+        .lift()
         .opacity(isSkipped ? 0.6 : 1.0)
         .padding(.horizontal, Spacing.screenH)
+    }
+
+    private func cardLink(_ title: LocalizedStringKey, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: icon)
+                    .font(.system(.caption, weight: .medium))
+                Text(title)
+                    .font(.system(.footnote, weight: .medium))
+            }
+            .foregroundColor(BulkUpColors.textSecondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.sm + 2)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Sets/Reps Pills
@@ -302,7 +298,7 @@ struct ExerciseCardView: View {
                 ForEach(Array(repsComponents.enumerated()), id: \.offset) { idx, rep in
                     let isSetCompleted = idx < completedSets
                     Text(rep)
-                        .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
+                        .font(BulkUpFont.numeric(.caption, weight: .semibold))
                         .foregroundColor(isSetCompleted ? Color.onFill(BulkUpColors.complete) : BulkUpColors.textSecondary)
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
@@ -313,7 +309,7 @@ struct ExerciseCardView: View {
                 }
             } else {
                 Text("\(totalSets)×\(exercise.reps)")
-                    .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
+                    .font(BulkUpFont.numeric(.caption, weight: .semibold))
                     .foregroundColor(BulkUpColors.textSecondary)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
@@ -543,13 +539,9 @@ struct ExerciseWeightLogger: View {
         // Previous weights banner — tappable: copies last week's kg + reps in.
         if hasPreviousWeights {
             HStack {
-                HStack(spacing: Spacing.xs) {
-                    Image(systemName: "clock.arrow.circlepath")
-                        .font(.system(.caption2, weight: .bold))
-                    Text("Anterior")
-                        .microLabel()
-                }
-                .foregroundColor(BulkUpColors.textSecondary)
+                Text("En gris, lo de la última vez")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textTertiary)
 
                 Spacer()
 
@@ -558,9 +550,9 @@ struct ExerciseWeightLogger: View {
                 } label: {
                     HStack(spacing: Spacing.xs) {
                         Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 10))
+                            .font(.system(.caption2, weight: .semibold))
                         Text("Usar anterior")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(.footnote, weight: .semibold))
                     }
                     .foregroundColor(BulkUpColors.textPrimary)
                 }
@@ -577,12 +569,13 @@ struct ExerciseWeightLogger: View {
             Text("REPS")
                 .frame(width: SetCol.reps, alignment: .center)
             Spacer()
-            Text("✓")
+            Image(systemName: "checkmark")
+                .font(.system(.caption2, weight: .semibold))
                 .frame(width: SetCol.check, alignment: .center)
         }
-        .font(BulkUpFont.badge())
-        .tracking(1.2)
-        .foregroundColor(BulkUpColors.textSecondary)
+        .font(.system(.caption2, weight: .semibold))
+        .tracking(0.6)
+        .foregroundColor(BulkUpColors.textTertiary)
 
         // Set rows
         ForEach(0..<totalSetsCount, id: \.self) { setIndex in
@@ -597,7 +590,7 @@ struct ExerciseWeightLogger: View {
                 .font(.system(size: 10))
                 .foregroundColor(BulkUpColors.textTertiary)
             TextField("Notas...", text: $localNote)
-                .font(.system(size: 12))
+                .font(.system(.footnote))
                 .foregroundColor(BulkUpColors.textPrimary)
         }
     }
@@ -621,8 +614,9 @@ struct ExerciseWeightLogger: View {
         } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                    .fill(isCompleted ? BulkUpColors.complete : BulkUpColors.surfaceElevated)
-                    .frame(width: 34, height: 34)
+                    .fill(isCompleted ? BulkUpColors.complete
+                          : (isNextSet(setIndex) ? BulkUpColors.accent.opacity(0.14) : BulkUpColors.surface))
+                    .frame(width: 36, height: 36)
                 if isCompleted {
                     Image(systemName: "checkmark")
                         .font(.system(.footnote, weight: .bold))
@@ -631,9 +625,9 @@ struct ExerciseWeightLogger: View {
             }
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                    .stroke(
+                    .strokeBorder(
                         isCompleted ? BulkUpColors.complete
-                            : (isNextSet(setIndex) ? BulkUpColors.accent : BulkUpColors.textTertiary),
+                            : (isNextSet(setIndex) ? BulkUpColors.accent : BulkUpColors.textTertiary.opacity(0.5)),
                         lineWidth: 1.5
                     )
             )
@@ -658,12 +652,14 @@ struct ExerciseWeightLogger: View {
         let isFailed = workoutSession.isSetFailed(
             day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex
         )
+        let isNext = isNextSet(setIndex)
 
         HStack(spacing: SetCol.gap) {
             // Set number
             Text("\(setIndex + 1)")
-                .font(BulkUpFont.mono(14, weight: .semibold, relativeTo: .subheadline))
-                .foregroundColor(isCompleted ? BulkUpColors.complete : BulkUpColors.textSecondary)
+                .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
+                .foregroundColor(isCompleted ? BulkUpColors.complete
+                                 : (isNext ? BulkUpColors.textPrimary : BulkUpColors.textTertiary))
                 .frame(width: SetCol.serie, alignment: .leading)
 
             // Weight input with steppers
@@ -673,7 +669,7 @@ struct ExerciseWeightLogger: View {
                 } label: {
                     Image(systemName: "minus")
                         .font(.system(size: SetCol.stepperIcon, weight: .bold))
-                        .foregroundColor(BulkUpColors.textTertiary)
+                        .foregroundColor(BulkUpColors.textSecondary)
                         .frame(width: SetCol.stepper, height: SetCol.rowH)
                         .contentShape(Rectangle())
                 }
@@ -684,8 +680,8 @@ struct ExerciseWeightLogger: View {
                     .keyboardType(.decimalPad)
                     .focused($focusedSet, equals: setIndex)
                     .multilineTextAlignment(.center)
-                    .font(BulkUpFont.mono(15, relativeTo: .subheadline))
-                    .foregroundColor(BulkUpColors.textPrimary)
+                    .font(BulkUpFont.mono(16, weight: .semibold, relativeTo: .body))
+                    .foregroundColor(isCompleted ? BulkUpColors.textSecondary : BulkUpColors.textPrimary)
                     .frame(width: SetCol.kg - SetCol.stepper * 2, height: SetCol.rowH)
                     .disabled(isCompleted)
 
@@ -694,7 +690,7 @@ struct ExerciseWeightLogger: View {
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: SetCol.stepperIcon, weight: .bold))
-                        .foregroundColor(BulkUpColors.textTertiary)
+                        .foregroundColor(BulkUpColors.textSecondary)
                         .frame(width: SetCol.stepper, height: SetCol.rowH)
                         .contentShape(Rectangle())
                 }
@@ -702,11 +698,11 @@ struct ExerciseWeightLogger: View {
             .frame(width: SetCol.kg, height: SetCol.rowH)
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                    .fill(BulkUpColors.surfaceElevated)
+                    .fill(isNext ? BulkUpColors.surface : BulkUpColors.surfaceElevated)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                    .stroke(isCompleted ? BulkUpColors.complete.opacity(0.6) : BulkUpColors.line, lineWidth: 1)
+                    .strokeBorder(fieldStroke(isCompleted: isCompleted, focused: focusedSet == setIndex), lineWidth: 1.5)
             )
 
             // Reps input with steppers
@@ -716,7 +712,7 @@ struct ExerciseWeightLogger: View {
                 } label: {
                     Image(systemName: "minus")
                         .font(.system(size: SetCol.stepperIcon, weight: .bold))
-                        .foregroundColor(BulkUpColors.textTertiary)
+                        .foregroundColor(BulkUpColors.textSecondary)
                         .frame(width: SetCol.stepper, height: SetCol.rowH)
                         .contentShape(Rectangle())
                 }
@@ -724,8 +720,8 @@ struct ExerciseWeightLogger: View {
                 TextField(defaultReps, text: repsBinding(for: setIndex))
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.center)
-                    .font(BulkUpFont.mono(15, relativeTo: .subheadline))
-                    .foregroundColor(BulkUpColors.textPrimary)
+                    .font(BulkUpFont.mono(16, weight: .semibold, relativeTo: .body))
+                    .foregroundColor(isCompleted ? BulkUpColors.textSecondary : BulkUpColors.textPrimary)
                     .frame(width: SetCol.reps - SetCol.stepper * 2, height: SetCol.rowH)
                     .disabled(isCompleted)
 
@@ -734,7 +730,7 @@ struct ExerciseWeightLogger: View {
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: SetCol.stepperIcon, weight: .bold))
-                        .foregroundColor(BulkUpColors.textTertiary)
+                        .foregroundColor(BulkUpColors.textSecondary)
                         .frame(width: SetCol.stepper, height: SetCol.rowH)
                         .contentShape(Rectangle())
                 }
@@ -742,11 +738,11 @@ struct ExerciseWeightLogger: View {
             .frame(width: SetCol.reps, height: SetCol.rowH)
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                    .fill(BulkUpColors.surfaceElevated)
+                    .fill(isNext ? BulkUpColors.surface : BulkUpColors.surfaceElevated)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                    .stroke(isCompleted ? BulkUpColors.complete.opacity(0.6) : BulkUpColors.line, lineWidth: 1)
+                    .strokeBorder(fieldStroke(isCompleted: isCompleted, focused: focusedSet == setIndex), lineWidth: 1.5)
             )
 
             Spacer()
@@ -767,28 +763,53 @@ struct ExerciseWeightLogger: View {
                 }
             }
 
-            // Per-set video
-            Button {
-                if videoSets.contains(setIndex) {
-                    playerSet = setIndex
-                } else {
-                    startVideoFlow(for: setIndex)
+            // A video exists for this set (recording lives in the context menu)
+            if videoSets.contains(setIndex) {
+                Button { playerSet = setIndex } label: {
+                    Image(systemName: "video.fill")
+                        .font(.system(size: 13))
+                        .foregroundColor(BulkUpColors.complete)
+                        .frame(width: 24, height: 24)
+                        .contentShape(Rectangle())
                 }
-            } label: {
-                Image(systemName: videoSets.contains(setIndex) ? "video.fill" : "video.badge.plus")
-                    .font(.system(size: 14))
-                    .foregroundColor(videoSets.contains(setIndex) ? BulkUpColors.complete : BulkUpColors.textTertiary)
-                    .frame(width: 28, height: 28)
-                    .contentShape(Rectangle())
+                .accessibilityLabel("Ver vídeo de la serie \(setIndex + 1)")
             }
 
             // Check button (shared with non-weight per-set rows via completeButton helper)
             completeButton(setIndex: setIndex)
         }
-        .padding(.vertical, 2)
-        .cornerRadius(8)
-        .contextMenu { removeSetMenu(setIndex: setIndex) }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 6)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
+                .fill(isNext ? BulkUpColors.surfaceElevated : Color.clear)
+        )
+        .padding(.horizontal, -6)
+        .opacity(isCompleted || isNext ? 1 : 0.72)
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: isNext)
+        .contextMenu {
+            videoMenu(setIndex: setIndex)
+            removeSetMenu(setIndex: setIndex)
+        }
+    }
 
+    /// Field border: sky when logged, lime while focused, nothing otherwise.
+    private func fieldStroke(isCompleted: Bool, focused: Bool) -> Color {
+        if isCompleted { return Color.clear }
+        return focused ? BulkUpColors.accent : Color.clear
+    }
+
+    @ViewBuilder
+    private func videoMenu(setIndex: Int) -> some View {
+        if videoSets.contains(setIndex) {
+            Button { playerSet = setIndex } label: {
+                Label("Ver vídeo", systemImage: "video.fill")
+            }
+        } else {
+            Button { startVideoFlow(for: setIndex) } label: {
+                Label("Grabar vídeo de la serie", systemImage: "video.badge.plus")
+            }
+        }
     }
 
     // MARK: - Normal Mode Content (unchanged)
@@ -806,47 +827,47 @@ struct ExerciseWeightLogger: View {
             Text("ANTERIOR")
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .font(BulkUpFont.badge())
-        .tracking(1.2)
-        .foregroundColor(BulkUpColors.textSecondary)
+        .font(.system(.caption2, weight: .semibold))
+        .tracking(0.6)
+        .foregroundColor(BulkUpColors.textTertiary)
 
-        // Weight fields as rows
+        // Weight fields as rows: the first set without kilos steps forward.
+        let firstEmpty = (0..<totalSetsCount).first { !hasWeight($0) }
         ForEach(0..<totalSetsCount, id: \.self) { setIndex in
+            let isNext = setIndex == firstEmpty
+            let logged = hasWeight(setIndex)
             HStack(spacing: 0) {
-                Text("S\(setIndex + 1)")
-                    .font(BulkUpFont.mono(13, weight: .semibold, relativeTo: .footnote))
-                    .foregroundColor(hasWeight(setIndex) ? BulkUpColors.complete : BulkUpColors.textSecondary)
+                Text("\(setIndex + 1)")
+                    .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
+                    .foregroundColor(logged ? BulkUpColors.complete
+                                     : (isNext ? BulkUpColors.textPrimary : BulkUpColors.textTertiary))
                     .frame(width: 44, alignment: .leading)
 
                 TextField("—", text: weightBinding(for: setIndex))
                     .keyboardType(.decimalPad)
                     .focused($focusedSet, equals: setIndex)
                     .multilineTextAlignment(.center)
-                    .font(BulkUpFont.mono(15, relativeTo: .subheadline))
+                    .font(BulkUpFont.mono(16, weight: .semibold, relativeTo: .body))
                     .foregroundColor(BulkUpColors.textPrimary)
-                    .frame(width: 64, height: 40)
+                    .frame(width: 64, height: SetCol.rowH)
                     .background(
                         RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                            .fill(BulkUpColors.surfaceElevated)
+                            .fill(isNext ? BulkUpColors.surface : BulkUpColors.surfaceElevated)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                            .stroke(hasWeight(setIndex) ? BulkUpColors.complete : BulkUpColors.line, lineWidth: 1)
+                            .strokeBorder(fieldStroke(isCompleted: false, focused: focusedSet == setIndex), lineWidth: 1.5)
                     )
 
                 TextField(defaultReps, text: repsBinding(for: setIndex))
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.center)
-                    .font(BulkUpFont.mono(15, relativeTo: .subheadline))
+                    .font(BulkUpFont.mono(16, weight: .semibold, relativeTo: .body))
                     .foregroundColor(BulkUpColors.textPrimary)
-                    .frame(width: 48, height: 40)
+                    .frame(width: 48, height: SetCol.rowH)
                     .background(
                         RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                            .fill(BulkUpColors.surfaceElevated)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                            .stroke(BulkUpColors.line, lineWidth: 1)
+                            .fill(isNext ? BulkUpColors.surface : BulkUpColors.surfaceElevated)
                     )
                     .frame(width: 56)
 
@@ -854,7 +875,7 @@ struct ExerciseWeightLogger: View {
 
                 if let prev = safeGetPrevWeight(setIndex), prev > 0 {
                     Text(previousLabel(setIndex: setIndex, weight: prev))
-                        .font(BulkUpFont.mono(12, relativeTo: .caption))
+                        .font(BulkUpFont.numeric(.caption))
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
 
@@ -867,7 +888,17 @@ struct ExerciseWeightLogger: View {
                     .accessibilityLabel("Ver vídeo de la serie \(setIndex + 1)")
                 }
             }
-            .contextMenu { removeSetMenu(setIndex: setIndex) }
+            .padding(.vertical, 4)
+            .padding(.horizontal, 6)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
+                    .fill(isNext ? BulkUpColors.surfaceElevated : Color.clear)
+            )
+            .padding(.horizontal, -6)
+            .contextMenu {
+                videoMenu(setIndex: setIndex)
+                removeSetMenu(setIndex: setIndex)
+            }
         }
 
         setCountControls
@@ -878,7 +909,7 @@ struct ExerciseWeightLogger: View {
                 .font(.system(size: 10))
                 .foregroundColor(BulkUpColors.textTertiary)
             TextField("Notas...", text: $localNote)
-                .font(.system(size: 12))
+                .font(.system(.footnote))
                 .foregroundColor(BulkUpColors.textPrimary)
         }
 
@@ -892,7 +923,7 @@ struct ExerciseWeightLogger: View {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 10))
                         Text("Usar anterior")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(.footnote, weight: .medium))
                     }
                     .foregroundColor(BulkUpColors.textPrimary)
                 }
@@ -919,14 +950,13 @@ struct ExerciseWeightLogger: View {
                             .foregroundColor(BulkUpColors.accentText)
                     }
                     Text(showSaved ? "Guardado" : "Guardar")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(showSaved ? BulkUpColors.success : BulkUpColors.accent)
+                        .font(.system(.footnote, weight: .semibold))
+                        .foregroundColor(showSaved ? BulkUpColors.success : BulkUpColors.accentText)
                 }
                 .padding(.horizontal, Spacing.md)
                 .padding(.vertical, Spacing.sm)
                 .background(BulkUpColors.surfaceElevated)
                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-                .hairline(CornerRadius.medium)
             }
             .disabled(isSaving)
         }
@@ -1085,34 +1115,19 @@ struct ExerciseWeightLogger: View {
             Button(action: addSet) {
                 HStack(spacing: Spacing.xs) {
                     Image(systemName: "plus.circle")
-                        .font(.system(size: 12))
+                        .font(.system(.footnote, weight: .semibold))
                     Text("Añadir serie")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(.footnote, weight: .semibold))
                 }
                 .foregroundColor(BulkUpColors.textPrimary)
                 .padding(.vertical, Spacing.xs)
-            }
-
-            if totalSetsCount > 1 {
-                Button {
-                    requestRemoveSet(at: totalSetsCount - 1)
-                } label: {
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "minus.circle")
-                            .font(.system(size: 12))
-                        Text("Quitar serie")
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .foregroundColor(BulkUpColors.textTertiary)
-                    .padding(.vertical, Spacing.xs)
-                }
             }
 
             Spacer()
 
             if totalSetsCount != exercise.sets {
                 Text("Plan: \(exercise.sets)")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(BulkUpFont.numeric(.caption2, weight: .medium))
                     .foregroundColor(BulkUpColors.textTertiary)
             }
         }

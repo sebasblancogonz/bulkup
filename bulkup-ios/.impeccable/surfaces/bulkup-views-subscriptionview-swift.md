@@ -1,5 +1,5 @@
 ---
-version: 1
+version: 2
 slug: "bulkup-views-subscriptionview-swift"
 primary_target: "bulkup/Views/SubscriptionView.swift"
 related_targets: ["bulkup/Views/SubscriptionRequiredView.swift"]
@@ -12,7 +12,7 @@ Mode: Persuade. Audience: a free user who just hit a PRO gate (AI import, second
 ## Direction contract
 
 THESIS: a price list that reads like a plate stack, not a feature carousel. It refuses the crown icon + benefit cards + gradient CTA arrangement.
-OWN-WORLD: graphite ground, one Saira Condensed uppercase headline, a hairline-separated list of what unlocks (SF symbol, name, one dry line), two selectable plan rows with mono prices and a lime radio, one lime CTA. No crown, no gradient text, no cards inside cards.
+OWN-WORLD: warm graphite ground, one Saira Condensed uppercase poster ("TU PROGRESO, VISIBLE."), a proof row of three facts in SF title3, a hairline-separated list of what unlocks (SF symbol, name, one dry line), two plan rows as lifted slabs with the selected one tinted lime 10 % and stroked lime, mono prices, one lime CTA in SF headline sentence case, "Cancela cuando quieras" in the renewal line under it. The PRO gate uses the SF condensed title voice, not the poster.
 STORY: "Mi plan está en un PDF; PRO lo mete en la app y me enseña si avanzo" → sees exactly what is locked and what it costs per month → starts the trial.
 FIRST VIEWPORT: close (X) top-right; headline "TU PROGRESO, VISIBLE" at 34pt; one-line sub; the unlock list (6 rows) immediately; plan rows and the CTA pinned at the bottom with the per-period price in mono; legal links and the auto-renew sentence under the CTA.
 FORM: hairline price list (ranked first of the structures considered: price list, comparison table, single-plan hero, feature carousel, timeline of the trial); inherited world, no seed key (world pinned by the user, code-led).

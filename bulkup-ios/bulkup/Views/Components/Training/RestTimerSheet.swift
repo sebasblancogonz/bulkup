@@ -27,13 +27,16 @@ struct RestTimerSheet: View {
 
             // Label
             Text("Descanso")
-                .microLabel()
+                .font(.system(.subheadline, weight: .semibold))
+                .foregroundColor(BulkUpColors.textSecondary)
 
             // Countdown: a lime rule drains as the rest runs out
             VStack(spacing: Spacing.md) {
                 Text(WorkoutSessionManager.formatTime(session.restTimerRemaining))
                     .font(BulkUpFont.mono(64, weight: .semibold, relativeTo: .largeTitle))
                     .foregroundColor(BulkUpColors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                     .contentTransition(.numericText(countsDown: true))
                     .animation(.linear(duration: 0.3), value: session.restTimerRemaining)
 
@@ -54,10 +57,10 @@ struct RestTimerSheet: View {
             if let info = session.nextSetInfo {
                 HStack(spacing: Spacing.xs) {
                     Text("Siguiente")
-                        .font(BulkUpFont.caption())
+                        .font(.system(.body))
                         .foregroundColor(BulkUpColors.textSecondary)
                     Text(info)
-                        .font(BulkUpFont.mono(13, relativeTo: .footnote))
+                        .font(BulkUpFont.numeric(.body, weight: .semibold))
                         .foregroundColor(BulkUpColors.textPrimary)
                 }
             }
@@ -82,7 +85,7 @@ struct RestTimerSheet: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .background(BulkUpColors.background)
+        .background(BulkUpColors.surface)
     }
 }
 
@@ -109,7 +112,7 @@ struct RestTimerBanner: View {
                         .font(.system(.footnote, weight: .semibold))
                         .foregroundColor(BulkUpColors.accentText)
                     Text(WorkoutSessionManager.formatTime(session.restTimerRemaining))
-                        .font(BulkUpFont.mono(16, weight: .semibold, relativeTo: .callout))
+                        .font(BulkUpFont.mono(17, weight: .semibold, relativeTo: .body))
                         .foregroundColor(BulkUpColors.textPrimary)
                 }
             }
@@ -132,6 +135,6 @@ struct RestTimerBanner: View {
             RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
                 .fill(BulkUpColors.surfaceElevated)
         )
-        .hairline(CornerRadius.medium, color: BulkUpColors.accent.opacity(0.6))
+        .lift(CornerRadius.medium)
     }
 }

@@ -518,7 +518,7 @@ struct TrainingView: View {
                 }
             }
         } label: {
-            Text(inProgress ? "Continuar Entreno" : "Comenzar Entreno")
+            Text(inProgress ? "Continuar entreno" : "Empezar entreno")
                 .primaryButtonStyle()
         }
         .pressable()
@@ -543,7 +543,7 @@ struct TrainingView: View {
                     .background(BulkUpColors.complete)
                     .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
                 Text("Completado")
-                    .displayVoice(19, weight: .semibold, relativeTo: .headline)
+                    .font(.system(.headline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textPrimary)
                 if let emoji = savedEmoji {
                     Text(emoji).font(.system(.body))
@@ -567,14 +567,13 @@ struct TrainingView: View {
                 .frame(minHeight: 40)
                 .background(BulkUpColors.surfaceElevated)
                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-                .hairline(CornerRadius.medium)
             }
             .buttonStyle(.plain)
         }
         .padding(Spacing.md)
         .background(BulkUpColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-        .hairline(color: BulkUpColors.complete.opacity(0.6))
+        .lift(stroke: BulkUpColors.complete.opacity(0.6))
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.md)
     }
@@ -667,7 +666,6 @@ struct TrainingView: View {
                         .frame(width: 36, height: 36)
                         .background(BulkUpColors.surfaceElevated)
                         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-                        .hairline(CornerRadius.medium)
                 }
 
                 Text(compactDateLabel)
@@ -686,7 +684,6 @@ struct TrainingView: View {
                         .frame(width: 36, height: 36)
                         .background(BulkUpColors.surfaceElevated)
                         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-                        .hairline(CornerRadius.medium)
                 }
 
                 Spacer()
@@ -698,13 +695,12 @@ struct TrainingView: View {
                         }
                     } label: {
                         Text("Hoy")
-                            .font(.system(.caption, weight: .bold))
-                            .textCase(.uppercase)
-                            .tracking(0.8)
+                            .font(.system(.footnote, weight: .semibold))
                             .foregroundColor(BulkUpColors.accentText)
-                            .padding(.horizontal, Spacing.sm + 2)
+                            .padding(.horizontal, Spacing.sm + 4)
                             .frame(minHeight: 32)
-                            .hairline(CornerRadius.medium, color: BulkUpColors.accent.opacity(0.6))
+                            .background(BulkUpColors.accent.opacity(0.16))
+                            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous))
                     }
                 }
             }
@@ -724,13 +720,13 @@ struct TrainingView: View {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     HStack(alignment: .lastTextBaseline) {
                         Text(dayLabel)
-                            .displayVoice(34, weight: .extraBold, relativeTo: .largeTitle)
+                            .titleVoice(.largeTitle)
                             .foregroundColor(BulkUpColors.textPrimary)
                             .lineLimit(2)
                             .minimumScaleFactor(0.7)
                         Spacer(minLength: Spacing.md)
                         Text("\(logged)/\(total)")
-                            .font(BulkUpFont.mono(15, weight: .semibold, relativeTo: .subheadline))
+                            .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
                             .foregroundColor(progress >= 1.0 ? BulkUpColors.complete : BulkUpColors.textSecondary)
                     }
                     // Progress rule: lime while in progress, sky when the day is done.
@@ -778,7 +774,7 @@ struct TrainingView: View {
                             }
 
                             Text(dayNumberForWeekIndex(index))
-                                .font(BulkUpFont.mono(13, weight: isCurrent ? .semibold : .medium, relativeTo: .footnote))
+                                .font(BulkUpFont.numeric(.subheadline, weight: isCurrent ? .bold : .medium))
                                 .foregroundColor(isCurrent ? BulkUpColors.onAccent : BulkUpColors.textPrimary)
                         }
                         .frame(width: 30, height: 30)
@@ -795,9 +791,11 @@ struct TrainingView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.vertical, Spacing.xs)
-        .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .top)
-        .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .bottom)
+        .padding(.vertical, Spacing.sm)
+        .padding(.horizontal, Spacing.sm)
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .lift()
     }
 
     private func dateForWeekIndex(_ index: Int) -> Date? {
@@ -827,7 +825,6 @@ struct TrainingView: View {
                     .frame(width: 36, height: 36)
                     .background(BulkUpColors.surfaceElevated)
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-                    .hairline(CornerRadius.medium)
             }
 
             Text(weekRangeLabel)
@@ -846,7 +843,6 @@ struct TrainingView: View {
                     .frame(width: 36, height: 36)
                     .background(BulkUpColors.surfaceElevated)
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
-                    .hairline(CornerRadius.medium)
             }
 
             Spacer()
@@ -904,7 +900,7 @@ struct TrainingView: View {
         VStack(spacing: Spacing.lg) {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text(currentTrainingDay == nil ? "Descanso" : "Sin ejercicios para este día")
-                    .displayVoice(34, weight: .extraBold, relativeTo: .largeTitle)
+                    .titleVoice(.largeTitle)
                     .foregroundColor(BulkUpColors.textPrimary)
                 Text("Recupera energía para mañana")
                     .font(BulkUpFont.body())
@@ -957,7 +953,7 @@ struct TrainingView: View {
                                 .foregroundColor(Color.onFill(BulkUpColors.complete))
                         } else if logged > 0 {
                             Text("\(logged)")
-                                .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
+                                .font(BulkUpFont.numeric(.caption, weight: .semibold))
                                 .foregroundColor(BulkUpColors.accentText)
                         }
                     }
@@ -977,7 +973,7 @@ struct TrainingView: View {
                     Spacer()
 
                     Text("\(day.exercises.count) ej.")
-                        .font(BulkUpFont.mono(12, relativeTo: .caption))
+                        .font(BulkUpFont.numeric(.caption))
                         .foregroundColor(BulkUpColors.textSecondary)
 
                     Image(systemName: "chevron.down")
@@ -1053,7 +1049,7 @@ struct TrainingView: View {
         }
         .background(BulkUpColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-        .hairline(color: allComplete ? BulkUpColors.complete.opacity(0.6) : BulkUpColors.line)
+        .lift(stroke: allComplete ? BulkUpColors.complete.opacity(0.6) : nil)
         .padding(.horizontal, Spacing.screenH)
     }
 
@@ -1112,7 +1108,7 @@ struct WorkoutCompletionSheet: View {
 
             VStack(spacing: Spacing.sm) {
                 Text("Entreno completado")
-                    .displayVoice(32, weight: .extraBold, relativeTo: .largeTitle)
+                    .titleVoice(.title)
                     .foregroundColor(BulkUpColors.textPrimary)
                     .multilineTextAlignment(.center)
 
@@ -1128,7 +1124,8 @@ struct WorkoutCompletionSheet: View {
                         .font(BulkUpFont.mono(28, weight: .semibold, relativeTo: .title))
                         .foregroundColor(BulkUpColors.textPrimary)
                     Text("Ejercicios")
-                        .microLabel()
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
 
                 Rectangle().fill(BulkUpColors.line).frame(width: 1, height: 40)
@@ -1138,14 +1135,15 @@ struct WorkoutCompletionSheet: View {
                         .font(BulkUpFont.mono(28, weight: .semibold, relativeTo: .title))
                         .foregroundColor(BulkUpColors.textPrimary)
                     Text("Series")
-                        .microLabel()
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
             }
             .padding(.vertical, Spacing.lg)
             .padding(.horizontal, Spacing.xxl)
             .background(BulkUpColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
-            .hairline()
+            .lift()
 
             VStack(spacing: Spacing.md) {
                 Button {
