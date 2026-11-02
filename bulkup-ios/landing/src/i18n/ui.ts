@@ -81,6 +81,8 @@ export const ui = {
     // FOOTER
     'footer.tagline': 'Fewer PDFs, more reps.',
     'footer.rights': 'All rights reserved.',
+    'footer.terms': 'Terms',
+    'footer.privacy': 'Privacy',
   },
   es: {
     'meta.title': 'BulkUp — tu plan de entreno y dieta, por fin medible serie a serie',
@@ -160,6 +162,8 @@ export const ui = {
     // FOOTER
     'footer.tagline': 'Menos PDFs, más repeticiones.',
     'footer.rights': 'Todos los derechos reservados.',
+    'footer.terms': 'Términos',
+    'footer.privacy': 'Privacidad',
   },
 } as const;
 

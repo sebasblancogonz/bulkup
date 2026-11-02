@@ -1,9 +1,11 @@
 ---
 import { useT, type Locale } from '../../i18n/ui';
 import LanguageSwitch from '../LanguageSwitch.astro';
-const { locale } = Astro.props as { locale: Locale };
+const { locale, path } = Astro.props as { locale: Locale; path?: string };
 const t = useT(locale);
 const year = 2026;
+const termsHref = locale === 'es' ? '/es/terminos' : '/terms';
+const privacyHref = locale === 'es' ? '/es/privacidad' : '/privacy';
 ---
 <footer class="relative bg-[var(--color-bg)] border-t border-[var(--color-line)]">
   <div class="grain absolute inset-0 pointer-events-none"></div>
@@ -35,7 +37,12 @@ const year = 2026;
           <li><a href="/bulkup-vs-strong" class="text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors duration-150">BulkUp vs Strong</a></li>
           <li><a href="/apple-watch-workout-tracker" class="text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors duration-150">Apple Watch tracker</a></li>
         </ul>
-        <LanguageSwitch locale={locale} />
+        <!-- Legal (localized) -->
+        <ul class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:justify-end">
+          <li><a href={termsHref} class="text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors duration-150">{t('footer.terms')}</a></li>
+          <li><a href={privacyHref} class="text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors duration-150">{t('footer.privacy')}</a></li>
+        </ul>
+        <LanguageSwitch locale={locale} path={path} />
       </nav>
     </div>
 

@@ -1,0 +1,51 @@
+---
+// Localized legal page (Terms / Privacy): prose only, Header + Footer, no waitlist CTA.
+import BaseLayout from './BaseLayout.astro';
+import Header from '../components/sections/Header.astro';
+import Footer from '../components/sections/Footer.astro';
+import type { Locale } from '../i18n/ui';
+
+interface Props { locale: Locale; title: string; description: string; path: string; h1: string; eyebrow?: string; effective: string }
+const { locale, title, description, path, h1, eyebrow, effective } = Astro.props;
+const effectiveLabel = locale === 'es' ? 'Fecha de entrada en vigor' : 'Effective date';
+---
+<BaseLayout locale={locale} path={path} title={title} description={description} faq={false}>
+  <Header locale={locale} path={path} />
+  <main class="relative">
+    <article class="mx-auto w-full max-w-[720px] px-6 pt-16 pb-20 sm:pt-20">
+      {eyebrow && (
+        <p class="font-[family-name:var(--font-mono)] text-sm tracking-widest uppercase text-[var(--color-accent)]">{eyebrow}</p>
+      )}
+      <h1 class="h2 mt-3 text-balance text-[var(--color-fg)]">{h1}</h1>
+      <p class="mt-4 font-[family-name:var(--font-mono)] text-xs tracking-wide text-[var(--color-muted)]">
+        {effectiveLabel}: <time datetime="2026-11-02">{effective}</time>
+      </p>
+      <div class="legal-prose mt-8">
+        <slot />
+      </div>
+    </article>
+  </main>
+  <Footer locale={locale} path={path} />
+</BaseLayout>
+
+<style is:global>
+  .legal-prose { color: var(--color-muted); font-size: 16px; line-height: 1.7; }
+  .legal-prose h2 {
+    font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.01em;
+    color: var(--color-fg); font-weight: 700; font-size: 1.3rem; margin: 2.2em 0 0.6em;
+  }
+  .legal-prose h3 { color: var(--color-fg); font-weight: 600; font-size: 1.05rem; margin: 1.6em 0 0.4em; }
+  .legal-prose p { margin: 0.9em 0; }
+  .legal-prose ul { margin: 0.9em 0; padding-left: 1.2em; list-style: disc; }
+  .legal-prose ol { margin: 0.9em 0; padding-left: 1.4em; list-style: decimal; }
+  .legal-prose li { margin: 0.35em 0; }
+  .legal-prose strong { color: var(--color-fg); font-weight: 600; }
+  .legal-prose a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
+  .legal-prose table { width: 100%; margin: 1.4em 0; border-collapse: collapse; font-size: 14px; }
+  .legal-prose th, .legal-prose td { border: 1px solid var(--color-line); padding: 10px 12px; text-align: left; vertical-align: top; }
+  .legal-prose th { color: var(--color-fg); font-weight: 600; background: rgba(255,255,255,0.03); }
+  .legal-prose .placeholder {
+    font-family: var(--font-mono); font-size: 0.9em; color: var(--color-accent);
+    background: rgba(255,255,255,0.04); padding: 0 0.3em; border-radius: 4px;
+  }
+</style>

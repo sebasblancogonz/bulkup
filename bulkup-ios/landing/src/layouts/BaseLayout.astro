@@ -5,8 +5,8 @@ import { buildAlternates, softwareAppLd, organizationLd, faqLd } from '../lib/se
 import JsonLd from '../components/seo/JsonLd.astro';
 import ScrollProgress from '../components/ScrollProgress.tsx';
 
-interface Props { locale: Locale; path: string; title?: string; description?: string; enOnly?: boolean }
-const { locale, path, title, description, enOnly = false } = Astro.props;
+interface Props { locale: Locale; path: string; title?: string; description?: string; enOnly?: boolean; faq?: boolean }
+const { locale, path, title, description, enOnly = false, faq = !enOnly } = Astro.props;
 const t = useT(locale);
 const pageTitle = title ?? t('meta.title');
 const pageDesc = description ?? t('meta.description');
@@ -42,7 +42,7 @@ const ogImage = 'https://getbulkup.com/og-default.png';
     <meta name="theme-color" content="#0E1110" />
     <JsonLd data={softwareAppLd(locale)} />
     <JsonLd data={organizationLd()} />
-    {!enOnly && <JsonLd data={faqLd(locale)} />}
+    {faq && <JsonLd data={faqLd(locale)} />}
     <slot name="head" />
   </head>
   <body class="antialiased">

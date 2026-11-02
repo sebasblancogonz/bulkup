@@ -1,9 +1,12 @@
 ---
 import { useT, type Locale } from '../../i18n/ui';
 import LanguageSwitch from '../LanguageSwitch.astro';
-const { locale } = Astro.props as { locale: Locale };
+const { locale, path } = Astro.props as { locale: Locale; path?: string };
 const t = useT(locale);
 const home = locale === 'es' ? '/es' : '/';
+// On the home page anchors scroll in place; on sub-pages they point back to the home sections.
+const isHome = Astro.url.pathname.replace(/\/$/, '') === home.replace(/\/$/, '');
+const anchor = (id: string) => (isHome ? `#${id}` : `${home}#${id}`);
 ---
 <header class="sticky top-0 z-50 bg-[#0E1110]/85 backdrop-blur-md border-b border-[var(--color-line)]">
   <nav class="max-w-[var(--container)] mx-auto px-6 h-[68px] flex items-center justify-between gap-4">
@@ -13,13 +16,13 @@ const home = locale === 'es' ? '/es' : '/';
     </a>
 
     <div class="hidden md:flex items-center gap-9 font-[family-name:var(--font-display)] uppercase tracking-wide text-sm font-semibold text-[var(--color-muted)]">
-      <a href="#features" class="hover:text-[var(--color-fg)] transition-colors duration-150">{t('nav.features')}</a>
-      <a href="#faq" class="hover:text-[var(--color-fg)] transition-colors duration-150">{t('nav.faq')}</a>
+      <a href={anchor('features')} class="hover:text-[var(--color-fg)] transition-colors duration-150">{t('nav.features')}</a>
+      <a href={anchor('faq')} class="hover:text-[var(--color-fg)] transition-colors duration-150">{t('nav.faq')}</a>
     </div>
 
     <div class="flex items-center gap-3 sm:gap-4">
-      <LanguageSwitch locale={locale} />
-      <a href="#waitlist"
+      <LanguageSwitch locale={locale} path={path} />
+      <a href={anchor('waitlist')}
         class="press sweep inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] bg-[var(--color-accent)] text-[#0E1110] font-[family-name:var(--font-display)] uppercase tracking-wide font-bold text-sm px-4 py-2 sm:px-5 sm:py-2.5 hover:bg-[var(--color-accent-deep)] transition-colors duration-150">
         {t('nav.cta')}
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>

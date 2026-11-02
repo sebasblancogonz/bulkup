@@ -2,10 +2,26 @@ import { ui, type Locale } from '../i18n/ui';
 
 const SITE = 'https://getbulkup.com';
 
+// Localized pages whose ES slug is not just the EN slug prefixed with /es.
+const LOCALIZED_SLUGS: Record<string, string> = {
+  '/terms': '/es/terminos',
+  '/privacy': '/es/privacidad',
+};
+
+/** Returns the EN and ES paths for a given page path (either locale). */
+export function localePaths(path: string): { en: string; es: string } {
+  const normalized = path.replace(/\/$/, '') || '/';
+  for (const [en, es] of Object.entries(LOCALIZED_SLUGS)) {
+    if (normalized === en || normalized === es) return { en, es };
+  }
+  const clean = normalized.replace(/^\/es(?=\/|$)/, '') || '/';
+  return { en: clean, es: clean === '/' ? '/es' : `/es${clean}` };
+}
+
 export function buildAlternates(path: string) {
-  const clean = path.replace(/^\/es/, '') || '/';
-  const en = `${SITE}${clean === '/' ? '' : clean}`;
-  const es = `${SITE}/es${clean === '/' ? '' : clean}`;
+  const { en: enPath, es: esPath } = localePaths(path);
+  const en = `${SITE}${enPath === '/' ? '' : enPath}`;
+  const es = `${SITE}${esPath}`;
   return [
     { hreflang: 'en', href: en },
     { hreflang: 'es', href: es },

@@ -1,0 +1,238 @@
+---
+export const prerender = true;
+import LegalLayout from '../../layouts/LegalLayout.astro';
+---
+<LegalLayout
+  locale="es"
+  title="Política de privacidad — BulkUp"
+  description="Cómo BulkUp recoge, usa y protege tus datos personales: cuenta, datos de entrenamiento y dieta, datos de Salud de Apple Watch, importación con IA, tus derechos RGPD y la eliminación de la cuenta."
+  path="/es/privacidad"
+  h1="Política de privacidad"
+  eyebrow="Legal"
+  effective="2 de noviembre de 2026"
+>
+  <p>
+    Esta Política de privacidad explica qué datos personales recoge BulkUp cuando usas la app BulkUp para iOS
+    y Apple Watch y el sitio web getbulkup.com (el "Servicio"), para qué los usamos, con quién los compartimos
+    y qué derechos tienes. Hemos intentado que sea breve y clara. Si algo no queda claro, escríbenos a
+    <a href="mailto:privacy@getbulkup.com">privacy@getbulkup.com</a>.
+  </p>
+  <p>
+    En resumen: recogemos los datos necesarios para que funcione una app de registro de entrenamientos y
+    dieta, no mostramos publicidad, no vendemos tus datos, no te rastreamos en otras apps ni sitios web, y
+    puedes borrarlo todo desde la propia app.
+  </p>
+
+  <h2>1. Responsable del tratamiento</h2>
+  <p>
+    El responsable del tratamiento es BulkUp (<span class="placeholder">[Nombre legal y domicilio del titular]</span>),
+    con sede en España. Contacto: <a href="mailto:privacy@getbulkup.com">privacy@getbulkup.com</a>.
+  </p>
+
+  <h2>2. Qué datos recogemos</h2>
+
+  <h3>2.1 Cuenta y perfil</h3>
+  <ul>
+    <li>Correo electrónico y contraseña (almacenada cifrada mediante hash), o el identificador y el correo que facilita "Iniciar sesión con Apple" (que puede ser una dirección de reenvío privada).</li>
+    <li>Nombre y, de forma opcional, fecha de nacimiento y foto de perfil. Las fotos de perfil se almacenan en nuestro alojamiento de imágenes en images.getbulkup.com.</li>
+    <li>Alergias alimentarias, preferencias y alimentos que no te gustan, si decides indicarlos.</li>
+    <li>Un código de amigo generado para tu cuenta, que sirve para conectar con otros usuarios.</li>
+  </ul>
+
+  <h3>2.2 Datos de entrenamiento, dieta y cuerpo (almacenados en los servidores de BulkUp)</h3>
+  <p>Estos datos se guardan en nuestros servidores en api.getbulkup.com para que se sincronicen entre tu iPhone y tu Apple Watch y sigan disponibles si cambias de dispositivo:</p>
+  <ul>
+    <li>Planes de entrenamiento y de dieta, tanto los que importas desde un PDF o una foto como los que creas tú.</li>
+    <li>Pesos, repeticiones y series registradas, y sesiones de entrenamiento (fecha, duración, volumen).</li>
+    <li>Cuando usas la app del Apple Watch durante un entrenamiento: frecuencia cardiaca media y máxima y energía activa, leídas de la app Salud de Apple (ver apartado 5).</li>
+    <li>Récords personales (1RM estimado).</li>
+    <li>Medidas corporales y los valores de composición corporal calculados a partir de ellas.</li>
+    <li>Registro de comidas (qué has comido de tu plan) y días que marcas como saltados.</li>
+    <li>Amistades, rachas de entrenamiento y códigos de planes que compartes con otros usuarios.</li>
+  </ul>
+
+  <h3>2.3 Archivos que subes para importar con IA</h3>
+  <p>
+    Cuando subes un PDF o una foto de un plan de entrenamiento o de dieta, o pides una receta generada por
+    IA, el archivo o el texto que envías se procesa para extraer el plan o generar la receta. El plan o la
+    receta resultante se guarda en tu cuenta como cualquier otro plan. En el apartado 4 indicamos qué
+    proveedores de IA intervienen.
+  </p>
+
+  <h3>2.4 Datos que se quedan en tu dispositivo (nunca se suben)</h3>
+  <ul>
+    <li>Fotos de entrenamiento y vídeos de series que grabas en la app.</li>
+    <li>Notas y valoraciones de sensaciones tras el entrenamiento.</li>
+    <li>Cachés locales que hacen que la app sea rápida y funcione sin conexión.</li>
+  </ul>
+  <p>Estos datos solo existen en tu iPhone o Apple Watch (y en las copias de seguridad de tu propio dispositivo, si las usas). Nosotros no podemos verlos.</p>
+
+  <h3>2.5 Datos técnicos</h3>
+  <ul>
+    <li>Registros estándar del servidor cuando la app se comunica con nuestra API (dirección IP, hora de la petición, versión de la app, tipo de dispositivo), que conservamos por seguridad y para corregir errores.</li>
+    <li>Datos de fallos y diagnóstico que Apple comparte con los desarrolladores si lo has activado en los ajustes de iOS. Son datos agregados y no te identifican ante nosotros.</li>
+  </ul>
+
+  <h3>2.6 Sitio web y lista de espera</h3>
+  <p>
+    Si te apuntas a la lista de espera en getbulkup.com guardamos tu correo electrónico para enviarte el
+    aviso de lanzamiento y novedades relacionadas. Puedes darte de baja en cualquier momento desde el enlace
+    que incluye cada correo. El sitio web no utiliza cookies publicitarias ni de seguimiento entre sitios.
+  </p>
+
+  <h2>3. Para qué usamos tus datos y con qué base legal</h2>
+  <table>
+    <thead>
+      <tr><th>Finalidad</th><th>Datos</th><th>Base legal (RGPD)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Crear y gestionar tu cuenta; sincronizar planes, registros y progreso entre dispositivos; mostrarte tu historial y tus récords</td>
+        <td>Datos de cuenta, entrenamiento, dieta y cuerpo</td>
+        <td>Ejecución de un contrato (art. 6.1.b)</td>
+      </tr>
+      <tr>
+        <td>Leer la frecuencia cardiaca y la energía activa durante un entrenamiento y guardarlas con la sesión</td>
+        <td>Datos de Salud de Apple</td>
+        <td>Tu consentimiento explícito, otorgado en el aviso de permisos de la app Salud (art. 6.1.a y 9.2.a). Puedes retirarlo en cualquier momento desde la app Salud.</td>
+      </tr>
+      <tr>
+        <td>Guardar una foto de perfil y la fecha de nacimiento (opcionales)</td>
+        <td>Foto de perfil, fecha de nacimiento</td>
+        <td>Consentimiento (art. 6.1.a). Puedes eliminarlas en cualquier momento desde tu perfil.</td>
+      </tr>
+      <tr>
+        <td>Convertir un PDF o una foto en un plan; generar recetas</td>
+        <td>Archivos y texto que subes</td>
+        <td>Ejecución de un contrato (art. 6.1.b); eres tú quien inicia el procesamiento</td>
+      </tr>
+      <tr>
+        <td>Amigos, planes compartidos y rachas</td>
+        <td>Código de amigo, amistades, códigos de planes compartidos, rachas</td>
+        <td>Ejecución de un contrato (art. 6.1.b)</td>
+      </tr>
+      <tr>
+        <td>Mantener la seguridad del Servicio, evitar abusos y corregir errores</td>
+        <td>Datos técnicos, registros del servidor</td>
+        <td>Interés legítimo (art. 6.1.f) en prestar un servicio seguro y fiable</td>
+      </tr>
+      <tr>
+        <td>Enviarte correos de servicio (cuenta, seguridad, cambios importantes)</td>
+        <td>Correo electrónico</td>
+        <td>Ejecución de un contrato / interés legítimo</td>
+      </tr>
+      <tr>
+        <td>Lista de espera y novedades del lanzamiento</td>
+        <td>Correo electrónico</td>
+        <td>Consentimiento (art. 6.1.a), revocable en cualquier momento</td>
+      </tr>
+      <tr>
+        <td>Cumplir obligaciones legales (p. ej. fiscales o responder a requerimientos legítimos)</td>
+        <td>Datos de cuenta y de compras</td>
+        <td>Obligación legal (art. 6.1.c)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Los datos relacionados con la salud (frecuencia cardiaca, energía, medidas corporales, alergias) son
+    datos de categoría especial. Los tratamos únicamente para ofrecerte las funciones en las que los usas, y
+    nunca para publicidad, elaboración de perfiles con fines comerciales ni venta.
+  </p>
+
+  <h2>4. Con quién compartimos tus datos</h2>
+  <p>No vendemos tus datos personales ni los compartimos con anunciantes. Solo los compartimos con los proveedores que se indican a continuación, que los tratan por cuenta nuestra y siguiendo nuestras instrucciones (como encargados del tratamiento), o cuando la ley lo exige.</p>
+  <ul>
+    <li><strong>Apple.</strong> "Iniciar sesión con Apple", compras y suscripciones del App Store, la app Salud (HealthKit) en tu dispositivo y las copias de seguridad de iCloud o del dispositivo que tú controlas. Apple gestiona todos los datos de pago; nosotros nunca vemos los datos de tu tarjeta. Política de privacidad de Apple: <a href="https://www.apple.com/es/legal/privacy/" rel="noopener">apple.com/es/legal/privacy</a>.</li>
+    <li><strong>Proveedores de IA (Anthropic y OpenAI).</strong> Cuando importas un plan desde un PDF o una foto, o pides una receta con IA, el contenido que envías se remite a Anthropic y/o OpenAI a través de sus API para extraer el plan o generar la receta. Solo enviamos el contenido necesario para esa tarea. Según las condiciones de sus API, estos proveedores no usan los datos recibidos por API para entrenar sus modelos. Te recomendamos no incluir información personal innecesaria (por ejemplo, nombres de otras personas) en los archivos que subes.</li>
+    <li><strong>Alojamiento de imágenes.</strong> Las fotos de perfil se almacenan en images.getbulkup.com, en un proveedor de almacenamiento y distribución en la nube.</li>
+    <li><strong>Alojamiento en la nube.</strong> Nuestra API y nuestra base de datos se ejecutan en infraestructura en la nube ubicada en la UE y/o en EE. UU., según corresponda.</li>
+    <li><strong>Vercel.</strong> Aloja el sitio web getbulkup.com y el formulario de la lista de espera.</li>
+    <li><strong>Envío de correos.</strong> Un proveedor de correo transaccional envía en nuestro nombre los correos de la lista de espera y de la cuenta.</li>
+    <li><strong>Otros usuarios.</strong> Si añades a un amigo o compartes un código de plan, la persona con la que conectas puede ver tu nombre, tu foto de perfil, tu racha de entrenamiento y los planes que compartas con ella. Tú decides con quién conectas.</li>
+    <li><strong>Autoridades.</strong> Cuando lo exija la ley, una resolución judicial, o para proteger los derechos, la seguridad o los bienes de BulkUp o de terceros.</li>
+  </ul>
+
+  <h2>5. Salud de Apple (HealthKit)</h2>
+  <p>
+    Si lo autorizas, la app de BulkUp para Apple Watch lee tu frecuencia cardiaca y tu energía activa desde la
+    app Salud de Apple mientras hay un entrenamiento en curso, y guarda el entrenamiento completado en la app
+    Salud. La frecuencia cardiaca media y máxima y la energía activa de cada sesión se guardan junto a esa
+    sesión en tu cuenta de BulkUp para que puedas consultarlas en tu iPhone.
+  </p>
+  <p>
+    <strong>Usamos los datos de Salud de Apple únicamente para las funciones de entrenamiento de la app.</strong>
+    Nunca usamos datos de Salud para publicidad o marketing, nunca los vendemos, nunca los compartimos con
+    intermediarios de datos ni con terceros para sus propios fines, y nunca los usamos para una finalidad
+    distinta de aquella para la que diste acceso. Puedes revocar el acceso de BulkUp en cualquier momento en la
+    app Salud (Compartir → Apps → BulkUp).
+  </p>
+
+  <h2>6. Cuánto tiempo conservamos tus datos</h2>
+  <ul>
+    <li><strong>Mientras exista tu cuenta.</strong> Tu cuenta y todos los datos del apartado 2.2 se conservan mientras tengas cuenta, para que tu historial siga disponible.</li>
+    <li><strong>Cuando eliminas tu cuenta</strong> (Perfil → Eliminar cuenta en la app), todos los datos vinculados a ella se borran de nuestros sistemas de inmediato. Las copias que queden en copias de seguridad cifradas se eliminan en un plazo máximo de <strong>30 días</strong>.</li>
+    <li><strong>Archivos subidos.</strong> Los PDF o fotos que subes para importar con IA se conservan solo el tiempo necesario para extraer el plan y después se eliminan; el plan extraído permanece en tu cuenta.</li>
+    <li><strong>Registros del servidor:</strong> hasta 90 días.</li>
+    <li><strong>Correos de la lista de espera:</strong> hasta que te des de baja o termine la campaña de lanzamiento.</li>
+    <li>Podemos conservar determinados registros durante más tiempo cuando la ley lo exija (por ejemplo, registros de compras a efectos fiscales) o para la defensa frente a reclamaciones.</li>
+  </ul>
+
+  <h2>7. Tus derechos</h2>
+  <p>Conforme al RGPD y a la Ley Orgánica 3/2018 (LOPDGDD), tienes derecho a:</p>
+  <ul>
+    <li><strong>Acceder</strong> a los datos personales que tenemos sobre ti.</li>
+    <li><strong>Rectificar</strong> los datos inexactos o incompletos (la mayoría puedes editarlos directamente en la app).</li>
+    <li><strong>Suprimir</strong> tus datos (desde Perfil → Eliminar cuenta, o escribiéndonos).</li>
+    <li><strong>Portabilidad</strong>: recibir los datos que nos has facilitado en un formato estructurado y de lectura mecánica.</li>
+    <li><strong>Limitar</strong> el tratamiento u <strong>oponerte</strong> a los tratamientos basados en interés legítimo.</li>
+    <li><strong>Retirar el consentimiento</strong> en cualquier momento cuando el tratamiento se base en él (permiso de la app Salud, foto de perfil, lista de espera), sin que ello afecte a la licitud del tratamiento anterior.</li>
+    <li><strong>Reclamar</strong> ante una autoridad de control. En España es la Agencia Española de Protección de Datos (AEPD), <a href="https://www.aepd.es" rel="noopener">www.aepd.es</a>. También puedes reclamar ante la autoridad del país de la UE en el que residas.</li>
+  </ul>
+  <p>
+    Para ejercer cualquiera de estos derechos, escribe a <a href="mailto:privacy@getbulkup.com">privacy@getbulkup.com</a>
+    desde la dirección de correo vinculada a tu cuenta. Responderemos en el plazo de un mes. Puede que antes te
+    pidamos que acredites tu identidad.
+  </p>
+
+  <h2>8. Seguridad</h2>
+  <p>
+    Todo el tráfico entre la app y nuestros servidores va cifrado mediante TLS. Las contraseñas se almacenan
+    con un hash unidireccional. El acceso a los sistemas de producción está limitado a las personas que lo
+    necesitan para operar el Servicio. Ningún sistema es completamente seguro, así que si tenemos conocimiento
+    de una brecha que afecte a tus datos te lo comunicaremos a ti y a la autoridad competente según exija la
+    ley.
+  </p>
+
+  <h2>9. Menores</h2>
+  <p>
+    El Servicio no está dirigido a menores de 16 años y no recogemos a sabiendas datos de menores. Si crees
+    que un menor de 16 años ha creado una cuenta, escríbenos a
+    <a href="mailto:privacy@getbulkup.com">privacy@getbulkup.com</a> y la eliminaremos.
+  </p>
+
+  <h2>10. Transferencias internacionales</h2>
+  <p>
+    Algunos de nuestros proveedores (por ejemplo, los proveedores de IA, Vercel y parte de nuestra
+    infraestructura en la nube) están ubicados en Estados Unidos o pueden tratar datos allí. Cuando los datos
+    personales salen del Espacio Económico Europeo, nos amparamos en las Cláusulas Contractuales Tipo de la
+    Comisión Europea y, cuando el proveedor está certificado, en el Marco de Privacidad de Datos UE-EE. UU.,
+    junto con garantías adicionales cuando procede. Puedes pedirnos más información sobre estas garantías.
+  </p>
+
+  <h2>11. Cambios en esta política</h2>
+  <p>
+    Podemos actualizar esta política a medida que evolucione el Servicio o cambie la ley. Si el cambio es
+    relevante, te lo comunicaremos en la app o por correo electrónico antes de que entre en vigor. La fecha
+    que aparece al principio indica cuándo entró en vigor la versión actual.
+  </p>
+
+  <h2>12. Contacto</h2>
+  <p>
+    Cuestiones y solicitudes de privacidad: <a href="mailto:privacy@getbulkup.com">privacy@getbulkup.com</a>.<br />
+    Soporte general: <a href="mailto:support@getbulkup.com">support@getbulkup.com</a>.
+  </p>
+  <p>
+    Lee esta política en inglés: <a href="/privacy">Privacy Policy</a>. Consulta también nuestros
+    <a href="/es/terminos">Términos de uso</a>.
+  </p>
+</LegalLayout>

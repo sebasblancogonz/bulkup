@@ -31,3 +31,6 @@ fastlane/test_output
 # Secrets
 *.xcconfig.local
 .env
+
+# Impeccable review screenshots (regenerated locally with --design-preview)
+bulkup-ios/.impeccable/review/
