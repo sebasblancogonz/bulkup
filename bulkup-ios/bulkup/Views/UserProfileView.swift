@@ -23,6 +23,8 @@ struct UserProfileView: View {
     @State private var showingSubscription = false
     @State private var showingLogoutAlert = false
     @State private var showingDeleteAccountAlert = false
+    @State private var showingDeleteAccountError = false
+    @State private var deleteAccountErrorMessage = ""
     @State private var showingImagePicker = false
     @State private var showingExportShare = false
     @State private var exportFileURL: URL?
@@ -117,8 +119,13 @@ struct UserProfileView: View {
             }
         } message: {
             Text(
-                "Esta acción es permanente y no se puede deshacer. Se eliminarán todos tus datos."
+                "Esta acción es permanente y no se puede deshacer. Se eliminarán todos tus datos. Si tienes una suscripción comprada a través de Apple, debes cancelarla por separado en los ajustes del App Store: eliminar la cuenta no la cancela."
             )
+        }
+        .alert("No se pudo eliminar la cuenta", isPresented: $showingDeleteAccountError) {
+            Button("OK") {}
+        } message: {
+            Text(deleteAccountErrorMessage)
         }
     }
 
@@ -383,7 +390,13 @@ struct UserProfileView: View {
     }
 
     private func deleteAccount() async {
-        // Delete account logic
+        do {
+            try await authManager.deleteAccount()
+            // On success `isAuthenticated` becomes false and the app falls back to the login screen.
+        } catch {
+            deleteAccountErrorMessage = error.localizedDescription
+            showingDeleteAccountError = true
+        }
     }
 
     private func calculateDaysActive() -> Int {
@@ -605,7 +618,7 @@ struct MenuRow: View {
             HStack(spacing: Spacing.md) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                     .frame(width: 24)
 
                 Text(LocalizedStringKey(title))
@@ -652,7 +665,7 @@ struct SettingRow: View {
         HStack(spacing: Spacing.md) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
                 .frame(width: 24)
 
             Text(LocalizedStringKey(title))

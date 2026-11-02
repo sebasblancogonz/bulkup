@@ -114,9 +114,24 @@ struct TrainingView: View {
                 day: normalizedDay,
                 exerciseIndex: ex.orderIndex,
                 exerciseName: ex.name,
-                totalSets: ex.sets
+                totalSets: trainingManager.effectiveSets(for: ex, day: normalizedDay)
             ) > 0
         }.count
+    }
+
+    /// A day is done when the user finished a session for it (backend sessions
+    /// from any device, or the local mark written on save) or, for days logged
+    /// without a session, when every exercise has at least one set with weight.
+    ///
+    /// Checking only logged sets was wrong: skipped exercises and 0 kg
+    /// (bodyweight) sets never count, so a finished workout kept showing
+    /// "Continuar Entreno".
+    private func isDayCompleted(_ dayData: TrainingDay) -> Bool {
+        if trainingManager.isDayCompleted(day: dayData.day) {
+            return true
+        }
+        let logged = loggedExerciseCount(for: dayData)
+        return logged == dayData.exercises.count && dayData.exercises.count > 0
     }
 
     /// Weekday index (Mon=0...Sun=6) for current date
@@ -162,7 +177,7 @@ struct TrainingView: View {
                 mainContentView
             }
         }
-        .background(BulkUpColors.background)
+        .background(BulkUpGround())
         .onAppear {
             if trainingManager.trainingData.isEmpty
                 && !trainingManager.isLoading
@@ -186,6 +201,9 @@ struct TrainingView: View {
             Task {
                 await friendsManager.loadTodayStatus()
             }
+            #if DEBUG
+            if DesignPreview.isActive { expandFirstIncomplete() }
+            #endif
         }
         // A session restored after process death keeps its own day (e.g. the user
         // was doing yesterday's workout). currentDate resets to today on relaunch,
@@ -293,20 +311,18 @@ struct TrainingView: View {
         guard let userId = authManager.user?.id else { return }
 
         // Persist the completed day so the Workouts ring counts it even when
-        // no weight was logged (pure-bodyweight days).
-        if let dayName = currentTrainingDay {
-            CompletedDaysStore.markCompleted(
-                planId: trainingManager.trainingPlanId,
-                weekStart: trainingManager.selectedWeek,
-                day: dayName
-            )
+        // no weight was logged (pure-bodyweight days). Prefer the session's own
+        // day: the user may have browsed to another date before saving.
+        let completedDay = workoutSession.currentDayName ?? currentTrainingDay
+        if let dayName = completedDay {
+            trainingManager.markDayCompleted(day: dayName)
         }
 
         Task {
             await friendsManager.toggleTodayCompletion(
                 userId: userId,
                 planId: trainingManager.trainingPlanId,
-                dayName: currentTrainingDay
+                dayName: completedDay
             )
 
             await MainActor.run {
@@ -429,13 +445,10 @@ struct TrainingView: View {
                 if !workoutSession.isActive,
                    viewMode == .day, let trainingDay = currentTrainingDay,
                    let dayData = trainingManager.trainingData.first(where: { $0.day == trainingDay }) {
-                    let logged = loggedExerciseCount(for: dayData)
-                    let allComplete = logged == dayData.exercises.count && dayData.exercises.count > 0
-
-                    if allComplete {
+                    if isDayCompleted(dayData) {
                         completedPill
                     } else {
-                        ctaButton(inProgress: logged > 0)
+                        ctaButton(inProgress: loggedExerciseCount(for: dayData) > 0)
                     }
                 }
             }
@@ -445,18 +458,32 @@ struct TrainingView: View {
                 WorkoutSummaryView(
                     summary: summary,
                     saveState: workoutSession.saveState,
-                    onRetry: { workoutSession.retrySave() }
-                ) {
-                    // Save and mark complete
-                    markWorkoutComplete()
-                    workoutSession.saveAndDismissSummary()
-                }
+                    onRetry: { workoutSession.retrySave() },
+                    onReview: {
+                        // Same save, then straight into the recap so sensations,
+                        // notes and photos can be added without hunting for it.
+                        let day = workoutSession.currentDayName ?? currentTrainingDay
+                        markWorkoutComplete()
+                        workoutSession.saveAndDismissSummary()
+                        if let day {
+                            recapSelection = RecapSelection(day: day)
+                        }
+                    },
+                    onSave: {
+                        // Save and mark complete
+                        markWorkoutComplete()
+                        workoutSession.saveAndDismissSummary()
+                    },
+                    userId: authManager.user?.id,
+                    dayName: workoutSession.currentDayName
+                )
                 .transition(.opacity)
                 .zIndex(100)
             }
         }
         .sheet(isPresented: $showFeedback) {
-            WorkoutFeedbackView(dayName: feedbackDayName, planId: trainingManager.trainingPlanId)
+            WorkoutFeedbackView(dayName: feedbackDayName, planId: trainingManager.trainingPlanId,
+                                weekStart: trainingManager.weekString(for: trainingManager.selectedWeek))
         }
         .sheet(item: $recapSelection) { selection in
             if let dayData = trainingManager.trainingData.first(where: { $0.day == selection.day }) {
@@ -491,17 +518,8 @@ struct TrainingView: View {
                 }
             }
         } label: {
-            HStack(spacing: Spacing.sm) {
-                Image(systemName: inProgress ? "arrow.right.circle.fill" : "play.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                Text(inProgress ? "Continuar Entreno" : "Comenzar Entreno")
-                    .font(.system(size: 17, weight: .bold))
-            }
-            .foregroundColor(BulkUpColors.onAccent)
-            .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .background(BulkUpColors.accent)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            Text(inProgress ? "Continuar Entreno" : "Comenzar Entreno")
+                .primaryButtonStyle()
         }
         .pressable()
         .padding(.horizontal, Spacing.screenH)
@@ -510,51 +528,53 @@ struct TrainingView: View {
 
     private var completedPill: some View {
         let day = currentTrainingDay ?? selectedDay
-        let savedFeedback = WorkoutFeedbackManager.shared
-            .feedback(planId: trainingManager.trainingPlanId, dayName: day)
+        let savedFeedback = WorkoutFeedbackManager.shared.feedback(
+            planId: trainingManager.trainingPlanId,
+            dayName: day,
+            weekStart: trainingManager.weekString(for: trainingManager.selectedWeek)
+        )
         let savedEmoji = savedFeedback.flatMap { WorkoutFeedbackManager.emoji(for: $0.rating) }
-        return VStack(spacing: Spacing.sm) {
-            // Completed status row
+        return HStack(spacing: Spacing.md) {
             HStack(spacing: Spacing.sm) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 16))
+                Image(systemName: "checkmark")
+                    .font(.system(.caption, weight: .bold))
+                    .foregroundColor(Color.onFill(BulkUpColors.complete))
+                    .frame(width: 26, height: 26)
+                    .background(BulkUpColors.complete)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
                 Text("Completado")
-                    .font(.system(size: 17, weight: .bold))
-                Spacer()
+                    .displayVoice(19, weight: .semibold, relativeTo: .headline)
+                    .foregroundColor(BulkUpColors.textPrimary)
                 if let emoji = savedEmoji {
-                    Text(emoji).font(.system(size: 18))
+                    Text(emoji).font(.system(.body))
                 }
             }
-            .foregroundColor(BulkUpColors.success)
+
+            Spacer()
 
             // Recap: totals, sensations and every logged set (editable)
             Button {
                 recapSelection = RecapSelection(day: day)
             } label: {
                 HStack(spacing: Spacing.xs) {
-                    Image(systemName: "list.clipboard.fill")
-                        .font(.system(size: 14))
                     Text("Ver resumen")
-                        .font(.system(size: 15, weight: .medium))
+                        .font(.system(.subheadline, weight: .semibold))
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .opacity(0.6)
+                        .font(.system(.caption2, weight: .bold))
                 }
-                .foregroundColor(BulkUpColors.success)
-                .frame(maxWidth: .infinity)
-                .frame(height: 38)
-                .background(BulkUpColors.success.opacity(0.12))
-                .cornerRadius(10)
+                .foregroundColor(BulkUpColors.textPrimary)
+                .padding(.horizontal, Spacing.md)
+                .frame(minHeight: 40)
+                .background(BulkUpColors.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                .hairline(CornerRadius.medium)
             }
             .buttonStyle(.plain)
         }
         .padding(Spacing.md)
-        .background(BulkUpColors.success.opacity(0.08))
-        .cornerRadius(14)
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(BulkUpColors.success.opacity(0.3), lineWidth: 1)
-        )
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .hairline(color: BulkUpColors.complete.opacity(0.6))
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.md)
     }
@@ -569,15 +589,16 @@ struct TrainingView: View {
             if workoutSession.isActive {
                 // Skip discarded exercises
                 if workoutSession.isExerciseSkipped(day: normalizedDay, exerciseIndex: ex.orderIndex) { return false }
-                let total = ex.sets + workoutSession.extraSets(day: normalizedDay, exerciseIndex: ex.orderIndex)
+                let total = trainingManager.effectiveSets(for: ex, day: normalizedDay)
                 return !workoutSession.isExerciseComplete(day: normalizedDay, exerciseIndex: ex.orderIndex, totalSets: total)
             } else {
+                let total = trainingManager.effectiveSets(for: ex, day: normalizedDay)
                 return trainingManager.getCompletedSets(
                     day: normalizedDay,
                     exerciseIndex: ex.orderIndex,
                     exerciseName: ex.name,
-                    totalSets: ex.sets
-                ) < ex.sets
+                    totalSets: total
+                ) < total
             }
         }) {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
@@ -641,15 +662,16 @@ struct TrainingView: View {
                     }
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(.footnote, weight: .bold))
                         .foregroundColor(BulkUpColors.textSecondary)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 36, height: 36)
                         .background(BulkUpColors.surfaceElevated)
-                        .clipShape(Circle())
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                        .hairline(CornerRadius.medium)
                 }
 
                 Text(compactDateLabel)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(.subheadline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textPrimary)
                     .padding(.horizontal, Spacing.sm)
 
@@ -659,11 +681,12 @@ struct TrainingView: View {
                     }
                 } label: {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(.footnote, weight: .bold))
                         .foregroundColor(BulkUpColors.textSecondary)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 36, height: 36)
                         .background(BulkUpColors.surfaceElevated)
-                        .clipShape(Circle())
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                        .hairline(CornerRadius.medium)
                 }
 
                 Spacer()
@@ -675,12 +698,13 @@ struct TrainingView: View {
                         }
                     } label: {
                         Text("Hoy")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(BulkUpColors.accent)
-                            .padding(.horizontal, Spacing.sm)
-                            .padding(.vertical, Spacing.xs)
-                            .background(BulkUpColors.accent.opacity(0.1))
-                            .clipShape(Capsule())
+                            .font(.system(.caption, weight: .bold))
+                            .textCase(.uppercase)
+                            .tracking(0.8)
+                            .foregroundColor(BulkUpColors.accentText)
+                            .padding(.horizontal, Spacing.sm + 2)
+                            .frame(minHeight: 32)
+                            .hairline(CornerRadius.medium, color: BulkUpColors.accent.opacity(0.6))
                     }
                 }
             }
@@ -694,29 +718,32 @@ struct TrainingView: View {
                 let dayLabel = dayData.workoutName ?? formatDayName(dayData.day)
                 let logged = loggedExerciseCount(for: dayData)
                 let total = dayData.exercises.count
-                let progress: CGFloat = total > 0 ? CGFloat(logged) / CGFloat(total) : 0
+                let progress: CGFloat = isDayCompleted(dayData) ? 1
+                    : (total > 0 ? CGFloat(logged) / CGFloat(total) : 0)
 
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    HStack(alignment: .lastTextBaseline) {
                         Text(dayLabel)
-                            .font(BulkUpFont.largeTitle())
+                            .displayVoice(34, weight: .extraBold, relativeTo: .largeTitle)
                             .foregroundColor(BulkUpColors.textPrimary)
-                    }
-
-                    Spacer()
-
-                    // Progress ring (48pt)
-                    ZStack {
-                        GradientProgressRing(
-                            progress: progress,
-                            lineWidth: 6,
-                            size: 48,
-                            color: progress >= 1.0 ? BulkUpColors.success : BulkUpColors.accent
-                        )
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.7)
+                        Spacer(minLength: Spacing.md)
                         Text("\(logged)/\(total)")
-                            .font(.system(size: 13, weight: .bold, design: .monospaced))
-                            .foregroundColor(BulkUpColors.textSecondary)
+                            .font(BulkUpFont.mono(15, weight: .semibold, relativeTo: .subheadline))
+                            .foregroundColor(progress >= 1.0 ? BulkUpColors.complete : BulkUpColors.textSecondary)
                     }
+                    // Progress rule: lime while in progress, sky when the day is done.
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Rectangle().fill(BulkUpColors.line)
+                            Rectangle()
+                                .fill(progress >= 1.0 ? BulkUpColors.complete : BulkUpColors.accent)
+                                .frame(width: geo.size.width * progress)
+                                .animation(.easeOut(duration: 0.4), value: progress)
+                        }
+                    }
+                    .frame(height: 3)
                 }
             }
         }
@@ -739,41 +766,38 @@ struct TrainingView: View {
                 } label: {
                     VStack(spacing: 4) {
                         Text(weekDayLetters[index])
-                            .font(.system(size: 11, weight: isCurrent ? .bold : .medium))
-                            .foregroundColor(isCurrent ? BulkUpColors.textPrimary : BulkUpColors.textTertiary)
+                            .font(.system(.caption2, weight: isCurrent ? .bold : .medium))
+                            .foregroundColor(isCurrent ? BulkUpColors.textPrimary : BulkUpColors.textSecondary)
 
                         // Day number for current week
                         ZStack {
                             if isCurrent {
-                                Circle()
+                                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
                                     .fill(BulkUpColors.accent)
-                                    .frame(width: 28, height: 28)
+                                    .frame(width: 30, height: 30)
                             }
 
                             Text(dayNumberForWeekIndex(index))
-                                .font(.system(size: 12, weight: isCurrent ? .bold : .regular))
-                                .foregroundColor(isCurrent ? BulkUpColors.onAccent : BulkUpColors.textSecondary)
+                                .font(BulkUpFont.mono(13, weight: isCurrent ? .semibold : .medium, relativeTo: .footnote))
+                                .foregroundColor(isCurrent ? BulkUpColors.onAccent : BulkUpColors.textPrimary)
                         }
-                        .frame(width: 28, height: 28)
+                        .frame(width: 30, height: 30)
 
                         // Workout dot
                         Circle()
-                            .fill(hasWorkout && !isCurrent ? BulkUpColors.accent : .clear)
+                            .fill(hasWorkout && !isCurrent ? BulkUpColors.textSecondary : .clear)
                             .frame(width: 4, height: 4)
                     }
                     .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.vertical, Spacing.sm)
-        .background(BulkUpColors.surface)
-        .overlay(
-            Rectangle().frame(height: 0.5).foregroundColor(BulkUpColors.border),
-            alignment: .bottom
-        )
-        .padding(.horizontal, -Spacing.screenH)
+        .padding(.vertical, Spacing.xs)
+        .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .top)
+        .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .bottom)
     }
 
     private func dateForWeekIndex(_ index: Int) -> Date? {
@@ -798,15 +822,16 @@ struct TrainingView: View {
                 }
             } label: {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(.footnote, weight: .bold))
                     .foregroundColor(BulkUpColors.textSecondary)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 36, height: 36)
                     .background(BulkUpColors.surfaceElevated)
-                    .clipShape(Circle())
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                    .hairline(CornerRadius.medium)
             }
 
             Text(weekRangeLabel)
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(.subheadline, weight: .semibold))
                 .foregroundColor(BulkUpColors.textPrimary)
                 .padding(.horizontal, Spacing.sm)
 
@@ -816,11 +841,12 @@ struct TrainingView: View {
                 }
             } label: {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(.footnote, weight: .bold))
                     .foregroundColor(BulkUpColors.textSecondary)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 36, height: 36)
                     .background(BulkUpColors.surfaceElevated)
-                    .clipShape(Circle())
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                    .hairline(CornerRadius.medium)
             }
 
             Spacer()
@@ -876,30 +902,17 @@ struct TrainingView: View {
 
     private var restDayView: some View {
         VStack(spacing: Spacing.lg) {
-            HStack(spacing: Spacing.md) {
-                Image(systemName: "moon.stars.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(BulkUpColors.accentMuted)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(currentTrainingDay == nil ? "Descanso" : "Sin ejercicios para este dia")
-                        .font(BulkUpFont.cardTitle())
-                        .foregroundColor(BulkUpColors.textPrimary)
-                    Text("Recupera energia para manana")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-                Spacer()
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text(currentTrainingDay == nil ? "Descanso" : "Sin ejercicios para este día")
+                    .displayVoice(34, weight: .extraBold, relativeTo: .largeTitle)
+                    .foregroundColor(BulkUpColors.textPrimary)
+                Text("Recupera energía para mañana")
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textSecondary)
             }
-            .padding(Spacing.md)
-            .background(BulkUpColors.surface)
-            .cornerRadius(CornerRadius.large)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(BulkUpColors.border, lineWidth: 0.5)
-            )
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, Spacing.screenH)
-            .padding(.top, Spacing.lg)
+            .padding(.top, Spacing.sm)
         }
     }
 
@@ -919,7 +932,7 @@ struct TrainingView: View {
         let isExpanded = expandedDay == index
         let dayLabel = day.workoutName ?? formatDayName(day.day)
         let logged = loggedExerciseCount(for: day)
-        let allComplete = logged == day.exercises.count && day.exercises.count > 0
+        let allComplete = isDayCompleted(day)
 
         VStack(spacing: 0) {
             // Row header
@@ -929,26 +942,23 @@ struct TrainingView: View {
                 }
             }) {
                 HStack(spacing: Spacing.md) {
-                    // Completion indicator
+                    // Done mark
                     ZStack {
-                        Circle()
-                            .stroke(
-                                allComplete ? BulkUpColors.accent : BulkUpColors.muscleDefault,
-                                lineWidth: 2
-                            )
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .stroke(allComplete ? BulkUpColors.complete : BulkUpColors.line, lineWidth: 1.5)
                             .frame(width: 28, height: 28)
 
                         if allComplete {
-                            Circle()
-                                .fill(BulkUpColors.accent.opacity(0.15))
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(BulkUpColors.complete)
                                 .frame(width: 28, height: 28)
                             Image(systemName: "checkmark")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(BulkUpColors.accent)
+                                .font(.system(.caption2, weight: .bold))
+                                .foregroundColor(Color.onFill(BulkUpColors.complete))
                         } else if logged > 0 {
                             Text("\(logged)")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                .foregroundColor(BulkUpColors.accent)
+                                .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
+                                .foregroundColor(BulkUpColors.accentText)
                         }
                     }
 
@@ -967,18 +977,42 @@ struct TrainingView: View {
                     Spacer()
 
                     Text("\(day.exercises.count) ej.")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textTertiary)
-                        .fontDesign(.monospaced)
+                        .font(BulkUpFont.mono(12, relativeTo: .caption))
+                        .foregroundColor(BulkUpColors.textSecondary)
 
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(BulkUpColors.textTertiary)
+                    Image(systemName: "chevron.down")
+                        .font(.system(.caption2, weight: .bold))
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
                 .padding(Spacing.md)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+
+            // Completed day → recap (sensations, notes, photos, editable sets).
+            // Outside the header button so the tap isn't swallowed by it.
+            if allComplete {
+                Button {
+                    recapSelection = RecapSelection(day: day.day)
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "list.clipboard.fill")
+                            .font(.system(size: 13))
+                        Text("Ver resumen")
+                            .font(.system(size: 14, weight: .medium))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .opacity(0.6)
+                    }
+                    .foregroundColor(BulkUpColors.complete)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.sm + 2)
+                    .overlay(Rectangle().frame(height: 1).foregroundColor(BulkUpColors.line), alignment: .top)
+                }
+                .buttonStyle(.plain)
+            }
 
             // Expanded exercises
             if isExpanded {
@@ -1018,25 +1052,8 @@ struct TrainingView: View {
             }
         }
         .background(BulkUpColors.surface)
-        .cornerRadius(CornerRadius.large)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .stroke(BulkUpColors.border, lineWidth: 0.5)
-        )
-        // Completed: accent left border
-        .overlay(alignment: .leading) {
-            if allComplete {
-                UnevenRoundedRectangle(
-                    topLeadingRadius: CornerRadius.large,
-                    bottomLeadingRadius: CornerRadius.large,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 0
-                )
-                .fill(BulkUpColors.accent)
-                .frame(width: 3)
-            }
-        }
-        .clipped()
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .hairline(color: allComplete ? BulkUpColors.complete.opacity(0.6) : BulkUpColors.line)
         .padding(.horizontal, Spacing.screenH)
     }
 
@@ -1085,26 +1102,19 @@ struct WorkoutCompletionSheet: View {
             Spacer()
 
             ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [BulkUpColors.success.opacity(0.2), BulkUpColors.success.opacity(0.05)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 90, height: 90)
-
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 50))
-                    .foregroundColor(BulkUpColors.success)
+                RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous)
+                    .fill(BulkUpColors.complete)
+                    .frame(width: 64, height: 64)
+                Image(systemName: "checkmark")
+                    .font(.system(.title, weight: .bold))
+                    .foregroundColor(Color.onFill(BulkUpColors.complete))
             }
-            .shadow(color: BulkUpColors.success.opacity(0.2), radius: 20, x: 0, y: 10)
 
             VStack(spacing: Spacing.sm) {
-                Text("Entrenamiento Completado!")
-                    .font(BulkUpFont.largeTitle())
+                Text("Entreno completado")
+                    .displayVoice(32, weight: .extraBold, relativeTo: .largeTitle)
                     .foregroundColor(BulkUpColors.textPrimary)
+                    .multilineTextAlignment(.center)
 
                 Text("Has completado todos los ejercicios de hoy")
                     .font(BulkUpFont.body())
@@ -1115,31 +1125,27 @@ struct WorkoutCompletionSheet: View {
             HStack(spacing: Spacing.xxl) {
                 VStack(spacing: Spacing.xs) {
                     Text("\(exerciseCount)")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(BulkUpColors.accent)
+                        .font(BulkUpFont.mono(28, weight: .semibold, relativeTo: .title))
+                        .foregroundColor(BulkUpColors.textPrimary)
                     Text("Ejercicios")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
+                        .microLabel()
                 }
 
-                Divider()
-                    .frame(height: 40)
+                Rectangle().fill(BulkUpColors.line).frame(width: 1, height: 40)
 
                 VStack(spacing: Spacing.xs) {
                     Text("\(totalSets)")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(BulkUpColors.accent)
+                        .font(BulkUpFont.mono(28, weight: .semibold, relativeTo: .title))
+                        .foregroundColor(BulkUpColors.textPrimary)
                     Text("Series")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
+                        .microLabel()
                 }
             }
             .padding(.vertical, Spacing.lg)
             .padding(.horizontal, Spacing.xxl)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(BulkUpColors.surfaceElevated)
-            )
+            .background(BulkUpColors.surface)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+            .hairline()
 
             VStack(spacing: Spacing.md) {
                 Button {
@@ -1149,14 +1155,13 @@ struct WorkoutCompletionSheet: View {
                     HStack(spacing: Spacing.sm) {
                         if isLoading {
                             ProgressView()
-                                .tint(.white)
+                                .tint(BulkUpColors.onAccent)
                         } else {
                             Image(systemName: "flame.fill")
                         }
                         Text("Registrar para mi racha")
-                            .fontWeight(.semibold)
                     }
-                    .primaryButtonStyle(color: BulkUpColors.accent)
+                    .primaryButtonStyle()
                 }
                 .disabled(isLoading)
 

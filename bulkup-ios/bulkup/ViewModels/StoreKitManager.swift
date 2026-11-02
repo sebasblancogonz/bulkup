@@ -165,61 +165,56 @@ class StoreKitManager: ObservableObject {
         }
     }
     
-    // MARK: - Update Subscription Status with Debug
+    // MARK: - Update Subscription Status
+    /// Reads the current entitlements. Deliberately independent of `products`:
+    /// if the product list failed to load (offline, App Store hiccup) a paying
+    /// user must still be recognised as subscribed.
     func updateSubscriptionStatus() async {
         print("🔄 Updating subscription status...")
-        
+
         var hasActive = false
-        var entitlementCount = 0
-        
+        var latestExpiration: Date?
+        var activeProductID: String?
+
         for await result in StoreKit.Transaction.currentEntitlements {
             do {
-                entitlementCount += 1
                 let transaction = try checkVerified(result)
-                
-                print("📜 Found entitlement: \(transaction.productID)")
-                print("   - Product Type: \(transaction.productType)")
-                print("   - Original Purchase Date: \(transaction.originalPurchaseDate)")
-                
+                guard transaction.productType == .autoRenewable,
+                      productIds.contains(transaction.productID),
+                      transaction.revocationDate == nil else { continue }
+
                 if let expiration = transaction.expirationDate {
-                    print("   - Expiration Date: \(expiration)")
-                    print("   - Is Expired: \(expiration <= Date())")
-                }
-                
-                if let product = products.first(where: { $0.id == transaction.productID }) {
-                    if transaction.productType == .autoRenewable {
-                        if let expirationDate = transaction.expirationDate {
-                            if expirationDate > Date() {
-                                hasActive = true
-                                self.expirationDate = expirationDate
-                                print("✅ Active subscription found, expires: \(expirationDate)")
-                                
-                                // Obtener el estado de la suscripción
-                                if let status = try? await product.subscription?.status.first {
-                                    self.subscriptionStatus = status.state
-                                    print("📊 Subscription state: \(status.state)")
-                                }
-                            } else {
-                                print("❌ Subscription expired: \(expirationDate)")
-                            }
-                        } else {
-                            // Para suscripciones sin fecha de expiración (caso raro)
-                            hasActive = true
-                            print("✅ Active subscription (no expiration date)")
-                        }
+                    // currentEntitlements already filters expired ones, but the
+                    // grace period / clock skew make an explicit check cheap.
+                    guard expiration > Date() else {
+                        print("❌ Subscription expired: \(expiration)")
+                        continue
+                    }
+                    if latestExpiration == nil || expiration > latestExpiration! {
+                        latestExpiration = expiration
                     }
                 }
+                hasActive = true
+                activeProductID = transaction.productID
+                print("✅ Active entitlement: \(transaction.productID)")
             } catch {
                 print("❌ Error checking transaction: \(error)")
             }
         }
-        
-        print("📈 Total entitlements found: \(entitlementCount)")
+
+        if hasActive, let id = activeProductID,
+           let product = products.first(where: { $0.id == id }),
+           let status = try? await product.subscription?.status.first {
+            subscriptionStatus = status.state
+        } else {
+            subscriptionStatus = nil
+        }
+
+        expirationDate = hasActive ? latestExpiration : nil
+        hasActiveSubscription = hasActive
         print("📊 Has active subscription: \(hasActive)")
-        
-        self.hasActiveSubscription = hasActive
     }
-    
+
     // MARK: - Listen for Transactions
     private func listenForTransactions() -> Task<Void, Error> {
         return Task.detached {
@@ -279,7 +274,7 @@ class StoreKitManager: ObservableObject {
         case .year:
             return period.value == 1 ? "anual" : "\(period.value) años"
         @unknown default:
-            return "periodo desconocido"
+            return "período desconocido"
         }
     }
 

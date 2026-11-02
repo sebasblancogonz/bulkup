@@ -11,6 +11,10 @@ struct DietHubView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var dietManager: DietManager
     @ObservedObject private var storeKit = StoreKitManager.shared
+    /// Free tier keeps one active diet plan; creating another asks for PRO.
+    private var canCreateAnotherPlan: Bool {
+        storeKit.isSubscribed || dietManager.dietPlanId == nil
+    }
     @State private var selectedView: DietHubSection = .active
     @State private var showingCreateDietPlan = false
     @State private var showingDietPlanEditor = false
@@ -126,7 +130,7 @@ struct DietHubView: View {
                 Button {
                     if storeKit.isSubscribed { showingCreateDietPlan = true } else { showingSubscription = true }
                 } label: { Label("Importar con IA", systemImage: "sparkles") }
-                Button { showingDietPlanEditor = true } label: {
+                Button { if canCreateAnotherPlan { showingDietPlanEditor = true } else { showingSubscription = true } } label: {
                     Label("Crear manualmente", systemImage: "square.and.pencil")
                 }
             } label: {
@@ -154,7 +158,7 @@ struct DietHubView: View {
                 .foregroundColor(BulkUpColors.textPrimary)
                 .lineLimit(1)
 
-            Text("\(dietManager.dietData.count) dias · \(totalMealCount) comidas")
+            Text("\(dietManager.dietData.count) días · \(totalMealCount) comidas")
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
         }
@@ -321,7 +325,7 @@ struct DietHubView: View {
 
                     // Crear manualmente
                     Button {
-                        showingDietPlanEditor = true
+                        if canCreateAnotherPlan { showingDietPlanEditor = true } else { showingSubscription = true }
                     } label: {
                         dietCreationOptionRow(
                             icon: "square.and.pencil",
@@ -644,7 +648,7 @@ struct DietPlanCard: View {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack {
                     Label(
-                        "\(plan.dietDays.count) dias",
+                        "\(plan.dietDays.count) días",
                         systemImage: "calendar"
                     )
                     .font(BulkUpFont.caption())

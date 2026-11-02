@@ -143,7 +143,7 @@ struct MealCardView: View {
             } label: {
                 Label("Receta con IA", systemImage: "sparkles")
                     .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
             }
             .buttonStyle(.plain)
 

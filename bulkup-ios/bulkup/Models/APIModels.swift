@@ -131,6 +131,9 @@ struct AppleSignInRequest: Codable {
     let identityToken: String
     let firstName: String?
     let lastName: String?
+    /// One-time code from `ASAuthorizationAppleIDCredential.authorizationCode`.
+    /// Lets the backend obtain a refresh token so it can revoke Apple sign-in on account deletion.
+    let authorizationCode: String?
 }
 
 struct UpdateProfileRequest: Codable {

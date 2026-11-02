@@ -24,7 +24,7 @@ struct ProfileMenuItem: View {
 
                     Image(systemName: icon)
                         .font(.system(size: 20))
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
 
                 // Text content

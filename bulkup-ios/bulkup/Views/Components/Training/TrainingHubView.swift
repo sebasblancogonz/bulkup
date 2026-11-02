@@ -22,6 +22,12 @@ struct TrainingHubView: View {
     @State private var showingSubscription = false
     @State private var showingExerciseLibrary = false
 
+    /// Free tier keeps one active plan; a second one (template, manual, import)
+    /// asks for PRO. "Planes ilimitados" on the paywall is this gate.
+    private var canCreateAnotherPlan: Bool {
+        storeKit.isSubscribed || trainingManager.trainingPlanId == nil
+    }
+
     enum TrainingHubSection: String, CaseIterable {
         case active = "active"
         case library = "library"
@@ -137,23 +143,24 @@ struct TrainingHubView: View {
                                 .font(.system(size: 14, weight: .bold))
                         }
                         .foregroundColor(
-                            isActive ? BulkUpColors.onAccent : BulkUpColors.textSecondary
+                            isActive ? BulkUpColors.textPrimary : BulkUpColors.textSecondary
                         )
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
+                        .frame(minHeight: 40)
                         .background(
-                            isActive
-                                ? Capsule().fill(BulkUpColors.accent)
-                                : Capsule().fill(Color.clear)
+                            RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                                .fill(isActive ? BulkUpColors.surfaceElevated : Color.clear)
                         )
-                        .contentShape(Capsule())
+                        .contentShape(RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous))
                     }
                 }
             }
             .padding(3)
             .background(
-                Capsule().fill(BulkUpColors.surface)
+                RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
+                    .fill(BulkUpColors.surface)
             )
+            .hairline(CornerRadius.medium)
 
             Menu {
                 if selectedView == .active {
@@ -167,11 +174,11 @@ struct TrainingHubView: View {
                 }
                 // Create / import — available from both tabs
                 Button {
-                    showingTemplateWizard = true
+                    if canCreateAnotherPlan { showingTemplateWizard = true } else { showingSubscription = true }
                 } label: { Label("Usar plantilla", systemImage: "doc.on.doc") }
 
                 Button {
-                    showingPlanEditor = true
+                    if canCreateAnotherPlan { showingPlanEditor = true } else { showingSubscription = true }
                 } label: { Label("Crear manualmente", systemImage: "square.and.pencil") }
 
                 Button {
@@ -182,18 +189,19 @@ struct TrainingHubView: View {
 
                 Button {
                     if storeKit.isSubscribed { showingImportCode = true } else { showingSubscription = true }
-                } label: { Label("Importar con codigo", systemImage: "qrcode") }
+                } label: { Label("Importar con código", systemImage: "qrcode") }
 
                 Button {
                     showingExerciseLibrary = true
                 } label: { Label("Explorar ejercicios", systemImage: "books.vertical") }
             } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(BulkUpColors.textSecondary)
-                    .frame(width: 36, height: 36)
-                    .background(BulkUpColors.surfaceElevated)
-                    .clipShape(Circle())
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(BulkUpColors.textPrimary)
+                    .frame(width: 46, height: 46)
+                    .background(BulkUpColors.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                    .hairline(CornerRadius.medium)
             }
             .padding(.leading, Spacing.sm)
         }
@@ -209,28 +217,13 @@ struct TrainingHubView: View {
                 VStack(spacing: Spacing.lg) {
                     ZStack {
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        BulkUpColors.training.opacity(0.2), BulkUpColors.training.opacity(0.05),
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(BulkUpColors.surfaceElevated)
                             .frame(width: 100, height: 100)
 
                         Image(systemName: "dumbbell.fill")
                             .font(.system(size: 50))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [BulkUpColors.training, BulkUpColors.training.opacity(0.7)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .foregroundColor(BulkUpColors.training)
                     }
-                    .shadow(color: BulkUpColors.training.opacity(0.2), radius: 20, x: 0, y: 10)
                 }
 
                 VStack(spacing: Spacing.md) {
@@ -258,13 +251,7 @@ struct TrainingHubView: View {
                         HStack(spacing: 14) {
                             ZStack {
                                 Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [BulkUpColors.training.opacity(0.2), BulkUpColors.training.opacity(0.08)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
+                                    .fill(BulkUpColors.surfaceElevated)
                                     .frame(width: 48, height: 48)
 
                                 Image(systemName: "sparkles")
@@ -310,14 +297,13 @@ struct TrainingHubView: View {
                             RoundedRectangle(cornerRadius: CornerRadius.medium)
                                 .stroke(BulkUpColors.training.opacity(0.3), lineWidth: 1.5)
                         )
-                        .shadow(color: BulkUpColors.training.opacity(0.15), radius: 8, x: 0, y: 4)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
 
                     // Usar plantilla
                     Button {
-                        showingTemplateWizard = true
+                        if canCreateAnotherPlan { showingTemplateWizard = true } else { showingSubscription = true }
                     } label: {
                         creationOptionRow(
                             icon: "doc.on.doc",
@@ -329,7 +315,7 @@ struct TrainingHubView: View {
 
                     // Crear manualmente
                     Button {
-                        showingPlanEditor = true
+                        if canCreateAnotherPlan { showingPlanEditor = true } else { showingSubscription = true }
                     } label: {
                         creationOptionRow(
                             icon: "square.and.pencil",
@@ -360,7 +346,7 @@ struct TrainingHubView: View {
 
                             VStack(alignment: .leading, spacing: 3) {
                                 HStack(spacing: 6) {
-                                    Text("Importar con codigo")
+                                    Text("Importar con código")
                                         .font(BulkUpFont.body())
                                         .fontWeight(.semibold)
                                         .foregroundColor(BulkUpColors.textPrimary)
@@ -377,7 +363,7 @@ struct TrainingHubView: View {
                                     }
                                 }
 
-                                Text("Usa un codigo compartido por otro usuario")
+                                Text("Usa un código compartido por otro usuario")
                                     .font(BulkUpFont.caption())
                                     .foregroundColor(BulkUpColors.textSecondary)
                             }
@@ -501,15 +487,7 @@ struct TrainingPlanLibraryView: View {
             VStack(spacing: Spacing.lg) {
                 ZStack {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    BulkUpColors.textTertiary.opacity(0.3), BulkUpColors.textTertiary.opacity(0.1),
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(BulkUpColors.surfaceElevated)
                         .frame(width: 80, height: 80)
 
                     Image(systemName: "folder")
@@ -958,13 +936,7 @@ struct ShareCodeView: View {
                 VStack(spacing: Spacing.lg) {
                     ZStack {
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [BulkUpColors.training.opacity(0.2), BulkUpColors.training.opacity(0.05)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(BulkUpColors.surfaceElevated)
                             .frame(width: 80, height: 80)
 
                         Image(systemName: "square.and.arrow.up")
@@ -1062,13 +1034,7 @@ struct ImportPlanByCodeView: View {
                 VStack(spacing: Spacing.lg) {
                     ZStack {
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [BulkUpColors.training.opacity(0.2), BulkUpColors.training.opacity(0.05)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(BulkUpColors.surfaceElevated)
                             .frame(width: 80, height: 80)
 
                         Image(systemName: "key")

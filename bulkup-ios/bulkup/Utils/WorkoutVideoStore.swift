@@ -72,6 +72,19 @@ enum WorkoutVideoStore {
         }
     }
 
+    /// Re-indexes a video under another set key (a set was removed and the
+    /// later ones shifted down). Any video already at `to` is replaced.
+    static func move(from: String, to: String) {
+        guard from != to else { return }
+        var map = loadIndex()
+        if let existing = map[to], existing != map[from] {
+            try? FileManager.default.removeItem(at: directory.appendingPathComponent(existing))
+        }
+        map[to] = map[from]
+        map[from] = nil
+        saveIndex(map)
+    }
+
     #if DEBUG
     static func runSelfCheck() {
         // Index encode/decode round-trip (no disk side effects).

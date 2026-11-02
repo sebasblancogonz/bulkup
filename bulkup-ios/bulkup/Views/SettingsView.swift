@@ -29,6 +29,8 @@ struct SettingsView: View {
     @State private var showingAbout = false
     @State private var showingDataExport = false
     @State private var showingDeleteAccount = false
+    @State private var showingDeleteAccountError = false
+    @State private var deleteAccountErrorMessage = ""
     @State private var exportFileURL: URL?
 
     var body: some View {
@@ -193,7 +195,7 @@ struct SettingsView: View {
                         title: "Política de Privacidad",
                         subtitle: "Cómo manejamos tus datos"
                     ) {
-                        if let url = URL(string: "https://bulkup.app/privacy") {
+                        if let url = URL(string: "https://getbulkup.com/privacy") {
                             UIApplication.shared.open(url)
                         }
                     }
@@ -216,7 +218,7 @@ struct SettingsView: View {
                         title: "Contactar Soporte",
                         subtitle: "Enviar feedback o reportar problemas"
                     ) {
-                        let email = "support@bulkup.app"
+                        let email = "support@getbulkup.com"
                         if let url = URL(string: "mailto:\(email)") {
                             UIApplication.shared.open(url)
                         }
@@ -253,7 +255,7 @@ struct SettingsView: View {
                         iconColor: BulkUpColors.textSecondary,
                         title: "Términos de Servicio"
                     ) {
-                        if let url = URL(string: "https://bulkup.app/terms") {
+                        if let url = URL(string: "https://getbulkup.com/terms") {
                             UIApplication.shared.open(url)
                         }
                     }
@@ -280,7 +282,7 @@ struct SettingsView: View {
                     Button("Cerrar") {
                         dismiss()
                     }
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }
@@ -295,12 +297,19 @@ struct SettingsView: View {
         .alert("Eliminar Cuenta", isPresented: $showingDeleteAccount) {
             Button("Cancelar", role: .cancel) {}
             Button("Eliminar", role: .destructive) {
-                // Lógica para eliminar cuenta
+                Task {
+                    await deleteAccount()
+                }
             }
         } message: {
             Text(
-                "Esta acción eliminará permanentemente tu cuenta y todos tus datos. No se puede deshacer."
+                "Esta acción es permanente y no se puede deshacer. Se eliminarán todos tus datos. Si tienes una suscripción comprada a través de Apple, debes cancelarla por separado en los ajustes del App Store: eliminar la cuenta no la cancela."
             )
+        }
+        .alert("No se pudo eliminar la cuenta", isPresented: $showingDeleteAccountError) {
+            Button("OK") {}
+        } message: {
+            Text(deleteAccountErrorMessage)
         }
         .onChange(of: theme) { _, newValue in
             applyTheme(newValue)
@@ -311,6 +320,16 @@ struct SettingsView: View {
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = keepScreenOn
             applyTheme(theme)
+        }
+    }
+
+    private func deleteAccount() async {
+        do {
+            try await authManager.deleteAccount()
+            // On success `isAuthenticated` becomes false and the app falls back to the login screen.
+        } catch {
+            deleteAccountErrorMessage = error.localizedDescription
+            showingDeleteAccountError = true
         }
     }
 
@@ -533,7 +552,7 @@ struct AboutView: View {
 
                 Image(systemName: "dumbbell.fill")
                     .font(.system(size: 60))
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
 
                 Text("BulkUp")
                     .font(BulkUpFont.screenTitle())
@@ -563,7 +582,7 @@ struct AboutView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Cerrar") { dismiss() }
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }

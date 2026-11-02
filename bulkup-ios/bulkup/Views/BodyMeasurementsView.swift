@@ -22,11 +22,11 @@ struct BodyMeasurementsView: View {
             SubscriptionRequiredView(
                 onSubscribe: { showingSubscription = true },
                 title: "Medidas Corporales",
-                subtitle: "Haz seguimiento de tu composicion corporal y progreso fisico",
+                subtitle: "Haz seguimiento de tu composición corporal y progreso físico",
                 features: [
                     "Registro de peso, cintura, cuello y mas",
-                    "Historial de mediciones con graficos",
-                    "Calculo de IMC y composicion corporal",
+                    "Historial de mediciones con gráficos",
+                    "Cálculo de IMC y composición corporal",
                     "Tendencias y cambios entre mediciones"
                 ]
             )
@@ -65,7 +65,7 @@ struct BodyMeasurementsView: View {
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }

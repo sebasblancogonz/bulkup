@@ -22,24 +22,40 @@ final class WorkoutFeedbackManager: ObservableObject {
         self.modelContext = modelContext
     }
 
-    func feedback(planId: String?, dayName: String) -> WorkoutFeedback? {
-        let id = WorkoutFeedback.makeID(planId: planId, dayName: dayName)
+    private func fetch(id: String) -> WorkoutFeedback? {
         let descriptor = FetchDescriptor<WorkoutFeedback>(predicate: #Predicate { $0.id == id })
         return try? modelContext.fetch(descriptor).first
     }
 
-    /// Creates or updates the feedback for a workout day.
+    /// Feedback for a workout day in the week starting `weekStart` ("yyyy-MM-dd").
+    /// A record saved before the key included the week is adopted by the week
+    /// it was last edited in (and re-keyed), so nothing already written is lost.
+    func feedback(planId: String?, dayName: String, weekStart: String) -> WorkoutFeedback? {
+        let id = WorkoutFeedback.makeID(planId: planId, dayName: dayName, weekStart: weekStart)
+        if let record = fetch(id: id) { return record }
+
+        let legacyID = WorkoutFeedback.legacyID(planId: planId, dayName: dayName)
+        guard let legacy = fetch(id: legacyID),
+              WorkoutFeedback.weekString(for: legacy.updatedAt) == weekStart else { return nil }
+        legacy.id = id
+        legacy.weekStart = weekStart
+        try? modelContext.save()
+        return legacy
+    }
+
+    /// Creates or updates the feedback for a workout day in a given week.
     func save(
         planId: String?,
         dayName: String,
+        weekStart: String,
         rating: Int,
         tags: [String],
         note: String?,
         photoFilenames: [String]
     ) {
-        let id = WorkoutFeedback.makeID(planId: planId, dayName: dayName)
-        let existing = feedback(planId: planId, dayName: dayName)
-        let record = existing ?? WorkoutFeedback(id: id, dayName: dayName, planId: planId)
+        let id = WorkoutFeedback.makeID(planId: planId, dayName: dayName, weekStart: weekStart)
+        let existing = feedback(planId: planId, dayName: dayName, weekStart: weekStart)
+        let record = existing ?? WorkoutFeedback(id: id, dayName: dayName, planId: planId, weekStart: weekStart)
         record.rating = rating
         record.tags = tags
         record.note = (note?.isEmpty ?? true) ? nil : note
@@ -64,8 +80,12 @@ final class WorkoutFeedbackManager: ObservableObject {
     }
 
     private static func makeIDStable() -> Bool {
-        WorkoutFeedback.makeID(planId: "p", dayName: "Miércoles")
-            == WorkoutFeedback.makeID(planId: "p", dayName: "miercoles")
+        WorkoutFeedback.makeID(planId: "p", dayName: "Miércoles", weekStart: "2026-09-14")
+            == WorkoutFeedback.makeID(planId: "p", dayName: "miercoles", weekStart: "2026-09-14")
+        && WorkoutFeedback.makeID(planId: "p", dayName: "lunes", weekStart: "2026-09-14")
+            != WorkoutFeedback.makeID(planId: "p", dayName: "lunes", weekStart: "2026-09-07")
+        && WorkoutFeedback.weekString(for: DateComponents(calendar: .init(identifier: .gregorian),
+                                                          year: 2026, month: 9, day: 18).date!) == "2026-09-14"
     }
     #endif
 }

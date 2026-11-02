@@ -91,7 +91,7 @@ struct LoginContentView: View {
                         Text(isRegistering ? LocalizedStringKey("¿Ya tienes cuenta? Inicia sesión") : LocalizedStringKey("¿No tienes cuenta? Regístrate"))
                             .font(.footnote)
                             .fontWeight(.medium)
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                             .padding(.vertical, Spacing.xs)
                             .frame(maxWidth: .infinity)
                             .contentShape(Rectangle())
@@ -179,13 +179,16 @@ struct LoginContentView: View {
             let firstName = credential.fullName?.givenName
             let lastName = credential.fullName?.familyName
             let appleUserID = credential.user
+            let authorizationCode = credential.authorizationCode
+                .flatMap { String(data: $0, encoding: .utf8) }
 
             Task {
                 do {
                     try await authManager.signInWithApple(
                         identityToken: identityToken,
                         firstName: firstName,
-                        lastName: lastName
+                        lastName: lastName,
+                        authorizationCode: authorizationCode
                     )
                     authManager.storeAppleUserId(appleUserID)
                 } catch {

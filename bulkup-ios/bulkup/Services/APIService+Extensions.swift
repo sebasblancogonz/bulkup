@@ -53,11 +53,17 @@ extension APIService {
         return authData
     }
 
-    func appleSignIn(identityToken: String, firstName: String?, lastName: String?) async throws -> AuthResponse {
+    func appleSignIn(
+        identityToken: String,
+        firstName: String?,
+        lastName: String?,
+        authorizationCode: String? = nil
+    ) async throws -> AuthResponse {
         let request = AppleSignInRequest(
             identityToken: identityToken,
             firstName: firstName,
-            lastName: lastName
+            lastName: lastName,
+            authorizationCode: authorizationCode
         )
 
         let response: APIResponse<AuthResponse> = try await requestWithBody(
@@ -384,6 +390,19 @@ extension APIService {
         return true
     }
 
+    // MARK: - Account deletion (App Store guideline 5.1.1(v))
+    /// Permanently deletes the authenticated user's account and all server-side data.
+    func deleteAccount() async throws {
+        let response: APIResponse<EmptyResponse> = try await request(
+            endpoint: "auth/account",
+            method: .DELETE
+        )
+
+        if !response.success {
+            throw APIError.networkError(response.error ?? "Error al eliminar la cuenta")
+        }
+    }
+
     // MARK: - Zipline Integration
     func uploadImageToZipline(
         imageData: Data,
@@ -457,9 +476,18 @@ extension APIService {
         )
     }
 
-    func getWorkoutSessions(userId: String, limit: Int = 50) async throws -> [WorkoutSessionRecord] {
+    /// `from`/`to` are optional inclusive "yyyy-MM-dd" bounds on the session date.
+    func getWorkoutSessions(
+        userId: String,
+        limit: Int = 50,
+        from: String? = nil,
+        to: String? = nil
+    ) async throws -> [WorkoutSessionRecord] {
+        var endpoint = "workout-sessions?userId=\(userId)&limit=\(limit)"
+        if let from { endpoint += "&from=\(from)" }
+        if let to { endpoint += "&to=\(to)" }
         let response: APIResponse<[WorkoutSessionRecord]> = try await request(
-            endpoint: "workout-sessions?userId=\(userId)&limit=\(limit)",
+            endpoint: endpoint,
             method: .GET
         )
         return response.data ?? []

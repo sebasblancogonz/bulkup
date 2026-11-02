@@ -79,6 +79,15 @@ struct LiveWorkout: Codable, Equatable {
             : nil
         advanceCursor()
     }
+    /// Undo a completion (phone check toggled off). The cursor moves back to
+    /// the first incomplete set so the widget/watch resume from it.
+    mutating func uncomplete(exerciseIndex: Int, setIndex: Int) {
+        guard let i = sets.firstIndex(where: { $0.exerciseIndex == exerciseIndex && $0.setIndex == setIndex }),
+              sets[i].completed else { return }
+        sets[i].completed = false
+        cursor = 0
+        advanceCursor()
+    }
     mutating func skipRest() { restEndDate = nil }
     mutating func addRest(_ seconds: Int) {
         restEndDate = (restEndDate ?? Date()).addingTimeInterval(TimeInterval(seconds))
@@ -240,6 +249,11 @@ extension SharedWorkoutStore {
         assert(ic.restEndDate == nil, "duplicate completion is a no-op (rest not re-armed)")
         ic.complete(exerciseIndex: 0, setIndex: 0)
         assert(ic.isFinished, "completing the last incomplete set finishes the workout")
+        ic.uncomplete(exerciseIndex: 0, setIndex: 0)
+        assert(!ic.sets[0].completed && ic.cursor == 0 && !ic.isFinished,
+               "uncomplete reopens the set and rewinds the cursor to it")
+        ic.uncomplete(exerciseIndex: 0, setIndex: 0) // duplicate is a no-op
+        assert(ic.cursor == 0)
         var icw = ic
         icw.sets[0].completed = false; icw.sets[0].weight = 0; icw.cursor = 0
         icw.complete(exerciseIndex: 0, setIndex: 0)

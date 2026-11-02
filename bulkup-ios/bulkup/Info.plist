@@ -16,20 +16,13 @@
 	<false/>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-      <key>NSExceptionDomains</key>
-      <dict>
-        <key>weight-tracker-zipline.tme3al.easypanel.host</key>
-        <dict>
-          <key>NSIncludesSubdomains</key>
-          <true/>
-          <key>NSExceptionAllowsInsecureHTTPLoads</key>
-          <true/>
-          <key>NSExceptionRequiresForwardSecrecy</key>
-          <false/>
-        </dict>
-      </dict>
-    </dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>SairaCondensed-SemiBold.ttf</string>
+		<string>SairaCondensed-Bold.ttf</string>
+		<string>SairaCondensed-ExtraBold.ttf</string>
+		<string>JetBrainsMono-Medium.ttf</string>
+		<string>JetBrainsMono-SemiBold.ttf</string>
+	</array>
 </dict>
 </plist>

@@ -17,7 +17,7 @@ struct ReviewDatePickerView: View {
                 Image(systemName: "calendar.badge.clock")
                     .foregroundColor(BulkUpColors.secondary)
 
-                Text("Proxima Revision")
+                Text("Próxima Revisión")
                     .font(BulkUpFont.cardTitle())
                     .fontWeight(.bold)
                     .foregroundColor(BulkUpColors.textPrimary)
@@ -45,7 +45,7 @@ struct ReviewDatePickerView: View {
                         Spacer()
 
                         let daysRemaining = Calendar.current.dateComponents([.day], from: Date(), to: reviewDate).day ?? 0
-                        Text("Faltan \(max(daysRemaining, 0)) dias")
+                        Text("Faltan \(max(daysRemaining, 0)) días")
                             .font(BulkUpFont.caption())
                             .foregroundColor(BulkUpColors.secondary)
                             .padding(.horizontal, Spacing.sm)

@@ -34,12 +34,12 @@ struct FriendsView: View {
                     Button(action: { showingMyCode = true }) {
                         Image(systemName: "person.text.rectangle")
                             .font(.system(size: 16))
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                     Button(action: { showingAddFriend = true }) {
                         Image(systemName: "person.badge.plus")
                             .font(.system(size: 16))
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                 }
             }
@@ -71,7 +71,7 @@ struct FriendsView: View {
                 VStack(spacing: 4) {
                     HStack(spacing: 6) {
                         Image(systemName: "flame.fill")
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                             .font(BulkUpFont.sectionHeader())
                         Text("\(friendsManager.myStreak?.currentStreak ?? 0)")
                             .font(.system(size: 36, weight: .bold, design: .rounded))
@@ -143,7 +143,7 @@ struct FriendsView: View {
 
                 if friendsManager.todayCompleted {
                     Image(systemName: "flame.fill")
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
             .flatCardStyle()
@@ -158,7 +158,7 @@ struct FriendsView: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
                 Image(systemName: "trophy.fill")
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 Text("Ranking")
                     .sectionHeader()
                 Spacer()
@@ -288,7 +288,7 @@ struct FriendsView: View {
 
             Text(name.prefix(1).uppercased())
                 .font(.system(size: 14, weight: .bold))
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
         }
     }
 

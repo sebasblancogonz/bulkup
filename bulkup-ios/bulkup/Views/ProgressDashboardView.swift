@@ -56,12 +56,12 @@ struct ProgressDashboardView: View {
                             Button(action: { showingMyCode = true }) {
                                 Image(systemName: "person.text.rectangle")
                                     .font(.system(size: 16))
-                                    .foregroundColor(BulkUpColors.accent)
+                                    .foregroundColor(BulkUpColors.accentText)
                             }
                             Button(action: { showingAddFriend = true }) {
                                 Image(systemName: "person.badge.plus")
                                     .font(.system(size: 16))
-                                    .foregroundColor(BulkUpColors.accent)
+                                    .foregroundColor(BulkUpColors.accentText)
                             }
                         }
                     }
@@ -139,7 +139,7 @@ struct ProgressDashboardView: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
                 Image(systemName: "calendar")
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                     .font(BulkUpFont.cardTitle())
 
                 Text("Resumen Semanal")
@@ -185,11 +185,11 @@ struct ProgressDashboardView: View {
                 VStack(spacing: 4) {
                     HStack(spacing: 3) {
                         Image(systemName: "flame.fill")
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                             .font(.system(size: 12))
                         Text("\(friendsManager.myStreak?.currentStreak ?? 0)")
                             .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                     Text("Racha")
                         .font(BulkUpFont.caption())
@@ -280,8 +280,8 @@ struct ProgressDashboardView: View {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 HStack {
                     Image(systemName: "trophy.fill")
-                        .foregroundColor(BulkUpColors.accent)
-                    Text("Records Personales")
+                        .foregroundColor(BulkUpColors.accentText)
+                    Text("Récords Personales")
                         .font(BulkUpFont.cardTitle())
                         .fontWeight(.bold)
                         .foregroundColor(BulkUpColors.textPrimary)
@@ -312,7 +312,7 @@ struct ProgressDashboardView: View {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 HStack {
                     Image(systemName: "person.2.fill")
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                     Text("Ranking")
                         .font(BulkUpFont.cardTitle())
                         .fontWeight(.bold)
@@ -344,10 +344,10 @@ struct ProgressDashboardView: View {
             SubscriptionRequiredView(
                 onSubscribe: { showingSubscription = true },
                 title: "Desbloquea el Progreso Completo",
-                subtitle: "Medidas corporales, records personales y ranking con amigos",
+                subtitle: "Medidas corporales, récords personales y ranking con amigos",
                 features: [
-                    "Seguimiento de composicion corporal",
-                    "Records personales (RM)",
+                    "Seguimiento de composición corporal",
+                    "Récords personales (RM)",
                     "Ranking y competencia con amigos"
                 ],
                 compact: true
@@ -450,7 +450,7 @@ struct ProgressDashboardView: View {
                 // Streak
                 HStack(spacing: 6) {
                     Image(systemName: "flame.fill")
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                         .font(BulkUpFont.caption())
                     Text(String(format: NSLocalizedString("Racha actual: %lld días", comment: ""), friendsManager.myStreak?.currentStreak ?? 0))
                         .font(BulkUpFont.caption())
@@ -535,11 +535,11 @@ struct ProgressDashboardView: View {
                     VStack(spacing: 4) {
                         HStack(spacing: 3) {
                             Image(systemName: "flame.fill")
-                                .foregroundColor(BulkUpColors.accent)
+                                .foregroundColor(BulkUpColors.accentText)
                                 .font(.system(size: 12))
                             Text("\(stats.currentStreak)")
                                 .font(.system(size: 15, weight: .bold, design: .rounded))
-                                .foregroundColor(BulkUpColors.accent)
+                                .foregroundColor(BulkUpColors.accentText)
                         }
                         Text("Racha")
                             .font(BulkUpFont.caption())
@@ -555,7 +555,7 @@ struct ProgressDashboardView: View {
                     Image(systemName: "info.circle")
                         .foregroundColor(BulkUpColors.textSecondary)
                         .font(BulkUpFont.caption())
-                    Text("Marca tus comidas para ver estadisticas de cumplimiento")
+                    Text("Marca tus comidas para ver estadísticas de cumplimiento")
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
@@ -578,14 +578,14 @@ struct ProgressDashboardView: View {
     private var personalRecordsCard: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
-                MicroLabel("Records Personales")
+                MicroLabel("Récords Personales")
 
                 Spacer()
 
                 Button { showingRMTracker = true } label: {
                     Text(rmManager.bestRecords.isEmpty ? "Registrar" : "Ver todos")
                         .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
 
@@ -593,7 +593,7 @@ struct ProgressDashboardView: View {
                 Button { showingRMTracker = true } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "plus.circle")
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                             .font(BulkUpFont.caption())
                         Text("Registra tus levantamientos")
                             .font(BulkUpFont.caption())
@@ -626,7 +626,7 @@ struct ProgressDashboardView: View {
 
                         Text(String(format: "%.1f kg", record.weight))
                             .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                     .padding(.vertical, 4)
 
@@ -671,15 +671,15 @@ struct ProgressDashboardView: View {
 
                 HStack(spacing: 12) {
                     Button(action: { showingMyCode = true }) {
-                        Label("Mi Codigo", systemImage: "person.text.rectangle")
+                        Label("Mi Código", systemImage: "person.text.rectangle")
                             .font(BulkUpFont.dataLabel())
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
 
                     Button(action: { showingAddFriend = true }) {
                         Label("Agregar", systemImage: "person.badge.plus")
                             .font(BulkUpFont.dataLabel())
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                 }
                 .padding(.top, 4)
@@ -712,7 +712,7 @@ struct ProgressDashboardView: View {
                         Spacer()
                         Text("Ver leaderboard completo")
                             .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                         Spacer()
                     }
                     .padding(.top, 4)
@@ -784,7 +784,7 @@ struct ProgressDashboardView: View {
 
             Text(name.prefix(1).uppercased())
                 .font(.system(size: 12, weight: .bold))
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
         }
     }
 
@@ -825,16 +825,9 @@ struct ProgressDashboardView: View {
                 return true
             }
         }
-        // Also count days finished via per-set checks with no logged weight
-        // (e.g. pure-bodyweight days). CompletedDaysStore persists those.
-        if CompletedDaysStore.isCompleted(
-            planId: trainingManager.trainingPlanId,
-            weekStart: trainingManager.selectedWeek,
-            day: day.day
-        ) {
-            return true
-        }
-        return false
+        // Also count days finished via a saved session with no logged weight
+        // (skipped or bodyweight exercises), including sessions from other devices.
+        return trainingManager.isDayCompleted(day: day.day)
     }
 
     private func dayAbbreviation(_ day: String) -> String {

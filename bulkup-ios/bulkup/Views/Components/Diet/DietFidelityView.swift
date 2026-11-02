@@ -60,7 +60,7 @@ struct DietFidelityView: View {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "chart.pie.fill")
                         .font(.system(size: 14))
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                     Text("Fidelidad a la dieta")
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textPrimary)
@@ -88,7 +88,7 @@ struct DietFidelityView: View {
                     } label: {
                         Label("Registrar día", systemImage: "plus.circle.fill")
                             .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                 }
 

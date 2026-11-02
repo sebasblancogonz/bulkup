@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-02T00:00:00Z",
+  "title": "Design System: BulkUp iOS",
+  "extensions": {
+    "platform": "ios",
+    "colorMeta": {
+      "voltage-dark": { "role": "primary", "displayName": "Voltage Lime (dark)", "canonical": "#B4FF2E", "pair": "voltage-light", "tonalRamp": ["#1E2E00", "#3E5C00", "#5E8A00", "#7EB800", "#93D414", "#B4FF2E", "#C9FF66", "#E8FFB8"] },
+      "voltage-light": { "role": "primary", "displayName": "Voltage Lime (light)", "canonical": "#8FDC14", "pair": "voltage-dark", "tonalRamp": ["#1E2E00", "#3E7000", "#5A9E08", "#6DB10C", "#8FDC14", "#A8E83A", "#C6F27A", "#E6FAC2"] },
+      "voltage-pressed-dark": { "role": "primary", "displayName": "Voltage Pressed (dark)", "canonical": "#93D414", "pair": "voltage-pressed-light", "tonalRamp": ["#1A2600", "#334C00", "#4D7200", "#669800", "#80BE00", "#93D414", "#B3E54A", "#D6F29A"] },
+      "voltage-pressed-light": { "role": "primary", "displayName": "Voltage Pressed (light)", "canonical": "#6DB10C", "pair": "voltage-pressed-dark", "tonalRamp": ["#142200", "#284400", "#3D6600", "#518800", "#6DB10C", "#8BC93A", "#AEDC72", "#D3EEB0"] },
+      "voltage-glow-dark": { "role": "primary", "displayName": "Voltage Glow (dark)", "canonical": "#C9FF66", "pair": "voltage-glow-light", "tonalRamp": ["#263300", "#4C6600", "#729900", "#98CC00", "#B4FF2E", "#C9FF66", "#DBFF99", "#EDFFCC"] },
+      "voltage-glow-light": { "role": "primary", "displayName": "Voltage Glow (light)", "canonical": "#A8E83A", "pair": "voltage-glow-dark", "tonalRamp": ["#1F2E00", "#3E5C00", "#5E8A00", "#7EB810", "#A8E83A", "#BDEE66", "#D2F492", "#E8FABE"] },
+      "voltage-text-dark": { "role": "primary", "displayName": "Voltage Text (dark)", "canonical": "#B4FF2E", "pair": "voltage-text-light", "tonalRamp": ["#1E2E00", "#3E5C00", "#5E8A00", "#7EB800", "#93D414", "#B4FF2E", "#C9FF66", "#E8FFB8"] },
+      "voltage-text-light": { "role": "primary", "displayName": "Voltage Text (light)", "canonical": "#3E7000", "pair": "voltage-text-dark", "tonalRamp": ["#122000", "#243F00", "#3E7000", "#56940A", "#6DB10C", "#8FDC14", "#B6E866", "#DDF4B8"] },
+      "on-voltage": { "role": "primary", "displayName": "On Voltage (graphite)", "canonical": "#0E1110", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
+      "sky-done-dark": { "role": "secondary", "displayName": "Sky Done (dark)", "canonical": "#00A9DD", "pair": "sky-done-light", "tonalRamp": ["#00222D", "#00445A", "#006688", "#007DA8", "#00A9DD", "#33BCE5", "#73D2EE", "#B8E9F7"] },
+      "sky-done-light": { "role": "secondary", "displayName": "Sky Done (light)", "canonical": "#007DA8", "pair": "sky-done-dark", "tonalRamp": ["#001A24", "#003548", "#00516E", "#007DA8", "#0095C6", "#00A9DD", "#5CC8EA", "#B0E4F5"] },
+      "amber-error-dark": { "role": "tertiary", "displayName": "Amber Error (dark)", "canonical": "#F5A524", "pair": "amber-error-light", "tonalRamp": ["#331F00", "#663E00", "#995D00", "#CC7C00", "#F5A524", "#F7B64F", "#FAC97E", "#FCE4BE"] },
+      "amber-error-light": { "role": "tertiary", "displayName": "Amber Error (light)", "canonical": "#A86400", "pair": "amber-error-dark", "tonalRamp": ["#2B1A00", "#553300", "#804C00", "#A86400", "#D08200", "#F5A524", "#F8C36E", "#FBE2B8"] },
+      "graphite-ground-dark": { "role": "neutral", "displayName": "Graphite Ground", "canonical": "#0E1110", "pair": "bone-ground-light", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
+      "graphite-glow-dark": { "role": "neutral", "displayName": "Graphite Glow", "canonical": "#181D1E", "pair": "bone-glow-light", "tonalRamp": ["#0E1110", "#181D1E", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
+      "graphite-surface-dark": { "role": "neutral", "displayName": "Graphite Surface", "canonical": "#15191A", "pair": "bone-surface-light", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
+      "graphite-raised-dark": { "role": "neutral", "displayName": "Graphite Raised", "canonical": "#1D2224", "pair": "bone-raised-light", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
+      "graphite-line-dark": { "role": "neutral", "displayName": "Graphite Line (hairline)", "canonical": "#2A3033", "pair": "bone-line-light", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#4A524E", "#7C8581", "#9BA39E", "#F2F4F1"] },
+      "bone-text-dark": { "role": "neutral", "displayName": "Bone Text", "canonical": "#F2F4F1", "pair": "graphite-text-light", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#7C8581", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1"] },
+      "ash-text-secondary-dark": { "role": "neutral", "displayName": "Ash Secondary (dark)", "canonical": "#9BA39E", "pair": "ash-text-secondary-light", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#747C78", "#9BA39E", "#B8BFBA", "#D3D8D2", "#F2F4F1"] },
+      "ash-text-tertiary-dark": { "role": "neutral", "displayName": "Ash Tertiary (dark)", "canonical": "#7C8581", "pair": "ash-text-tertiary-light", "tonalRamp": ["#0E1110", "#2A3033", "#4A524E", "#5B635E", "#7C8581", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
+      "bone-ground-light": { "role": "neutral", "displayName": "Bone Ground", "canonical": "#F2F4F1", "pair": "graphite-ground-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#747C78", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1"] },
+      "bone-glow-light": { "role": "neutral", "displayName": "Bone Glow", "canonical": "#FFFFFF", "pair": "graphite-glow-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1", "#FFFFFF"] },
+      "bone-surface-light": { "role": "neutral", "displayName": "Bone Surface", "canonical": "#FFFFFF", "pair": "graphite-surface-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1", "#FFFFFF"] },
+      "bone-raised-light": { "role": "neutral", "displayName": "Bone Raised", "canonical": "#E8EBE6", "pair": "graphite-raised-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1", "#FFFFFF"] },
+      "bone-line-light": { "role": "neutral", "displayName": "Bone Line (hairline)", "canonical": "#D3D8D2", "pair": "graphite-line-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#E8EBE6", "#F2F4F1", "#FFFFFF"] },
+      "graphite-text-light": { "role": "neutral", "displayName": "Graphite Text", "canonical": "#0E1110", "pair": "bone-text-dark", "tonalRamp": ["#0E1110", "#15191A", "#1D2224", "#2A3033", "#5B635E", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
+      "ash-text-secondary-light": { "role": "neutral", "displayName": "Ash Secondary (light)", "canonical": "#5B635E", "pair": "ash-text-secondary-dark", "tonalRamp": ["#0E1110", "#2A3033", "#464D49", "#5B635E", "#747C78", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
+      "ash-text-tertiary-light": { "role": "neutral", "displayName": "Ash Tertiary (light)", "canonical": "#747C78", "pair": "ash-text-tertiary-dark", "tonalRamp": ["#0E1110", "#2A3033", "#5B635E", "#747C78", "#8C9490", "#9BA39E", "#D3D8D2", "#F2F4F1"] },
+      "shadow-dark": { "role": "neutral", "displayName": "Shadow (dark)", "canonical": "#000000", "pair": "shadow-light", "tonalRamp": ["#000000", "#0E1110", "#15191A", "#1D2224", "#2A3033", "#5B635E", "#9BA39E", "#F2F4F1"] },
+      "shadow-light": { "role": "neutral", "displayName": "Shadow (light)", "canonical": "#1A1F1C", "pair": "shadow-dark", "tonalRamp": ["#0E1110", "#1A1F1C", "#2A3033", "#464D49", "#5B635E", "#9BA39E", "#D3D8D2", "#F2F4F1"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The one headline of a screen: workout name, paywall headline, summary title. Saira Condensed ExtraBold 40pt uppercase, relativeTo largeTitle, lineSpacing -4." },
+      "display-section": { "displayName": "Display Section", "purpose": "Day name on Training, PRO gate title (34-36pt), completed-day block (32pt)." },
+      "display-inline": { "displayName": "Display Inline", "purpose": "Live-session header name (20pt Bold) and the primary button label (19pt SemiBold, tracking 0.8)." },
+      "headline": { "displayName": "Section Header", "purpose": "sectionHeader(): SF title3 Semibold." },
+      "title": { "displayName": "Card Title", "purpose": "cardTitle(): exercise names, plan names, unlock titles. SF headline Semibold." },
+      "body": { "displayName": "Body", "purpose": "body(): the sub-line under a headline, feature rows. SF subheadline Regular." },
+      "caption": { "displayName": "Caption", "purpose": "caption(): meta, rest hints, renewal copy. SF footnote Medium. The workhorse (250 uses)." },
+      "label": { "displayName": "Micro Label", "purpose": "microLabel(): column headers, data-strip and section labels. SF caption2 Bold, tracking 1.4, uppercase. Badge text same face at tracking 1.0." },
+      "data": { "displayName": "Data", "purpose": "Set-row kg/reps fields, counts. JetBrains Mono Medium 15pt relativeTo subheadline." },
+      "data-small": { "displayName": "Data Small", "purpose": "Previous-set hints, week-strip numbers, dates, per-month price. Mono 12-13pt." },
+      "data-strong": { "displayName": "Data Strong", "purpose": "Prices, elapsed time, data-strip values. Mono SemiBold 16-17pt." },
+      "data-stat": { "displayName": "Data Stat", "purpose": "StatCard and summary grid values. Mono SemiBold 26-28pt." },
+      "data-hero": { "displayName": "Data Hero", "purpose": "Rest countdown 64pt; heroStat 44pt; heroStatMedium 36pt. Mono SemiBold relativeTo largeTitle." }
+    },
+    "shadows": [
+      { "name": "card-shadow", "value": "0 6px 12px rgba(0,0,0,0.18)", "purpose": "cardShadow(): floating elements only (sheets, floating controls); not on content cards at rest. Light mode uses #1A1F1C at 18%." },
+      { "name": "accent-glow", "value": "0 0 16px rgba(180,255,46,0.35)", "purpose": "accentGlowShadow(): lime halo for a floating lime control (live-session mini timer)." },
+      { "name": "scrim-modal", "value": "rgba(0,0,0,0.55)", "purpose": "Full-screen dim under the purchasing spinner (shadow colour at 55%)." },
+      { "name": "scrim-gate", "value": "rgba(14,17,16,0.92)", "purpose": "PRO gate overlay: ground colour at 92% over locked content." },
+      { "name": "ground-glow", "value": "radial-gradient(460px at 50% 0%, rgba(24,29,30,0.85), transparent)", "purpose": "BulkUpGround: the top radial that keeps the canvas from reading as a flat swatch. Light: #FFFFFF at 85%." }
+    ],
+    "motion": [
+      { "name": "press", "value": "spring(response 0.3, damping 0.7) scale 0.97", "purpose": "pressable(): scale-on-press for CTAs and tappable cards." },
+      { "name": "progress-rule", "value": "easeOut 0.4s (day progress) / linear 1s (rest drain) / easeOut 0.8s (ring)", "purpose": "Progress rule and ring fills." },
+      { "name": "countdown", "value": "contentTransition numericText(countsDown) + linear 0.3s", "purpose": "Rest timer digits." },
+      { "name": "live-dot", "value": "easeInOut 1s repeatForever autoreverses, scale 1.3 / opacity 0.6", "purpose": "Pulsing lime dot beside the elapsed session time." },
+      { "name": "summary-reveal", "value": "spring(0.6, 0.7) for the done mark; spring(0.5, 0.8) delayed 0.6s for title, grid and actions (offset 20-30pt)", "purpose": "Workout summary entrance." }
+    ],
+    "breakpoints": [],
+    "sizing": [
+      { "name": "touch-min", "value": "44pt", "purpose": "Every mid-set control." },
+      { "name": "cta-height", "value": "54pt", "purpose": "Primary button min height." },
+      { "name": "secondary-height", "value": "48pt", "purpose": "Secondary and outline buttons." },
+      { "name": "set-row-height", "value": "40pt", "purpose": "kg / reps fields." },
+      { "name": "set-check", "value": "34pt square in a 44pt target, 8pt radius", "purpose": "Per-set check." },
+      { "name": "calendar-day", "value": "32pt square, 8pt radius", "purpose": "Week strip today square." },
+      { "name": "progress-rule", "value": "4pt", "purpose": "Lime / sky progress rules." },
+      { "name": "hairline", "value": "1pt", "purpose": "All separators and card strokes." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one lime CTA per screen: Saira Condensed SemiBold 19pt uppercase on a lime fill, 54pt, 10pt continuous radius. Pressed scales to 0.97.",
+      "html": "<button class=\"ds-btn-primary\">Continuar entreno</button>",
+      "css": ".ds-btn-primary { display:block; width:100%; min-height:54px; background:#B4FF2E; color:#0E1110; font-family:'Saira Condensed', system-ui, sans-serif; font-weight:600; font-size:19px; letter-spacing:0.8px; text-transform:uppercase; border:none; border-radius:10px; padding:0 16px; cursor:pointer; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); } .ds-btn-primary:hover { background:#C9FF66; } .ds-btn-primary:active { transform:scale(0.97); } .ds-btn-primary:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; } @media (prefers-color-scheme: light) { .ds-btn-primary { background:#8FDC14; } .ds-btn-primary:hover { background:#A8E83A; } }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Raised surface with a 1pt hairline, SF subheadline Semibold, 48pt. '+30 s', 'Gestionar suscripción', 'Reintentar'.",
+      "html": "<button class=\"ds-btn-secondary\">+30 s</button>",
+      "css": ".ds-btn-secondary { display:block; width:100%; min-height:48px; background:#1D2224; color:#F2F4F1; font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:600; font-size:15px; border:1px solid #2A3033; border-radius:10px; padding:0 16px; cursor:pointer; } .ds-btn-secondary:hover { border-color:#9BA39E; } .ds-btn-secondary:active { transform:scale(0.97); } .ds-btn-secondary:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; } @media (prefers-color-scheme: light) { .ds-btn-secondary { background:#E8EBE6; color:#0E1110; border-color:#D3D8D2; } }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Transparent with a lime 70% hairline and lime text, 48pt. 'Saltar' in the rest sheet.",
+      "html": "<button class=\"ds-btn-outline\">Saltar</button>",
+      "css": ".ds-btn-outline { display:block; width:100%; min-height:48px; background:transparent; color:#B4FF2E; font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:600; font-size:15px; border:1px solid rgba(180,255,46,0.7); border-radius:10px; padding:0 16px; cursor:pointer; } .ds-btn-outline:hover { border-color:#B4FF2E; } .ds-btn-outline:active { transform:scale(0.97); } .ds-btn-outline:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; } @media (prefers-color-scheme: light) { .ds-btn-outline { color:#3E7000; border-color:rgba(143,220,20,0.7); } }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Surface fill, 14pt continuous radius, 1pt line hairline, 16pt padding. No shadow at rest; state is a tinted hairline.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Press inclinado en multipower</div><div class=\"ds-card-meta\">90s descanso</div></div>",
+      "css": ".ds-card { background:#15191A; border:1px solid #2A3033; border-radius:14px; padding:16px; color:#F2F4F1; } .ds-card-title { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:600; font-size:17px; } .ds-card-meta { font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:500; font-size:12px; color:#9BA39E; margin-top:3px; } .ds-card.ds-card--active { border-color:rgba(180,255,46,0.7); } .ds-card.ds-card--done { border-color:rgba(0,169,221,0.6); } @media (prefers-color-scheme: light) { .ds-card { background:#FFFFFF; border-color:#D3D8D2; color:#0E1110; } .ds-card-meta { color:#5B635E; } }"
+    },
+    {
+      "name": "Pill Badge",
+      "kind": "chip",
+      "refersTo": "chip-pill",
+      "description": "The only capsule: colour at 15% fill, colour text, SF caption2 Bold uppercase tracking 1. 'MEJOR VALOR' is the solid-lime variant.",
+      "html": "<span class=\"ds-chip\">PRO</span> <span class=\"ds-chip ds-chip--solid\">Mejor valor</span>",
+      "css": ".ds-chip { display:inline-block; padding:5px 10px; border-radius:9999px; background:rgba(180,255,46,0.15); color:#B4FF2E; font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:700; font-size:11px; letter-spacing:1px; text-transform:uppercase; } .ds-chip--solid { background:#B4FF2E; color:#0E1110; padding:3px 7px; letter-spacing:0.8px; } @media (prefers-color-scheme: light) { .ds-chip { background:rgba(143,220,20,0.15); color:#3E7000; } .ds-chip--solid { background:#8FDC14; color:#0E1110; } }"
+    },
+    {
+      "name": "Set Row Field",
+      "kind": "input",
+      "refersTo": "input-set",
+      "description": "Raised fill, 8pt radius, 40pt, mono 15pt centred, 1pt line stroke; sky stroke once the set is logged. Steppers sit inside the same container.",
+      "html": "<div class=\"ds-set-field\"><button class=\"ds-step\">−</button><input class=\"ds-set-input\" value=\"62.5\" inputmode=\"decimal\" /><button class=\"ds-step\">+</button></div> <div class=\"ds-set-field ds-set-field--done\"><button class=\"ds-step\">−</button><input class=\"ds-set-input\" value=\"60\" /><button class=\"ds-step\">+</button></div>",
+      "css": ".ds-set-field { display:inline-flex; align-items:center; height:40px; width:110px; background:#1D2224; border:1px solid #2A3033; border-radius:8px; overflow:hidden; vertical-align:middle; } .ds-set-field--done { border-color:rgba(0,169,221,0.6); } .ds-step { width:32px; height:40px; background:transparent; border:none; color:#9BA39E; font-weight:700; font-size:13px; cursor:pointer; } .ds-set-input { width:46px; height:40px; background:transparent; border:none; text-align:center; color:#F2F4F1; font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:500; font-size:15px; } .ds-set-input::placeholder { color:#7C8581; } .ds-set-field:focus-within { border-color:#B4FF2E; } @media (prefers-color-scheme: light) { .ds-set-field { background:#E8EBE6; border-color:#D3D8D2; } .ds-set-input { color:#0E1110; } .ds-set-field--done { border-color:rgba(0,125,168,0.6); } .ds-set-field:focus-within { border-color:#8FDC14; } }"
+    },
+    {
+      "name": "Set Check",
+      "kind": "custom",
+      "refersTo": "check-done",
+      "description": "34pt square at 8pt radius inside a 44pt target: raised fill with a 1.5pt lime stroke when pending, sky fill with a bone check when done. Sky, never lime, means done.",
+      "html": "<button class=\"ds-check\" aria-label=\"Marcar serie\"></button> <button class=\"ds-check ds-check--done\" aria-label=\"Serie hecha\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg></button>",
+      "css": ".ds-check { width:34px; height:34px; margin:5px; background:#1D2224; border:1.5px solid #B4FF2E; border-radius:8px; color:#F2F4F1; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0; vertical-align:middle; } .ds-check--done { background:#00A9DD; border-color:#00A9DD; color:#F2F4F1; } .ds-check:focus-visible { outline:2px solid #B4FF2E; outline-offset:3px; } @media (prefers-color-scheme: light) { .ds-check { background:#E8EBE6; border-color:#8FDC14; } .ds-check--done { background:#007DA8; border-color:#007DA8; color:#F2F4F1; } }"
+    },
+    {
+      "name": "Week Strip Day",
+      "kind": "nav",
+      "refersTo": "calendar-day-today",
+      "description": "Day letter in SF 13pt, day number in mono 13pt inside a 32pt square (lime fill, 8pt radius, graphite text for today), a 5pt sky dot under logged days.",
+      "html": "<div class=\"ds-week\"><div class=\"ds-day ds-day--today\"><span class=\"ds-day-letter\">L</span><span class=\"ds-day-num\">2</span><span class=\"ds-day-dot\"></span></div><div class=\"ds-day\"><span class=\"ds-day-letter\">M</span><span class=\"ds-day-num\">3</span><span class=\"ds-day-dot ds-day-dot--on\"></span></div><div class=\"ds-day\"><span class=\"ds-day-letter\">X</span><span class=\"ds-day-num\">4</span><span class=\"ds-day-dot\"></span></div></div>",
+      "css": ".ds-week { display:flex; border-top:1px solid #2A3033; border-bottom:1px solid #2A3033; padding:12px 0; } .ds-day { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; } .ds-day-letter { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:13px; font-weight:500; color:#9BA39E; } .ds-day--today .ds-day-letter { font-weight:700; color:#F2F4F1; } .ds-day-num { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px; font-family:'JetBrains Mono', ui-monospace, monospace; font-size:13px; font-weight:500; color:#F2F4F1; } .ds-day--today .ds-day-num { background:#B4FF2E; color:#0E1110; font-weight:600; } .ds-day-dot { width:5px; height:5px; border-radius:50%; background:transparent; } .ds-day-dot--on { background:#00A9DD; } @media (prefers-color-scheme: light) { .ds-week { border-color:#D3D8D2; } .ds-day-letter { color:#5B635E; } .ds-day--today .ds-day-letter, .ds-day-num { color:#0E1110; } .ds-day--today .ds-day-num { background:#8FDC14; } .ds-day-dot--on { background:#007DA8; } }"
+    },
+    {
+      "name": "Display Block + Progress Rule",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "Micro label, the workout name in Saira Condensed ExtraBold 40pt uppercase, a mono count, and a 4pt rule: line track, lime fill by progress, full sky when done.",
+      "html": "<div class=\"ds-display\"><div class=\"ds-display-label\">Hoy</div><h1 class=\"ds-display-title\">Pecho y hombros</h1><div class=\"ds-display-count\"><strong>6</strong> ejercicios · <strong>21</strong> series</div><div class=\"ds-rule\"><div class=\"ds-rule-fill\" style=\"width:17%\"></div></div><div class=\"ds-display-sub\"><span class=\"ds-mono\">1/6</span> ejercicios registrados</div></div>",
+      "css": ".ds-display { color:#F2F4F1; } .ds-display-label { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:11px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:#B4FF2E; margin-bottom:8px; } .ds-display-title { font-family:'Saira Condensed', system-ui, sans-serif; font-weight:800; font-size:40px; line-height:0.95; letter-spacing:-0.2px; text-transform:uppercase; margin:0 0 8px; } .ds-display-count { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:15px; color:#9BA39E; } .ds-display-count strong { font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:600; color:#F2F4F1; } .ds-rule { height:4px; background:#2A3033; margin:12px 0 8px; } .ds-rule-fill { height:100%; background:#B4FF2E; transition:width 0.4s ease-out; } .ds-rule--done .ds-rule-fill { background:#00A9DD; width:100%; } .ds-display-sub { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:12px; color:#9BA39E; } .ds-mono { font-family:'JetBrains Mono', ui-monospace, monospace; color:#F2F4F1; } @media (prefers-color-scheme: light) { .ds-display, .ds-display-count strong, .ds-mono { color:#0E1110; } .ds-display-label { color:#3E7000; } .ds-display-count, .ds-display-sub { color:#5B635E; } .ds-rule { background:#D3D8D2; } .ds-rule-fill { background:#8FDC14; } .ds-rule--done .ds-rule-fill { background:#007DA8; } }"
+    },
+    {
+      "name": "Plan Row",
+      "kind": "custom",
+      "refersTo": "plan-row",
+      "description": "Selectable paywall row: 22pt radio with a 12pt lime dot, title + detail, price in mono 17pt SemiBold with per-month in mono 12pt lime text. Selected: raised fill and a solid lime hairline.",
+      "html": "<div class=\"ds-plan ds-plan--selected\"><span class=\"ds-radio\"></span><div class=\"ds-plan-main\"><div class=\"ds-plan-title\">Anual <span class=\"ds-chip ds-chip--solid\">Mejor valor</span></div><div class=\"ds-plan-detail\">7 días gratis · Ahorra 44 %</div></div><div class=\"ds-plan-price\"><div class=\"ds-price\">39,99 €</div><div class=\"ds-per-month\">3,33 €/mes</div></div></div>",
+      "css": ".ds-plan { display:flex; align-items:center; gap:16px; min-height:64px; padding:16px; background:#15191A; border:1px solid #2A3033; border-radius:14px; color:#F2F4F1; cursor:pointer; } .ds-plan--selected { background:#1D2224; border-color:#B4FF2E; } .ds-radio { width:22px; height:22px; border-radius:50%; border:1.5px solid #7C8581; flex:none; position:relative; } .ds-plan--selected .ds-radio { border-color:#B4FF2E; } .ds-plan--selected .ds-radio::after { content:''; position:absolute; inset:4px; border-radius:50%; background:#B4FF2E; } .ds-plan-main { flex:1; } .ds-plan-title { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-weight:600; font-size:17px; display:flex; align-items:center; gap:8px; } .ds-plan-detail { font-family:-apple-system, 'SF Pro Text', system-ui, sans-serif; font-size:13px; font-weight:500; color:#9BA39E; margin-top:3px; } .ds-plan-price { text-align:right; } .ds-price { font-family:'JetBrains Mono', ui-monospace, monospace; font-weight:600; font-size:17px; } .ds-per-month { font-family:'JetBrains Mono', ui-monospace, monospace; font-size:12px; color:#B4FF2E; margin-top:2px; } .ds-chip--solid { display:inline-block; padding:3px 7px; border-radius:9999px; background:#B4FF2E; color:#0E1110; font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; } @media (prefers-color-scheme: light) { .ds-plan { background:#FFFFFF; border-color:#D3D8D2; color:#0E1110; } .ds-plan--selected { background:#E8EBE6; border-color:#8FDC14; } .ds-plan--selected .ds-radio { border-color:#8FDC14; } .ds-plan--selected .ds-radio::after, .ds-chip--solid { background:#8FDC14; } .ds-plan-detail { color:#5B635E; } .ds-per-month { color:#3E7000; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Instrument Panel",
+    "overview": "BulkUp on iOS is the landing's \"Graphite & Voltage\" world (landing/DESIGN.md) translated into native SwiftUI. The screen is a gym instrument, not a feed: a graphite (dark) or bone (light) ground that is never pure black or white, hairlines instead of shadows between blocks, numbers set in a monospace face so kilos, reps, timers and prices line up like a readout, and one electric-lime razor that fires only where there is action (the CTA, today's square in the week strip, the progress rule) or progress (the draining rest rule). Sky is the only other chroma, and it means exactly one thing: done.\n\nDensity is operational. The set table is the hero of the training screen; everything around it (segmented plan picker, date nav, week strip) is quiet chrome in secondary ash. Display moments are rare and loud: Saira Condensed, uppercase, ExtraBold at 40pt for the workout name or the paywall headline, with a lime progress rule underneath. Everything else is SF Pro at Dynamic Type sizes, so the brand lives in the three voices (display, UI, data), the tint discipline and the hairline, not in custom chrome. System navigation, tab bar and sheets stay native.\n\nThe build confirmed a few things the contract only proposed: cards are surface + 1pt hairline at 14pt, with no accent side-stripes; progress is a 4pt rule, not a ring, on every screen sampled; chips in set rows are square-ish (6–8pt) and only true chips (badges, \"MEJOR VALOR\", drag handle) are capsules.",
+    "keyCharacteristics": [
+      "Graphite / bone ground with a faint radial glow at the top (`BulkUpGround`), never a flat swatch, never #000 or #FFF.",
+      "Two greens with two meanings: lime is action and progress, sky is done and logged. They never swap.",
+      "Amber is the only error / warning colour; no red anywhere.",
+      "Three type voices: Saira Condensed uppercase (display), SF Pro text styles (UI), JetBrains Mono (every datapoint).",
+      "1pt hairlines are the structural grammar; shadows are earned by floating controls and sheets only.",
+      "Hierarchised radii 14 / 10 / 8 (cards / buttons & inputs / fields & small squares); capsules only for chips."
+    ],
+    "rules": [
+      { "name": "The Two-Greens Rule", "body": "Lime means action or progress; sky means done or logged. A checked set, a finished day, a logged meal turn sky; the CTA, today's square and the in-progress rule stay lime. Neither colour ever takes the other's job.", "section": "colors" },
+      { "name": "The Razor Rule", "body": "Lime covers ≤10% of any screen. One filled CTA per screen; everything else lime is a 1pt stroke, a 4pt rule, a 12pt radio dot, or text in `accentText`.", "section": "colors" },
+      { "name": "The Amber-Only Rule", "body": "Amber is the sole error and warning colour in both appearances. No red, no second alarm colour.", "section": "colors" },
+      { "name": "The Never-Pure Rule", "body": "The ground is graphite (#0E1110) or bone (#F2F4F1), never #000000 or #FFFFFF, and it always carries the top radial glow from `BulkUpGround`.", "section": "colors" },
+      { "name": "The Mono-For-Numbers Rule", "body": "Every kilo, rep, %, timer, price, date-number and streak is set in JetBrains Mono. A number in SF Pro is a defect.", "section": "typography" },
+      { "name": "The One-Shout Rule", "body": "Saira Condensed appears once per screen as the headline (plus the CTA label and the live-session header name). Section titles, card titles and body are SF Pro.", "section": "typography" },
+      { "name": "The Relative-To Rule", "body": "Custom faces are always declared `relativeTo:` a system text style so Dynamic Type scales them; raw point sizes without a style are not used.", "section": "typography" },
+      { "name": "The Hairline-Over-Shadow Rule", "body": "A 1pt stroke in `line` (or a tinted hairline for state) separates and contains; shadows are reserved for things that genuinely float above the scroll (sheets, floating timers). A content card with a drop shadow is a defect.", "section": "elevation" },
+      { "name": "The Tinted-Edge Rule", "body": "State lives in the hairline colour, not in a side stripe or a tinted fill: lime 60–70% for active, sky 60% for done, solid lime for selected.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do put every number in JetBrains Mono via `BulkUpFont.mono(_:weight:relativeTo:)`, including dates, counts, prices and timers.",
+      "Do limit each screen to one Saira Condensed headline (40pt ExtraBold, uppercase via `displayVoice`) and one lime-filled CTA (`primaryButtonStyle`, 54pt).",
+      "Do separate rows and bound strips with 1pt `BulkUpColors.line` Rectangles; contain cards with `hairline()` at 14pt.",
+      "Do turn things sky (`BulkUpColors.complete`) when they are done: set checks, logged squares, finished-day rule, week-strip dots.",
+      "Do use `accentText` (not `accent`) for lime text and icons on the ground so light mode stays ≥4.5:1.",
+      "Do declare custom fonts `relativeTo:` a text style and keep mid-set controls at ≥44pt.",
+      "Do start every top-level screen on `BulkUpGround()` and hide the nav-bar background so the glow runs under it.",
+      "Do show state in the hairline colour: lime 60–70% active, sky 60% done, solid lime selected."
+    ],
+    "donts": [
+      "Don't use pure black or pure white as a ground, or a flat swatch without the top radial glow.",
+      "Don't use lime to mean \"done\" or sky to mean \"go\": the two greens never swap jobs.",
+      "Don't use red; amber (`warning` / `error`) is the only alarm colour.",
+      "Don't put drop shadows on content cards or use glass on content; both belong to floating controls and the navigation layer only.",
+      "Don't add accent side-stripes, gradient text, gradient rings or crown/trophy badges to cards and headers.",
+      "Don't use capsules for anything but chips, tags and the drag indicator; buttons, inputs and squares are 10pt / 8pt continuous rectangles.",
+      "Don't nest a card inside a card; nested content uses `flatCardStyle` (raised fill, 10pt, no hairline) or a hairline list.",
+      "Don't set a number in SF Pro or a display headline in a weight lighter than SemiBold."
+    ]
+  }
+}

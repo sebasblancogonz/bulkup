@@ -32,7 +32,7 @@ struct MyFriendCodeView: View {
 
                         Image(systemName: "person.2.fill")
                             .font(.system(size: 36))
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
 
                     Text("Tu Código de Amigo")
@@ -94,7 +94,7 @@ struct MyFriendCodeView: View {
                     Button("Cerrar") {
                         dismiss()
                     }
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }

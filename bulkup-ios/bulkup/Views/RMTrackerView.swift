@@ -49,13 +49,13 @@ struct RMTrackerView: View {
                 if !storeKit.isSubscribed {
                     SubscriptionRequiredView(
                         onSubscribe: { showingSubscription = true },
-                        title: "Records Personales",
+                        title: "Récords Personales",
                         subtitle: "Registra y sigue tus PR en los ejercicios principales",
                         features: [
                             "Registra peso y repeticiones",
                             "Calculo automatico de RM estimado",
                             "Historial y progresion por ejercicio",
-                            "Estadisticas de tus levantamientos"
+                            "Estadísticas de tus levantamientos"
                         ]
                     )
                 } else if rmManager.isLoading && rmManager.records.isEmpty {
@@ -80,7 +80,7 @@ struct RMTrackerView: View {
                         Button(action: { showAddRecord() }) {
                             Image(systemName: "plus")
                                 .font(BulkUpFont.sectionHeader())
-                                .foregroundColor(BulkUpColors.accent)
+                                .foregroundColor(BulkUpColors.accentText)
                         }
                     }
                 }
@@ -373,7 +373,7 @@ struct RMExerciseCardView: View {
                         Text("Añadir")
                             .font(BulkUpFont.caption())
                             .fontWeight(.medium)
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                 }
                 .contentShape(Rectangle())
@@ -568,7 +568,7 @@ struct AddRecordFormView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(isEditing ? "Actualizar" : "Guardar") { onSubmit() }
                         .disabled(!formData.isValid || isSubmitting)
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
             .sheet(isPresented: $showExercisePicker) {
@@ -627,7 +627,7 @@ struct ExercisePickerView: View {
 
                             if selectedExerciseId == exercise.id {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(BulkUpColors.accent)
+                                    .foregroundColor(BulkUpColors.accentText)
                             }
                         }
                     }
@@ -639,7 +639,7 @@ struct ExercisePickerView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Cerrar") { dismiss() }
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }

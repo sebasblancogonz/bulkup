@@ -117,7 +117,12 @@ class AuthManager: ObservableObject {
         NotificationCenter.default.post(name: .userDidLogin, object: newUser)
     }
 
-    func signInWithApple(identityToken: String, firstName: String?, lastName: String?) async throws {
+    func signInWithApple(
+        identityToken: String,
+        firstName: String?,
+        lastName: String?,
+        authorizationCode: String? = nil
+    ) async throws {
         guard !isLoading else { return }
 
         isLoading = true
@@ -126,7 +131,8 @@ class AuthManager: ObservableObject {
         let response = try await apiService.appleSignIn(
             identityToken: identityToken,
             firstName: firstName,
-            lastName: lastName
+            lastName: lastName,
+            authorizationCode: authorizationCode
         )
 
         storeToken(response.token, userId: response.userId)
@@ -164,6 +170,21 @@ class AuthManager: ObservableObject {
         }
 
         NotificationCenter.default.post(name: .userDidLogin, object: newUser)
+    }
+
+    /// Permanently deletes the account on the server, then clears all local state
+    /// exactly like `logout()` so the app returns to the login screen.
+    func deleteAccount() async throws {
+        guard !isLoading else { return }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        print("🗑️ Eliminando cuenta...")
+        try await apiService.deleteAccount()
+        print("✅ Cuenta eliminada en el servidor")
+
+        logout()
     }
 
     func logout() {

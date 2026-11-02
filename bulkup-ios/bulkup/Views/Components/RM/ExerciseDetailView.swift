@@ -65,7 +65,7 @@ struct ExerciseDetailView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { showAddRecord() }) {
                     Image(systemName: "plus")
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }

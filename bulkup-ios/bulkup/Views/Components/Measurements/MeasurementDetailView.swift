@@ -244,12 +244,12 @@ struct MeasurementDetailView: View {
                                 Spacer()
                                 Image(systemName: "pencil")
                                     .font(BulkUpFont.caption())
-                                    .foregroundColor(BulkUpColors.accent)
+                                    .foregroundColor(BulkUpColors.accentText)
                             }
 
                             Text(String(format: "%.1f%%", composition.porcentajeGrasa))
                                 .font(BulkUpFont.sectionHeader())
-                                .foregroundColor(BulkUpColors.accent)
+                                .foregroundColor(BulkUpColors.accentText)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
@@ -543,7 +543,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .frame(height: 44)
             .background(BulkUpColors.accent.opacity(0.1))
-            .foregroundColor(BulkUpColors.accent)
+            .foregroundColor(BulkUpColors.accentText)
             .cornerRadius(CornerRadius.medium)
             .fontWeight(.medium)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)

@@ -36,7 +36,7 @@ struct AddFriendView: View {
 
                         Image(systemName: "person.badge.plus")
                             .font(.system(size: 36))
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
 
                     Text("Agregar Amigo")

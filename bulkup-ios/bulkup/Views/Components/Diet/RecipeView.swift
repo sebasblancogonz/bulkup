@@ -53,7 +53,7 @@ struct RecipeView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cerrar") { dismiss() }
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
                 if hasGenerated {
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -61,7 +61,7 @@ struct RecipeView: View {
                             Task { await manager.regenerate() }
                         } label: {
                             Image(systemName: "arrow.clockwise")
-                                .foregroundColor(BulkUpColors.accent)
+                                .foregroundColor(BulkUpColors.accentText)
                         }
                         .disabled(manager.isLoadingRecipe)
                     }
@@ -190,7 +190,7 @@ struct RecipeView: View {
                     } label: {
                         Label("Cambiar opciones", systemImage: "slider.horizontal.3")
                             .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                     .buttonStyle(.plain)
                 }
@@ -221,7 +221,7 @@ struct RecipeView: View {
                 } else {
                     Image(systemName: "fork.knife")
                         .font(.system(size: 40))
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }
@@ -255,7 +255,7 @@ struct RecipeView: View {
             Button("Reintentar") {
                 Task { await manager.load(ingredients: selectedIngredients, complexity: complexity) }
             }
-            .foregroundColor(BulkUpColors.accent)
+            .foregroundColor(BulkUpColors.accentText)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, Spacing.xl)

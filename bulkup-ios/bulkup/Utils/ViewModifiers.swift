@@ -2,7 +2,8 @@
 //  ViewModifiers.swift
 //  bulkup
 //
-//  Premium fitness component modifiers — Freeletics-inspired dark immersive aesthetic.
+//  Shared component grammar for the "Graphite & Voltage" system: hairline
+//  cards, squared lime buttons, mono data, sky for done.
 //
 
 import SwiftUI
@@ -17,11 +18,8 @@ struct CardStyle: ViewModifier {
         content
             .padding(Spacing.md)
             .background(BulkUpColors.surface)
-            .cornerRadius(CornerRadius.large)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(BulkUpColors.border, lineWidth: 0.5)
-            )
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+            .hairline()
     }
 }
 
@@ -43,15 +41,12 @@ struct AccentCardStyle: ViewModifier {
         content
             .padding(Spacing.md)
             .background(BulkUpColors.surface)
-            .cornerRadius(CornerRadius.large)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(color.opacity(0.4), lineWidth: 1.5)
-            )
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+            .hairline(color: color.opacity(0.6))
     }
 }
 
-// MARK: - Active Card (left accent border — in-progress items)
+// MARK: - Active Card (in-progress items: tinted hairline, no side stripe)
 struct ActiveCardStyle: ViewModifier {
     var color: Color = BulkUpColors.accent
 
@@ -59,18 +54,8 @@ struct ActiveCardStyle: ViewModifier {
         content
             .padding(Spacing.md)
             .background(BulkUpColors.surface)
-            .cornerRadius(CornerRadius.large)
-            .overlay(alignment: .leading) {
-                UnevenRoundedRectangle(
-                    topLeadingRadius: CornerRadius.large,
-                    bottomLeadingRadius: CornerRadius.large,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 0
-                )
-                .fill(color)
-                .frame(width: 3)
-            }
-            .clipped()
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+            .hairline(color: color.opacity(0.7))
     }
 }
 
@@ -92,19 +77,14 @@ struct PrimaryButtonModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 17, weight: .semibold))
+            .font(BulkUpFont.display(19, weight: .semibold, relativeTo: .headline))
+            .textCase(.uppercase)
+            .tracking(0.8)
             .foregroundColor(Color.onFill(color))
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(
-                LinearGradient(
-                    colors: [color, color.opacity(0.7)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .cornerRadius(CornerRadius.medium)
-            .shadow(color: color.opacity(0.3), radius: 12, x: 0, y: 4)
+            .frame(minHeight: 54)
+            .background(color)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
     }
 }
 
@@ -112,16 +92,13 @@ struct PrimaryButtonModifier: ViewModifier {
 struct SecondaryButtonModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 15, weight: .medium))
+            .font(.system(.subheadline, weight: .semibold))
             .foregroundColor(BulkUpColors.textPrimary)
             .frame(maxWidth: .infinity)
-            .frame(height: 48)
+            .frame(minHeight: 48)
             .background(BulkUpColors.surfaceElevated)
-            .cornerRadius(CornerRadius.medium)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .stroke(BulkUpColors.border, lineWidth: 0.5)
-            )
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+            .hairline(CornerRadius.medium)
     }
 }
 
@@ -131,16 +108,13 @@ struct OutlineButtonModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 15, weight: .medium))
+            .font(.system(.subheadline, weight: .semibold))
             .foregroundColor(color)
             .frame(maxWidth: .infinity)
-            .frame(height: 48)
+            .frame(minHeight: 48)
             .background(Color.clear)
-            .cornerRadius(CornerRadius.medium)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .stroke(color.opacity(0.5), lineWidth: 1.5)
-            )
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+            .hairline(CornerRadius.medium, color: color.opacity(0.7))
     }
 }
 
@@ -163,18 +137,10 @@ struct GradientProgressRing: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(color.opacity(0.15), lineWidth: lineWidth)
+                .stroke(BulkUpColors.line, lineWidth: lineWidth)
             Circle()
-                .trim(from: 0, to: progress)
-                .stroke(
-                    AngularGradient(
-                        colors: [color, color.opacity(0.5), color],
-                        center: .center,
-                        startAngle: .degrees(-90),
-                        endAngle: .degrees(270)
-                    ),
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                )
+                .trim(from: 0, to: max(0, min(1, progress)))
+                .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
                 .rotationEffect(.degrees(-90))
                 .animation(.easeOut(duration: 0.8), value: progress)
         }
@@ -220,12 +186,11 @@ struct StatCard: View {
             if let icon {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
             }
             HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
                 Text(value)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .monospacedDigit()
+                    .font(BulkUpFont.mono(26, weight: .semibold, relativeTo: .title2))
                     .foregroundColor(BulkUpColors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
@@ -262,18 +227,18 @@ struct CalendarDayView: View {
                 .foregroundColor(isToday ? BulkUpColors.textPrimary : BulkUpColors.textSecondary)
 
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
                     .fill(isToday ? BulkUpColors.accent : Color.clear)
                     .frame(width: 32, height: 32)
                 Text(dayNumber)
-                    .font(.system(size: 13, weight: isToday ? .bold : .medium))
+                    .font(BulkUpFont.mono(13, weight: isToday ? .semibold : .medium, relativeTo: .footnote))
                     .foregroundColor(isToday ? BulkUpColors.onAccent : BulkUpColors.textPrimary)
             }
 
-            // Completion indicator (kept clear-sized so the row stays aligned)
+            // Logged-day mark (sky = done); kept clear-sized so the row stays aligned
             Circle()
-                .fill(isCompleted && !isToday ? BulkUpColors.accent : Color.clear)
-                .frame(width: 4, height: 4)
+                .fill(isCompleted ? BulkUpColors.complete : Color.clear)
+                .frame(width: 5, height: 5)
         }
         .frame(maxWidth: .infinity)
     }

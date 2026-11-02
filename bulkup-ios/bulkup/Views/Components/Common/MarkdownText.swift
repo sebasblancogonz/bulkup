@@ -25,7 +25,7 @@ struct MarkdownText: View {
             inline(text).font(headingFont(level))
         } else if let item = bullet(line) {
             HStack(alignment: .top, spacing: 6) {
-                Text("•").foregroundColor(BulkUpColors.accent)
+                Text("•").foregroundColor(BulkUpColors.accentText)
                 inline(item)
             }
         } else {

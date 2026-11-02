@@ -30,6 +30,12 @@ class TrainingManager: ObservableObject {
     @Published var savedWeights: [String: Bool] = [:]
     @Published var savingWeights: [String: Bool] = [:]
 
+    /// Training days finished through a saved workout session, as reported by
+    /// the backend for the loaded weeks. Key format mirrors CompletedDaysStore:
+    /// "planId|weekStart(yyyy-MM-dd)|normalizedDay". Sessions saved without a
+    /// plan use an empty planId and match any plan.
+    @Published private(set) var sessionCompletedDayKeys: Set<String> = []
+
     // Cross-plan mirror of weights/setReps keyed only by folded exercise name +
     // set + week. A new plan changes planId/day/orderIndex, which breaks every
     // generateWeightKey lookup; this mirror lets "anterior" find weights the
@@ -296,6 +302,11 @@ class TrainingManager: ObservableObject {
         assert(plannedReps("8-12-10", setIndex: 2) == 10)
         assert(plannedReps("8-12-10", setIndex: 3) == 10, "extra sets reuse the last entry")
         assert(plannedReps("8-12", setIndex: 0) == 12, "two dashed numbers is still a range")
+
+        assert(clampedSets(planned: 3, delta: 0) == 3)
+        assert(clampedSets(planned: 3, delta: 2) == 5, "added sets extend the plan")
+        assert(clampedSets(planned: 3, delta: -2) == 1, "removing planned sets is allowed")
+        assert(clampedSets(planned: 3, delta: -5) == 1, "never below one set")
     }
     #endif
 
@@ -400,7 +411,7 @@ class TrainingManager: ObservableObject {
                 day: normalizedDay,
                 exerciseIndex: exercise.orderIndex,
                 exerciseName: exercise.name,
-                totalSets: exercise.sets
+                totalSets: effectiveSets(for: exercise, day: normalizedDay)
             )
             totalSetsCompleted += completed
             if completed == 0 {
@@ -409,6 +420,203 @@ class TrainingManager: ObservableObject {
         }
 
         return (allComplete, trackableExercises.count, totalSetsCompleted)
+    }
+
+    // MARK: - Completed days
+
+    private static let sessionDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
+    /// ISO week Monday of `date` as "yyyy-MM-dd" (the week key used by weights,
+    /// completed days and workout feedback).
+    func weekString(for date: Date) -> String {
+        Self.sessionDateFormatter.string(from: getWeekStart(date))
+    }
+
+    private func completedDayKey(planId: String?, weekStart: Date, day: String) -> String {
+        let week = Self.sessionDateFormatter.string(from: getWeekStart(weekStart))
+        let normalizedDay = day.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+            .trimmingCharacters(in: .whitespaces)
+        return "\(planId ?? "")|\(week)|\(normalizedDay)"
+    }
+
+    /// Single source of truth for "this training day was finished": a workout
+    /// session saved in the backend for that week (any device), or the local
+    /// CompletedDaysStore mark written when the user saved the summary.
+    /// Defaults to `selectedWeek`. Logged weights are NOT considered here; the
+    /// views combine this with their own set-based check for days logged
+    /// without a session.
+    func isDayCompleted(day: String, week: Date? = nil) -> Bool {
+        let weekStart = week ?? selectedWeek
+        if sessionCompletedDayKeys.contains(
+            completedDayKey(planId: trainingPlanId, weekStart: weekStart, day: day)
+        ) {
+            return true
+        }
+        // Legacy sessions saved without a planId count for the current plan.
+        if trainingPlanId != nil, sessionCompletedDayKeys.contains(
+            completedDayKey(planId: nil, weekStart: weekStart, day: day)
+        ) {
+            return true
+        }
+        return CompletedDaysStore.isCompleted(
+            planId: trainingPlanId, weekStart: weekStart, day: day
+        )
+    }
+
+    /// Marks a day as finished immediately (local store + in-memory), so the UI
+    /// flips to "Completado" even if the backend save is still in flight or fails.
+    func markDayCompleted(day: String, week: Date? = nil) {
+        let weekStart = week ?? selectedWeek
+        CompletedDaysStore.markCompleted(planId: trainingPlanId, weekStart: weekStart, day: day)
+        sessionCompletedDayKeys.insert(
+            completedDayKey(planId: trainingPlanId, weekStart: weekStart, day: day)
+        )
+    }
+
+    /// Fetches the workout sessions saved in the ISO week containing `weekStart`
+    /// and replaces that week's entries in `sessionCompletedDayKeys`.
+    func loadCompletedSessions(for weekStart: Date) async {
+        guard let userId = authManager.user?.id else { return }
+        let start = getWeekStart(weekStart)
+        guard let end = Calendar(identifier: .iso8601).date(byAdding: .day, value: 6, to: start) else { return }
+        let formatter = Self.sessionDateFormatter
+        let weekString = formatter.string(from: start)
+
+        do {
+            let sessions = try await apiService.getWorkoutSessions(
+                userId: userId,
+                limit: 100,
+                from: formatter.string(from: start),
+                to: formatter.string(from: end)
+            )
+            var keys = Set<String>()
+            for session in sessions {
+                guard let date = formatter.date(from: session.date) else { continue }
+                let planId = (session.planId?.isEmpty == false) ? session.planId : nil
+                keys.insert(completedDayKey(planId: planId, weekStart: date, day: session.dayName))
+            }
+            // Keep keys from other weeks (and optimistic local marks for other
+            // weeks); only this week's entries come from the fresh response.
+            let others = sessionCompletedDayKeys.filter { !$0.contains("|\(weekString)|") }
+            sessionCompletedDayKeys = others.union(keys)
+            print("✅ Sesiones completadas para \(weekString): \(keys.count)")
+        } catch {
+            // Keep whatever we had (including local marks); the views still
+            // fall back to CompletedDaysStore and logged weights.
+            print("❌ Error cargando sesiones de la semana \(weekString): \(error)")
+        }
+    }
+
+    // MARK: - Set count adjustments
+
+    /// Per-week, per-exercise adjustment to the plan's set count, so a user can
+    /// add a set or drop one on a given day without editing the plan.
+    /// Key: "planId|week|foldedDay|exerciseIndex" → delta (negative allowed;
+    /// the effective count never drops below 1). Persisted in UserDefaults.
+    @Published private(set) var setCountDeltas: [String: Int] = TrainingManager.loadSetCountDeltas()
+
+    private static let setCountDeltasKey = "setCountDeltas"
+
+    private static func loadSetCountDeltas() -> [String: Int] {
+        UserDefaults.standard.dictionary(forKey: setCountDeltasKey) as? [String: Int] ?? [:]
+    }
+
+    private func persistSetCountDeltas() {
+        UserDefaults.standard.set(setCountDeltas, forKey: Self.setCountDeltasKey)
+    }
+
+    private func setCountKey(day: String, exerciseIndex: Int, week: String? = nil) -> String {
+        let foldedDay = day.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+            .trimmingCharacters(in: .whitespaces)
+        return "\(trainingPlanId ?? "local")|\(week ?? getCurrentWeekString())|\(foldedDay)|\(exerciseIndex)"
+    }
+
+    /// Effective minus planned for this exercise in the selected week.
+    func setCountDelta(day: String, exerciseIndex: Int) -> Int {
+        setCountDeltas[setCountKey(day: day, exerciseIndex: exerciseIndex)] ?? 0
+    }
+
+    static func clampedSets(planned: Int, delta: Int) -> Int { max(1, planned + delta) }
+
+    /// Number of sets the user actually has for this exercise this week.
+    func effectiveSets(plannedSets: Int, day: String, exerciseIndex: Int) -> Int {
+        Self.clampedSets(planned: plannedSets, delta: setCountDelta(day: day, exerciseIndex: exerciseIndex))
+    }
+
+    func effectiveSets(for exercise: Exercise, day: String) -> Int {
+        effectiveSets(plannedSets: exercise.sets, day: day, exerciseIndex: exercise.orderIndex)
+    }
+
+    /// Appends one set for this week. Returns the new total.
+    @discardableResult
+    func addSet(day: String, exerciseIndex: Int, plannedSets: Int) -> Int {
+        let key = setCountKey(day: day, exerciseIndex: exerciseIndex)
+        let current = Self.clampedSets(planned: plannedSets, delta: setCountDeltas[key] ?? 0)
+        setCountDeltas[key] = current + 1 - plannedSets
+        persistSetCountDeltas()
+        return current + 1
+    }
+
+    /// Removes the set at `setIndex` for this week and shifts every later set
+    /// (weight, reps, video) down one slot so nothing logged is lost. Returns the
+    /// new total, or nil when nothing was removed (last remaining set).
+    @discardableResult
+    func removeSet(
+        day: String, exerciseIndex: Int, exerciseName: String, plannedSets: Int, setIndex: Int
+    ) -> Int? {
+        let key = setCountKey(day: day, exerciseIndex: exerciseIndex)
+        let current = Self.clampedSets(planned: plannedSets, delta: setCountDeltas[key] ?? 0)
+        guard current > 1, setIndex >= 0, setIndex < current else { return nil }
+        let week = getCurrentWeekString()
+        func k(_ i: Int) -> String {
+            generateWeightKey(day: day, exerciseIndex: exerciseIndex, exerciseName: exerciseName,
+                              setIndex: i, weekStart: week)
+        }
+        WorkoutVideoStore.delete(for: k(setIndex))
+        for i in setIndex..<(current - 1) {
+            weights[k(i)] = weights[k(i + 1)]
+            setReps[k(i)] = setReps[k(i + 1)]
+            WorkoutVideoStore.move(from: k(i + 1), to: k(i))
+        }
+        weights[k(current - 1)] = nil
+        setReps[k(current - 1)] = nil
+        let newTotal = current - 1
+        setCountDeltas[key] = newTotal == plannedSets ? nil : newTotal - plannedSets
+        persistSetCountDeltas()
+        return newTotal
+    }
+
+    /// Sets logged beyond the plan's count (added on another device, or before a
+    /// reinstall) only live in the backend's weight records; raise the count so
+    /// the week shows the same sets everywhere. Never lowers it.
+    private func reconcileSetCounts(week: String) {
+        var changed = false
+        for dayData in trainingData {
+            let day = dayData.day.lowercased()
+                .folding(options: .diacriticInsensitive, locale: .current)
+            for exercise in dayData.exercises {
+                let key = setCountKey(day: day, exerciseIndex: exercise.orderIndex, week: week)
+                let current = Self.clampedSets(planned: exercise.sets, delta: setCountDeltas[key] ?? 0)
+                var logged = current
+                while (weights[generateWeightKey(day: day, exerciseIndex: exercise.orderIndex,
+                                                 exerciseName: exercise.name, setIndex: logged,
+                                                 weekStart: week)] ?? 0) > 0 {
+                    logged += 1
+                }
+                if logged > current {
+                    setCountDeltas[key] = logged - exercise.sets
+                    changed = true
+                }
+            }
+        }
+        if changed { persistSetCountDeltas() }
     }
 
     func hasWeightForExercise(exerciseName: String, day: String, week: Date)
@@ -434,7 +642,7 @@ class TrainingManager: ObservableObject {
             day: normalizedDay,
             exerciseIndex: exercise.orderIndex,
             exerciseName: exerciseName,
-            totalSets: exercise.sets
+            totalSets: effectiveSets(for: exercise, day: normalizedDay)
         ) > 0
     }
 
@@ -619,6 +827,16 @@ class TrainingManager: ObservableObject {
             }
         }
 
+        // Days finished on another device (or before a reinstall) only exist as
+        // backend sessions; without this they'd show "Continuar Entreno".
+        await loadCompletedSessions(for: weekStart)
+
+        await MainActor.run {
+            let f = DateFormatter()
+            f.dateFormat = "yyyy-MM-dd"
+            self.reconcileSetCounts(week: f.string(from: self.getWeekStart(weekStart)))
+        }
+
         await MainActor.run {
             self.isFullyLoaded = true
             print("🎉 isFullyLoaded configurado a true")
@@ -737,6 +955,10 @@ class TrainingManager: ObservableObject {
             // Wednesday/Saturday workouts fail to match and never persist.
             let foldedDay = day.lowercased()
                 .folding(options: .diacriticInsensitive, locale: .current)
+            // Match by name, else by slot: a session-only alternative (machine
+            // occupied) logs under the alternative's name, which isn't in the
+            // plan. Without the index fallback those weights threw
+            // exerciseNotFound and were never saved.
             guard
                 let dayData = trainingData.first(where: {
                     $0.day.lowercased()
@@ -744,7 +966,7 @@ class TrainingManager: ObservableObject {
                 }),
                 let exercise = dayData.exercises.first(where: {
                     $0.name.lowercased() == exerciseName.lowercased()
-                })
+                }) ?? dayData.exercises.first(where: { $0.orderIndex == exerciseIndex })
             else {
                 print(
                     "❌ No se encontró ejercicio: \(exerciseName) en día: \(day)"
@@ -755,9 +977,13 @@ class TrainingManager: ObservableObject {
 
             let actualExerciseIndex = exercise.orderIndex
 
-            // Create sets with current weights
+            // Create sets with current weights (the plan's count plus any sets
+            // the user added or removed this week).
             var weightSets: [WeightSet] = []
-            for setIndex in 0..<exercise.sets {
+            let totalSets = effectiveSets(
+                plannedSets: exercise.sets, day: foldedDay, exerciseIndex: actualExerciseIndex
+            )
+            for setIndex in 0..<totalSets {
                 let weightKey = generateWeightKey(
                     day: day,
                     exerciseIndex: actualExerciseIndex,
@@ -936,6 +1162,10 @@ class TrainingManager: ObservableObject {
         trainingData = []
         trainingPlanId = nil
         weights.removeAll()
+        setReps.removeAll()
+        setCountDeltas.removeAll()
+        persistSetCountDeltas()
+        sessionCompletedDayKeys.removeAll()
         exerciseNotes.removeAll()
         backendExerciseNotes.removeAll()
         savedWeights.removeAll()

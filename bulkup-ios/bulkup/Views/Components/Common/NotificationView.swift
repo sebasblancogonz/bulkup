@@ -34,7 +34,7 @@ struct NotificationView: View {
                     Button("Cerrar") {
                         dismiss()
                     }
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }

@@ -160,7 +160,7 @@ struct ExerciseAlternativesSheet: View {
             Spacer()
             Image(systemName: "arrow.triangle.2.circlepath")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
         }
         .padding(Spacing.md)
         .background(

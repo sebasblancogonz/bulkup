@@ -373,7 +373,7 @@ struct CreateTrainingPlanView: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(BulkUpFont.body())
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
                 .frame(width: 24)
             Text(LocalizedStringKey(text))
                 .font(BulkUpFont.body())

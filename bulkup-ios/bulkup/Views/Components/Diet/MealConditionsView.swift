@@ -42,20 +42,20 @@ struct MealConditionsView: View {
             // Content
             if showTrainingDay, let trainingDays = conditions.trainingDays {
                 if !hasBoth {
-                    Text("Dias de entrenamiento")
+                    Text("Días de entrenamiento")
                         .font(BulkUpFont.dataLabel())
                         .foregroundColor(BulkUpColors.training)
                 }
                 conditionContent(trainingDays)
             } else if !showTrainingDay, let restDays = conditions.nonTrainingDays {
                 if !hasBoth {
-                    Text("Dias de descanso")
+                    Text("Días de descanso")
                         .font(BulkUpFont.dataLabel())
                         .foregroundColor(BulkUpColors.textTertiary)
                 }
                 conditionContent(restDays)
             } else if !hasTraining, let restDays = conditions.nonTrainingDays {
-                Text("Dias de descanso")
+                Text("Días de descanso")
                     .font(BulkUpFont.dataLabel())
                     .foregroundColor(BulkUpColors.textTertiary)
                 conditionContent(restDays)

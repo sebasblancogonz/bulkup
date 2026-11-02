@@ -267,10 +267,10 @@ struct OnboardingView: View {
             HStack(spacing: Spacing.sm) {
                 Image(systemName: "sparkles")
                     .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 Text("Powered by AI")
                     .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
             }
 
             VStack(spacing: Spacing.lg) {
@@ -380,7 +380,7 @@ struct OnboardingView: View {
                 if selectedGoal == goal {
                     Image(systemName: "checkmark.circle.fill")
                         .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
             .padding(Spacing.lg)

@@ -2,13 +2,17 @@ import Foundation
 import SwiftData
 
 /// Post-workout sensations: an emoji rating, sensation tags, an optional note,
-/// and locally-stored photo filenames. One record per workout day (per plan);
-/// finishing the same day again updates it. All local — never uploaded.
+/// and locally-stored photo filenames. One record per workout day per week
+/// (per plan); editing the same day in the same week updates it. All local —
+/// never uploaded.
 @Model
 final class WorkoutFeedback {
-    @Attribute(.unique) var id: String  // "\(planId ?? "local")_\(normalizedDayName)"
+    @Attribute(.unique) var id: String  // "\(planId ?? "local")_\(weekStart)_\(normalizedDayName)"
     var dayName: String
     var planId: String?
+    /// ISO week Monday, "yyyy-MM-dd". nil on records written before the key
+    /// included the week; WorkoutFeedbackManager migrates those lazily.
+    var weekStart: String?
     var rating: Int  // 1...5 (emoji index), 0 = unset
     var tagsRaw: String  // "|"-joined
     var note: String?
@@ -19,6 +23,7 @@ final class WorkoutFeedback {
         id: String,
         dayName: String,
         planId: String?,
+        weekStart: String? = nil,
         rating: Int = 0,
         tagsRaw: String = "",
         note: String? = nil,
@@ -28,6 +33,7 @@ final class WorkoutFeedback {
         self.id = id
         self.dayName = dayName
         self.planId = planId
+        self.weekStart = weekStart
         self.rating = rating
         self.tagsRaw = tagsRaw
         self.note = note
@@ -45,9 +51,32 @@ final class WorkoutFeedback {
         set { photoFilenamesRaw = newValue.joined(separator: "|") }
     }
 
-    /// Stable id for a workout day so finishing/viewing resolve to the same record.
-    static func makeID(planId: String?, dayName: String) -> String {
-        let day = dayName.lowercased().folding(options: .diacriticInsensitive, locale: Locale(identifier: "es_ES"))
-        return "\(planId ?? "local")_\(day)"
+    /// Stable id for a workout day in a given week, so finishing/viewing
+    /// resolve to the same record. Without the week, every Monday overwrote
+    /// the previous Monday's notes and photos.
+    static func makeID(planId: String?, dayName: String, weekStart: String) -> String {
+        "\(planId ?? "local")_\(weekStart)_\(normalizedDay(dayName))"
+    }
+
+    /// Id format used before the week was part of the key.
+    static func legacyID(planId: String?, dayName: String) -> String {
+        "\(planId ?? "local")_\(normalizedDay(dayName))"
+    }
+
+    static func normalizedDay(_ dayName: String) -> String {
+        dayName.lowercased().folding(options: .diacriticInsensitive, locale: Locale(identifier: "es_ES"))
+    }
+
+    /// ISO-8601 Monday of the week containing `date`, "yyyy-MM-dd" (matches
+    /// TrainingManager.getWeekStart + the weight keys).
+    static func weekString(for date: Date) -> String {
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.locale = Locale.current
+        let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
+        let monday = calendar.date(from: components) ?? date
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: monday)
     }
 }

@@ -23,7 +23,7 @@ struct ActiveWorkoutHeader: View {
             // Elapsed time + pulsing dot
             HStack(spacing: 6) {
                 Circle()
-                    .fill(BulkUpColors.error)
+                    .fill(BulkUpColors.accent)
                     .frame(width: 8, height: 8)
                     .scaleEffect(pulseAnimation ? 1.3 : 1.0)
                     .opacity(pulseAnimation ? 0.6 : 1.0)
@@ -33,8 +33,7 @@ struct ActiveWorkoutHeader: View {
                     )
 
                 Text(session.formattedElapsed())
-                    .font(.system(size: 17, weight: .medium, design: .monospaced))
-                    .monospacedDigit()
+                    .font(BulkUpFont.mono(17, weight: .semibold, relativeTo: .headline))
                     .foregroundColor(BulkUpColors.textPrimary)
             }
 
@@ -43,9 +42,10 @@ struct ActiveWorkoutHeader: View {
             // Workout name
             if let name = session.workoutName {
                 Text(name)
-                    .font(.system(size: 17, weight: .semibold))
+                    .displayVoice(20, weight: .bold, relativeTo: .headline)
                     .foregroundColor(BulkUpColors.textPrimary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
 
             Spacer()
@@ -58,12 +58,15 @@ struct ActiveWorkoutHeader: View {
                     showActionSheet = true
                 }
             } label: {
-                Image(systemName: session.isPaused ? "play.circle" : "pause.circle")
-                    .font(.system(size: 28, weight: .medium))
-                    .foregroundColor(
-                        session.isPaused ? BulkUpColors.accent : BulkUpColors.textSecondary
-                    )
+                Image(systemName: session.isPaused ? "play.fill" : "pause.fill")
+                    .font(.system(.footnote, weight: .bold))
+                    .foregroundColor(session.isPaused ? BulkUpColors.onAccent : BulkUpColors.textPrimary)
+                    .frame(width: 36, height: 36)
+                    .background(session.isPaused ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                    .hairline(CornerRadius.medium, color: session.isPaused ? BulkUpColors.accent : BulkUpColors.line)
             }
+            .accessibilityLabel(session.isPaused ? "Continuar" : "Pausar o finalizar")
         }
         .padding(.horizontal, Spacing.screenH)
         .padding(.vertical, Spacing.sm)
@@ -96,7 +99,7 @@ struct ActiveWorkoutHeader: View {
             }
             Button("Cancelar", role: .cancel) {}
         } message: {
-            Text("Se perdera todo el progreso de esta sesion.")
+            Text("Se perderá todo el progreso de esta sesión.")
         }
     }
 }

@@ -48,11 +48,11 @@ struct NutritionSummaryCard: View {
 
                         if stats.currentStreak > 0 {
                             Label(
-                                "\(stats.currentStreak) dias seguidos",
+                                "\(stats.currentStreak) días seguidos",
                                 systemImage: "flame"
                             )
                             .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                         }
                     }
                 }

@@ -22,6 +22,14 @@ struct WorkoutRecapSheet: View {
     @State private var feedback: WorkoutFeedback?
     @State private var showFeedbackEditor = false
     @State private var isSaving = false
+    /// Last set of an exercise awaiting removal confirmation (it has data).
+    @State private var pendingRemoval: PendingRemoval?
+
+    private struct PendingRemoval: Identifiable {
+        let exerciseIndex: Int
+        let setIndex: Int
+        var id: String { "\(exerciseIndex)-\(setIndex)" }
+    }
 
     private var normalizedDay: String {
         dayData.day.lowercased().folding(options: .diacriticInsensitive, locale: .current)
@@ -73,13 +81,32 @@ struct WorkoutRecapSheet: View {
                         }
                     }
                     .disabled(isSaving)
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }
         .onAppear(perform: loadFeedback)
+        .confirmationDialog(
+            "Eliminar serie",
+            isPresented: Binding(
+                get: { pendingRemoval != nil },
+                set: { if !$0 { pendingRemoval = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingRemoval
+        ) { removal in
+            Button("Eliminar la serie \(removal.setIndex + 1)", role: .destructive) {
+                if let exercise = exercises.first(where: { $0.orderIndex == removal.exerciseIndex }) {
+                    removeSet(exercise, at: removal.setIndex)
+                }
+            }
+            Button("Cancelar", role: .cancel) {}
+        } message: { _ in
+            Text("Se borrarán el peso, las reps y el vídeo de esta serie.")
+        }
         .sheet(isPresented: $showFeedbackEditor, onDismiss: loadFeedback) {
-            WorkoutFeedbackView(dayName: dayData.day, planId: trainingManager.trainingPlanId)
+            WorkoutFeedbackView(dayName: dayData.day, planId: trainingManager.trainingPlanId,
+                                weekStart: currentWeekString)
         }
     }
 
@@ -134,10 +161,10 @@ struct WorkoutRecapSheet: View {
                     Spacer()
                     Text(feedback == nil ? "Registrar" : "Editar")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                     Image(systemName: "chevron.right")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
 
                 if let feedback {
@@ -184,7 +211,8 @@ struct WorkoutRecapSheet: View {
     private func loadFeedback() {
         feedback = WorkoutFeedbackManager.shared.feedback(
             planId: trainingManager.trainingPlanId,
-            dayName: dayData.day
+            dayName: dayData.day,
+            weekStart: currentWeekString
         )
     }
 
@@ -202,7 +230,7 @@ struct WorkoutRecapSheet: View {
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textTertiary)
             } else {
-                ForEach(0..<exercise.sets, id: \.self) { setIndex in
+                ForEach(0..<sets(exercise), id: \.self) { setIndex in
                     HStack(spacing: Spacing.sm) {
                         Text("S\(setIndex + 1)")
                             .font(.system(size: 13, weight: .bold))
@@ -233,7 +261,45 @@ struct WorkoutRecapSheet: View {
 
                         Spacer()
                     }
+                    .contextMenu {
+                        if sets(exercise) > 1 {
+                            Button(role: .destructive) {
+                                requestRemoveSet(exercise, at: setIndex)
+                            } label: {
+                                Label("Eliminar serie", systemImage: "trash")
+                            }
+                        }
+                    }
                 }
+
+                // Forgot a set, or logged one too many: fix it here too.
+                HStack(spacing: Spacing.md) {
+                    Button {
+                        trainingManager.addSet(
+                            day: normalizedDay, exerciseIndex: exercise.orderIndex, plannedSets: exercise.sets
+                        )
+                    } label: {
+                        Label("Añadir serie", systemImage: "plus.circle")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(BulkUpColors.accentText)
+                    }
+                    if sets(exercise) > 1 {
+                        Button {
+                            requestRemoveSet(exercise, at: sets(exercise) - 1)
+                        } label: {
+                            Label("Quitar serie", systemImage: "minus.circle")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(BulkUpColors.textTertiary)
+                        }
+                    }
+                    Spacer()
+                    if sets(exercise) != exercise.sets {
+                        Text("Plan: \(exercise.sets)")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(BulkUpColors.textTertiary)
+                    }
+                }
+                .padding(.top, Spacing.xs)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -263,6 +329,31 @@ struct WorkoutRecapSheet: View {
     }
 
     // MARK: - Bindings
+
+    /// Sets logged this week for the exercise (plan count ± user adjustments).
+    private func sets(_ exercise: Exercise) -> Int {
+        trainingManager.effectiveSets(for: exercise, day: normalizedDay)
+    }
+
+    private func requestRemoveSet(_ exercise: Exercise, at setIndex: Int) {
+        let k = key(exercise, setIndex)
+        let hasData = (trainingManager.weights[k] ?? 0) > 0 || (trainingManager.setReps[k] ?? 0) > 0
+            || WorkoutVideoStore.hasVideo(for: k)
+        if hasData {
+            pendingRemoval = PendingRemoval(exerciseIndex: exercise.orderIndex, setIndex: setIndex)
+        } else {
+            removeSet(exercise, at: setIndex)
+        }
+    }
+
+    private func removeSet(_ exercise: Exercise, at setIndex: Int) {
+        // Drop in-progress drafts for this exercise: the slots just shifted.
+        drafts = drafts.filter { !$0.key.hasSuffix(key(exercise, 0).dropLast(2)) && !$0.key.contains("-\(exercise.orderIndex)-") }
+        workoutSession.removeSet(
+            day: normalizedDay, exerciseIndex: exercise.orderIndex, exerciseName: effectiveName(exercise),
+            plannedSets: exercise.sets, setIndex: setIndex, trainingManager: trainingManager
+        )
+    }
 
     private func effectiveName(_ exercise: Exercise) -> String {
         workoutSession.effectiveExerciseName(
@@ -333,19 +424,19 @@ struct WorkoutRecapSheet: View {
 
     private var loggedSets: Int {
         exercises.reduce(0) { acc, ex in
-            acc + (0..<ex.sets).filter { (trainingManager.weights[key(ex, $0)] ?? 0) > 0 }.count
+            acc + (0..<sets(ex)).filter { (trainingManager.weights[key(ex, $0)] ?? 0) > 0 }.count
         }
     }
 
     private var loggedExercises: Int {
         exercises.filter { ex in
-            (0..<ex.sets).contains { (trainingManager.weights[key(ex, $0)] ?? 0) > 0 }
+            (0..<sets(ex)).contains { (trainingManager.weights[key(ex, $0)] ?? 0) > 0 }
         }.count
     }
 
     private var totalVolume: Double {
         exercises.reduce(0.0) { acc, ex in
-            acc + (0..<ex.sets).reduce(0.0) { sum, setIndex in
+            acc + (0..<sets(ex)).reduce(0.0) { sum, setIndex in
                 let k = key(ex, setIndex)
                 let weight = trainingManager.weights[k] ?? 0
                 guard weight > 0 else { return sum }

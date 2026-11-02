@@ -87,7 +87,7 @@ struct RMExerciseDetailSheet: View {
                     Button("Cerrar") {
                         dismiss()
                     }
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }
@@ -261,7 +261,7 @@ struct DetailRow: View {
         HStack(spacing: Spacing.md) {
             Image(systemName: icon)
                 .font(.system(size: 16))
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 2) {

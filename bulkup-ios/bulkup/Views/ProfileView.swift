@@ -204,7 +204,7 @@ struct ProfileView: View {
                     Button("Cerrar") {
                         dismiss()
                     }
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
             }
             .onAppear {

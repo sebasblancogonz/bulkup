@@ -54,9 +54,6 @@ class WorkoutSessionManager: ObservableObject {
     @Published var restTimerTotal: Int = 0
     @Published var nextSetInfo: String?
 
-    /// Extra sets added per exercise: key = "{day}-{exerciseIndex}"
-    @Published var addedSets: [String: Int] = [:]
-
     /// Session-only exercise swaps (machine occupied → alternative): key =
     /// "{day}-{exerciseIndex}" → alternative display name. The plan is never
     /// mutated; weights/history persist under the alternative's own name.
@@ -104,7 +101,6 @@ class WorkoutSessionManager: ObservableObject {
         completedSetIds.removeAll()
         failedSetIds.removeAll()
         skippedExercises.removeAll()
-        addedSets.removeAll()
         actualReps.removeAll()
         exerciseOverrides.removeAll()
         totalPausedSeconds = 0
@@ -170,7 +166,6 @@ class WorkoutSessionManager: ObservableObject {
         completedSetIds.removeAll()
         failedSetIds.removeAll()
         skippedExercises.removeAll()
-        addedSets.removeAll()
         actualReps.removeAll()
         totalPausedSeconds = 0 // ponytail: pause spans don't survive relaunch; elapsed runs from startDate
         summaryData = nil
@@ -197,7 +192,7 @@ class WorkoutSessionManager: ObservableObject {
 
         var totalSets = 0
         for exercise in dayData.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }) {
-            for setIdx in 0..<exercise.sets {
+            for setIdx in 0..<trainingManager.effectiveSets(for: exercise, day: normalizedDay) {
                 totalSets += 1
                 let weightKey = trainingManager.generateWeightKey(
                     day: normalizedDay,
@@ -292,7 +287,7 @@ class WorkoutSessionManager: ObservableObject {
         }) {
             for exercise in dayData.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }) {
                 let skipped = isExerciseSkipped(day: normalizedDay, exerciseIndex: exercise.orderIndex)
-                let total = exercise.sets + extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex)
+                let total = trainingManager.effectiveSets(for: exercise, day: normalizedDay)
                 let done = skipped ? 0 : completedSetsCount(day: normalizedDay, exerciseIndex: exercise.orderIndex, totalSets: total)
                 let name = effectiveExerciseName(day: normalizedDay,
                                                  exerciseIndex: exercise.orderIndex,
@@ -388,7 +383,6 @@ class WorkoutSessionManager: ObservableObject {
         completedSetIds.removeAll()
         failedSetIds.removeAll()
         skippedExercises.removeAll()
-        addedSets.removeAll()
         actualReps.removeAll()
         exerciseOverrides.removeAll()
         restTimerActive = false
@@ -447,7 +441,9 @@ class WorkoutSessionManager: ObservableObject {
         }
 
         // App → store: mirror this completion into the shared store + activity.
-        if isActive {
+        // Only for the session's own day: the store's set identities are
+        // (exerciseIndex, setIndex) and would collide with another day's.
+        if isActive, isSessionDay(day) {
             mirrorCompletionToStore(
                 exerciseIndex: exerciseIndex,
                 setIndex: setIndex,
@@ -617,11 +613,38 @@ class WorkoutSessionManager: ObservableObject {
             }
         }
 
+        // Rest started/skipped/extended on the watch or Live Activity lives only
+        // in the store's restEndDate; mirror it into the phone's countdown.
+        syncRestTimer(from: w)
+
         // Refresh the Live Activity from the (authoritative) store state.
         WorkoutActivityController.shared.update(
             WorkoutActivityController.contentState(from: w)
         )
         PhoneWCManager.shared.broadcast()
+    }
+
+    /// Store → phone rest countdown. A rest running elsewhere shows as the
+    /// banner (not the sheet) so returning to the app isn't hijacked; a rest
+    /// skipped elsewhere stops the phone's countdown.
+    private func syncRestTimer(from w: LiveWorkout) {
+        if let end = w.restEndDate, end > Date() {
+            if let current = restEndTime {
+                let delta = end.timeIntervalSince(current)
+                // Same rest (phone-originated, mirrored ms apart) → nothing to do.
+                guard abs(delta) > 1.5 else { return }
+                restEndTime = end
+                restTimerTotal = max(1, restTimerTotal + Int(delta.rounded()))
+                tickRest()
+            } else {
+                let remaining = Int(ceil(end.timeIntervalSinceNow))
+                startRestTimer(seconds: remaining, nextSetInfo: nil, showSheet: false)
+                restEndTime = end
+                tickRest()
+            }
+        } else if restEndTime != nil {
+            stopRestTimer(haptic: false)
+        }
     }
 
     // MARK: - Darwin Bridge
@@ -664,6 +687,25 @@ class WorkoutSessionManager: ObservableObject {
         let key = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: setIndex)
         completedSetIds.remove(key)
         failedSetIds.remove(key)
+
+        // Mirror into the store too. Without this the store still says
+        // "completed", and the next reconcile (foreground, any watch message)
+        // silently re-completes the set the user just unchecked.
+        if isActive, isSessionDay(day), var w = SharedWorkoutStore.load() {
+            w.uncomplete(exerciseIndex: exerciseIndex, setIndex: setIndex)
+            SharedWorkoutStore.save(w)
+            WorkoutActivityController.shared.update(
+                WorkoutActivityController.contentState(from: w)
+            )
+            PhoneWCManager.shared.broadcast()
+        }
+    }
+
+    /// Whether `day` (already diacritic-folded) is the active session's day.
+    private func isSessionDay(_ day: String) -> Bool {
+        guard let current = currentDayName else { return false }
+        return current.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current) == day
     }
 
     func isSetCompleted(day: String, exerciseIndex: Int, setIndex: Int) -> Bool {
@@ -704,42 +746,81 @@ class WorkoutSessionManager: ObservableObject {
         skippedExercises.contains(exerciseKey(day: day, exerciseIndex: exerciseIndex))
     }
 
-    // MARK: - Added Sets
+    // MARK: - Added / removed sets
 
-    func addSet(day: String, exerciseIndex: Int) {
-        let key = exerciseKey(day: day, exerciseIndex: exerciseIndex)
-        addedSets[key, default: 0] += 1
-    }
-
+    /// Sets beyond (or short of) the plan's count for this week. The count
+    /// itself lives in TrainingManager so it survives the session and shows the
+    /// same in the recap and the non-session logger.
     func extraSets(day: String, exerciseIndex: Int) -> Int {
-        addedSets[exerciseKey(day: day, exerciseIndex: exerciseIndex)] ?? 0
+        TrainingManager.shared.setCountDelta(day: day, exerciseIndex: exerciseIndex)
     }
 
-    /// Removes the most recently added set for an exercise (added sets only —
-    /// planned sets are never removed). Clears that set's session state.
-    func removeLastSet(day: String, exerciseIndex: Int, plannedSets: Int) {
-        let key = exerciseKey(day: day, exerciseIndex: exerciseIndex)
-        guard let extra = addedSets[key], extra > 0 else { return }
-        let removedIndex = plannedSets + extra - 1
-        let sk = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: removedIndex)
-        completedSetIds.remove(sk)
-        failedSetIds.remove(sk)
-        actualReps[sk] = nil
-        if extra - 1 == 0 { addedSets[key] = nil } else { addedSets[key] = extra - 1 }
+    func addSet(day: String, exerciseIndex: Int, plannedSets: Int, trainingManager: TrainingManager) {
+        trainingManager.addSet(day: day, exerciseIndex: exerciseIndex, plannedSets: plannedSets)
+        if isActive, isSessionDay(day) {
+            // The watch / Live Activity need the new row.
+            syncStoreFromSession(trainingManager: trainingManager)
+        }
+    }
+
+    /// Removes one set (any index, planned or added) for this week: the stored
+    /// weights/reps shift down in TrainingManager, the per-set session state
+    /// shifts here, and the live store is rebuilt so the watch matches.
+    func removeSet(
+        day: String, exerciseIndex: Int, exerciseName: String, plannedSets: Int, setIndex: Int,
+        trainingManager: TrainingManager
+    ) {
+        let total = trainingManager.effectiveSets(
+            plannedSets: plannedSets, day: day, exerciseIndex: exerciseIndex
+        )
+        guard trainingManager.removeSet(
+            day: day, exerciseIndex: exerciseIndex, exerciseName: exerciseName,
+            plannedSets: plannedSets, setIndex: setIndex
+        ) != nil else { return }
+        shiftSessionState(day: day, exerciseIndex: exerciseIndex, removedIndex: setIndex, total: total)
+        if isActive, isSessionDay(day) {
+            syncStoreFromSession(trainingManager: trainingManager)
+        }
+    }
+
+    /// Shift completed/failed/reps state down one slot after `removedIndex`
+    /// and clear the (now unused) last slot. Pure session state — testable.
+    func shiftSessionState(day: String, exerciseIndex: Int, removedIndex: Int, total: Int) {
+        guard total > 0, removedIndex >= 0, removedIndex < total else { return }
+        for i in removedIndex..<(total - 1) {
+            let from = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: i + 1)
+            let to = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: i)
+            if completedSetIds.contains(from) { completedSetIds.insert(to) } else { completedSetIds.remove(to) }
+            if failedSetIds.contains(from) { failedSetIds.insert(to) } else { failedSetIds.remove(to) }
+            actualReps[to] = actualReps[from]
+        }
+        let last = setKey(day: day, exerciseIndex: exerciseIndex, setIndex: total - 1)
+        completedSetIds.remove(last)
+        failedSetIds.remove(last)
+        actualReps[last] = nil
     }
 
     #if DEBUG
     @MainActor
     static func runSelfCheck() {
         let m = WorkoutSessionManager()
-        m.addSet(day: "lunes", exerciseIndex: 0)
-        m.addSet(day: "lunes", exerciseIndex: 0)
-        assert(m.extraSets(day: "lunes", exerciseIndex: 0) == 2)
-        m.removeLastSet(day: "lunes", exerciseIndex: 0, plannedSets: 3)
-        assert(m.extraSets(day: "lunes", exerciseIndex: 0) == 1)
-        m.removeLastSet(day: "lunes", exerciseIndex: 0, plannedSets: 3)
-        m.removeLastSet(day: "lunes", exerciseIndex: 0, plannedSets: 3) // floor at 0
-        assert(m.extraSets(day: "lunes", exerciseIndex: 0) == 0)
+        // Removing set 1 of 3 (sets 0 and 2 done, set 2 failed with 8 reps)
+        // leaves set 0 as-is, moves set 2's state into slot 1 and clears slot 2.
+        m.completedSetIds = [m.setKey(day: "lunes", exerciseIndex: 0, setIndex: 0),
+                             m.setKey(day: "lunes", exerciseIndex: 0, setIndex: 2)]
+        m.failedSetIds = [m.setKey(day: "lunes", exerciseIndex: 0, setIndex: 2)]
+        m.actualReps[m.setKey(day: "lunes", exerciseIndex: 0, setIndex: 2)] = 8
+        m.shiftSessionState(day: "lunes", exerciseIndex: 0, removedIndex: 1, total: 3)
+        assert(m.isSetCompleted(day: "lunes", exerciseIndex: 0, setIndex: 0))
+        assert(m.isSetCompleted(day: "lunes", exerciseIndex: 0, setIndex: 1), "set 2 shifted into slot 1")
+        assert(m.isSetFailed(day: "lunes", exerciseIndex: 0, setIndex: 1))
+        assert(m.getActualReps(day: "lunes", exerciseIndex: 0, setIndex: 1) == 8)
+        assert(!m.isSetCompleted(day: "lunes", exerciseIndex: 0, setIndex: 2), "last slot cleared")
+        assert(m.getActualReps(day: "lunes", exerciseIndex: 0, setIndex: 2) == nil)
+        // Removing the last set just clears it.
+        m.shiftSessionState(day: "lunes", exerciseIndex: 0, removedIndex: 1, total: 2)
+        assert(!m.isSetCompleted(day: "lunes", exerciseIndex: 0, setIndex: 1))
+        assert(m.isSetCompleted(day: "lunes", exerciseIndex: 0, setIndex: 0), "earlier sets untouched")
 
         // Session-only exercise overrides
         assert(m.effectiveExerciseName(day: "lunes", exerciseIndex: 2, planName: "Press banca") == "Press banca")
@@ -789,14 +870,14 @@ class WorkoutSessionManager: ObservableObject {
 
     // MARK: - Rest Timer
 
-    func startRestTimer(seconds: Int, nextSetInfo: String?) {
+    func startRestTimer(seconds: Int, nextSetInfo: String?, showSheet: Bool = true) {
         restTimer?.cancel()
         restTimerTotal = seconds
         restTimerRemaining = seconds
         restEndTime = Date().addingTimeInterval(TimeInterval(seconds))
         self.nextSetInfo = nextSetInfo
         restTimerActive = true
-        restSheetVisible = true
+        restSheetVisible = showSheet
 
         restTimer = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
@@ -813,21 +894,26 @@ class WorkoutSessionManager: ObservableObject {
         if remaining > 0 {
             restTimerRemaining = remaining
         } else {
-            restTimerRemaining = 0
-            restTimerActive = false
-            restSheetVisible = false
-            restTimer?.cancel()
-            restEndTime = nil
+            stopRestTimer(haptic: true)
+        }
+    }
+
+    private func stopRestTimer(haptic: Bool) {
+        restTimerRemaining = 0
+        restTimerActive = false
+        restSheetVisible = false
+        restTimer?.cancel()
+        restEndTime = nil
+        if haptic {
             UINotificationFeedbackGenerator().notificationOccurred(.warning)
         }
     }
 
     func skipRest() {
-        restTimerActive = false
-        restSheetVisible = false
-        restTimerRemaining = 0
-        restEndTime = nil
-        restTimer?.cancel()
+        stopRestTimer(haptic: false)
+        // The watch and Live Activity count down from the store's restEndDate;
+        // clear it or they keep showing a rest the user already skipped.
+        mirrorRestToStore { $0.skipRest() }
         PhoneWCManager.shared.broadcast()
     }
 
@@ -835,7 +921,21 @@ class WorkoutSessionManager: ObservableObject {
         restTimerRemaining += seconds
         restTimerTotal += seconds
         restEndTime = (restEndTime ?? Date()).addingTimeInterval(TimeInterval(seconds))
+        mirrorRestToStore { $0.addRest(seconds) }
         PhoneWCManager.shared.broadcast()
+    }
+
+    /// Apply a rest mutation to the shared store and refresh the Live Activity.
+    private func mirrorRestToStore(_ mutate: (inout LiveWorkout) -> Void) {
+        guard isActive, var w = SharedWorkoutStore.load() else { return }
+        mutate(&w)
+        // Keep the store's end in lockstep with the phone's (addRest on a store
+        // without a running rest would otherwise start from "now").
+        w.restEndDate = restEndTime
+        SharedWorkoutStore.save(w)
+        WorkoutActivityController.shared.update(
+            WorkoutActivityController.contentState(from: w)
+        )
     }
 
     // MARK: - Elapsed Timer
@@ -905,7 +1005,7 @@ class WorkoutSessionManager: ObservableObject {
                 continue
             }
 
-            let totalSetsForExercise = exercise.sets + extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex)
+            let totalSetsForExercise = trainingManager.effectiveSets(for: exercise, day: normalizedDay)
             var exerciseHasCompletedSet = false
 
             for setIdx in 0..<totalSetsForExercise {
@@ -966,7 +1066,7 @@ class WorkoutSessionManager: ObservableObject {
                 .folding(options: .diacriticInsensitive, locale: .current) == normalizedDay
         }) {
             for exercise in dayData.exercises.sorted(by: { $0.orderIndex < $1.orderIndex }) {
-                let totalSets = exercise.sets
+                let totalSets = trainingManager.effectiveSets(for: exercise, day: normalizedDay)
                 let name = effectiveExerciseName(day: normalizedDay,
                                                  exerciseIndex: exercise.orderIndex,
                                                  planName: exercise.name)
@@ -1065,10 +1165,10 @@ struct WorkoutSummary {
     let prs: [String] // exercise names with new PRs
     let date: Date
 
-    var formattedDuration: String {
-        let m = duration / 60
-        let s = duration % 60
-        return String(format: "%d:%02d", m, s)
+    var formattedDuration: String { Self.format(seconds: duration) }
+
+    static func format(seconds: Int) -> String {
+        String(format: "%d:%02d", seconds / 60, seconds % 60)
     }
 
     var formattedVolume: String {

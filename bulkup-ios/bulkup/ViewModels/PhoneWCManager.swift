@@ -144,8 +144,10 @@ final class PhoneWCManager: NSObject, WCSessionDelegate {
             wsm.reconcileFromStore(trainingManager: tm)
         case .skipRest:
             SharedWorkoutStore.skipRest()
+            wsm.reconcileFromStore(trainingManager: tm)   // stops the phone's countdown
         case .addRest(let s):
             SharedWorkoutStore.addRest(s)
+            wsm.reconcileFromStore(trainingManager: tm)   // extends the phone's countdown
         case .finishWorkout(let live, let metrics):
             if let live {
                 // Adopt the watch's authoritative final state (offline-completed sets + weights)

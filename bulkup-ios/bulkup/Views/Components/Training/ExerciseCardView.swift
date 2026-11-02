@@ -50,12 +50,18 @@ struct ExerciseCardView: View {
         )
     }
 
+    /// Sets for this exercise this week: the plan's count plus whatever the
+    /// user added or removed today.
+    private var totalSets: Int {
+        trainingManager.effectiveSets(for: exercise, day: normalizedDayName)
+    }
+
     private var completedSets: Int {
         trainingManager.getCompletedSets(
             day: normalizedDayName,
             exerciseIndex: exercise.orderIndex,
             exerciseName: effectiveName,
-            totalSets: exercise.sets
+            totalSets: totalSets
         )
     }
 
@@ -68,14 +74,13 @@ struct ExerciseCardView: View {
     private var allSetsLogged: Bool {
         if workoutSession.isActive {
             if isSkipped { return true }
-            let total = exercise.sets + workoutSession.extraSets(day: normalizedDayName, exerciseIndex: exercise.orderIndex)
             return workoutSession.isExerciseComplete(
                 day: normalizedDayName,
                 exerciseIndex: exercise.orderIndex,
-                totalSets: total
+                totalSets: totalSets
             )
         }
-        return completedSets == exercise.sets && exercise.sets > 0
+        return completedSets == totalSets && totalSets > 0
     }
 
     var body: some View {
@@ -85,42 +90,38 @@ struct ExerciseCardView: View {
                 if !isSkipped { onToggleExpand() }
             }) {
                 HStack(spacing: Spacing.md) {
-                    // Completion indicator
+                    // Done mark: sky square when every set is logged; count while in progress
                     ZStack {
-                        Circle()
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
                             .stroke(
-                                isSkipped ? BulkUpColors.textTertiary :
-                                allSetsLogged ? BulkUpColors.accent : BulkUpColors.muscleDefault,
-                                lineWidth: 2
+                                isSkipped ? BulkUpColors.line :
+                                allSetsLogged ? BulkUpColors.complete : BulkUpColors.line,
+                                lineWidth: 1.5
                             )
                             .frame(width: 28, height: 28)
 
                         if isSkipped {
-                            Circle()
-                                .fill(BulkUpColors.textTertiary.opacity(0.15))
-                                .frame(width: 28, height: 28)
                             Image(systemName: "forward.fill")
-                                .font(.system(size: 9, weight: .bold))
+                                .font(.system(.caption2, weight: .bold))
                                 .foregroundColor(BulkUpColors.textTertiary)
                         } else if allSetsLogged {
-                            Circle()
-                                .fill(BulkUpColors.accent.opacity(0.15))
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(BulkUpColors.complete)
                                 .frame(width: 28, height: 28)
                             Image(systemName: "checkmark")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(BulkUpColors.accent)
+                                .font(.system(.caption2, weight: .bold))
+                                .foregroundColor(Color.onFill(BulkUpColors.complete))
                         } else if workoutSession.isActive {
-                            let total = exercise.sets + workoutSession.extraSets(day: normalizedDayName, exerciseIndex: exercise.orderIndex)
-                            let done = workoutSession.completedSetsCount(day: normalizedDayName, exerciseIndex: exercise.orderIndex, totalSets: total)
+                            let done = workoutSession.completedSetsCount(day: normalizedDayName, exerciseIndex: exercise.orderIndex, totalSets: totalSets)
                             if done > 0 {
                                 Text("\(done)")
-                                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                    .foregroundColor(BulkUpColors.accent)
+                                    .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
+                                    .foregroundColor(BulkUpColors.accentText)
                             }
                         } else if completedSets > 0 {
                             Text("\(completedSets)")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                .foregroundColor(BulkUpColors.accent)
+                                .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
+                                .foregroundColor(BulkUpColors.accentText)
                         }
                     }
 
@@ -150,17 +151,20 @@ struct ExerciseCardView: View {
                         if !isSkipped {
                             HStack(spacing: Spacing.xs) {
                                 if exercise.restSeconds > 0 {
-                                    Text("\(exercise.restSeconds)s descanso")
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(BulkUpColors.textTertiary)
+                                    Text("\(exercise.restSeconds)s")
+                                        .font(BulkUpFont.mono(12, relativeTo: .caption))
+                                        .foregroundColor(BulkUpColors.textSecondary)
+                                    Text("descanso")
+                                        .font(.system(.caption, weight: .medium))
+                                        .foregroundColor(BulkUpColors.textSecondary)
                                 }
 
                                 if let tempo = exercise.tempo, !tempo.isEmpty {
                                     Text("·")
                                         .foregroundColor(BulkUpColors.textTertiary)
                                     Text(tempo)
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(BulkUpColors.textTertiary)
+                                        .font(BulkUpFont.mono(12, relativeTo: .caption))
+                                        .foregroundColor(BulkUpColors.textSecondary)
                                 }
                             }
 
@@ -171,9 +175,11 @@ struct ExerciseCardView: View {
                     Spacer()
 
                     if !isSkipped {
-                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(BulkUpColors.textTertiary)
+                        Image(systemName: "chevron.down")
+                            .font(.system(.caption2, weight: .bold))
+                            .foregroundColor(BulkUpColors.textSecondary)
+                            .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                            .animation(.easeInOut(duration: 0.2), value: isExpanded)
                     }
                 }
                 .padding(Spacing.md)
@@ -244,7 +250,7 @@ struct ExerciseCardView: View {
                         Text("Alternativas")
                             .font(BulkUpFont.caption())
                     }
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.sm)
                     .contentShape(Rectangle())
@@ -267,7 +273,7 @@ struct ExerciseCardView: View {
                         Text("Ver progreso")
                             .font(BulkUpFont.caption())
                     }
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.sm)
                     .contentShape(Rectangle())
@@ -278,7 +284,8 @@ struct ExerciseCardView: View {
             }
         }
         .background(BulkUpColors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .hairline()
         .opacity(isSkipped ? 0.6 : 1.0)
         .padding(.horizontal, Spacing.screenH)
     }
@@ -295,24 +302,24 @@ struct ExerciseCardView: View {
                 ForEach(Array(repsComponents.enumerated()), id: \.offset) { idx, rep in
                     let isSetCompleted = idx < completedSets
                     Text(rep)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(isSetCompleted ? BulkUpColors.accentText : BulkUpColors.textSecondary)
-                        .padding(.horizontal, 8)
+                        .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
+                        .foregroundColor(isSetCompleted ? Color.onFill(BulkUpColors.complete) : BulkUpColors.textSecondary)
+                        .padding(.horizontal, 7)
                         .padding(.vertical, 3)
                         .background(
-                            RoundedRectangle(cornerRadius: 7)
-                                .fill(isSetCompleted ? BulkUpColors.accent.opacity(0.18) : BulkUpColors.muscleDefault)
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(isSetCompleted ? BulkUpColors.complete : BulkUpColors.surfaceElevated)
                         )
                 }
             } else {
-                Text("\(exercise.sets)×\(exercise.reps)")
-                    .font(.system(size: 12, weight: .semibold))
+                Text("\(totalSets)×\(exercise.reps)")
+                    .font(BulkUpFont.mono(12, weight: .semibold, relativeTo: .caption))
                     .foregroundColor(BulkUpColors.textSecondary)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 7)
                     .padding(.vertical, 3)
                     .background(
-                        RoundedRectangle(cornerRadius: 7)
-                            .fill(BulkUpColors.muscleDefault)
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(BulkUpColors.surfaceElevated)
                     )
             }
         }
@@ -345,6 +352,8 @@ struct ExerciseWeightLogger: View {
     @AppStorage("hasSeenVideoStorageWarning") private var hasSeenVideoWarning = false
     @State private var showVideoWarning = false
     @State private var showVideoPicker = false
+    /// Set awaiting "are you sure" before removal (it has logged data).
+    @State private var pendingRemoveIndex: Int?
 
     private var normalizedDay: String {
         dayName.lowercased().folding(options: .diacriticInsensitive, locale: .current)
@@ -376,8 +385,9 @@ struct ExerciseWeightLogger: View {
         workoutSession.isActive
     }
 
+    /// Plan sets plus this week's additions/removals (see TrainingManager).
     private var totalSetsCount: Int {
-        exercise.sets + workoutSession.extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex)
+        trainingManager.effectiveSets(for: exercise, day: normalizedDay)
     }
 
     private var defaultReps: String {
@@ -423,10 +433,12 @@ struct ExerciseWeightLogger: View {
                         .background(
                             workoutSession.isSetCompleted(
                                 day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex
-                            ) ? BulkUpColors.accent.opacity(0.04) : Color.clear
+                            ) ? BulkUpColors.complete.opacity(0.08) : Color.clear
                         )
                         .cornerRadius(8)
+                        .contextMenu { removeSetMenu(setIndex: setIndex) }
                     }
+                    setCountControls
                 }
             } else {
                 Text("Sin seguimiento de peso")
@@ -448,6 +460,25 @@ struct ExerciseWeightLogger: View {
             // (via reconcileFromStore) but not this card's local weightTexts, so the
             // field would read empty until a full reload. Fill the empties in place.
             syncWeightTextsFromManager()
+        }
+        .onChange(of: trainingManager.setCountDeltas) { _, _ in
+            // Sets added/removed here, in the recap or on another card for the
+            // same slot: rebuild the rows from the (write-through) manager state.
+            loadInitialData()
+        }
+        .confirmationDialog(
+            "Eliminar serie",
+            isPresented: Binding(
+                get: { pendingRemoveIndex != nil },
+                set: { if !$0 { pendingRemoveIndex = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingRemoveIndex
+        ) { index in
+            Button("Eliminar la serie \(index + 1)", role: .destructive) { removeSet(at: index) }
+            Button("Cancelar", role: .cancel) {}
+        } message: { _ in
+            Text("Se borrarán el peso, las reps y el vídeo de esta serie.")
         }
         .photosPicker(
             isPresented: $showVideoPicker,
@@ -514,12 +545,11 @@ struct ExerciseWeightLogger: View {
             HStack {
                 HStack(spacing: Spacing.xs) {
                     Image(systemName: "clock.arrow.circlepath")
-                        .font(.system(size: 10))
-                    Text("ANTERIOR")
-                        .font(.system(size: 11, weight: .bold))
-                        .tracking(0.5)
+                        .font(.system(.caption2, weight: .bold))
+                    Text("Anterior")
+                        .microLabel()
                 }
-                .foregroundColor(BulkUpColors.textTertiary)
+                .foregroundColor(BulkUpColors.textSecondary)
 
                 Spacer()
 
@@ -532,7 +562,7 @@ struct ExerciseWeightLogger: View {
                         Text("Usar anterior")
                             .font(.system(size: 11, weight: .medium))
                     }
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.textPrimary)
                 }
             }
         }
@@ -551,48 +581,15 @@ struct ExerciseWeightLogger: View {
                 .frame(width: SetCol.check, alignment: .center)
         }
         .font(BulkUpFont.badge())
-        .tracking(0.5)
-        .foregroundColor(BulkUpColors.textTertiary)
+        .tracking(1.2)
+        .foregroundColor(BulkUpColors.textSecondary)
 
         // Set rows
         ForEach(0..<totalSetsCount, id: \.self) { setIndex in
             workoutSetRow(setIndex: setIndex)
         }
 
-        // Add / remove set buttons
-        HStack(spacing: Spacing.md) {
-            Button {
-                workoutSession.addSet(day: normalizedDay, exerciseIndex: exercise.orderIndex)
-                ensureArrayCapacity()
-            } label: {
-                HStack(spacing: Spacing.xs) {
-                    Image(systemName: "plus.circle")
-                        .font(.system(size: 12))
-                    Text("Anadir serie")
-                        .font(.system(size: 12, weight: .medium))
-                }
-                .foregroundColor(BulkUpColors.accent)
-                .padding(.vertical, Spacing.xs)
-            }
-
-            if workoutSession.extraSets(day: normalizedDay, exerciseIndex: exercise.orderIndex) > 0 {
-                Button {
-                    workoutSession.removeLastSet(
-                        day: normalizedDay, exerciseIndex: exercise.orderIndex, plannedSets: exercise.sets
-                    )
-                    trimArrayCapacity()
-                } label: {
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "minus.circle")
-                            .font(.system(size: 12))
-                        Text("Quitar serie")
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .foregroundColor(BulkUpColors.textTertiary)
-                    .padding(.vertical, Spacing.xs)
-                }
-            }
-        }
+        setCountControls
 
         // Note input
         HStack(spacing: Spacing.sm) {
@@ -623,24 +620,34 @@ struct ExerciseWeightLogger: View {
             }
         } label: {
             ZStack {
-                Circle()
-                    .fill(isCompleted ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
-                    .frame(width: 32, height: 32)
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                    .fill(isCompleted ? BulkUpColors.complete : BulkUpColors.surfaceElevated)
+                    .frame(width: 34, height: 34)
                 if isCompleted {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(BulkUpColors.onAccent)
+                        .font(.system(.footnote, weight: .bold))
+                        .foregroundColor(Color.onFill(BulkUpColors.complete))
                 }
             }
             .overlay(
-                Circle()
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
                     .stroke(
-                        isCompleted ? BulkUpColors.accent : BulkUpColors.textTertiary.opacity(0.3),
+                        isCompleted ? BulkUpColors.complete
+                            : (isNextSet(setIndex) ? BulkUpColors.accent : BulkUpColors.textTertiary),
                         lineWidth: 1.5
                     )
             )
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
         }
         .frame(width: SetCol.check, alignment: .center)
+        .accessibilityLabel(isCompleted ? "Serie completada" : "Completar serie")
+    }
+
+    /// The first set not yet checked: the only pending check drawn in lime.
+    private func isNextSet(_ setIndex: Int) -> Bool {
+        (0..<totalSetsCount).first { !workoutSession.isSetCompleted(
+            day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: $0) } == setIndex
     }
 
     @ViewBuilder
@@ -653,16 +660,11 @@ struct ExerciseWeightLogger: View {
         )
 
         HStack(spacing: SetCol.gap) {
-            // Set number circle
-            ZStack {
-                Circle()
-                    .fill(isCompleted ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
-                    .frame(width: 28, height: 28)
-                Text("\(setIndex + 1)")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(isCompleted ? BulkUpColors.onAccent : BulkUpColors.textSecondary)
-            }
-            .frame(width: SetCol.serie, alignment: .leading)
+            // Set number
+            Text("\(setIndex + 1)")
+                .font(BulkUpFont.mono(14, weight: .semibold, relativeTo: .subheadline))
+                .foregroundColor(isCompleted ? BulkUpColors.complete : BulkUpColors.textSecondary)
+                .frame(width: SetCol.serie, alignment: .leading)
 
             // Weight input with steppers
             HStack(spacing: 0) {
@@ -676,11 +678,13 @@ struct ExerciseWeightLogger: View {
                         .contentShape(Rectangle())
                 }
 
-                TextField("—", text: weightBinding(for: setIndex))
+                // Last session's kilos sit as the placeholder: visible, not logged.
+                TextField(safeGetPrevWeight(setIndex).map { formatWeight($0) } ?? "—",
+                          text: weightBinding(for: setIndex))
                     .keyboardType(.decimalPad)
                     .focused($focusedSet, equals: setIndex)
                     .multilineTextAlignment(.center)
-                    .font(.system(size: 15, weight: .medium, design: .monospaced))
+                    .font(BulkUpFont.mono(15, relativeTo: .subheadline))
                     .foregroundColor(BulkUpColors.textPrimary)
                     .frame(width: SetCol.kg - SetCol.stepper * 2, height: SetCol.rowH)
                     .disabled(isCompleted)
@@ -697,15 +701,12 @@ struct ExerciseWeightLogger: View {
             }
             .frame(width: SetCol.kg, height: SetCol.rowH)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isCompleted ? BulkUpColors.accent.opacity(0.08) : BulkUpColors.surfaceElevated)
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                    .fill(BulkUpColors.surfaceElevated)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(
-                        isCompleted ? BulkUpColors.accent.opacity(0.3) : BulkUpColors.textTertiary.opacity(0.15),
-                        lineWidth: 1
-                    )
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                    .stroke(isCompleted ? BulkUpColors.complete.opacity(0.6) : BulkUpColors.line, lineWidth: 1)
             )
 
             // Reps input with steppers
@@ -723,7 +724,7 @@ struct ExerciseWeightLogger: View {
                 TextField(defaultReps, text: repsBinding(for: setIndex))
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.center)
-                    .font(.system(size: 15, weight: .medium, design: .monospaced))
+                    .font(BulkUpFont.mono(15, relativeTo: .subheadline))
                     .foregroundColor(BulkUpColors.textPrimary)
                     .frame(width: SetCol.reps - SetCol.stepper * 2, height: SetCol.rowH)
                     .disabled(isCompleted)
@@ -740,8 +741,12 @@ struct ExerciseWeightLogger: View {
             }
             .frame(width: SetCol.reps, height: SetCol.rowH)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isCompleted ? BulkUpColors.accent.opacity(0.08) : BulkUpColors.surfaceElevated)
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                    .fill(BulkUpColors.surfaceElevated)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                    .stroke(isCompleted ? BulkUpColors.complete.opacity(0.6) : BulkUpColors.line, lineWidth: 1)
             )
 
             Spacer()
@@ -772,7 +777,7 @@ struct ExerciseWeightLogger: View {
             } label: {
                 Image(systemName: videoSets.contains(setIndex) ? "video.fill" : "video.badge.plus")
                     .font(.system(size: 14))
-                    .foregroundColor(videoSets.contains(setIndex) ? BulkUpColors.accent : BulkUpColors.textTertiary)
+                    .foregroundColor(videoSets.contains(setIndex) ? BulkUpColors.complete : BulkUpColors.textTertiary)
                     .frame(width: 28, height: 28)
                     .contentShape(Rectangle())
             }
@@ -781,24 +786,9 @@ struct ExerciseWeightLogger: View {
             completeButton(setIndex: setIndex)
         }
         .padding(.vertical, 2)
-        .background(
-            isCompleted
-                ? BulkUpColors.accent.opacity(0.04)
-                : Color.clear
-        )
         .cornerRadius(8)
+        .contextMenu { removeSetMenu(setIndex: setIndex) }
 
-        // Previous weight hint below completed set
-        if !isCompleted, let prev = safeGetPrevWeight(setIndex), prev > 0 {
-            HStack {
-                Spacer()
-                    .frame(width: SetCol.serie)
-                Text("anterior: \(formatWeight(prev)) kg")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(BulkUpColors.textTertiary)
-                Spacer()
-            }
-        }
     }
 
     // MARK: - Normal Mode Content (unchanged)
@@ -817,55 +807,46 @@ struct ExerciseWeightLogger: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .font(BulkUpFont.badge())
-        .tracking(0.5)
-        .foregroundColor(BulkUpColors.textTertiary)
+        .tracking(1.2)
+        .foregroundColor(BulkUpColors.textSecondary)
 
         // Weight fields as rows
-        ForEach(0..<exercise.sets, id: \.self) { setIndex in
+        ForEach(0..<totalSetsCount, id: \.self) { setIndex in
             HStack(spacing: 0) {
                 Text("S\(setIndex + 1)")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(BulkUpColors.textSecondary)
+                    .font(BulkUpFont.mono(13, weight: .semibold, relativeTo: .footnote))
+                    .foregroundColor(hasWeight(setIndex) ? BulkUpColors.complete : BulkUpColors.textSecondary)
                     .frame(width: 44, alignment: .leading)
 
                 TextField("—", text: weightBinding(for: setIndex))
                     .keyboardType(.decimalPad)
                     .focused($focusedSet, equals: setIndex)
                     .multilineTextAlignment(.center)
-                    .font(.system(size: 15, weight: .medium, design: .monospaced))
+                    .font(BulkUpFont.mono(15, relativeTo: .subheadline))
                     .foregroundColor(BulkUpColors.textPrimary)
-                    .frame(width: 64, height: 36)
+                    .frame(width: 64, height: 40)
                     .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(
-                                hasWeight(setIndex)
-                                    ? BulkUpColors.accent.opacity(0.08)
-                                    : BulkUpColors.surfaceElevated
-                            )
+                        RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                            .fill(BulkUpColors.surfaceElevated)
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(
-                                hasWeight(setIndex)
-                                    ? BulkUpColors.accent.opacity(0.3)
-                                    : BulkUpColors.textTertiary.opacity(0.15),
-                                lineWidth: 1
-                            )
+                        RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                            .stroke(hasWeight(setIndex) ? BulkUpColors.complete : BulkUpColors.line, lineWidth: 1)
                     )
 
                 TextField(defaultReps, text: repsBinding(for: setIndex))
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.center)
-                    .font(.system(size: 15, weight: .medium, design: .monospaced))
+                    .font(BulkUpFont.mono(15, relativeTo: .subheadline))
                     .foregroundColor(BulkUpColors.textPrimary)
-                    .frame(width: 48, height: 36)
+                    .frame(width: 48, height: 40)
                     .background(
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
                             .fill(BulkUpColors.surfaceElevated)
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(BulkUpColors.textTertiary.opacity(0.15), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                            .stroke(BulkUpColors.line, lineWidth: 1)
                     )
                     .frame(width: 56)
 
@@ -873,20 +854,23 @@ struct ExerciseWeightLogger: View {
 
                 if let prev = safeGetPrevWeight(setIndex), prev > 0 {
                     Text(previousLabel(setIndex: setIndex, weight: prev))
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(BulkUpColors.textTertiary)
+                        .font(BulkUpFont.mono(12, relativeTo: .caption))
+                        .foregroundColor(BulkUpColors.textSecondary)
                 }
 
                 if WorkoutVideoStore.hasVideo(for: videoKey(setIndex)) {
                     Button { playerSet = setIndex } label: {
                         Image(systemName: "play.circle.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(BulkUpColors.accent)
+                            .font(.system(.title3))
+                            .foregroundColor(BulkUpColors.complete)
                     }
                     .accessibilityLabel("Ver vídeo de la serie \(setIndex + 1)")
                 }
             }
+            .contextMenu { removeSetMenu(setIndex: setIndex) }
         }
+
+        setCountControls
 
         // Note input
         HStack(spacing: Spacing.sm) {
@@ -910,7 +894,7 @@ struct ExerciseWeightLogger: View {
                         Text("Usar anterior")
                             .font(.system(size: 11, weight: .medium))
                     }
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.textPrimary)
                 }
             }
 
@@ -932,7 +916,7 @@ struct ExerciseWeightLogger: View {
                     } else {
                         Image(systemName: "square.and.arrow.down")
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                     Text(showSaved ? "Guardado" : "Guardar")
                         .font(.system(size: 12, weight: .medium))
@@ -940,12 +924,9 @@ struct ExerciseWeightLogger: View {
                 }
                 .padding(.horizontal, Spacing.md)
                 .padding(.vertical, Spacing.sm)
-                .background(
-                    showSaved
-                        ? BulkUpColors.success.opacity(0.1)
-                        : BulkUpColors.accent.opacity(0.1)
-                )
-                .cornerRadius(CornerRadius.small)
+                .background(BulkUpColors.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                .hairline(CornerRadius.medium)
             }
             .disabled(isSaving)
         }
@@ -988,15 +969,8 @@ struct ExerciseWeightLogger: View {
             nextInfo = nil
         }
 
-        workoutSession.completeSet(
-            day: normalizedDay,
-            exerciseIndex: exercise.orderIndex,
-            setIndex: setIndex,
-            restSeconds: exercise.restSeconds,
-            nextInfo: nextInfo
-        )
-
-        // Update weight in training manager (weightValue already computed above)
+        // Write weight + reps BEFORE completing: completeSet mirrors the set
+        // into the shared store (watch / Live Activity) reading these values.
         if weightValue > 0 {
             trainingManager.updateWeight(
                 day: normalizedDay,
@@ -1006,13 +980,19 @@ struct ExerciseWeightLogger: View {
                 weight: weightValue
             )
         }
-
-        // Store actual reps
         if let reps = Int(safeGetRepsText(setIndex)) {
             workoutSession.setActualReps(
                 day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex, reps: reps
             )
         }
+
+        workoutSession.completeSet(
+            day: normalizedDay,
+            exerciseIndex: exercise.orderIndex,
+            setIndex: setIndex,
+            restSeconds: exercise.restSeconds,
+            nextInfo: nextInfo
+        )
         // Persist the reps the user actually saw: setReps was only written on
         // manual edits, so accepted prefills saved reps=0 for comma-format plans
         // and "Usar anterior" had no reps to reuse the following week.
@@ -1096,19 +1076,91 @@ struct ExerciseWeightLogger: View {
         }
     }
 
-    private func trimArrayCapacity() {
-        let removedIndex = weightTexts.count - 1
-        if removedIndex >= 0 {
-            let key = trainingManager.generateWeightKey(
-                day: normalizedDay, exerciseIndex: exercise.orderIndex,
-                exerciseName: effectiveName, setIndex: removedIndex, weekStart: currentWeekString
-            )
-            trainingManager.weights[key] = nil
-            WorkoutVideoStore.delete(for: videoKey(removedIndex))
+    // MARK: - Add / remove sets (this week only; the plan is untouched)
+
+    /// "Añadir serie" / "Quitar serie" row shared by both modes. Removing goes
+    /// through a confirmation when the last set already has data.
+    private var setCountControls: some View {
+        HStack(spacing: Spacing.md) {
+            Button(action: addSet) {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 12))
+                    Text("Añadir serie")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundColor(BulkUpColors.textPrimary)
+                .padding(.vertical, Spacing.xs)
+            }
+
+            if totalSetsCount > 1 {
+                Button {
+                    requestRemoveSet(at: totalSetsCount - 1)
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "minus.circle")
+                            .font(.system(size: 12))
+                        Text("Quitar serie")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(BulkUpColors.textTertiary)
+                    .padding(.vertical, Spacing.xs)
+                }
+            }
+
+            Spacer()
+
+            if totalSetsCount != exercise.sets {
+                Text("Plan: \(exercise.sets)")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(BulkUpColors.textTertiary)
+            }
         }
-        if weightTexts.count > totalSetsCount { weightTexts.removeLast() }
-        if repsTexts.count > totalSetsCount { repsTexts.removeLast() }
-        refreshVideoSets()
+    }
+
+    @ViewBuilder
+    private func removeSetMenu(setIndex: Int) -> some View {
+        if totalSetsCount > 1 {
+            Button(role: .destructive) {
+                requestRemoveSet(at: setIndex)
+            } label: {
+                Label("Eliminar serie", systemImage: "trash")
+            }
+        }
+    }
+
+    private func setHasData(_ setIndex: Int) -> Bool {
+        (Double(safeGetWeightText(setIndex)) ?? 0) > 0
+            || workoutSession.isSetCompleted(day: normalizedDay, exerciseIndex: exercise.orderIndex, setIndex: setIndex)
+            || videoSets.contains(setIndex)
+    }
+
+    private func requestRemoveSet(at setIndex: Int) {
+        if setHasData(setIndex) {
+            pendingRemoveIndex = setIndex
+        } else {
+            removeSet(at: setIndex)
+        }
+    }
+
+    private func addSet() {
+        workoutSession.addSet(
+            day: normalizedDay, exerciseIndex: exercise.orderIndex,
+            plannedSets: exercise.sets, trainingManager: trainingManager
+        )
+        // onChange(setCountDeltas) reloads the rows; keep arrays safe meanwhile.
+        ensureArrayCapacity()
+    }
+
+    private func removeSet(at setIndex: Int) {
+        focusedSet = nil
+        workoutSession.removeSet(
+            day: normalizedDay, exerciseIndex: exercise.orderIndex, exerciseName: effectiveName,
+            plannedSets: exercise.sets, setIndex: setIndex, trainingManager: trainingManager
+        )
+        loadInitialData()
+        // Persist the shorter set list so the backend record matches.
+        saveWeights()
     }
 
     // MARK: - Video Helpers
@@ -1136,7 +1188,7 @@ struct ExerciseWeightLogger: View {
     // MARK: - Weight Data
 
     private func loadInitialData() {
-        let setsCount = max(exercise.sets, totalSetsCount)
+        let setsCount = totalSetsCount
         weightTexts = (0..<setsCount).map { setIndex in
             let key = trainingManager.generateWeightKey(
                 day: normalizedDay,
@@ -1201,7 +1253,7 @@ struct ExerciseWeightLogger: View {
         // One backwards scan per set: the first week with a logged weight also
         // supplies that set's reps, so weight and reps always come from the
         // same session instead of two different weeks.
-        let found: [(Double, Int?)?] = (0..<exercise.sets).map { setIndex in
+        let found: [(Double, Int?)?] = (0..<totalSetsCount).map { setIndex in
             var checkWeek = trainingManager.selectedWeek
             for _ in 0..<4 {
                 checkWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: checkWeek) ?? checkWeek
@@ -1284,7 +1336,7 @@ struct ExerciseWeightLogger: View {
 
     private func fillFromPrevious() {
         ensureArrayCapacity()
-        for i in 0..<exercise.sets {
+        for i in 0..<totalSetsCount {
             if let prev = safeGetPrevWeight(i), prev > 0,
                i < weightTexts.count, weightTexts[i].isEmpty {
                 weightTexts[i] = formatWeight(prev)

@@ -30,7 +30,7 @@ struct SupplementRow: View {
             // Icon
             Image(systemName: "pills.fill")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
                 .frame(width: 24)
 
             // Name + timing
@@ -59,7 +59,7 @@ struct SupplementRow: View {
             // Dosage pill
             Text(supplement.dosage)
                 .font(BulkUpFont.badge())
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(BulkUpColors.accent.opacity(0.12))

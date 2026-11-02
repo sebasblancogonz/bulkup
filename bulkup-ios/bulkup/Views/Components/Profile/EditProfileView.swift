@@ -83,7 +83,7 @@ struct EditProfileView: View {
                                     Spacer()
 
                                     Image(systemName: "calendar")
-                                        .foregroundColor(BulkUpColors.accent)
+                                        .foregroundColor(BulkUpColors.accentText)
                                 }
                                 .padding()
                                 .background(BulkUpColors.surfaceElevated)
@@ -346,7 +346,7 @@ struct DatePickerView: View {
                         dismiss()
                     }
                     .fontWeight(.semibold)
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }

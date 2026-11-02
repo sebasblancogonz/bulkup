@@ -41,7 +41,7 @@ struct ExerciseExplorerView: View {
                         ZStack(alignment: .topTrailing) {
                             Image(systemName: "line.3.horizontal.decrease.circle")
                                 .font(BulkUpFont.sectionHeader())
-                                .foregroundColor(BulkUpColors.accent)
+                                .foregroundColor(BulkUpColors.accentText)
 
                             let activeFilters = exerciseExplorerManager.categoryFilter.count +
                                               exerciseExplorerManager.equipmentFilter.count +
@@ -300,7 +300,7 @@ struct FilterSheet: View {
                         isPresented = false
                     }
                     .fontWeight(.semibold)
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
             }
         }

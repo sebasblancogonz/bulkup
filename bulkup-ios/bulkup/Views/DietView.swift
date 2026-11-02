@@ -259,7 +259,7 @@ struct DietView: View {
         HStack(spacing: 6) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 14))
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
             Text("¡Dieta completada hoy!")
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
@@ -425,7 +425,7 @@ struct DietView: View {
                             Text("Guardar")
                                 .font(.system(size: 12, weight: .medium))
                         }
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                         .padding(.horizontal, Spacing.md)
                         .padding(.vertical, Spacing.sm)
                         .background(BulkUpColors.accent.opacity(0.1))

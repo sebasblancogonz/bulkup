@@ -134,7 +134,7 @@ struct TrainingPlanEditorView: View {
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
 

@@ -39,7 +39,7 @@ struct AddMeasurementsView: View {
                     VStack(spacing: Spacing.sm) {
                         Image(systemName: "figure.arms.open")
                             .font(.system(size: 50))
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
 
                         Text("Nuevas Medidas")
                             .font(BulkUpFont.sectionHeader())
@@ -145,7 +145,7 @@ struct AddMeasurementsView: View {
                             Image(systemName: showingOptionalFields ? "chevron.up" : "chevron.down")
                                 .font(BulkUpFont.caption())
                         }
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                         .padding()
                         .background(BulkUpColors.accent.opacity(0.1))
                         .cornerRadius(CornerRadius.small)

@@ -24,7 +24,7 @@ struct ProjectionsCard: View {
 
                 if let date = reviewDate {
                     let daysRemaining = Calendar.current.dateComponents([.day], from: Date(), to: date).day ?? 0
-                    Text("Faltan \(max(daysRemaining, 0)) dias")
+                    Text("Faltan \(max(daysRemaining, 0)) días")
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.secondary)
                         .padding(.horizontal, Spacing.sm)

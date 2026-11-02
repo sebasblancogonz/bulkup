@@ -115,7 +115,7 @@ struct MainAppView: View {
                             .toolbarVisibility(workoutSession.isActive ? .hidden : .automatic, for: .tabBar)
                         }
                     }
-                    .tint(BulkUpColors.accent)
+                    .tint(BulkUpColors.accentText)
 
                     // Floating workout FAB when session active (hidden while summary is shown)
                     if workoutSession.isActive && !workoutSession.showSummary {
@@ -172,32 +172,28 @@ struct MainAppView: View {
                 }
             } label: {
                 ZStack {
-                    // Outer glow
-                    Circle()
-                        .fill(BulkUpColors.accent.opacity(0.15))
-                        .frame(width: 72, height: 72)
-
-                    // Main circle
-                    Circle()
+                    // Floating control: the one earned shadow on the screen.
+                    RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous)
                         .fill(BulkUpColors.accent)
-                        .frame(width: 60, height: 60)
-                        .shadow(color: BulkUpColors.accent.opacity(0.4), radius: 12, y: 4)
+                        .frame(width: 64, height: 64)
+                        .shadow(color: BulkUpColors.shadow.opacity(0.35), radius: 14, x: 0, y: 8)
 
                     if showWorkoutMenu {
                         Image(systemName: "xmark")
-                            .font(.system(size: 20, weight: .bold))
+                            .font(.system(.title3, weight: .bold))
                             .foregroundColor(BulkUpColors.onAccent)
                     } else {
                         // Timer display inside button
-                        VStack(spacing: 1) {
-                            Image(systemName: "figure.run")
-                                .font(.system(size: 16, weight: .bold))
+                        VStack(spacing: 2) {
+                            Image(systemName: "figure.strengthtraining.traditional")
+                                .font(.system(.callout, weight: .bold))
                                 .foregroundColor(BulkUpColors.onAccent)
 
                             FABElapsedLabel()
                         }
                     }
                 }
+                .accessibilityLabel("Entreno en curso")
             }
             .buttonStyle(.plain)
             .padding(.bottom, 16)
@@ -212,8 +208,7 @@ struct MainAppView: View {
 
         var body: some View {
             Text(WorkoutSessionManager.shared.formattedElapsed())
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .monospacedDigit()
+                .font(BulkUpFont.mono(11, weight: .semibold, relativeTo: .caption2))
                 .foregroundColor(BulkUpColors.onAccent)
         }
     }
@@ -289,14 +284,14 @@ struct MainAppView: View {
         } label: {
             HStack(spacing: Spacing.sm) {
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(.footnote, weight: .semibold))
                     .foregroundColor(color)
                     .frame(width: 32, height: 32)
-                    .background(color.opacity(0.15))
-                    .clipShape(Circle())
+                    .background(BulkUpColors.surfaceElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous))
 
                 Text(label)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(.subheadline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textPrimary)
             }
             .padding(.horizontal, Spacing.md)
@@ -325,7 +320,7 @@ struct MainAppView: View {
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
-                .tint(BulkUpColors.accent)
+                .tint(BulkUpColors.accentText)
             Text("Cargando tus datos...")
                 .font(BulkUpFont.cardTitle())
                 .foregroundColor(BulkUpColors.textPrimary)

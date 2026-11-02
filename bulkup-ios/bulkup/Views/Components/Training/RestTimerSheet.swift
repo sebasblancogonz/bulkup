@@ -26,44 +26,40 @@ struct RestTimerSheet: View {
                 .padding(.top, Spacing.md)
 
             // Label
-            Text("DESCANSO")
-                .font(.system(size: 13, weight: .bold))
-                .tracking(1.5)
-                .foregroundColor(BulkUpColors.textSecondary)
+            Text("Descanso")
+                .microLabel()
 
-            // Circular progress + countdown
-            ZStack {
-                Circle()
-                    .stroke(BulkUpColors.border, lineWidth: 8)
-                    .frame(width: 120, height: 120)
-
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(
-                        AngularGradient(
-                            colors: [BulkUpColors.accent, BulkUpColors.accentGlow, BulkUpColors.accent],
-                            center: .center,
-                            startAngle: .degrees(-90),
-                            endAngle: .degrees(270)
-                        ),
-                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                    )
-                    .frame(width: 120, height: 120)
-                    .rotationEffect(.degrees(-90))
-                    .animation(.linear(duration: 1), value: progress)
-                    .shadow(color: BulkUpColors.accent.opacity(0.4), radius: 6, x: 0, y: 0)
-
+            // Countdown: a lime rule drains as the rest runs out
+            VStack(spacing: Spacing.md) {
                 Text(WorkoutSessionManager.formatTime(session.restTimerRemaining))
-                    .font(.system(size: 56, weight: .bold, design: .rounded))
-                    .monospacedDigit()
+                    .font(BulkUpFont.mono(64, weight: .semibold, relativeTo: .largeTitle))
                     .foregroundColor(BulkUpColors.textPrimary)
+                    .contentTransition(.numericText(countsDown: true))
+                    .animation(.linear(duration: 0.3), value: session.restTimerRemaining)
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Rectangle().fill(BulkUpColors.line)
+                        Rectangle()
+                            .fill(BulkUpColors.accent)
+                            .frame(width: geo.size.width * (1 - progress))
+                            .animation(.linear(duration: 1), value: progress)
+                    }
+                }
+                .frame(height: 4)
+                .padding(.horizontal, Spacing.xl)
             }
 
             // Next set info
             if let info = session.nextSetInfo {
-                Text("Siguiente: \(info)")
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
+                HStack(spacing: Spacing.xs) {
+                    Text("Siguiente")
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
+                    Text(info)
+                        .font(BulkUpFont.mono(13, relativeTo: .footnote))
+                        .foregroundColor(BulkUpColors.textPrimary)
+                }
             }
 
             // Action buttons
@@ -72,28 +68,16 @@ struct RestTimerSheet: View {
                     session.skipRest()
                 } label: {
                     Text("Saltar")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(BulkUpColors.accent)
-                        .padding(.horizontal, Spacing.lg)
-                        .padding(.vertical, Spacing.sm)
-                        .overlay(
-                            Capsule()
-                                .stroke(BulkUpColors.accent, lineWidth: 1.5)
-                        )
+                        .outlineButtonStyle()
                 }
-
                 Button {
                     session.addRestTime(seconds: 30)
                 } label: {
-                    Text("+30s")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(BulkUpColors.textPrimary)
-                        .padding(.horizontal, Spacing.lg)
-                        .padding(.vertical, Spacing.sm)
-                        .background(BulkUpColors.surfaceElevated)
-                        .clipShape(Capsule())
+                    Text("+30 s")
+                        .secondaryButtonStyle()
                 }
             }
+            .padding(.horizontal, Spacing.xl)
 
             Spacer()
         }
@@ -122,11 +106,10 @@ struct RestTimerBanner: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "timer")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(BulkUpColors.accent)
+                        .font(.system(.footnote, weight: .semibold))
+                        .foregroundColor(BulkUpColors.accentText)
                     Text(WorkoutSessionManager.formatTime(session.restTimerRemaining))
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .monospacedDigit()
+                        .font(BulkUpFont.mono(16, weight: .semibold, relativeTo: .callout))
                         .foregroundColor(BulkUpColors.textPrimary)
                 }
             }
@@ -136,21 +119,19 @@ struct RestTimerBanner: View {
                 .tint(BulkUpColors.accent)
 
             Button("Saltar") { session.skipRest() }
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(BulkUpColors.accent)
+                .font(.system(.footnote, weight: .semibold))
+                .foregroundColor(BulkUpColors.accentText)
 
-            Button("+30s") { session.addRestTime(seconds: 30) }
-                .font(.system(size: 13, weight: .semibold))
+            Button("+30 s") { session.addRestTime(seconds: 30) }
+                .font(.system(.footnote, weight: .semibold))
                 .foregroundColor(BulkUpColors.textSecondary)
         }
         .padding(.horizontal, Spacing.md)
         .padding(.vertical, Spacing.sm)
         .background(
-            RoundedRectangle(cornerRadius: 12).fill(BulkUpColors.surfaceElevated)
+            RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
+                .fill(BulkUpColors.surfaceElevated)
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(BulkUpColors.accent.opacity(0.25), lineWidth: 1)
-        )
+        .hairline(CornerRadius.medium, color: BulkUpColors.accent.opacity(0.6))
     }
 }

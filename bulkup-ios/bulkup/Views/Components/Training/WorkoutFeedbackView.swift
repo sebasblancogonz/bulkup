@@ -7,6 +7,8 @@ import SwiftUI
 struct WorkoutFeedbackView: View {
     let dayName: String
     let planId: String?
+    /// ISO week Monday "yyyy-MM-dd" the feedback belongs to.
+    let weekStart: String
 
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var manager = WorkoutFeedbackManager.shared
@@ -46,7 +48,7 @@ struct WorkoutFeedbackView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Guardar") { save() }
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                         .disabled(rating == 0 && selectedTags.isEmpty && note.isEmpty && photoCount == 0)
                 }
             }
@@ -132,7 +134,7 @@ struct WorkoutFeedbackView: View {
                     ) {
                         Label("Añadir", systemImage: "photo.badge.plus")
                             .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.accent)
+                            .foregroundColor(BulkUpColors.accentText)
                     }
                 }
             }
@@ -175,7 +177,7 @@ struct WorkoutFeedbackView: View {
     // MARK: - Actions
 
     private func load() {
-        guard let existing = manager.feedback(planId: planId, dayName: dayName) else { return }
+        guard let existing = manager.feedback(planId: planId, dayName: dayName, weekStart: weekStart) else { return }
         rating = existing.rating
         selectedTags = Set(existing.tags)
         note = existing.note ?? ""
@@ -203,6 +205,7 @@ struct WorkoutFeedbackView: View {
         manager.save(
             planId: planId,
             dayName: dayName,
+            weekStart: weekStart,
             rating: rating,
             tags: Array(selectedTags),
             note: note,

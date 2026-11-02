@@ -22,6 +22,19 @@ struct ContentView: View {
     }
 
     var body: some View {
+        #if DEBUG
+        if let screen = DesignPreview.screen {
+            DesignPreviewHost(screen: screen)
+                .modelContainer(ModelContainer.bulkUpContainer)
+        } else {
+            appBody
+        }
+        #else
+        appBody
+        #endif
+    }
+
+    private var appBody: some View {
         Group {
             if authManager.isAuthenticated {
                 if hasCompletedOnboarding {

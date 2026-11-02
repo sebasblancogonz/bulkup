@@ -149,7 +149,7 @@ struct DietPlanEditorView: View {
 
     private var planInfoSection: some View {
         VStack(alignment: .leading, spacing: Spacing.lg) {
-            Text("Informacion del Plan")
+            Text("Información del Plan")
                 .font(BulkUpFont.cardTitle())
                 .foregroundColor(BulkUpColors.textPrimary)
 
@@ -165,7 +165,7 @@ struct DietPlanEditorView: View {
     private var dietDaysSection: some View {
         VStack(alignment: .leading, spacing: Spacing.lg) {
             HStack {
-                Text("Dias")
+                Text("Días")
                     .font(BulkUpFont.cardTitle())
                     .foregroundColor(BulkUpColors.textPrimary)
 
@@ -176,7 +176,7 @@ struct DietPlanEditorView: View {
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                 }
             }
 
@@ -186,11 +186,11 @@ struct DietPlanEditorView: View {
                         .font(.system(size: 40))
                         .foregroundColor(BulkUpColors.textTertiary)
 
-                    Text("No hay dias agregados")
+                    Text("No hay días agregados")
                         .font(BulkUpFont.cardTitle())
                         .foregroundColor(BulkUpColors.textSecondary)
 
-                    Text("Anade tu primer dia para comenzar")
+                    Text("Añade tu primer día para comenzar")
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textSecondary)
                 }
@@ -506,7 +506,7 @@ struct MealEditorRow: View {
                             Text("Agregar opcion")
                         }
                         .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.accent)
+                        .foregroundColor(BulkUpColors.accentText)
                     }
 
                     // Delete meal
@@ -561,7 +561,7 @@ struct MealOptionEditorRow: View {
                 }
             }
 
-            TextField("Descripcion (ej: Tortilla de claras con avena)", text: $option.optionDescription)
+            TextField("Descripción (ej: Tortilla de claras con avena)", text: $option.optionDescription)
                 .textFieldStyle(.roundedBorder)
                 .font(BulkUpFont.body())
 
@@ -597,7 +597,7 @@ struct MealOptionEditorRow: View {
                         Text("Ingrediente")
                     }
                     .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.accent)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
             }
 
@@ -622,7 +622,7 @@ struct SupplementEditorRow: View {
         HStack(spacing: Spacing.sm) {
             Image(systemName: "pills.fill")
                 .font(BulkUpFont.caption())
-                .foregroundColor(BulkUpColors.accent)
+                .foregroundColor(BulkUpColors.accentText)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(supplement.name.isEmpty ? "Suplemento" : supplement.name)
@@ -763,7 +763,7 @@ struct AddMealView: View {
 
                         // Description
                         VStack(alignment: .leading, spacing: Spacing.sm) {
-                            Text("Descripcion")
+                            Text("Descripción")
                                 .font(BulkUpFont.cardTitle())
                                 .foregroundColor(BulkUpColors.textPrimary)
 
@@ -801,7 +801,7 @@ struct AddMealView: View {
                                     Text("Agregar ingrediente")
                                 }
                                 .font(BulkUpFont.body())
-                                .foregroundColor(BulkUpColors.accent)
+                                .foregroundColor(BulkUpColors.accentText)
                             }
                         }
                     }

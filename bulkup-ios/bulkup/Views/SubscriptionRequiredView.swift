@@ -2,22 +2,23 @@
 //  SubscriptionRequiredView.swift
 //  bulkup
 //
-//  Created by sebastianblancogonz on 21/8/25.
+//  PRO gate shown in place of a locked screen (full) or inline above locked
+//  content (compact). Lists only what is actually locked.
 //
+
 import SwiftUI
 
 struct SubscriptionRequiredView: View {
     let onSubscribe: () -> Void
-    var title: LocalizedStringKey = "Funcion Premium"
-    var subtitle: LocalizedStringKey = "Desbloquea el poder de subir y gestionar tus planes personalizados de entrenamiento y dieta"
+    var title: LocalizedStringKey = "Función PRO"
+    var subtitle: LocalizedStringKey = "Tu plan, tus medidas y tus récords, en un sitio donde se ve si avanzas."
     var features: [LocalizedStringKey] = [
+        "Importación con IA (PDF y fotos)",
         "Planes ilimitados",
-        "Importacion con IA (PDF y fotos)",
-        "Dashboard de progreso completo",
-        "Records personales (RM)",
-        "Medidas corporales y composicion",
-        "Ranking con amigos",
-        "Compartir e importar planes"
+        "Progreso, medidas y composición",
+        "Récords personales (RM)",
+        "Compartir e importar planes",
+        "Recetas con IA y fidelidad de dieta",
     ]
     var compact: Bool = false
 
@@ -30,137 +31,78 @@ struct SubscriptionRequiredView: View {
     }
 
     private var fullContent: some View {
-        VStack(spacing: Spacing.xxl) {
-            Spacer()
+        VStack(alignment: .leading, spacing: Spacing.lg) {
+            Spacer(minLength: 0)
 
-            VStack(spacing: Spacing.lg) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [BulkUpColors.accent.opacity(0.2), BulkUpColors.accent.opacity(0.05)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 120, height: 120)
+            Text(title)
+                .displayVoice(36, weight: .extraBold, relativeTo: .largeTitle)
+                .foregroundColor(BulkUpColors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
 
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [BulkUpColors.accent, BulkUpColors.accent.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+            Text(subtitle)
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(features.indices, id: \.self) { index in
+                    FeatureRow(icon: "checkmark", text: features[index], color: BulkUpColors.accentText)
+                        .padding(.vertical, Spacing.sm + 2)
+                        .overlay(alignment: .bottom) {
+                            if index < features.count - 1 {
+                                Rectangle().fill(BulkUpColors.line).frame(height: 1)
+                            }
+                        }
                 }
-                .shadow(color: BulkUpColors.accent.opacity(0.2), radius: 20, x: 0, y: 10)
-            }
-
-            VStack(spacing: Spacing.lg) {
-                Text(title)
-                    .font(.title.weight(.bold))
-                    .foregroundColor(BulkUpColors.textPrimary)
-
-                Text(subtitle)
-                    .font(BulkUpFont.body())
-                    .foregroundColor(BulkUpColors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
-            }
-
-            VStack(spacing: Spacing.lg) {
-                // Beneficios
-                VStack(alignment: .leading, spacing: Spacing.md) {
-                    ForEach(features.indices, id: \.self) { index in
-                        FeatureRow(icon: "checkmark.circle.fill", text: features[index], color: BulkUpColors.accent)
-                    }
-                }
-                .padding(.horizontal, 40)
-            }
-
-            Spacer()
-
-            VStack(spacing: Spacing.md) {
-                Button(action: onSubscribe) {
-                    HStack(spacing: Spacing.md) {
-                        Image(systemName: "crown.fill")
-                        Text("Desbloquear PRO")
-                            .fontWeight(.semibold)
-                    }
-                }
-                .primaryButtonStyle(color: BulkUpColors.accent)
-                .padding(.horizontal, 32)
-
-                Text("Cancela en cualquier momento")
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
-            }
-
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private var compactContent: some View {
-        VStack(spacing: Spacing.lg) {
-            HStack(spacing: Spacing.md) {
-                Image(systemName: "crown.fill")
-                    .font(BulkUpFont.sectionHeader())
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [BulkUpColors.accent, BulkUpColors.accent.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(title)
-                        .font(BulkUpFont.cardTitle())
-                        .fontWeight(.bold)
-                        .foregroundColor(BulkUpColors.textPrimary)
-
-                    Text(subtitle)
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .lineLimit(2)
-                }
-
-                Spacer()
             }
 
             Button(action: onSubscribe) {
-                HStack(spacing: Spacing.sm) {
-                    Image(systemName: "lock.open.fill")
-                        .font(BulkUpFont.caption())
-                    Text("Desbloquear PRO")
-                        .font(BulkUpFont.body())
-                        .fontWeight(.semibold)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
-                .background(
-                    LinearGradient(
-                        colors: [BulkUpColors.accent, BulkUpColors.accent.opacity(0.8)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .foregroundColor(BulkUpColors.onAccent)
-                .cornerRadius(CornerRadius.medium)
+                Text("Desbloquear PRO")
+                    .primaryButtonStyle()
             }
+            .pressable()
+
+            Text("Cancela cuando quieras desde el App Store.")
+                .font(.system(.caption2))
+                .foregroundColor(BulkUpColors.textSecondary)
+
+            Spacer(minLength: 0)
         }
-        .padding(Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(BulkUpColors.accent.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(BulkUpColors.accent.opacity(0.2), lineWidth: 1)
-                )
-        )
+        .padding(.horizontal, Spacing.screenH)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    }
+
+    private var compactContent: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack(alignment: .top, spacing: Spacing.md) {
+                Image(systemName: "lock.fill")
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundColor(BulkUpColors.accentText)
+                    .frame(width: 24)
+                    .padding(.top, 2)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textPrimary)
+                    Text(subtitle)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .lineLimit(3)
+                }
+                Spacer(minLength: 0)
+            }
+
+            Button(action: onSubscribe) {
+                Text("Desbloquear PRO")
+                    .primaryButtonStyle()
+            }
+            .pressable()
+        }
+        .padding(Spacing.md)
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .hairline(color: BulkUpColors.accent.opacity(0.5))
     }
 }
 
@@ -168,8 +110,8 @@ struct SubscriptionRequiredView: View {
 struct PremiumOverlayModifier: ViewModifier {
     let isSubscribed: Bool
     let onSubscribe: () -> Void
-    var title: LocalizedStringKey = "Funcion Premium"
-    var subtitle: LocalizedStringKey = "Esta funcion requiere una suscripcion PRO"
+    var title: LocalizedStringKey = "Función PRO"
+    var subtitle: LocalizedStringKey = "Esta función requiere una suscripción PRO"
 
     func body(content: Content) -> some View {
         content
@@ -177,10 +119,7 @@ struct PremiumOverlayModifier: ViewModifier {
                 Group {
                     if !isSubscribed {
                         ZStack {
-                            // Blurred background
-                            BulkUpColors.background
-                                .opacity(0.85)
-
+                            BulkUpColors.background.opacity(0.92)
                             SubscriptionRequiredView(
                                 onSubscribe: onSubscribe,
                                 title: title,
@@ -197,8 +136,8 @@ struct PremiumOverlayModifier: ViewModifier {
 extension View {
     func premiumOverlay(
         isSubscribed: Bool,
-        title: LocalizedStringKey = "Funcion Premium",
-        subtitle: LocalizedStringKey = "Esta funcion requiere una suscripcion PRO",
+        title: LocalizedStringKey = "Función PRO",
+        subtitle: LocalizedStringKey = "Esta función requiere una suscripción PRO",
         onSubscribe: @escaping () -> Void
     ) -> some View {
         modifier(PremiumOverlayModifier(
@@ -218,14 +157,15 @@ struct FeatureRow: View {
     var body: some View {
         HStack(spacing: Spacing.md) {
             Image(systemName: icon)
+                .font(.system(.footnote, weight: .bold))
                 .foregroundColor(color)
-                .font(BulkUpFont.sectionHeader())
+                .frame(width: 24)
 
             Text(text)
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.textPrimary)
 
-            Spacer()
+            Spacer(minLength: 0)
         }
     }
 }

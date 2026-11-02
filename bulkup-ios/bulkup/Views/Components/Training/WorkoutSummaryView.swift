@@ -11,49 +11,55 @@ struct WorkoutSummaryView: View {
     let summary: WorkoutSummary
     var saveState: WorkoutSessionManager.SaveState
     var onRetry: () -> Void
+    /// Save and open the recap (sensations, notes, photos, editable sets).
+    var onReview: (() -> Void)? = nil
     var onSave: () -> Void
+    /// Needed to look up the last session of this same day for the deltas.
+    var userId: String? = nil
+    var dayName: String? = nil
+    /// Injected by the design preview; fetched from the backend otherwise.
+    var previousSession: WorkoutSessionRecord? = nil
 
     @State private var showCheck = false
     @State private var showCard = false
+    @State private var previous: WorkoutSessionRecord?
 
     var body: some View {
         ZStack {
             BulkUpColors.background
                 .ignoresSafeArea()
 
-            VStack(spacing: Spacing.xl) {
+            VStack(alignment: .leading, spacing: Spacing.xl) {
                 Spacer()
 
-                // Checkmark animation
+                // Done mark
                 ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [BulkUpColors.success.opacity(0.2), BulkUpColors.success.opacity(0.05)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 100, height: 100)
+                    RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous)
+                        .fill(BulkUpColors.complete)
+                        .frame(width: 64, height: 64)
                         .scaleEffect(showCheck ? 1.0 : 0.3)
-
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(BulkUpColors.success)
+                    Image(systemName: "checkmark")
+                        .font(.system(.title, weight: .bold))
+                        .foregroundColor(Color.onFill(BulkUpColors.complete))
                         .scaleEffect(showCheck ? 1.0 : 0.0)
                 }
-                .shadow(color: BulkUpColors.success.opacity(0.2), radius: 20, y: 10)
 
                 // Title
-                VStack(spacing: Spacing.sm) {
-                    Text("Entreno completado!")
-                        .font(BulkUpFont.largeTitle())
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    Text("Entreno completado")
+                        .displayVoice(40, weight: .extraBold, relativeTo: .largeTitle)
                         .foregroundColor(BulkUpColors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     if summary.isPartialCompletion {
-                        Text("\(summary.exercisesCompleted)/\(summary.exercisesTotal) ejercicios completados")
-                            .font(BulkUpFont.body())
-                            .foregroundColor(BulkUpColors.textSecondary)
+                        HStack(spacing: Spacing.xs) {
+                            Text("\(summary.exercisesCompleted)/\(summary.exercisesTotal)")
+                                .font(BulkUpFont.mono(15, weight: .semibold, relativeTo: .subheadline))
+                                .foregroundColor(BulkUpColors.textPrimary)
+                            Text("ejercicios completados")
+                                .font(BulkUpFont.body())
+                                .foregroundColor(BulkUpColors.textSecondary)
+                        }
                     }
                 }
                 .opacity(showCard ? 1 : 0)
@@ -84,33 +90,36 @@ struct WorkoutSummaryView: View {
                             Button {
                                 onRetry()
                             } label: {
-                                HStack(spacing: Spacing.sm) {
-                                    Image(systemName: "arrow.clockwise")
-                                    Text("Reintentar")
-                                        .fontWeight(.semibold)
-                                }
-                                .primaryButtonStyle(color: BulkUpColors.warning)
+                                Label("Reintentar", systemImage: "arrow.clockwise")
+                                    .secondaryButtonStyle()
                             }
                         }
                     }
                     Button {
                         onSave()
                     } label: {
-                        HStack(spacing: Spacing.sm) {
-                            Image(systemName: "checkmark.circle.fill")
-                            Text("Guardar y salir")
-                                .fontWeight(.semibold)
+                        Text("Guardar y salir")
+                            .primaryButtonStyle()
+                    }
+                    .pressable()
+
+                    if let onReview {
+                        Button {
+                            onReview()
+                        } label: {
+                            Label("Sensaciones, notas y fotos", systemImage: "square.and.pencil")
+                                .secondaryButtonStyle()
                         }
-                        .primaryButtonStyle(color: BulkUpColors.accent)
                     }
                 }
-                .padding(.horizontal, Spacing.xl)
                 .opacity(showCard ? 1 : 0)
 
                 Spacer()
                     .frame(height: 40)
             }
+            .padding(.horizontal, Spacing.screenH)
         }
+        .task { await loadPreviousSession() }
         .onAppear {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
                 showCheck = true
@@ -123,56 +132,97 @@ struct WorkoutSummaryView: View {
 
     // MARK: - Stats Grid
 
+    // MARK: - Previous session (the numbers as proof)
+
+    /// Most recent saved session for the same training day, so every stat can
+    /// say how it moved. Nothing is shown when there is no history.
+    private func loadPreviousSession() async {
+        if let previousSession { previous = previousSession; return }
+        guard let userId, let dayName else { return }
+        let folded = dayName.lowercased().folding(options: .diacriticInsensitive, locale: .current)
+        let today = DateFormatter()
+        today.locale = Locale(identifier: "en_US_POSIX")
+        today.dateFormat = "yyyy-MM-dd"
+        let todayString = today.string(from: summary.date)
+        guard let sessions = try? await APIService.shared.getWorkoutSessions(userId: userId, limit: 40) else { return }
+        previous = sessions
+            .filter { $0.dayName.lowercased().folding(options: .diacriticInsensitive, locale: .current) == folded
+                      && $0.date < todayString }
+            .sorted { $0.date > $1.date }
+            .first
+    }
+
+    private func delta(_ value: Double, unit: String, fraction: Int = 0) -> String? {
+        guard abs(value) >= 0.5 else { return NSLocalizedString("igual que el último", comment: "") }
+        let sign = value > 0 ? "+" : "−"
+        let number = String(format: "%.\(fraction)f", abs(value))
+        return String(format: NSLocalizedString("%@%@ %@ vs último", comment: "delta vs last session"), sign, number, unit)
+    }
+
+    private func durationDelta() -> String? {
+        guard let previous else { return nil }
+        let diff = summary.duration - previous.durationSeconds
+        guard abs(diff) >= 30 else { return NSLocalizedString("igual que el último", comment: "") }
+        let sign = diff > 0 ? "+" : "−"
+        return String(format: NSLocalizedString("%@%@ vs último", comment: "delta vs last session"),
+                      sign, WorkoutSummary.format(seconds: abs(diff)))
+    }
+
     private var statsGrid: some View {
         LazyVGrid(columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible()),
-        ], spacing: Spacing.md) {
+            GridItem(.flexible(), spacing: 0),
+            GridItem(.flexible(), spacing: 0),
+        ], spacing: 0) {
             statCell(
                 value: summary.formattedDuration,
-                label: "Duracion",
-                icon: "clock.fill"
+                label: "Duración",
+                icon: "clock.fill",
+                delta: durationDelta()
             )
             statCell(
                 value: "\(summary.formattedVolume) kg",
                 label: "Volumen",
-                icon: "scalemass.fill"
+                icon: "scalemass.fill",
+                delta: previous.map { delta(summary.totalVolume - $0.totalVolume, unit: "kg") } ?? nil
             )
             statCell(
                 value: "\(summary.totalSets)",
                 label: "Series",
-                icon: "number"
+                icon: "number",
+                delta: previous.map { delta(Double(summary.totalSets - $0.totalSets), unit: NSLocalizedString("series", comment: "")) } ?? nil
             )
             statCell(
                 value: "\(summary.exercisesCompleted)",
                 label: "Ejercicios",
-                icon: "figure.strengthtraining.traditional"
+                icon: "figure.strengthtraining.traditional",
+                delta: previous.map { delta(Double(summary.exercisesCompleted - $0.exercisesCompleted), unit: NSLocalizedString("ej.", comment: "")) } ?? nil
             )
         }
-        .padding(.horizontal, Spacing.xl)
+        .background(BulkUpColors.line)   // 1pt gutters read as hairlines
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .hairline()
     }
 
-    private func statCell(value: String, label: LocalizedStringKey, icon: String) -> some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: icon)
-                .font(.system(size: 16))
-                .foregroundColor(BulkUpColors.accent)
-
-            Text(value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(BulkUpColors.textPrimary)
-
+    private func statCell(value: String, label: LocalizedStringKey, icon: String, delta: String? = nil) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(label)
-                .font(BulkUpFont.caption())
-                .foregroundColor(BulkUpColors.textSecondary)
+                .microLabel()
+            Text(value)
+                .font(BulkUpFont.mono(26, weight: .semibold, relativeTo: .title2))
+                .foregroundColor(BulkUpColors.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            if let delta {
+                Text(delta)
+                    .font(BulkUpFont.mono(11, relativeTo: .caption2))
+                    .foregroundColor(delta.hasPrefix("+") ? BulkUpColors.accentText : BulkUpColors.textSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.md)
         .background(BulkUpColors.surface)
-        .cornerRadius(CornerRadius.medium)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .stroke(BulkUpColors.border, lineWidth: 0.5)
-        )
+        .padding(0.5)
     }
 }
