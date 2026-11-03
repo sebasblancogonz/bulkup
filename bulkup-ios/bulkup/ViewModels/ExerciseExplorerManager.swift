@@ -86,6 +86,23 @@ class ExerciseExplorerManager: ObservableObject {
         max(1, Int(ceil(Double(filteredExercises.count) / Double(pageSize))))
     }
     
+    /// Every page up to the current one: the list grows with "Mostrar más".
+    var visibleExercises: [RMExerciseFull] {
+        Array(filteredExercises.prefix(currentPage * pageSize))
+    }
+
+    var hasMoreExercises: Bool {
+        currentPage * pageSize < filteredExercises.count
+    }
+
+    var hasActiveFilters: Bool {
+        !categoryFilter.isEmpty || !equipmentFilter.isEmpty || !forceFilter.isEmpty || !levelFilter.isEmpty
+    }
+
+    var activeFilterCount: Int {
+        categoryFilter.count + equipmentFilter.count + forceFilter.count + levelFilter.count
+    }
+
     var paginatedExercises: [RMExerciseFull] {
         let start = (currentPage - 1) * pageSize
         let end = min(start + pageSize, filteredExercises.count)
@@ -165,7 +182,6 @@ class ExerciseExplorerManager: ObservableObject {
     }
     
     func resetFilters() {
-        searchTerm = ""
         categoryFilter = []
         equipmentFilter = []
         forceFilter = []

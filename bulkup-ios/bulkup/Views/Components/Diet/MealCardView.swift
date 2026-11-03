@@ -34,9 +34,12 @@ struct MealCardView: View {
 
             if isExpanded {
                 expandedDetail
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .transition(.opacity)
             }
         }
+        // Clip at the row's own bounds: while the detail collapses it would
+        // otherwise slide up over the row above it.
+        .clipped()
         .background(isNext ? BulkUpColors.surfaceElevated : Color.clear)
         .overlay(alignment: .bottom) {
             if showsSeparator {
@@ -105,6 +108,7 @@ struct MealCardView: View {
                                 .font(BulkUpFont.caption())
                                 .foregroundColor(BulkUpColors.textSecondary)
                                 .lineLimit(1)
+                                .transition(.opacity)
                         }
                     }
 

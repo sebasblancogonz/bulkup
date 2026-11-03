@@ -217,6 +217,16 @@
         }
       }
     },
+    "%@, %lld seleccionados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %lld selected"
+          }
+        }
+      }
+    },
     "%@." : {
       "localizations" : {
         "en" : {
@@ -319,6 +329,16 @@
         }
       }
     },
+    "%lld de %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld"
+          }
+        }
+      }
+    },
     "%lld de %lld ejercicios completados" : {
       "localizations" : {
         "en" : {
@@ -395,6 +415,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld exercises · %lld sets"
+          }
+        }
+      }
+    },
+    "%lld en la biblioteca" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld in the library"
           }
         }
       }
@@ -1678,6 +1708,16 @@
         }
       }
     },
+    "Borrar búsqueda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear search"
+          }
+        }
+      }
+    },
     "Brazo" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2007,6 +2047,16 @@
         }
       }
     },
+    "Cargando ejercicios" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading exercises"
+          }
+        }
+      }
+    },
     "Cargando ejercicios..." : {
       "localizations" : {
         "en" : {
@@ -2043,6 +2093,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading plans..."
+          }
+        }
+      }
+    },
+    "Cargando tu plan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading your plan"
           }
         }
       }
@@ -2199,6 +2259,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lunch"
+          }
+        }
+      }
+    },
+    "Comida a comida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meal by meal"
           }
         }
       }
@@ -2449,6 +2519,16 @@
         }
       }
     },
+    "Con fechas de inicio y fin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With start and end dates"
+          }
+        }
+      }
+    },
     "Con récords registrados" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2656,6 +2736,16 @@
         }
       }
     },
+    "Crear a mano" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create by hand"
+          }
+        }
+      }
+    },
     "Crear cuenta" : {
       "localizations" : {
         "en" : {
@@ -2786,6 +2876,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "BMI and body composition calculation"
+          }
+        }
+      }
+    },
+    "Código del plan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan code"
           }
         }
       }
@@ -3012,6 +3112,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Description (e.g. Egg-white omelette with oats)"
+          }
+        }
+      }
+    },
+    "Desde Archivos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From Files"
+          }
+        }
+      }
+    },
+    "Desde Fotos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From Photos"
           }
         }
       }
@@ -3546,6 +3666,16 @@
         }
       }
     },
+    "Ejercicio a ejercicio, serie a serie" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exercise by exercise, set by set"
+          }
+        }
+      }
+    },
     "Ejercicios" : {
       "localizations" : {
         "en" : {
@@ -3584,6 +3714,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The swap only affects today's workout; your plan stays unchanged."
+          }
+        }
+      }
+    },
+    "Elegir PDF" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose PDF"
+          }
+        }
+      }
+    },
+    "Elegir foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose photo"
           }
         }
       }
@@ -3764,6 +3914,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Start free trial"
+          }
+        }
+      }
+    },
+    "Empieza con una rutina hecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start from a ready-made routine"
           }
         }
       }
@@ -4031,6 +4191,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Processing error"
+          }
+        }
+      }
+    },
+    "Error al procesar el archivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error processing the file"
           }
         }
       }
@@ -4526,6 +4696,16 @@
         }
       }
     },
+    "Fin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End"
+          }
+        }
+      }
+    },
     "Finalizar" : {
       "localizations" : {
         "en" : {
@@ -4864,6 +5044,16 @@
         }
       }
     },
+    "Ha tardado demasiado. Vuelve a intentarlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It took too long. Try again."
+          }
+        }
+      }
+    },
     "Hace %lld días" : {
       "localizations" : {
         "en" : {
@@ -5118,6 +5308,36 @@
         }
       }
     },
+    "Importando…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importing…"
+          }
+        }
+      }
+    },
+    "Importar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import"
+          }
+        }
+      }
+    },
+    "Importar PDF o foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import a PDF or photo"
+          }
+        }
+      }
+    },
     "Importar Plan" : {
       "localizations" : {
         "en" : {
@@ -5144,6 +5364,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Import with code"
+          }
+        }
+      }
+    },
+    "Importar un plan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import a plan"
           }
         }
       }
@@ -5245,6 +5475,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Log in"
+          }
+        }
+      }
+    },
+    "Inicio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
           }
         }
       }
@@ -5364,12 +5604,52 @@
         }
       }
     },
+    "La rutina o la dieta, da igual: la detectamos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Routine or diet, it doesn't matter: we detect it"
+          }
+        }
+      }
+    },
     "Las suscripciones se renuevan automáticamente a menos que se cancelen al menos 24 horas antes del final del período actual. Puedes gestionar y cancelar tus suscripciones en la configuración de tu cuenta de App Store." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period. You can manage and cancel your subscriptions in your App Store account settings."
+          }
+        }
+      }
+    },
+    "Leemos días, ejercicios, series y descansos; o comidas, cantidades y suplementos. Suele tardar menos de un minuto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We read days, exercises, sets and rests; or meals, amounts and supplements. It usually takes under a minute."
+          }
+        }
+      }
+    },
+    "Leyendo la estructura…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reading the structure…"
+          }
+        }
+      }
+    },
+    "Leyendo tu plan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reading your plan"
           }
         }
       }
@@ -5421,6 +5701,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What you unlock"
+          }
+        }
+      }
+    },
+    "Lo que no comes y lo que prefieres" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you don't eat and what you prefer"
           }
         }
       }
@@ -5954,6 +6244,16 @@
         }
       }
     },
+    "Mostrar más" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show more"
+          }
+        }
+      }
+    },
     "Mujer" : {
       "localizations" : {
         "en" : {
@@ -5993,6 +6293,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Machine"
+          }
+        }
+      }
+    },
+    "Más de 1.000 ejercicios con imágenes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over 1,000 exercises with images"
+          }
+        }
+      }
+    },
+    "Más opciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More options"
           }
         }
       }
@@ -6178,6 +6498,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No records"
+          }
+        }
+      }
+    },
+    "No hemos podido leerlo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn't read it"
           }
         }
       }
@@ -6470,6 +6800,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New Supplement"
+          }
+        }
+      }
+    },
+    "Nuevo plan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New plan"
           }
         }
       }
@@ -6898,6 +7238,16 @@
         }
       }
     },
+    "Plan importado. Lo tienes en Mis planes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan imported. It's in My plans."
+          }
+        }
+      }
+    },
     "Plan semanal" : {
       "localizations" : {
         "en" : {
@@ -6999,6 +7349,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Privacy Policy"
+          }
+        }
+      }
+    },
+    "Ponle nombre antes de subir el archivo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name it before uploading the file."
           }
         }
       }
@@ -7250,6 +7610,16 @@
         }
       }
     },
+    "Prueba con otro nombre o quita algún filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try another name or remove a filter."
+          }
+        }
+      }
+    },
     "Prueba con otros términos de búsqueda o ajusta los filtros" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7267,6 +7637,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Next Review"
+          }
+        }
+      }
+    },
+    "Puedes cerrar esto; el plan se guarda igual y te avisamos cuando esté." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can close this; the plan is saved anyway and we'll let you know when it's ready."
           }
         }
       }
@@ -7324,6 +7704,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld exercises still unfinished"
+          }
+        }
+      }
+    },
+    "Quitar filtro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove filter"
           }
         }
       }
@@ -7758,6 +8148,16 @@
         }
       }
     },
+    "Requiere PRO" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requires PRO"
+          }
+        }
+      }
+    },
     "Respaldo Automático" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7984,6 +8384,16 @@
         }
       }
     },
+    "Sacando los datos del plan…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulling the plan's data…"
+          }
+        }
+      }
+    },
     "Saltar" : {
       "localizations" : {
         "en" : {
@@ -8085,12 +8495,32 @@
         }
       }
     },
+    "Seguir en segundo plano" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep going in the background"
+          }
+        }
+      }
+    },
     "Seguir peso" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Track weight"
+          }
+        }
+      }
+    },
+    "Seis letras o números, los que te ha pasado quien compartió el plan." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Six letters or numbers, the ones from whoever shared the plan."
           }
         }
       }
@@ -8566,6 +8996,16 @@
         }
       }
     },
+    "Solo cuenta para rutinas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only applies to routines"
+          }
+        }
+      }
+    },
     "Sonido de Descanso" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8609,12 +9049,42 @@
         }
       }
     },
+    "Sube el PDF o la foto que te dio tu entrenador. Rutina o dieta, da igual: lo detectamos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload the PDF or photo your coach gave you. Routine or diet, it doesn't matter: we detect it."
+          }
+        }
+      }
+    },
     "Sube el PDF o una foto de tu plan y queda listo para registrar." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Upload the PDF or a photo of your plan and it's ready to log."
+          }
+        }
+      }
+    },
+    "Sube la dieta que ya tienes o escríbela a mano. Lo que tengas guardado está en Mis planes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload the diet you already have or write it by hand. Anything saved is in My plans."
+          }
+        }
+      }
+    },
+    "Sube la rutina que ya tienes o empieza una. Lo que tengas guardado está en Mis planes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload the routine you already have or start one. Anything saved is in My plans."
           }
         }
       }
@@ -8677,6 +9147,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Upload a photo or PDF and your plan is digitized instantly"
+          }
+        }
+      }
+    },
+    "Subiendo el archivo…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uploading the file…"
           }
         }
       }
@@ -8845,6 +9325,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trends and changes between measurements"
+          }
+        }
+      }
+    },
+    "Tengo un código" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I have a code"
           }
         }
       }
@@ -9137,6 +9627,16 @@
         }
       }
     },
+    "Un plan que te han compartido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A plan someone shared with you"
+          }
+        }
+      }
+    },
     "Usa un código compartido por otro usuario" : {
       "localizations" : {
         "en" : {
@@ -9194,6 +9694,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "User"
+          }
+        }
+      }
+    },
+    "Usuario no autenticado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User not signed in"
           }
         }
       }
@@ -9354,6 +9864,16 @@
         }
       }
     },
+    "Vista" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View"
+          }
+        }
+      }
+    },
     "Volumen" : {
       "localizations" : {
         "en" : {
@@ -9371,6 +9891,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total Volume"
+          }
+        }
+      }
+    },
+    "Volumen otoño" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autumn bulk"
           }
         }
       }

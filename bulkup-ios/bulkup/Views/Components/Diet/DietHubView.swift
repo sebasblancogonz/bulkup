@@ -16,10 +16,13 @@ struct DietHubView: View {
         storeKit.isSubscribed || dietManager.dietPlanId == nil
     }
     @State private var selectedView: DietHubSection = .active
-    @State private var showingCreateDietPlan = false
+    @State private var showingImport = false
     @State private var showingDietPlanEditor = false
     @State private var showingSubscription = false
     @State private var showingFoodPreferences = false
+    @State private var showingActions = false
+    /// Chosen in the actions sheet; presented once that sheet has dismissed.
+    @State private var pendingAction: PlanAction?
 
     enum DietHubSection: String, CaseIterable {
         case active = "active"
@@ -48,7 +51,15 @@ struct DietHubView: View {
                 switch selectedView {
                 case .active:
                     if dietManager.isLoading { loadingView }
-                    else if dietManager.dietData.isEmpty { activePlanEmptyState }
+                    else if dietManager.dietData.isEmpty {
+                        EmptyHubView(
+                            kind: .diet,
+                            isSubscribed: storeKit.isSubscribed,
+                            canCreateAnother: canCreateAnotherPlan,
+                            onAction: { perform($0) },
+                            onShowLibrary: { withAnimation(.easeInOut(duration: 0.2)) { selectedView = .library } }
+                        )
+                    }
                     else { activePlanContent }
                 case .library:
                     DietPlanLibraryView()
@@ -60,10 +71,18 @@ struct DietHubView: View {
         }
         .background(BulkUpGround())
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(isPresented: $showingCreateDietPlan) {
-            CreateDietPlanView()
-                .environmentObject(dietManager)
+        .sheet(isPresented: $showingImport) {
+            ImportPlanView()
                 .environmentObject(authManager)
+        }
+        .sheet(isPresented: $showingActions, onDismiss: runPendingAction) {
+            PlanActionsSheet(
+                kind: .diet,
+                isSubscribed: storeKit.isSubscribed,
+                canCreateAnother: canCreateAnotherPlan,
+                hasActivePlan: selectedView == .active && !dietManager.dietData.isEmpty,
+                onAction: { pendingAction = $0 }
+            )
         }
         .sheet(isPresented: $showingDietPlanEditor) {
             DietPlanEditorView()
@@ -88,6 +107,10 @@ struct DietHubView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateToDietLibrary)) { _ in
             withAnimation(.easeInOut(duration: 0.2)) { selectedView = .library }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateToDiet)) { _ in
+            // An imported diet lands on the plan, not the library.
+            withAnimation(.easeInOut(duration: 0.2)) { selectedView = .active }
         }
     }
 
@@ -126,19 +149,8 @@ struct DietHubView: View {
             )
             .lift(CornerRadius.medium)
 
-            Menu {
-                if selectedView == .active {
-                    Button { showingFoodPreferences = true } label: {
-                        Label("Preferencias y alergias", systemImage: "fork.knife.circle")
-                    }
-                    Divider()
-                }
-                Button {
-                    if storeKit.isSubscribed { showingCreateDietPlan = true } else { showingSubscription = true }
-                } label: { Label("Importar con IA", systemImage: "sparkles") }
-                Button { if canCreateAnotherPlan { showingDietPlanEditor = true } else { showingSubscription = true } } label: {
-                    Label("Crear manualmente", systemImage: "square.and.pencil")
-                }
+            Button {
+                showingActions = true
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(.body, weight: .semibold))
@@ -148,6 +160,8 @@ struct DietHubView: View {
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
                     .lift(CornerRadius.medium)
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Más opciones")
         }
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.sm)
@@ -203,185 +217,38 @@ struct DietHubView: View {
     // MARK: - Loading View
 
     private var loadingView: some View {
-        VStack(spacing: Spacing.xl) {
+        VStack(spacing: Spacing.md) {
             ProgressView()
-                .scaleEffect(1.5)
-                .tint(BulkUpColors.diet)
+                .controlSize(.large)
+                .tint(BulkUpColors.accent)
 
-            VStack(spacing: Spacing.sm) {
-                Text("Cargando tu plan...")
-                    .font(BulkUpFont.cardTitle())
-                    .foregroundColor(BulkUpColors.textPrimary)
-
-                Text("Preparando tu alimentacion perfecta")
-                    .font(BulkUpFont.body())
-                    .foregroundColor(BulkUpColors.textSecondary)
-            }
+            Text("Cargando tu plan")
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: - Empty State
+    // MARK: - Actions (from the sheet and the empty hub)
 
-    private var activePlanEmptyState: some View {
-        ScrollView {
-            VStack(spacing: Spacing.xl) {
-                VStack(spacing: Spacing.lg) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: CornerRadius.xl, style: .continuous)
-                            .fill(BulkUpColors.surface)
-                            .frame(width: 88, height: 88)
-                            .lift(CornerRadius.xl)
-
-                        Image(systemName: "leaf.fill")
-                            .font(.system(.largeTitle, weight: .semibold))
-                            .foregroundColor(BulkUpColors.accentText)
-                    }
-                }
-
-                VStack(spacing: Spacing.md) {
-                    Text("No tienes un plan activo")
-                        .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.textPrimary)
-
-                    Text("Crea un nuevo plan o activa uno desde tu biblioteca")
-                        .font(BulkUpFont.body())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, Spacing.screenH)
-                }
-
-                // Creation options cards
-                VStack(spacing: Spacing.md) {
-                    // Importar con IA
-                    Button {
-                        if storeKit.isSubscribed {
-                            showingCreateDietPlan = true
-                        } else {
-                            showingSubscription = true
-                        }
-                    } label: {
-                        HStack(spacing: 14) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
-                                    .fill(BulkUpColors.surfaceElevated)
-                                    .frame(width: 44, height: 44)
-
-                                Image(systemName: "sparkles")
-                                    .font(.system(.title3, weight: .medium))
-                                    .foregroundColor(BulkUpColors.accentText)
-                            }
-
-                            VStack(alignment: .leading, spacing: Spacing.xs) {
-                                HStack(spacing: 6) {
-                                    Text("Importar con IA")
-                                        .font(BulkUpFont.cardTitle())
-                                        .foregroundColor(BulkUpColors.textPrimary)
-
-                                    if !storeKit.isSubscribed {
-                                        Text("PRO")
-                                            .font(.system(.caption2, weight: .bold))
-                                            .foregroundColor(BulkUpColors.onAccent)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(BulkUpColors.accent)
-                                            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                                    }
-                                }
-
-                                Text("Sube un PDF o foto de tu dieta")
-                                    .font(BulkUpFont.body())
-                                    .foregroundColor(BulkUpColors.textSecondary)
-                            }
-
-                            Spacer()
-
-                            Image(systemName: storeKit.isSubscribed ? "chevron.right" : "lock.fill")
-                                .font(.system(.footnote, weight: .semibold))
-                                .foregroundColor(BulkUpColors.textTertiary)
-                        }
-                        .padding(Spacing.md)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous)
-                                .fill(BulkUpColors.surface)
-                        )
-                        .lift(stroke: BulkUpColors.accent.opacity(0.5))
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    // Crear manualmente
-                    Button {
-                        if canCreateAnotherPlan { showingDietPlanEditor = true } else { showingSubscription = true }
-                    } label: {
-                        dietCreationOptionRow(
-                            icon: "square.and.pencil",
-                            title: "Crear manualmente",
-                            subtitle: "Construye tu plan paso a paso"
-                        )
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                .padding(.horizontal, 20)
-
-                // Ver Mis Planes link
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) { selectedView = .library }
-                } label: {
-                    HStack(spacing: Spacing.sm) {
-                        Image(systemName: "folder.fill")
-                            .font(BulkUpFont.body())
-
-                        Text("Ver mis planes")
-                            .fontWeight(.semibold)
-                    }
-                    .foregroundColor(BulkUpColors.accentText)
-                }
-                .padding(.top, Spacing.xs)
-            }
-            .padding(.top, Spacing.xl)
-            .padding(.bottom, Spacing.xxl)
+    private func perform(_ action: PlanAction) {
+        switch action {
+        case .importFile:
+            if storeKit.isSubscribed { showingImport = true } else { showingSubscription = true }
+        case .manual:
+            if canCreateAnotherPlan { showingDietPlanEditor = true } else { showingSubscription = true }
+        case .foodPreferences:
+            showingFoodPreferences = true
+        case .template, .code, .exerciseLibrary:
+            break
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(BulkUpColors.background)
     }
 
-    private func dietCreationOptionRow(icon: String, title: String, subtitle: String) -> some View {
-        HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
-                    .fill(BulkUpColors.surfaceElevated)
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: icon)
-                    .font(.system(.title3, weight: .medium))
-                    .foregroundColor(BulkUpColors.textPrimary)
-            }
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(LocalizedStringKey(title))
-                    .font(BulkUpFont.body())
-                    .fontWeight(.semibold)
-                    .foregroundColor(BulkUpColors.textPrimary)
-
-                Text(LocalizedStringKey(subtitle))
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
-            }
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(BulkUpColors.textTertiary)
-        }
-        .padding(Spacing.md)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous)
-                .fill(BulkUpColors.surface)
-        )
-        .lift()
-        .contentShape(Rectangle())
+    /// A sheet cannot present another while it is still dismissing.
+    private func runPendingAction() {
+        guard let action = pendingAction else { return }
+        pendingAction = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { perform(action) }
     }
 }
 

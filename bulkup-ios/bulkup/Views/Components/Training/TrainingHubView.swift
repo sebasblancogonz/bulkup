@@ -17,10 +17,13 @@ struct TrainingHubView: View {
     @AppStorage("trainingViewMode") private var trainingViewMode: TrainingView.ViewMode = .day
     @State private var showingPlanEditor = false
     @State private var showingImportCode = false
-    @State private var showingImageImport = false
+    @State private var showingImport = false
     @State private var showingTemplateWizard = false
     @State private var showingSubscription = false
     @State private var showingExerciseLibrary = false
+    @State private var showingActions = false
+    /// Chosen in the actions sheet; presented once that sheet has dismissed.
+    @State private var pendingAction: PlanAction?
 
     /// Free tier keeps one active plan; a second one (template, manual, import)
     /// asks for PRO. "Planes ilimitados" on the paywall is this gate.
@@ -60,7 +63,13 @@ struct TrainingHubView: View {
                 switch selectedView {
                 case .active:
                     if trainingManager.trainingData.isEmpty {
-                        activePlanEmptyState
+                        EmptyHubView(
+                            kind: .training,
+                            isSubscribed: storeKit.isSubscribed,
+                            canCreateAnother: canCreateAnotherPlan,
+                            onAction: { perform($0) },
+                            onShowLibrary: { withAnimation(.easeInOut(duration: 0.2)) { selectedView = .library } }
+                        )
                     } else {
                         ActiveTrainingView()
                             .environmentObject(trainingManager)
@@ -105,10 +114,19 @@ struct TrainingHubView: View {
                 .environmentObject(trainingManager)
                 .environmentObject(authManager)
         }
-        .sheet(isPresented: $showingImageImport) {
-            CreateTrainingPlanView(initialMethod: .imageUpload)
-                .environmentObject(trainingManager)
+        .sheet(isPresented: $showingImport) {
+            ImportPlanView()
                 .environmentObject(authManager)
+        }
+        .sheet(isPresented: $showingActions, onDismiss: runPendingAction) {
+            PlanActionsSheet(
+                kind: .training,
+                isSubscribed: storeKit.isSubscribed,
+                canCreateAnother: canCreateAnotherPlan,
+                hasActivePlan: selectedView == .active && !trainingManager.trainingData.isEmpty,
+                viewMode: $trainingViewMode,
+                onAction: { pendingAction = $0 }
+            )
         }
         .sheet(isPresented: $showingExerciseLibrary) {
             ExerciseExplorerView()
@@ -121,6 +139,10 @@ struct TrainingHubView: View {
             withAnimation(.easeInOut(duration: 0.2)) {
                 selectedView = .library
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateToTraining)) { _ in
+            // An imported routine lands on the plan, not the library.
+            withAnimation(.easeInOut(duration: 0.2)) { selectedView = .active }
         }
     }
 
@@ -162,38 +184,8 @@ struct TrainingHubView: View {
             )
             .lift(CornerRadius.medium)
 
-            Menu {
-                if selectedView == .active {
-                    // View-mode switch (only meaningful for an active training plan)
-                    Picker("Cambiar vista", selection: $trainingViewMode) {
-                        ForEach(TrainingView.ViewMode.allCases, id: \.self) { mode in
-                            Label(mode.displayName, systemImage: mode.icon).tag(mode)
-                        }
-                    }
-                    Divider()
-                }
-                // Create / import — available from both tabs
-                Button {
-                    if canCreateAnotherPlan { showingTemplateWizard = true } else { showingSubscription = true }
-                } label: { Label("Usar plantilla", systemImage: "doc.on.doc") }
-
-                Button {
-                    if canCreateAnotherPlan { showingPlanEditor = true } else { showingSubscription = true }
-                } label: { Label("Crear manualmente", systemImage: "square.and.pencil") }
-
-                Button {
-                    if storeKit.isSubscribed { showingImageImport = true } else { showingSubscription = true }
-                } label: { Label("Importar con IA", systemImage: "sparkles") }
-
-                Divider()
-
-                Button {
-                    if storeKit.isSubscribed { showingImportCode = true } else { showingSubscription = true }
-                } label: { Label("Importar con código", systemImage: "qrcode") }
-
-                Button {
-                    showingExerciseLibrary = true
-                } label: { Label("Explorar ejercicios", systemImage: "books.vertical") }
+            Button {
+                showingActions = true
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(.body, weight: .semibold))
@@ -203,6 +195,8 @@ struct TrainingHubView: View {
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
                     .lift(CornerRadius.medium)
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Más opciones")
             .padding(.leading, Spacing.sm)
         }
         .padding(.horizontal, Spacing.screenH)
@@ -211,239 +205,30 @@ struct TrainingHubView: View {
         .background(BulkUpColors.background)
     }
 
-    private var activePlanEmptyState: some View {
-        ScrollView {
-            VStack(spacing: Spacing.xl) {
-                VStack(spacing: Spacing.lg) {
-                    ZStack {
-                        Circle()
-                            .fill(BulkUpColors.surfaceElevated)
-                            .frame(width: 100, height: 100)
+    // MARK: - Actions (from the sheet and the empty hub)
 
-                        Image(systemName: "dumbbell.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(BulkUpColors.training)
-                    }
-                }
-
-                VStack(spacing: Spacing.md) {
-                    Text("No tienes un plan activo")
-                        .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.textPrimary)
-
-                    Text("Crea un nuevo plan o activa uno desde tu biblioteca")
-                        .font(BulkUpFont.body())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, Spacing.screenH)
-                }
-
-                // Creation options cards
-                VStack(spacing: Spacing.md) {
-                    // Importar con IA — prominent card (Premium)
-                    Button {
-                        if storeKit.isSubscribed {
-                            showingImageImport = true
-                        } else {
-                            showingSubscription = true
-                        }
-                    } label: {
-                        HStack(spacing: 14) {
-                            ZStack {
-                                Circle()
-                                    .fill(BulkUpColors.surfaceElevated)
-                                    .frame(width: 48, height: 48)
-
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 22, weight: .medium))
-                                    .foregroundColor(BulkUpColors.training)
-                            }
-
-                            VStack(alignment: .leading, spacing: Spacing.xs) {
-                                HStack(spacing: 6) {
-                                    Text("Importar con IA")
-                                        .font(BulkUpFont.cardTitle())
-                                        .foregroundColor(BulkUpColors.textPrimary)
-
-                                    if !storeKit.isSubscribed {
-                                        Text("PRO")
-                                            .font(BulkUpFont.caption())
-                                            .fontWeight(.bold)
-                                            .foregroundColor(BulkUpColors.onAccent)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(BulkUpColors.secondary)
-                                            .cornerRadius(4)
-                                    }
-                                }
-
-                                Text("Sube una foto o PDF de tu rutina")
-                                    .font(BulkUpFont.body())
-                                    .foregroundColor(BulkUpColors.textSecondary)
-                            }
-
-                            Spacer()
-
-                            Image(systemName: storeKit.isSubscribed ? "chevron.right" : "lock.fill")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(storeKit.isSubscribed ? BulkUpColors.training.opacity(0.5) : .purple.opacity(0.6))
-                        }
-                        .padding(Spacing.lg)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .fill(BulkUpColors.surface)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(BulkUpColors.training.opacity(0.3), lineWidth: 1.5)
-                        )
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    // Usar plantilla
-                    Button {
-                        if canCreateAnotherPlan { showingTemplateWizard = true } else { showingSubscription = true }
-                    } label: {
-                        creationOptionRow(
-                            icon: "doc.on.doc",
-                            title: "Usar plantilla",
-                            subtitle: "Comienza con una plantilla predefinida"
-                        )
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    // Crear manualmente
-                    Button {
-                        if canCreateAnotherPlan { showingPlanEditor = true } else { showingSubscription = true }
-                    } label: {
-                        creationOptionRow(
-                            icon: "square.and.pencil",
-                            title: "Crear manualmente",
-                            subtitle: "Construye tu plan paso a paso"
-                        )
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    // Importar con codigo (Premium)
-                    Button {
-                        if storeKit.isSubscribed {
-                            showingImportCode = true
-                        } else {
-                            showingSubscription = true
-                        }
-                    } label: {
-                        HStack(spacing: 14) {
-                            ZStack {
-                                Circle()
-                                    .fill(BulkUpColors.surfaceElevated)
-                                    .frame(width: 44, height: 44)
-
-                                Image(systemName: "qrcode")
-                                    .font(.system(size: 18, weight: .medium))
-                                    .foregroundColor(BulkUpColors.training)
-                            }
-
-                            VStack(alignment: .leading, spacing: 3) {
-                                HStack(spacing: 6) {
-                                    Text("Importar con código")
-                                        .font(BulkUpFont.body())
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(BulkUpColors.textPrimary)
-
-                                    if !storeKit.isSubscribed {
-                                        Text("PRO")
-                                            .font(BulkUpFont.caption())
-                                            .fontWeight(.bold)
-                                            .foregroundColor(BulkUpColors.onAccent)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(BulkUpColors.secondary)
-                                            .cornerRadius(4)
-                                    }
-                                }
-
-                                Text("Usa un código compartido por otro usuario")
-                                    .font(BulkUpFont.caption())
-                                    .foregroundColor(BulkUpColors.textSecondary)
-                            }
-
-                            Spacer()
-
-                            Image(systemName: storeKit.isSubscribed ? "chevron.right" : "lock.fill")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(storeKit.isSubscribed ? BulkUpColors.textTertiary : .purple.opacity(0.6))
-                        }
-                        .padding(Spacing.lg)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .fill(BulkUpColors.surface)
-                        )
-                        .lift(CornerRadius.medium)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                .padding(.horizontal, 20)
-
-                // Ver Mis Planes link
-                Button {
-                    selectedView = .library
-                } label: {
-                    HStack(spacing: Spacing.sm) {
-                        Image(systemName: "folder.fill")
-                            .font(BulkUpFont.body())
-
-                        Text("Ver Mis Planes")
-                            .fontWeight(.medium)
-                    }
-                    .foregroundColor(BulkUpColors.training)
-                }
-                .padding(.top, Spacing.xs)
-            }
-            .padding(.top, Spacing.xl)
-            .padding(.bottom, Spacing.xxl)
+    private func perform(_ action: PlanAction) {
+        switch action {
+        case .importFile:
+            if storeKit.isSubscribed { showingImport = true } else { showingSubscription = true }
+        case .template:
+            if canCreateAnotherPlan { showingTemplateWizard = true } else { showingSubscription = true }
+        case .manual:
+            if canCreateAnotherPlan { showingPlanEditor = true } else { showingSubscription = true }
+        case .code:
+            if storeKit.isSubscribed { showingImportCode = true } else { showingSubscription = true }
+        case .exerciseLibrary:
+            showingExerciseLibrary = true
+        case .foodPreferences:
+            break
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(BulkUpColors.background)
     }
 
-    private func creationOptionRow(icon: String, title: String, subtitle: String) -> some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(BulkUpColors.surfaceElevated)
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(BulkUpColors.training)
-            }
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(LocalizedStringKey(title))
-                    .font(BulkUpFont.body())
-                    .fontWeight(.semibold)
-                    .foregroundColor(BulkUpColors.textPrimary)
-
-                Text(LocalizedStringKey(subtitle))
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
-            }
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(BulkUpColors.textTertiary)
-        }
-        .padding(Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(BulkUpColors.surface)
-        )
-        .lift(CornerRadius.medium)
-        .contentShape(Rectangle())
+    /// A sheet cannot present another while it is still dismissing.
+    private func runPendingAction() {
+        guard let action = pendingAction else { return }
+        pendingAction = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { perform(action) }
     }
 }
 
@@ -1016,6 +801,7 @@ struct ShareCodeView: View {
 }
 
 // MARK: - Import Plan By Code View
+/// Six characters someone shared; the plan lands in the library.
 struct ImportPlanByCodeView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var trainingManager: TrainingManager
@@ -1025,129 +811,135 @@ struct ImportPlanByCodeView: View {
     @State private var isImporting = false
     @State private var errorMessage: String?
     @State private var importSuccess = false
+    @FocusState private var codeFocused: Bool
+    @State private var contentHeight: CGFloat = 0
+
+    private var canImport: Bool { code.count == 6 && !isImporting && !importSuccess }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: Spacing.xxl) {
-                Spacer()
+        ZStack {
+            BulkUpGround()
 
-                VStack(spacing: Spacing.lg) {
-                    ZStack {
-                        Circle()
-                            .fill(BulkUpColors.surfaceElevated)
-                            .frame(width: 80, height: 80)
-
-                        Image(systemName: "key")
-                            .font(.system(size: 36))
-                            .foregroundColor(BulkUpColors.training)
-                    }
-
-                    Text("Importar Plan")
-                        .font(BulkUpFont.sectionHeader())
+            ScrollView(showsIndicators: false) {
+              VStack(alignment: .leading, spacing: Spacing.lg) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Tengo un código")
+                        .titleVoice(.title)
                         .foregroundColor(BulkUpColors.textPrimary)
-
-                    Text("Ingresa el código de 6 caracteres que te compartieron")
-                        .font(BulkUpFont.body())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, Spacing.xl)
-                }
-
-                VStack(spacing: Spacing.lg) {
-                    TextField("CÓDIGO", text: $code)
-                        .font(.system(size: 32, weight: .bold, design: .monospaced))
-                        .tracking(6)
-                        .multilineTextAlignment(.center)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                        .padding(.vertical, Spacing.lg)
-                        .padding(.horizontal, Spacing.xl)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.large)
-                                .fill(BulkUpColors.surfaceElevated)
-                        )
-                        .foregroundColor(BulkUpColors.textPrimary)
-                        .onChange(of: code) { _, newValue in
-                            // Limit to 6 characters and force uppercase
-                            let filtered = String(newValue.uppercased().prefix(6))
-                            if filtered != newValue {
-                                code = filtered
-                            }
-                            errorMessage = nil
-                        }
-
-                    if let error = errorMessage {
-                        Text(error)
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.error)
-                    }
-
-                    if importSuccess {
-                        HStack(spacing: Spacing.sm) {
-                            Image(systemName: "checkmark.circle.fill")
-                            Text("Plan importado exitosamente")
-                        }
-                        .font(BulkUpFont.body())
-                        .foregroundColor(BulkUpColors.success)
-                    }
-
+                    Spacer(minLength: Spacing.md)
                     Button {
-                        importPlan()
-                    } label: {
-                        HStack(spacing: Spacing.sm) {
-                            if isImporting {
-                                ProgressView()
-                                    .tint(.white)
-                            } else {
-                                Image(systemName: "arrow.down.circle")
-                            }
-                            Text(isImporting ? "Importando..." : "Importar Plan")
-                                .fontWeight(.semibold)
-                        }
-                        .primaryButtonStyle(color: code.count == 6 && !isImporting ? BulkUpColors.training : BulkUpColors.textTertiary)
-                    }
-                    .disabled(code.count != 6 || isImporting)
-                }
-                .padding(.horizontal, Spacing.xl)
-
-                Spacer()
-            }
-            .padding()
-            .background(BulkUpColors.background)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancelar") {
                         dismiss()
+                    } label: {
+                        Text("Cancelar")
+                            .font(.system(.footnote, weight: .semibold))
+                            .foregroundColor(BulkUpColors.textSecondary)
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                     }
-                    .foregroundColor(BulkUpColors.training)
+                    .buttonStyle(.plain)
                 }
+
+                Text("Seis letras o números, los que te ha pasado quien compartió el plan.")
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textSecondary)
+
+                TextField("ABC123", text: $code)
+                    .font(BulkUpFont.mono(32, weight: .semibold, relativeTo: .largeTitle))
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .tracking(6)
+                    .multilineTextAlignment(.center)
+                    .textInputAutocapitalization(.characters)
+                    .autocorrectionDisabled()
+                    .focused($codeFocused)
+                    .tint(BulkUpColors.accentText)
+                    .frame(minHeight: 64)
+                    .background(BulkUpColors.surfaceElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                            .strokeBorder(BulkUpColors.accent, lineWidth: codeFocused ? 1.5 : 0)
+                    )
+                    .accessibilityLabel("Código del plan")
+                    .onChange(of: code) { _, newValue in
+                        let filtered = String(newValue.uppercased().filter { $0.isLetter || $0.isNumber }.prefix(6))
+                        if filtered != newValue { code = filtered }
+                        errorMessage = nil
+                    }
+
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.warning)
+                }
+
+                if importSuccess {
+                    HStack(spacing: Spacing.sm) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(BulkUpColors.complete)
+                                .frame(width: 22, height: 22)
+                            Image(systemName: "checkmark")
+                                .font(.system(.caption2, weight: .bold))
+                                .foregroundColor(Color.onFill(BulkUpColors.complete))
+                        }
+                        Text("Plan importado. Lo tienes en Mis planes.")
+                            .font(BulkUpFont.body())
+                            .foregroundColor(BulkUpColors.textPrimary)
+                    }
+                    .transition(.opacity)
+                }
+
+                Button {
+                    importPlan()
+                } label: {
+                    HStack(spacing: Spacing.sm) {
+                        if isImporting {
+                            ProgressView().tint(BulkUpColors.onAccent)
+                        }
+                        Text(isImporting ? "Importando…" : "Importar")
+                            .font(.system(.headline, weight: .semibold))
+                    }
+                    .foregroundColor(BulkUpColors.onAccent)
+                    .frame(maxWidth: .infinity, minHeight: 54)
+                    .background(BulkUpColors.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .pressable()
+                .disabled(!canImport)
+                .opacity(canImport ? 1 : 0.5)
+              }
+              .padding(.horizontal, Spacing.screenH)
+              .padding(.top, Spacing.lg)
+              .padding(.bottom, Spacing.sm)
+              .measureHeight($contentHeight)
             }
+            .scrollDismissesKeyboard(.interactively)
         }
-        .presentationDetents([.medium])
+        .presentationDetents(contentHeight > 0 ? [.height(contentHeight), .large] : [.medium, .large])
+        .presentationDragIndicator(.visible)
+        .presentationBackground(BulkUpColors.background)
+        .onAppear { codeFocused = true }
     }
 
     private func importPlan() {
-        guard let userId = authManager.user?.id else { return }
-        guard code.count == 6 else { return }
-
+        guard let userId = authManager.user?.id, code.count == 6 else { return }
         isImporting = true
         errorMessage = nil
+        codeFocused = false
 
         Task {
             do {
-                _ = try await APIService.shared.importSharedPlan(
-                    userId: userId,
-                    code: code
-                )
+                _ = try await APIService.shared.importSharedPlan(userId: userId, code: code)
                 await MainActor.run {
                     isImporting = false
-                    importSuccess = true
+                    withAnimation(.easeOut(duration: 0.2)) { importSuccess = true }
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
                 }
-                // Dismiss after a short delay
-                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                try? await Task.sleep(nanoseconds: 1_200_000_000)
                 await MainActor.run {
                     dismiss()
+                    NotificationCenter.default.post(name: .navigateToTrainingLibrary, object: nil)
                 }
             } catch {
                 await MainActor.run {

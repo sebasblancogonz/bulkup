@@ -346,19 +346,22 @@ struct SearchBar: View {
                 .textFieldStyle(PlainTextFieldStyle())
                 .font(BulkUpFont.body())
                 .foregroundColor(BulkUpColors.textPrimary)
+                .tint(BulkUpColors.accentText)
 
             if !text.isEmpty {
                 Button(action: { text = "" }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(BulkUpColors.textTertiary)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Borrar búsqueda")
+                .padding(.trailing, -Spacing.sm)
             }
         }
         .padding(.horizontal, Spacing.md)
-        .frame(height: 44)
+        .frame(minHeight: 44)
         .background(BulkUpColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
         .lift(CornerRadius.medium)

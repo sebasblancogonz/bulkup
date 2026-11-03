@@ -38,9 +38,13 @@ enum DesignPreview {
         UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
 
         let tm = TrainingManager.shared
-        tm.setTrainingData(makeDays(), planId: nil)
+        tm.setTrainingData(screen == "training-empty" ? [] : makeDays(), planId: nil)
         tm.isLoading = false
         tm.isFullyLoaded = true
+
+        let explorer = ExerciseExplorerManager.shared
+        explorer.exercises = sampleExercises
+        explorer.loading = false
 
         let day = todayName.lowercased().folding(options: .diacriticInsensitive, locale: .current)
         let thisWeek = tm.weekString(for: Date())
@@ -63,8 +67,9 @@ enum DesignPreview {
         _ = thisWeek
 
         let dm = DietManager.shared
-        dm.setDietData(makeDiet(), planId: nil)
+        dm.setDietData(screen == "diet-empty" ? [] : makeDiet(), planId: nil)
         dm.activePlanName = "Volumen 3.200 kcal"
+        dm.isLoading = false
         seedMealTracking()
         seedProgress(subscribed: screen != "progress-free")
     }
@@ -142,6 +147,77 @@ enum DesignPreview {
         try? context.save()
         MealTrackingManager.shared.todayTracking = records
     }
+
+    /// A dozen library exercises (no images: the harness has no network).
+    static let sampleExercises: [RMExerciseFull] = {
+        func ex(_ id: String, _ en: String, _ es: String, force: String, level: String, mechanic: String,
+                equipment: String, primary: [String], primaryEs: [String], secondary: [String] = [], secondaryEs: [String] = [],
+                category: String = "strength", categoryEs: String = "Fuerza") -> RMExerciseFull {
+            let forceEs = ["push": "Empuje", "pull": "Jalón", "static": "Estático"][force] ?? force
+            let levelEs = ["beginner": "Principiante", "intermediate": "Intermedio", "expert": "Experto"][level] ?? level
+            let mechanicEs = ["compound": "Compuesto", "isolation": "Aislamiento"][mechanic] ?? mechanic
+            let equipmentEs = ["barbell": "Barra", "dumbbell": "Mancuerna", "body only": "Peso corporal", "machine": "Máquina",
+                               "cable": "Cable", "kettlebells": "Pesas rusas", "bands": "Bandas"][equipment] ?? equipment
+            return RMExerciseFull(
+                id: id, name: en, nameEs: es, force: force, forceEs: forceEs, level: level, levelEs: levelEs,
+                mechanic: mechanic, mechanicEs: mechanicEs, equipment: equipment, equipmentEs: equipmentEs,
+                primaryMuscles: primary, primaryMusclesEs: primaryEs, secondaryMuscles: secondary, secondaryMusclesEs: secondaryEs,
+                instructions: [
+                    "Set the bench to 30 degrees and lie back with the bar over your upper chest.",
+                    "Lower the bar under control until it touches your chest.",
+                    "Press back up and lock out without bouncing.",
+                ],
+                instructionsEs: [
+                    "Pon el banco a 30 grados y túmbate con la barra sobre la parte alta del pecho.",
+                    "Baja la barra controlada hasta tocar el pecho.",
+                    "Empuja hasta bloquear los codos sin rebotar.",
+                ],
+                category: category, categoryEs: categoryEs, images: nil
+            )
+        }
+        return [
+            ex("1", "Incline Barbell Bench Press", "Press inclinado con barra", force: "push", level: "intermediate", mechanic: "compound",
+               equipment: "barbell", primary: ["chest"], primaryEs: ["Pecho"], secondary: ["shoulders", "triceps"], secondaryEs: ["Hombros", "Tríceps"]),
+            ex("2", "Dumbbell Shoulder Press", "Press de hombro con mancuernas", force: "push", level: "beginner", mechanic: "compound",
+               equipment: "dumbbell", primary: ["shoulders"], primaryEs: ["Hombros"], secondary: ["triceps"], secondaryEs: ["Tríceps"]),
+            ex("3", "Pull-Up", "Dominadas", force: "pull", level: "intermediate", mechanic: "compound",
+               equipment: "body only", primary: ["lats"], primaryEs: ["Dorsales"], secondary: ["biceps"], secondaryEs: ["Bíceps"]),
+            ex("4", "Romanian Deadlift", "Peso muerto rumano", force: "pull", level: "intermediate", mechanic: "compound",
+               equipment: "barbell", primary: ["hamstrings"], primaryEs: ["Isquiotibiales"], secondary: ["glutes", "lower back"], secondaryEs: ["Glúteos", "Espalda baja"]),
+            ex("5", "Cable Crossover", "Cruces en polea", force: "push", level: "beginner", mechanic: "isolation",
+               equipment: "cable", primary: ["chest"], primaryEs: ["Pecho"]),
+            ex("6", "Bulgarian Split Squat", "Sentadilla búlgara", force: "push", level: "expert", mechanic: "compound",
+               equipment: "dumbbell", primary: ["quadriceps"], primaryEs: ["Cuádriceps"], secondary: ["glutes"], secondaryEs: ["Glúteos"]),
+            ex("7", "Seated Cable Row", "Remo sentado en polea", force: "pull", level: "beginner", mechanic: "compound",
+               equipment: "cable", primary: ["middle back"], primaryEs: ["Espalda media"], secondary: ["biceps"], secondaryEs: ["Bíceps"]),
+            ex("8", "Kettlebell Swing", "Swing con pesa rusa", force: "pull", level: "intermediate", mechanic: "compound",
+               equipment: "kettlebells", primary: ["hamstrings"], primaryEs: ["Isquiotibiales"], secondary: ["glutes"], secondaryEs: ["Glúteos"]),
+            ex("9", "Lateral Raise", "Elevaciones laterales", force: "push", level: "beginner", mechanic: "isolation",
+               equipment: "dumbbell", primary: ["shoulders"], primaryEs: ["Hombros"]),
+            ex("10", "Barbell Hip Thrust", "Hip thrust con barra", force: "push", level: "intermediate", mechanic: "compound",
+               equipment: "barbell", primary: ["glutes"], primaryEs: ["Glúteos"], secondary: ["hamstrings"], secondaryEs: ["Isquiotibiales"]),
+            ex("11", "Hanging Leg Raise", "Elevaciones de piernas colgado", force: "pull", level: "intermediate", mechanic: "isolation",
+               equipment: "body only", primary: ["abdominals"], primaryEs: ["Abdominales"]),
+            ex("12", "Hamstring Stretch", "Estiramiento de isquios", force: "static", level: "beginner", mechanic: "isolation",
+               equipment: "body only", primary: ["hamstrings"], primaryEs: ["Isquiotibiales"], category: "stretching", categoryEs: "Estiramiento"),
+            ex("13", "Box Jump", "Salto al cajón", force: "push", level: "intermediate", mechanic: "compound",
+               equipment: "body only", primary: ["quadriceps"], primaryEs: ["Cuádriceps"], category: "plyometrics", categoryEs: "Pliometría"),
+            ex("14", "Front Squat", "Sentadilla frontal", force: "push", level: "expert", mechanic: "compound",
+               equipment: "barbell", primary: ["quadriceps"], primaryEs: ["Cuádriceps"], secondary: ["glutes", "abdominals"], secondaryEs: ["Glúteos", "Abdominales"]),
+            ex("15", "Face Pull", "Face pull", force: "pull", level: "beginner", mechanic: "isolation",
+               equipment: "cable", primary: ["shoulders"], primaryEs: ["Hombros"], secondary: ["traps"], secondaryEs: ["Trapecios"]),
+            ex("16", "Leg Press", "Prensa de piernas", force: "push", level: "beginner", mechanic: "compound",
+               equipment: "machine", primary: ["quadriceps"], primaryEs: ["Cuádriceps"], secondary: ["glutes"], secondaryEs: ["Glúteos"]),
+            ex("17", "Chest-Supported Row", "Remo con apoyo en banco", force: "pull", level: "intermediate", mechanic: "compound",
+               equipment: "dumbbell", primary: ["middle back"], primaryEs: ["Espalda media"], secondary: ["lats"], secondaryEs: ["Dorsales"]),
+            ex("18", "Plank", "Plancha", force: "static", level: "beginner", mechanic: "isolation",
+               equipment: "body only", primary: ["abdominals"], primaryEs: ["Abdominales"]),
+            ex("19", "Walking Lunge", "Zancadas caminando", force: "push", level: "intermediate", mechanic: "compound",
+               equipment: "dumbbell", primary: ["quadriceps"], primaryEs: ["Cuádriceps"], secondary: ["glutes"], secondaryEs: ["Glúteos"]),
+            ex("20", "Barbell Curl", "Curl con barra", force: "pull", level: "beginner", mechanic: "isolation",
+               equipment: "barbell", primary: ["biceps"], primaryEs: ["Bíceps"]),
+        ]
+    }()
 
     private static func makeDays() -> [TrainingDay] {
         let today = TrainingDay(day: todayName, workoutName: "Pecho y hombros", exercises: [
@@ -248,6 +324,44 @@ struct DesignPreviewHost: View {
                     }
                 case "live", "live-rest", "live-done":
                     LiveActivityPreview(state: DesignPreview.activityState(for: screen))
+                case "explorer":
+                    BulkUpGround().sheet(isPresented: .constant(true)) { ExerciseExplorerView() }
+                case "explorer-filtered":
+                    BulkUpGround().sheet(isPresented: .constant(true)) { ExerciseExplorerView() }
+                        .onAppear {
+                            ExerciseExplorerManager.shared.equipmentFilter = ["dumbbell"]
+                            ExerciseExplorerManager.shared.levelFilter = ["beginner", "intermediate"]
+                        }
+                case "exercise":
+                    BulkUpGround().sheet(isPresented: .constant(true)) {
+                        RMExerciseDetailSheet(exercise: DesignPreview.sampleExercises[0])
+                    }
+                case "new-plan":
+                    BulkUpGround().sheet(isPresented: .constant(true)) {
+                        PlanActionsSheet(kind: .training, isSubscribed: false, canCreateAnother: false,
+                                         hasActivePlan: true, viewMode: .constant(.day), onAction: { _ in })
+                    }
+                case "new-diet-plan":
+                    BulkUpGround().sheet(isPresented: .constant(true)) {
+                        PlanActionsSheet(kind: .diet, isSubscribed: true, canCreateAnother: true,
+                                         hasActivePlan: true, onAction: { _ in })
+                    }
+                case "import", "import-busy", "import-failed":
+                    BulkUpGround().sheet(isPresented: .constant(true)) {
+                        ImportPlanView(
+                            previewPhase: screen == "import-busy" ? .reading
+                                : screen == "import-failed" ? .failed("El archivo no tiene texto legible. Prueba con una foto más nítida.")
+                                : .idle,
+                            previewName: screen == "import" ? "Volumen otoño" : ""
+                        )
+                        .environmentObject(authManager)
+                    }
+                case "code":
+                    BulkUpGround().sheet(isPresented: .constant(true)) {
+                        ImportPlanByCodeView()
+                            .environmentObject(authManager)
+                            .environmentObject(TrainingManager.shared)
+                    }
                 case "summary":
                     WorkoutSummaryView(
                         summary: WorkoutSummary(duration: 3140, totalVolume: 6240, totalSets: 18,
@@ -282,7 +396,7 @@ struct DesignPreviewHost: View {
                 }
             }
             ready = true
-            if screen == "training" || screen == "workout" || screen == "rest" {
+            if screen == "training" || screen == "workout" || screen == "rest" || screen == "training-empty" {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 NotificationCenter.default.post(name: .navigateToTraining, object: nil)
             }
@@ -290,7 +404,7 @@ struct DesignPreviewHost: View {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 NotificationCenter.default.post(name: .navigateToProgress, object: nil)
             }
-            if screen == "diet" || screen == "diet-detail" {
+            if screen == "diet" || screen == "diet-detail" || screen == "diet-empty" {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 NotificationCenter.default.post(name: .navigateToDiet, object: nil)
             }

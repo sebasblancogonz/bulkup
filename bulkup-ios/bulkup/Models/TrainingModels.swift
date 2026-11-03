@@ -173,13 +173,69 @@ extension RMExerciseFull {
         return (primary?.isEmpty == false ? primary : fallback) ?? []
     }
 
+    /// Sentence case ("Peso corporal"), never Title Case; a raw English DB key
+    /// that has no Spanish value in the DB is translated by the vocabulary.
+    private func term(_ value: String) -> String {
+        if !isEnglish, let spanish = ExerciseVocabulary.spanish(for: value) { return spanish }
+        guard let first = value.first else { return value }
+        return first.uppercased() + value.dropFirst().lowercased()
+    }
+
     var localizedName: String { pick(name, nameEs) ?? name }
-    var localizedCategory: String? { pick(category, categoryEs)?.capitalized }
-    var localizedForce: String? { pick(force, forceEs)?.capitalized }
-    var localizedLevel: String? { pick(level, levelEs)?.capitalized }
-    var localizedMechanic: String? { pick(mechanic, mechanicEs)?.capitalized }
-    var localizedEquipment: String? { pick(equipment, equipmentEs)?.capitalized }
-    var localizedPrimaryMuscles: [String] { pickList(primaryMuscles, primaryMusclesEs).map { $0.capitalized } }
-    var localizedSecondaryMuscles: [String] { pickList(secondaryMuscles, secondaryMusclesEs).map { $0.capitalized } }
+    var localizedCategory: String? { pick(category, categoryEs).map(term) }
+    var localizedForce: String? { pick(force, forceEs).map(term) }
+    var localizedLevel: String? { pick(level, levelEs).map(term) }
+    var localizedMechanic: String? { pick(mechanic, mechanicEs).map(term) }
+    var localizedEquipment: String? { pick(equipment, equipmentEs).map(term) }
+    var localizedPrimaryMuscles: [String] { pickList(primaryMuscles, primaryMusclesEs).map(term) }
+    var localizedSecondaryMuscles: [String] { pickList(secondaryMuscles, secondaryMusclesEs).map(term) }
     var localizedInstructions: [String] { pickList(instructions, instructionsEs) }
+}
+
+// MARK: - Exercise vocabulary (raw DB keys → Spanish; English comes from the string catalog)
+
+enum ExerciseVocabulary {
+    private static let spanishByKey: [String: String] = [
+        // Categories
+        "strength": "Fuerza", "stretching": "Estiramiento", "plyometrics": "Pliometría",
+        "strongman": "Strongman", "powerlifting": "Powerlifting", "cardio": "Cardio",
+        "olympic weightlifting": "Halterofilia",
+        // Levels
+        "beginner": "Principiante", "intermediate": "Intermedio", "expert": "Experto",
+        // Force
+        "push": "Empuje", "pull": "Jalón", "static": "Estático",
+        // Mechanic
+        "compound": "Compuesto", "isolation": "Aislamiento",
+        // Equipment
+        "barbell": "Barra", "dumbbell": "Mancuerna", "body only": "Peso corporal", "machine": "Máquina",
+        "cable": "Cable", "kettlebells": "Pesas rusas", "bands": "Bandas", "medicine ball": "Balón medicinal",
+        "exercise ball": "Pelota de ejercicio", "e-z curl bar": "Barra Z", "foam roll": "Rodillo de espuma",
+        "other": "Otro",
+        // Muscles
+        "chest": "Pecho", "shoulders": "Hombros", "triceps": "Tríceps", "biceps": "Bíceps",
+        "forearms": "Antebrazos", "abdominals": "Abdominales", "quadriceps": "Cuádriceps",
+        "hamstrings": "Isquiotibiales", "calves": "Pantorrillas", "glutes": "Glúteos",
+        "lower back": "Espalda baja", "middle back": "Espalda media", "lats": "Dorsales",
+        "traps": "Trapecios", "neck": "Cuello", "adductors": "Aductores", "abductors": "Abductores",
+    ]
+
+    /// The Spanish term for a raw English DB key, if it is one.
+    static func spanish(for raw: String) -> String? {
+        spanishByKey[raw.lowercased()]
+    }
+
+    /// The catalog key for a raw DB value: the Spanish term (English comes from the catalog).
+    static func catalogKey(for raw: String) -> String {
+        spanish(for: raw) ?? raw.capitalized
+    }
+
+    static func glyph(forCategory category: String?) -> String {
+        switch category?.lowercased() {
+        case "stretching": return "figure.flexibility"
+        case "cardio": return "figure.run"
+        case "plyometrics": return "figure.jumprope"
+        case "powerlifting", "strongman", "olympic weightlifting": return "dumbbell"
+        default: return "figure.strengthtraining.traditional"
+        }
+    }
 }
