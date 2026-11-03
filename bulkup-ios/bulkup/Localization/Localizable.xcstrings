@@ -125,6 +125,16 @@
         }
       }
     },
+    "%@ dejará de ver tu racha y tú la suya." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ will stop seeing your streak, and you theirs."
+          }
+        }
+      }
+    },
     "%@ kg" : {
       "localizations" : {
         "en" : {
@@ -419,6 +429,16 @@
         }
       }
     },
+    "%lld en 30 días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld in 30 days"
+          }
+        }
+      }
+    },
     "%lld en la biblioteca" : {
       "localizations" : {
         "en" : {
@@ -475,6 +495,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld options"
+          }
+        }
+      }
+    },
+    "%lld series" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sets"
           }
         }
       }
@@ -808,6 +838,16 @@
         }
       }
     },
+    "1RM %@ kg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1RM %@ kg"
+          }
+        }
+      }
+    },
     "1RM %g kg" : {
       "localizations" : {
         "en" : {
@@ -896,6 +936,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open BulkUp on your iPhone"
+          }
+        }
+      }
+    },
+    "Abre su perfil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens their profile"
           }
         }
       }
@@ -1431,6 +1481,16 @@
         }
       }
     },
+    "Añade amigos para ver sus entrenos y competir por la racha." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add friends to see their workouts and compete on streaks."
+          }
+        }
+      }
+    },
     "Añade tu primer día para comenzar" : {
       "localizations" : {
         "en" : {
@@ -1457,6 +1517,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add your first measurement to see weight, body fat and lean mass here."
+          }
+        }
+      }
+    },
+    "Añadiendo…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adding…"
           }
         }
       }
@@ -1507,6 +1577,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add friend"
+          }
+        }
+      }
+    },
+    "Añadir fecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add date"
           }
         }
       }
@@ -1567,6 +1647,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add…"
+          }
+        }
+      }
+    },
+    "Añádeme en BulkUp con mi código: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add me on BulkUp with my code: %@"
           }
         }
       }
@@ -1945,6 +2035,16 @@
         }
       }
     },
+    "Cambiar foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change photo"
+          }
+        }
+      }
+    },
     "Cambiar opciones" : {
       "localizations" : {
         "en" : {
@@ -2186,6 +2286,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sign Out"
+          }
+        }
+      }
+    },
+    "Cerrar sesión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign out"
           }
         }
       }
@@ -2644,6 +2754,16 @@
         }
       }
     },
+    "Copiar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy"
+          }
+        }
+      }
+    },
     "Copiar Código" : {
       "localizations" : {
         "en" : {
@@ -2880,6 +3000,16 @@
         }
       }
     },
+    "Código de amigo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friend code"
+          }
+        }
+      }
+    },
     "Código del plan" : {
       "localizations" : {
         "en" : {
@@ -2896,6 +3026,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invalid or expired code"
+          }
+        }
+      }
+    },
+    "Código inválido o ya sois amigos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid code, or you're already friends"
           }
         }
       }
@@ -3434,6 +3574,16 @@
         }
       }
     },
+    "Días en la app" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Days in the app"
+          }
+        }
+      }
+    },
     "Días seguidos" : {
       "localizations" : {
         "en" : {
@@ -3541,6 +3691,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit PR"
+          }
+        }
+      }
+    },
+    "Editar perfil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit profile"
           }
         }
       }
@@ -3718,6 +3878,16 @@
         }
       }
     },
+    "El email no se puede cambiar desde la app." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email can't be changed from the app."
+          }
+        }
+      }
+    },
     "Elegir PDF" : {
       "localizations" : {
         "en" : {
@@ -3838,6 +4008,16 @@
         }
       }
     },
+    "Eliminar cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete account"
+          }
+        }
+      }
+    },
     "Eliminar dia" : {
       "localizations" : {
         "en" : {
@@ -3935,6 +4115,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Push"
+          }
+        }
+      }
+    },
+    "En BulkUp desde %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On BulkUp since %@"
           }
         }
       }
@@ -4502,6 +4692,16 @@
         }
       }
     },
+    "Exportar mis datos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export my data"
+          }
+        }
+      }
+    },
     "F" : {
       "localizations" : {
         "en" : {
@@ -4622,6 +4822,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Start date"
+          }
+        }
+      }
+    },
+    "Fecha de nacimiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date of birth"
           }
         }
       }
@@ -4860,6 +5070,16 @@
         }
       }
     },
+    "Gestionar pagos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage payments"
+          }
+        }
+      }
+    },
     "Gestionar suscripción" : {
       "localizations" : {
         "en" : {
@@ -4969,6 +5189,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saving..."
+          }
+        }
+      }
+    },
+    "Guardando…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saving…"
           }
         }
       }
@@ -6030,6 +6260,16 @@
         }
       }
     },
+    "Mejor %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best %lld"
+          }
+        }
+      }
+    },
     "Mejor PR" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6498,6 +6738,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No records"
+          }
+        }
+      }
+    },
+    "No hemos podido cargar su perfil." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn't load their profile."
           }
         }
       }
@@ -7218,6 +7468,16 @@
         }
       }
     },
+    "Plan básico · Pasar a PRO" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basic plan · Go PRO"
+          }
+        }
+      }
+    },
     "Plan de Dieta" : {
       "localizations" : {
         "en" : {
@@ -7698,6 +7958,16 @@
         }
       }
     },
+    "Pídele su código de ocho caracteres; lo tiene en su perfil, en Mi código." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask them for their eight-character code; it's in their profile, under My code."
+          }
+        }
+      }
+    },
     "Quedan %lld ejercicios sin terminar" : {
       "localizations" : {
         "en" : {
@@ -7708,12 +7978,42 @@
         }
       }
     },
+    "Quien lo meta en Añadir amigo verá tu racha y tus entrenos, y tú los suyos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Whoever enters it in Add friend will see your streak and workouts, and you theirs."
+          }
+        }
+      }
+    },
+    "Quitar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
+    },
     "Quitar filtro" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove filter"
+          }
+        }
+      }
+    },
+    "Quitar foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove photo"
           }
         }
       }
@@ -8818,6 +9118,16 @@
         }
       }
     },
+    "Sin fecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No date"
+          }
+        }
+      }
+    },
     "Sin fechas específicas - plan indefinido" : {
       "localizations" : {
         "en" : {
@@ -8907,6 +9217,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No records yet"
+          }
+        }
+      }
+    },
+    "Sin récords todavía." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No records yet."
           }
         }
       }
@@ -9276,6 +9596,26 @@
         }
       }
     },
+    "Suscripción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscription"
+          }
+        }
+      }
+    },
+    "Suscripción activa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active subscription"
+          }
+        }
+      }
+    },
     "Sábado" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -9411,6 +9751,16 @@
         }
       }
     },
+    "Todavía no ha guardado ningún entreno." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They haven't saved a workout yet."
+          }
+        }
+      }
+    },
     "Todo hecho · finalizar entreno" : {
       "localizations" : {
         "en" : {
@@ -9506,6 +9856,16 @@
         }
       }
     },
+    "Tu código es %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your code is %@"
+          }
+        }
+      }
+    },
     "Tu mejor racha" : {
       "localizations" : {
         "en" : {
@@ -9522,6 +9882,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your name"
+          }
+        }
+      }
+    },
+    "Tu perfil volverá a mostrar la inicial de tu nombre." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your profile will show your initial again."
           }
         }
       }
@@ -9582,6 +9952,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your calculated 1RMs and the history behind every PR."
+          }
+        }
+      }
+    },
+    "Tus datos siguen en tu cuenta; vuelve a entrar cuando quieras." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your data stays in your account; sign back in whenever you want."
           }
         }
       }
@@ -9951,6 +10331,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You're already PRO"
+          }
+        }
+      }
+    },
+    "Ya sois amigos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're friends now."
           }
         }
       }
@@ -10548,6 +10938,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last %lld measurements"
+          }
+        }
+      }
+    },
+    "Últimos entrenos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latest workouts"
           }
         }
       }

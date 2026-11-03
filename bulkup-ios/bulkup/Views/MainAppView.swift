@@ -147,6 +147,11 @@ struct MainAppView: View {
                 ) { _ in
                     selectedTab = .progress
                 }
+                .onReceive(
+                    NotificationCenter.default.publisher(for: .navigateToProfile)
+                ) { _ in
+                    selectedTab = .profile
+                }
                 .sheet(isPresented: $showingNotifications) {
                     NotificationView()
                 }

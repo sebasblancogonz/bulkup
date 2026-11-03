@@ -2,10 +2,10 @@
 //  UserProfileView.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 11/9/25.
+//  The Perfil tab: who you are, your streak in numbers, your account as
+//  rows, your friends as rows you can open. Graphite & Voltage.
 //
 
-import PhotosUI
 import SwiftUI
 import UserNotifications
 
@@ -25,49 +25,38 @@ struct UserProfileView: View {
     @State private var showingDeleteAccountAlert = false
     @State private var showingDeleteAccountError = false
     @State private var deleteAccountErrorMessage = ""
-    @State private var showingImagePicker = false
     @State private var showingExportShare = false
     @State private var exportFileURL: URL?
-    @State private var selectedImage: PhotosPickerItem?
-    @State private var animateStats = false
+    @State private var showingAddFriend = false
+    @State private var showingMyCode = false
+    @State private var selectedFriend: FriendProfile?
 
     @AppStorage("hapticFeedback") private var hapticFeedback = true
     @AppStorage("notifications") private var notificationsEnabled = true
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: Spacing.sectionGap) {
-                // Profile Header
-                profileHeaderSection
-
-                // Stats Section
-                statsSection
-
-                // Menu Options
-                menuSection
-
-                // Settings Section
-                settingsSection
-
-                // Account Actions
-                accountActionsSection
-
-                // App Version
-                appVersionSection
-
-                // Bottom spacer for floating tab bar
-                Color.clear.frame(height: 80)
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                header
+                statsStrip
+                accountSlab
+                friendsSlab
+                quickSettingsSlab
+                accountActions
             }
             .padding(.horizontal, Spacing.screenH)
+            .padding(.top, Spacing.md)
+            .padding(.bottom, 100)
         }
-        .scrollIndicators(.hidden)
-        .background(BulkUpColors.background.ignoresSafeArea())
+        .background(BulkUpGround())
         .toolbar(.hidden, for: .navigationBar)
         .task {
-            await friendsManager.loadMyStreak()
-            withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
-                animateStats = true
+            // The toggle reflects the system permission, not a stored preference.
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            if settings.authorizationStatus == .denied || settings.authorizationStatus == .notDetermined {
+                notificationsEnabled = false
             }
+            await friendsManager.loadLeaderboard()
         }
         .sheet(isPresented: $showingEditProfile) {
             EditProfileView()
@@ -87,35 +76,32 @@ struct UserProfileView: View {
             SubscriptionView()
                 .environmentObject(authManager)
         }
-        .photosPicker(
-            isPresented: $showingImagePicker,
-            selection: $selectedImage,
-            matching: .images
-        )
-        .onChange(of: selectedImage) { _, newValue in
-            if let newValue = newValue {
-                loadImage(from: newValue)
-            }
+        .sheet(isPresented: $showingAddFriend) {
+            AddFriendView().environmentObject(authManager)
         }
-        .alert("Cerrar Sesión", isPresented: $showingLogoutAlert) {
-            Button("Cancelar", role: .cancel) {}
-            Button("Cerrar Sesión", role: .destructive) {
-                authManager.logout()
-            }
-        } message: {
-            Text("¿Estás seguro de que quieres cerrar sesión?")
+        .sheet(isPresented: $showingMyCode) {
+            MyFriendCodeView()
+        }
+        .sheet(item: $selectedFriend) { friend in
+            FriendProfileView(friend: friend)
         }
         .sheet(isPresented: $showingExportShare) {
             if let url = exportFileURL {
                 ShareSheet(activityItems: [url])
             }
         }
-        .alert("Eliminar Cuenta", isPresented: $showingDeleteAccountAlert) {
+        .alert("Cerrar sesión", isPresented: $showingLogoutAlert) {
+            Button("Cancelar", role: .cancel) {}
+            Button("Cerrar sesión", role: .destructive) {
+                authManager.logout()
+            }
+        } message: {
+            Text("Tus datos siguen en tu cuenta; vuelve a entrar cuando quieras.")
+        }
+        .alert("Eliminar cuenta", isPresented: $showingDeleteAccountAlert) {
             Button("Cancelar", role: .cancel) {}
             Button("Eliminar", role: .destructive) {
-                Task {
-                    await deleteAccount()
-                }
+                Task { await deleteAccount() }
             }
         } message: {
             Text(
@@ -129,265 +115,238 @@ struct UserProfileView: View {
         }
     }
 
-    // MARK: - Profile Header
+    // MARK: - Header: avatar, name, tier, settings square
 
-    private var profileHeaderSection: some View {
-        VStack(spacing: Spacing.md) {
-            // Top bar: spacer + settings gear
-            HStack {
-                Spacer()
-                Button(action: { showingSettings = true }) {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .frame(width: 36, height: 36)
-                        .background(BulkUpColors.surfaceElevated)
-                        .clipShape(Circle())
-                }
-            }
-            .padding(.top, Spacing.sm)
+    private var header: some View {
+        HStack(alignment: .top, spacing: Spacing.md) {
+            ProfileAvatar(name: authManager.user?.name ?? "", url: authManager.user?.safeProfileImageURL, size: 64)
 
-            // Avatar
-            ZStack(alignment: .bottomTrailing) {
-                if let urlString = authManager.user?.safeProfileImageURL,
-                    let url = URL(string: urlString)
-                {
-                    CachedAsyncImage(
-                        url: url,
-                        content: { image, colors in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 100, height: 100)
-                                .clipShape(Circle())
-                                .overlay(
-                                    Circle()
-                                        .stroke(BulkUpColors.accentGradient, lineWidth: 2)
-                                )
-                        },
-                        placeholder: {
-                            avatarPlaceholder
-                        }
-                    )
-                } else {
-                    avatarPlaceholder
-                }
-            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(authManager.user?.name ?? NSLocalizedString("Usuario", comment: ""))
+                    .titleVoice(.title)
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .lineLimit(2)
+                Text(authManager.user?.email ?? "")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
 
-            // Name
-            Text(authManager.user?.name ?? "Usuario")
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(BulkUpColors.textPrimary)
-
-            // Email
-            Text(authManager.user?.email ?? "")
-                .font(.system(size: 14, weight: .regular))
-                .foregroundColor(BulkUpColors.textSecondary)
-
-            // Plan badge
-            HStack(spacing: 5) {
-                Image(
-                    systemName: storeKitManager.hasActiveSubscription
-                        ? "checkmark.seal.fill" : "lock.fill"
-                )
-                .font(.system(size: 11, weight: .bold))
-
-                Text(
-                    storeKitManager.hasActiveSubscription
-                        ? "PRO" : "Plan Básico"
-                )
-                .font(BulkUpFont.badge())
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(
-                storeKitManager.hasActiveSubscription
-                    ? BulkUpColors.accent.opacity(0.12)
-                    : BulkUpColors.surfaceElevated
-            )
-            .foregroundColor(
-                storeKitManager.hasActiveSubscription
-                    ? BulkUpColors.accent
-                    : BulkUpColors.textSecondary
-            )
-            .clipShape(Capsule())
-        }
-    }
-
-    private var avatarPlaceholder: some View {
-        Circle()
-            .fill(
-                LinearGradient(
-                    colors: [BulkUpColors.accent, BulkUpColors.accentMuted],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .frame(width: 100, height: 100)
-            .overlay(
-                Text(authManager.user?.name.prefix(1).uppercased() ?? "U")
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(.white)
-            )
-            .overlay(
-                Circle()
-                    .stroke(BulkUpColors.accentGradient, lineWidth: 2)
-            )
-    }
-
-    // MARK: - Stats Section
-
-    private var statsSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.md) {
-                ProfileStatCard(
-                    title: "Días activo",
-                    value: calculateDaysActive(),
-                    icon: "calendar",
-                    color: BulkUpColors.accent,
-                    animated: animateStats
-                )
-
-                ProfileStatCard(
-                    title: "Entrenamientos",
-                    value: calculateWorkouts(),
-                    icon: "dumbbell",
-                    color: BulkUpColors.accent,
-                    animated: animateStats
-                )
-
-                ProfileStatCard(
-                    title: "Racha",
-                    value: calculateStreak(),
-                    icon: "flame.fill",
-                    color: calculateStreak() > 0 ? BulkUpColors.accent : BulkUpColors.textTertiary,
-                    dimmed: calculateStreak() == 0,
-                    animated: animateStats
-                )
-            }
-        }
-    }
-
-    // MARK: - Menu Section
-
-    private var menuSection: some View {
-        VStack(spacing: Spacing.sm) {
-            MenuRow(
-                title: "Editar Perfil",
-                icon: "person.circle",
-                color: BulkUpColors.accent,
-                action: { showingEditProfile = true }
-            )
-
-            MenuRow(
-                title: "Medidas Corporales",
-                icon: "figure.arms.open",
-                color: BulkUpColors.accent,
-                showBadge: !storeKitManager.hasActiveSubscription,
-                action: { showingBodyMeasurements = true }
-            )
-
-            MenuRow(
-                title: "Mi Suscripción",
-                icon: "crown",
-                color: BulkUpColors.accent,
-                showBadge: !storeKitManager.hasActiveSubscription,
-                action: { showingSubscription = true }
-            )
-
-            MenuRow(
-                title: "Historial de Pagos",
-                icon: "creditcard",
-                color: BulkUpColors.accent,
-                action: {
-                    Task {
-                        await storeKitManager.openSubscriptionManagement()
+                if storeKitManager.hasActiveSubscription {
+                    HStack(spacing: 6) {
+                        ProTag()
+                        Text("Suscripción activa")
+                            .font(BulkUpFont.caption())
+                            .foregroundColor(BulkUpColors.textSecondary)
                     }
+                    .padding(.top, 4)
+                } else {
+                    Button { showingSubscription = true } label: {
+                        Text("Plan básico · Pasar a PRO")
+                            .font(.system(.footnote, weight: .semibold))
+                            .foregroundColor(BulkUpColors.accentText)
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
-            )
+            }
 
-            MenuRow(
-                title: "Exportar Datos",
-                icon: "square.and.arrow.up",
-                color: BulkUpColors.accent,
-                action: { exportUserData() }
-            )
+            Spacer(minLength: Spacing.sm)
+
+            Button {
+                showingSettings = true
+            } label: {
+                Image(systemName: "gearshape")
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(BulkUpColors.textPrimary)
+                    .frame(width: 46, height: 46)
+                    .background(BulkUpColors.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                    .lift(CornerRadius.medium)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Ajustes")
         }
     }
 
-    // MARK: - Settings Section
+    // MARK: - Numbers
 
-    private var settingsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("CONFIGURACIÓN")
-                .font(BulkUpFont.sectionLabel())
-                .tracking(1.5)
-                .foregroundColor(BulkUpColors.textSecondary)
+    private var statsStrip: some View {
+        StatsStrip(cells: [
+            StatCell(value: "\(calculateStreak())", unit: nil, label: "Días seguidos",
+                     detail: String(format: NSLocalizedString("Mejor %lld", comment: ""), friendsManager.myStreak?.longestStreak ?? 0)),
+            StatCell(value: "\(calculateWorkouts())", unit: nil, label: "Entrenos", detail: nil),
+            StatCell(value: "\(calculateDaysActive())", unit: nil, label: "Días en la app", detail: nil),
+        ])
+    }
 
-            VStack(spacing: Spacing.sm) {
-                SettingRow(
-                    title: "Vibración háptica",
-                    icon: "iphone.radiowaves.left.and.right",
-                    isOn: $hapticFeedback
-                )
+    // MARK: - Account rows
 
-                SettingRow(
-                    title: "Notificaciones",
-                    icon: "bell",
-                    isOn: Binding(
-                        get: { notificationsEnabled },
-                        set: { newValue in
-                            notificationsEnabled = newValue
-                            if newValue {
-                                requestNotificationPermission()
+    private var accountSlab: some View {
+        VStack(spacing: 0) {
+            PlanActionRow(glyph: "person", title: "Editar perfil") { showingEditProfile = true }
+            PlanActionRow(glyph: "figure.arms.open", title: "Medidas corporales",
+                          locked: !storeKitManager.hasActiveSubscription) {
+                if storeKitManager.hasActiveSubscription { showingBodyMeasurements = true } else { showingSubscription = true }
+            }
+            PlanActionRow(glyph: "creditcard", title: "Suscripción") { showingSubscription = true }
+            if storeKitManager.hasActiveSubscription {
+                PlanActionRow(glyph: "arrow.up.forward.square", title: "Gestionar pagos") {
+                    Task { await storeKitManager.openSubscriptionManagement() }
+                }
+            }
+            PlanActionRow(glyph: "square.and.arrow.up", title: "Exportar mis datos", showsSeparator: false) { exportUserData() }
+        }
+        .slab()
+    }
+
+    // MARK: - Friends
+
+    private var friendsSlab: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Amigos")
+                    .font(BulkUpFont.cardTitle())
+                    .foregroundColor(BulkUpColors.textPrimary)
+                Spacer()
+                if !friendsManager.friends.isEmpty {
+                    Text("Días seguidos")
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textTertiary)
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.md)
+            .padding(.bottom, Spacing.sm)
+
+            if friendsManager.isLoading && friendsManager.friends.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.lg)
+            } else if friendsManager.friends.isEmpty {
+                Text("Añade amigos para ver sus entrenos y competir por la racha.")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.bottom, Spacing.sm)
+            } else {
+                let friends = friendsManager.friends
+                ForEach(Array(friends.enumerated()), id: \.element.id) { i, friend in
+                    Button { selectedFriend = friend } label: {
+                        SlabRow(showsSeparator: i < friends.count - 1, minHeight: 52) {
+                            HStack(spacing: Spacing.sm + 2) {
+                                ProfileAvatar(name: friend.name, url: friend.profileImageURL, size: 28)
+                                Text(friend.name)
+                                    .font(.system(.subheadline, weight: .regular))
+                                    .foregroundColor(BulkUpColors.textPrimary)
+                                    .lineLimit(1)
+                                Spacer(minLength: Spacing.sm)
+                                Text("\(friend.currentStreak)")
+                                    .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
+                                    .foregroundColor(BulkUpColors.textPrimary)
+                                Image(systemName: "chevron.right")
+                                    .font(.system(.caption, weight: .semibold))
+                                    .foregroundColor(BulkUpColors.textTertiary)
                             }
                         }
-                    )
-                )
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityValue(Text(String(format: NSLocalizedString("%lld días seguidos", comment: ""), friend.currentStreak)))
+                    .accessibilityHint("Abre su perfil")
+                }
+            }
+
+            HStack(spacing: Spacing.md) {
+                Button { showingMyCode = true } label: {
+                    Text("Mi código")
+                        .font(.system(.footnote, weight: .semibold))
+                        .foregroundColor(BulkUpColors.accentText)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                Button { showingAddFriend = true } label: {
+                    Text("Añadir amigo")
+                        .font(.system(.footnote, weight: .semibold))
+                        .foregroundColor(BulkUpColors.accentText)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.md)
+            .overlay(alignment: .top) {
+                Rectangle().fill(BulkUpColors.line).frame(height: 1).padding(.leading, Spacing.md)
             }
         }
+        .slab()
     }
 
-    // MARK: - Account Actions
+    // MARK: - Quick settings
 
-    private var accountActionsSection: some View {
-        VStack(spacing: Spacing.md) {
-            Button(action: { showingLogoutAlert = true }) {
-                Text("Cerrar Sesión")
-                    .font(BulkUpFont.body())
-                    .foregroundColor(BulkUpColors.error)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .background(BulkUpColors.error.opacity(0.08))
-                    .cornerRadius(CornerRadius.medium)
+    private var quickSettingsSlab: some View {
+        VStack(spacing: 0) {
+            SlabRow(minHeight: 52) {
+                Toggle(isOn: $hapticFeedback) {
+                    Label("Vibración háptica", systemImage: "iphone.radiowaves.left.and.right")
+                        .labelStyle(ProfileLabelStyle())
+                }
+                .tint(BulkUpColors.accent)
             }
+            SlabRow(showsSeparator: false, minHeight: 52) {
+                Toggle(isOn: Binding(
+                    get: { notificationsEnabled },
+                    set: { newValue in
+                        notificationsEnabled = newValue
+                        if newValue { requestNotificationPermission() }
+                    }
+                )) {
+                    Label("Notificaciones", systemImage: "bell")
+                        .labelStyle(ProfileLabelStyle())
+                }
+                .tint(BulkUpColors.accent)
+            }
+        }
+        .slab()
+    }
 
-            Button(action: { showingDeleteAccountAlert = true }) {
-                Text("Eliminar Cuenta")
+    // MARK: - Session / account
+
+    private var accountActions: some View {
+        VStack(spacing: Spacing.sm) {
+            Button { showingLogoutAlert = true } label: {
+                Text("Cerrar sesión")
+                    .font(.system(.headline, weight: .semibold))
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(BulkUpColors.surfaceElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .pressable()
+
+            Button { showingDeleteAccountAlert = true } label: {
+                Text("Eliminar cuenta")
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textTertiary)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .contentShape(Rectangle())
             }
-        }
-    }
+            .buttonStyle(.plain)
 
-    // MARK: - App Version
-
-    private var appVersionSection: some View {
-        VStack(spacing: Spacing.xs) {
             Text("BulkUp · v\(Bundle.main.appVersion)")
-                .font(BulkUpFont.caption())
+                .font(BulkUpFont.numeric(.caption2, weight: .medium))
                 .foregroundColor(BulkUpColors.textTertiary)
+                .frame(maxWidth: .infinity)
         }
-        .padding(.vertical, Spacing.md)
+        .padding(.top, Spacing.sm)
     }
 
     // MARK: - Helper Functions
-
-    private func loadImage(from item: PhotosPickerItem) {
-        Task {
-            // Load and upload image logic
-        }
-    }
 
     private func deleteAccount() async {
         do {
@@ -555,136 +514,18 @@ struct UserProfileView: View {
     }
 }
 
-// MARK: - Profile Stat Card (120x140, premium)
-
-struct ProfileStatCard: View {
-    let title: String
-    let value: Int
-    let icon: String
-    let color: Color
-    var dimmed: Bool = false
-    var animated: Bool = false
-
-    var body: some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundColor(color)
-
-            Text("\(animated ? value : 0)")
-                .font(BulkUpFont.heroStatMedium())
-                .foregroundColor(dimmed ? BulkUpColors.textTertiary : BulkUpColors.textPrimary)
-                .contentTransition(.numericText())
-                .animation(.easeOut(duration: 0.6), value: animated)
-
-            Text(LocalizedStringKey(title))
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(BulkUpColors.textSecondary)
-        }
-        .frame(width: 120, height: 140)
-        .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .fill(BulkUpColors.surface)
-
-                // Subtle inner glow
-                RadialGradient(
-                    colors: [color.opacity(0.03), .clear],
-                    center: .top,
-                    startRadius: 0,
-                    endRadius: 100
-                )
-                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
-            }
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .stroke(BulkUpColors.border, lineWidth: 0.5)
-        )
-    }
-}
-
-// MARK: - Menu Row
-
-struct MenuRow: View {
-    let title: String
-    let icon: String
-    let color: Color
-    var showBadge: Bool = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: Spacing.md) {
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(BulkUpColors.accentText)
-                    .frame(width: 24)
-
-                Text(LocalizedStringKey(title))
-                    .font(BulkUpFont.body())
-                    .foregroundColor(BulkUpColors.textPrimary)
-
-                Spacer()
-
-                if showBadge {
-                    Text("UPGRADE")
-                        .font(BulkUpFont.badge())
-                        .foregroundColor(BulkUpColors.onAccent)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(BulkUpColors.accent)
-                        .clipShape(Capsule())
-                }
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(BulkUpColors.textTertiary)
-            }
-            .padding(Spacing.md)
-            .background(BulkUpColors.surface)
-            .cornerRadius(CornerRadius.large)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(BulkUpColors.border, lineWidth: 0.5)
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Setting Row
-
-struct SettingRow: View {
-    let title: String
-    let icon: String
-    @Binding var isOn: Bool
-
-    var body: some View {
+/// Glyph in secondary at the row's 28pt column, title in subheadline semibold.
+struct ProfileLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: Spacing.md) {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(BulkUpColors.accentText)
-                .frame(width: 24)
-
-            Text(LocalizedStringKey(title))
-                .font(BulkUpFont.body())
+            configuration.icon
+                .font(.system(.body, weight: .medium))
+                .foregroundColor(BulkUpColors.textSecondary)
+                .frame(width: 28)
+            configuration.title
+                .font(.system(.headline, weight: .semibold))
                 .foregroundColor(BulkUpColors.textPrimary)
-
-            Spacer()
-
-            Toggle("", isOn: $isOn)
-                .labelsHidden()
-                .tint(BulkUpColors.accent)
         }
-        .padding(Spacing.md)
-        .background(BulkUpColors.surface)
-        .cornerRadius(CornerRadius.large)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .stroke(BulkUpColors.border, lineWidth: 0.5)
-        )
     }
 }
 

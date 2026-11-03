@@ -815,6 +815,46 @@ struct FriendCodeResponse: Codable {
     let friendCode: String
 }
 
+// MARK: - Friend public profile (training data only)
+
+struct FriendSessionSummary: Codable, Identifiable {
+    let date: String
+    let dayName: String
+    let workoutName: String?
+    let durationSeconds: Int
+    let totalSets: Int
+    let totalVolume: Double
+
+    var id: String { "\(date)-\(dayName)-\(totalSets)" }
+}
+
+struct FriendRecordSummary: Codable, Identifiable {
+    let exerciseName: String
+    let weight: Double
+    let reps: Int
+    let date: Date
+
+    var id: String { "\(exerciseName)-\(weight)-\(reps)" }
+    /// Epley, the same estimate the records screen uses.
+    var estimatedOneRM: Double { weight * (1 + Double(reps) / 30) }
+}
+
+struct FriendPublicProfile: Codable {
+    let userId: String
+    let name: String
+    let profileImageURL: String?
+    let memberSince: Date
+    let streak: TrainingStreakResponse
+    let workoutsLast7Days: Int
+    let workoutsLast30Days: Int
+    let recentSessions: [FriendSessionSummary]
+    let bestRecords: [FriendRecordSummary]
+
+    var safeProfileImageURL: String? {
+        profileImageURL?.replacingOccurrences(of: "http://", with: "https://")
+    }
+}
+
 // MARK: - Resilient list decoding
 
 /// Wraps a Decodable so one malformed element in an array doesn't fail the whole

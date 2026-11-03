@@ -30,14 +30,14 @@ enum PlanAction: Hashable {
 struct PlanActionRow: View {
     let glyph: String
     let title: LocalizedStringKey
-    let subtitle: LocalizedStringKey
+    var subtitle: LocalizedStringKey? = nil
     var locked: Bool = false
     var showsSeparator: Bool = true
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            SlabRow(showsSeparator: showsSeparator, minHeight: 60) {
+            SlabRow(showsSeparator: showsSeparator, minHeight: subtitle == nil ? 52 : 60) {
                 HStack(spacing: Spacing.md) {
                     Image(systemName: glyph)
                         .font(.system(.body, weight: .medium))
@@ -48,10 +48,12 @@ struct PlanActionRow: View {
                         Text(title)
                             .font(.system(.headline, weight: .semibold))
                             .foregroundColor(BulkUpColors.textPrimary)
-                        Text(subtitle)
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
-                            .lineLimit(2)
+                        if let subtitle {
+                            Text(subtitle)
+                                .font(BulkUpFont.caption())
+                                .foregroundColor(BulkUpColors.textSecondary)
+                                .lineLimit(2)
+                        }
                     }
 
                     Spacer(minLength: Spacing.sm)

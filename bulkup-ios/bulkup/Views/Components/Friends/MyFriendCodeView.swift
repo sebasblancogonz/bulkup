@@ -2,7 +2,7 @@
 //  MyFriendCodeView.swift
 //  bulkup
 //
-//  Sheet showing user's friend code
+//  Your friend code, big enough to read across a table, with copy and share.
 //
 
 import SwiftUI
@@ -12,97 +12,90 @@ struct MyFriendCodeView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var copied = false
+    @State private var contentHeight: CGFloat = 0
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: Spacing.xxl) {
-                Spacer()
+        ZStack {
+            BulkUpGround()
 
-                VStack(spacing: Spacing.lg) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [BulkUpColors.accent.opacity(0.2), BulkUpColors.accent.opacity(0.05)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 80, height: 80)
-
-                        Image(systemName: "person.2.fill")
-                            .font(.system(size: 36))
-                            .foregroundColor(BulkUpColors.accentText)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Mi código")
+                            .titleVoice(.title)
+                            .foregroundColor(BulkUpColors.textPrimary)
+                        Spacer(minLength: Spacing.md)
+                        Button { dismiss() } label: {
+                            Text("Cerrar")
+                                .font(.system(.footnote, weight: .semibold))
+                                .foregroundColor(BulkUpColors.textSecondary)
+                                .frame(minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
 
-                    Text("Tu Código de Amigo")
-                        .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.textPrimary)
-
-                    Text("Comparte este código con tus amigos para que te agreguen")
+                    Text("Quien lo meta en Añadir amigo verá tu racha y tus entrenos, y tú los suyos.")
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                }
 
-                if let code = friendsManager.myFriendCode {
-                    VStack(spacing: Spacing.lg) {
+                    if let code = friendsManager.myFriendCode {
                         Text(code)
-                            .font(.system(size: 36, weight: .bold, design: .monospaced))
+                            .font(BulkUpFont.mono(32, weight: .semibold, relativeTo: .largeTitle))
                             .foregroundColor(BulkUpColors.textPrimary)
                             .tracking(6)
-                            .padding(.vertical, 20)
-                            .padding(.horizontal, 32)
-                            .background(
-                                RoundedRectangle(cornerRadius: CornerRadius.large)
-                                    .fill(BulkUpColors.surface)
-                            )
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                            .frame(maxWidth: .infinity, minHeight: 72)
+                            .background(BulkUpColors.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+                            .lift()
+                            .accessibilityLabel(Text(String(format: NSLocalizedString("Tu código es %@", comment: ""), code)))
 
-                        Button {
-                            UIPasteboard.general.string = code
-                            copied = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                copied = false
+                        HStack(spacing: Spacing.sm) {
+                            Button {
+                                UIPasteboard.general.string = code
+                                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                                withAnimation(.easeOut(duration: 0.2)) { copied = true }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    withAnimation(.easeOut(duration: 0.2)) { copied = false }
+                                }
+                            } label: {
+                                Text(copied ? "Copiado" : "Copiar")
+                                    .font(.system(.headline, weight: .semibold))
+                                    .foregroundColor(copied ? Color.onFill(BulkUpColors.complete) : BulkUpColors.onAccent)
+                                    .frame(maxWidth: .infinity, minHeight: 54)
+                                    .background(copied ? BulkUpColors.complete : BulkUpColors.accent)
+                                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
                             }
-                        } label: {
-                            HStack(spacing: Spacing.sm) {
-                                Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                                Text(copied ? "Copiado" : "Copiar Código")
-                                    .fontWeight(.semibold)
+                            .buttonStyle(.plain)
+                            .pressable()
+
+                            ShareLink(item: String(format: NSLocalizedString("Añádeme en BulkUp con mi código: %@", comment: ""), code)) {
+                                Text("Compartir")
+                                    .font(.system(.headline, weight: .semibold))
+                                    .foregroundColor(BulkUpColors.textPrimary)
+                                    .frame(maxWidth: .infinity, minHeight: 54)
+                                    .background(BulkUpColors.surfaceElevated)
+                                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
                             }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
-                            .background(copied ? BulkUpColors.success : BulkUpColors.accent)
-                            .foregroundColor(Color.onFill(copied ? BulkUpColors.success : BulkUpColors.accent))
-                            .cornerRadius(CornerRadius.medium)
+                            .buttonStyle(.plain)
                         }
-                        .padding(.horizontal, 24)
+                    } else {
+                        ProgressView()
+                            .tint(BulkUpColors.accent)
+                            .frame(maxWidth: .infinity, minHeight: 72)
                     }
-                } else {
-                    ProgressView()
-                        .padding(.vertical, 40)
                 }
-
-                Spacer()
-            }
-            .padding()
-            .background(BulkUpColors.background.ignoresSafeArea())
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Cerrar") {
-                        dismiss()
-                    }
-                    .foregroundColor(BulkUpColors.accentText)
-                }
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.sm)
+                .measureHeight($contentHeight)
             }
         }
-        .presentationDetents([.medium])
-        .onAppear {
-            Task {
-                await friendsManager.loadFriendCode()
-            }
-        }
+        .presentationDetents(contentHeight > 0 ? [.height(contentHeight), .large] : [.medium, .large])
+        .presentationDragIndicator(.visible)
+        .presentationBackground(BulkUpColors.background)
+        .task { await friendsManager.loadFriendCode() }
     }
 }

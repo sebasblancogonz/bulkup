@@ -20,6 +20,7 @@ struct ProgressDashboardView: View {
     @ObservedObject private var storeKit = StoreKitManager.shared
 
     @State private var showingAddFriend = false
+    @State private var selectedFriend: FriendProfile?
     @State private var showingMyCode = false
     @State private var showingSubscription = false
 
@@ -57,6 +58,9 @@ struct ProgressDashboardView: View {
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingAddFriend) {
                 AddFriendView().environmentObject(authManager)
+            }
+            .sheet(item: $selectedFriend) { friend in
+                FriendProfileView(friend: friend)
             }
             .sheet(isPresented: $showingMyCode) {
                 MyFriendCodeView()
@@ -374,14 +378,37 @@ struct ProgressDashboardView: View {
         return top + ranked.filter(\.isMe)
     }
 
+    @ViewBuilder
     private func leaderboardRow(_ row: LeaderboardRow, showsSeparator: Bool) -> some View {
+        let value = Text(String(format: NSLocalizedString("%lld días seguidos", comment: ""), row.streak))
+        if row.isMe {
+            leaderboardRowContent(row, showsSeparator: showsSeparator)
+                .accessibilityElement(children: .combine)
+                .accessibilityValue(value)
+        } else {
+            Button {
+                if let friend = friendsManager.friends.first(where: { $0.id == row.id }) {
+                    selectedFriend = friend
+                }
+            } label: {
+                leaderboardRowContent(row, showsSeparator: showsSeparator)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityValue(value)
+            .accessibilityHint("Abre su perfil")
+        }
+    }
+
+    private func leaderboardRowContent(_ row: LeaderboardRow, showsSeparator: Bool) -> some View {
         SlabRow(showsSeparator: showsSeparator, minHeight: 48) {
             HStack(spacing: Spacing.sm + 2) {
                 Text("\(row.rank)")
                     .font(BulkUpFont.numeric(.footnote, weight: .semibold))
                     .foregroundColor(row.isMe ? BulkUpColors.textPrimary : BulkUpColors.textTertiary)
                     .frame(width: 18, alignment: .leading)
-                avatar(name: row.name, url: row.imageURL)
+                ProfileAvatar(name: row.name, url: row.imageURL, size: 28)
                 Text(row.name)
                     .font(.system(.subheadline, weight: row.isMe ? .semibold : .regular))
                     .foregroundColor(BulkUpColors.textPrimary)
@@ -395,32 +422,14 @@ struct ProgressDashboardView: View {
                 Text("\(row.streak)")
                     .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textPrimary)
+                if !row.isMe {
+                    Image(systemName: "chevron.right")
+                        .font(.system(.caption, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textTertiary)
+                }
             }
         }
         .background(row.isMe ? BulkUpColors.surfaceElevated : Color.clear)
-    }
-
-    private func avatar(name: String, url: String?) -> some View {
-        ZStack {
-            Circle().fill(BulkUpColors.surfaceElevated)
-            if let url, let u = URL(string: url) {
-                AsyncImage(url: u) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    initial(name)
-                }
-            } else {
-                initial(name)
-            }
-        }
-        .frame(width: 28, height: 28)
-        .clipShape(Circle())
-    }
-
-    private func initial(_ name: String) -> some View {
-        Text(name.prefix(1).uppercased())
-            .font(.system(.caption, weight: .semibold))
-            .foregroundColor(BulkUpColors.textPrimary)
     }
 
     // MARK: - Locked (free tier)

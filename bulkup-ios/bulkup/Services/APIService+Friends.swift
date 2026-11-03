@@ -52,6 +52,17 @@ extension APIService {
         return response.data ?? []
     }
 
+    func getFriendProfile(friendId: String) async throws -> FriendPublicProfile {
+        let response: APIResponse<FriendPublicProfile> = try await request(
+            endpoint: "friends/\(friendId)/profile",
+            method: .GET
+        )
+        guard let data = response.data else {
+            throw APIError.networkError(response.error ?? "Error cargando el perfil")
+        }
+        return data
+    }
+
     // MARK: - Leaderboard
 
     func getLeaderboard() async throws -> LeaderboardResponse {

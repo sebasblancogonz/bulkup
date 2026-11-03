@@ -35,6 +35,9 @@ class ProfileManager: ObservableObject {
     
     // MARK: - Load Profile
     func loadProfile() async {
+        #if DEBUG
+        if DesignPreview.isActive { return }
+        #endif
         isLoading = true
         errorMessage = nil
         

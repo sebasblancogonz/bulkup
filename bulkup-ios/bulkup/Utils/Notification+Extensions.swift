@@ -16,6 +16,7 @@ extension Notification.Name {
     static let navigateToTraining = Notification.Name("navigateToTraining")
     static let navigateToDiet = Notification.Name("navigateToDiet")
     static let navigateToProgress = Notification.Name("navigateToProgress")
+    static let navigateToProfile = Notification.Name("navigateToProfile")
     static let finishWorkoutSession = Notification.Name("finishWorkoutSession")
     static let liveWorkoutStoreChanged = Notification.Name("liveWorkoutStoreChanged")
 }

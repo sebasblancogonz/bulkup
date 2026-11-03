@@ -34,6 +34,7 @@ enum DesignPreview {
         BrandFonts.register()   // before any `Font.brandMono` resolves in the harness
         let auth = AuthManager.shared
         auth.user = User(id: "design-preview", email: "preview@example.com", name: "Sebas Blanco")
+        auth.user?.createdAt = Calendar.current.date(byAdding: .day, value: -86, to: Date())!
         auth.isAuthenticated = true
         UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
 
@@ -71,7 +72,7 @@ enum DesignPreview {
         dm.activePlanName = "Volumen 3.200 kcal"
         dm.isLoading = false
         seedMealTracking()
-        seedProgress(subscribed: screen != "progress-free")
+        seedProgress(subscribed: screen != "progress-free" && screen != "profile-free")
     }
 
     /// Progress: a lifter with ten weeks of measurements, three PRs, two
@@ -219,6 +220,32 @@ enum DesignPreview {
         ]
     }()
 
+    /// Marta's card as a friend sees it.
+    static var sampleFriendProfile: FriendPublicProfile {
+        let cal = Calendar.current
+        func day(_ ago: Int) -> String {
+            let f = DateFormatter(); f.locale = Locale(identifier: "en_US_POSIX"); f.dateFormat = "yyyy-MM-dd"
+            return f.string(from: cal.date(byAdding: .day, value: -ago, to: Date())!)
+        }
+        return FriendPublicProfile(
+            userId: "f1", name: "Marta", profileImageURL: nil,
+            memberSince: cal.date(byAdding: .month, value: -9, to: Date())!,
+            streak: TrainingStreakResponse(userId: "f1", currentStreak: 18, longestStreak: 30, totalDays: 140),
+            workoutsLast7Days: 4, workoutsLast30Days: 17,
+            recentSessions: [
+                FriendSessionSummary(date: day(0), dayName: "Lunes", workoutName: "Pierna", durationSeconds: 3600, totalSets: 20, totalVolume: 8420),
+                FriendSessionSummary(date: day(1), dayName: "Domingo", workoutName: "Espalda y bíceps", durationSeconds: 3100, totalSets: 18, totalVolume: 5960),
+                FriendSessionSummary(date: day(3), dayName: "Viernes", workoutName: "Pecho y hombros", durationSeconds: 3300, totalSets: 21, totalVolume: 6240),
+                FriendSessionSummary(date: day(5), dayName: "Miércoles", workoutName: "Pierna", durationSeconds: 3540, totalSets: 20, totalVolume: 8100),
+            ],
+            bestRecords: [
+                FriendRecordSummary(exerciseName: "Sentadilla", weight: 120, reps: 3, date: cal.date(byAdding: .day, value: -4, to: Date())!),
+                FriendRecordSummary(exerciseName: "Peso muerto", weight: 140, reps: 1, date: cal.date(byAdding: .day, value: -12, to: Date())!),
+                FriendRecordSummary(exerciseName: "Press de banca", weight: 65, reps: 5, date: cal.date(byAdding: .day, value: -20, to: Date())!),
+            ]
+        )
+    }
+
     private static func makeDays() -> [TrainingDay] {
         let today = TrainingDay(day: todayName, workoutName: "Pecho y hombros", exercises: [
             Exercise(name: "Press inclinado en multipower", sets: 4, reps: "12, 10, 8, 6", restSeconds: 90, weightTracking: true, orderIndex: 0),
@@ -362,6 +389,22 @@ struct DesignPreviewHost: View {
                             .environmentObject(authManager)
                             .environmentObject(TrainingManager.shared)
                     }
+                case "friend":
+                    BulkUpGround().sheet(isPresented: .constant(true)) {
+                        FriendProfileView(friend: FriendsManager.shared.friends[0], previewProfile: DesignPreview.sampleFriendProfile)
+                    }
+                case "edit-profile":
+                    BulkUpGround().sheet(isPresented: .constant(true)) {
+                        EditProfileView().environmentObject(authManager)
+                    }
+                case "add-friend":
+                    BulkUpGround().sheet(isPresented: .constant(true)) {
+                        AddFriendView().environmentObject(authManager)
+                    }
+                case "my-code":
+                    BulkUpGround().sheet(isPresented: .constant(true)) {
+                        MyFriendCodeView().onAppear { FriendsManager.shared.myFriendCode = "K7PM4W2X" }
+                    }
                 case "summary":
                     WorkoutSummaryView(
                         summary: WorkoutSummary(duration: 3140, totalVolume: 6240, totalSets: 18,
@@ -403,6 +446,10 @@ struct DesignPreviewHost: View {
             if screen == "progress" || screen == "progress-free" {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 NotificationCenter.default.post(name: .navigateToProgress, object: nil)
+            }
+            if screen == "profile" || screen == "profile-free" {
+                try? await Task.sleep(nanoseconds: 600_000_000)
+                NotificationCenter.default.post(name: .navigateToProfile, object: nil)
             }
             if screen == "diet" || screen == "diet-detail" || screen == "diet-empty" {
                 try? await Task.sleep(nanoseconds: 600_000_000)

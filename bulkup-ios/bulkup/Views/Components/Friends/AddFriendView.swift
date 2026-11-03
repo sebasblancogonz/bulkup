@@ -2,7 +2,7 @@
 //  AddFriendView.swift
 //  bulkup
 //
-//  Sheet to add a friend by code
+//  Add a friend by their eight-character code.
 //
 
 import SwiftUI
@@ -16,130 +16,127 @@ struct AddFriendView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var success = false
+    @State private var contentHeight: CGFloat = 0
+    @FocusState private var codeFocused: Bool
+
+    private var canAdd: Bool { code.count == 8 && !isLoading && !success }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: Spacing.xxl) {
-                Spacer()
+        ZStack {
+            BulkUpGround()
 
-                VStack(spacing: Spacing.lg) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [BulkUpColors.accent.opacity(0.2), BulkUpColors.accent.opacity(0.05)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 80, height: 80)
-
-                        Image(systemName: "person.badge.plus")
-                            .font(.system(size: 36))
-                            .foregroundColor(BulkUpColors.accentText)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Añadir amigo")
+                            .titleVoice(.title)
+                            .foregroundColor(BulkUpColors.textPrimary)
+                        Spacer(minLength: Spacing.md)
+                        Button { dismiss() } label: {
+                            Text("Cancelar")
+                                .font(.system(.footnote, weight: .semibold))
+                                .foregroundColor(BulkUpColors.textSecondary)
+                                .frame(minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
 
-                    Text("Agregar Amigo")
-                        .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.textPrimary)
-
-                    Text("Ingresa el código de 8 caracteres de tu amigo")
+                    Text("Pídele su código de ocho caracteres; lo tiene en su perfil, en Mi código.")
                         .font(BulkUpFont.body())
                         .foregroundColor(BulkUpColors.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                }
 
-                VStack(spacing: Spacing.lg) {
-                    TextField("CÓDIGO", text: $code)
-                        .font(.system(size: 28, weight: .bold, design: .monospaced))
+                    TextField("ABCD2345", text: $code)
+                        .font(BulkUpFont.mono(28, weight: .semibold, relativeTo: .largeTitle))
+                        .foregroundColor(BulkUpColors.textPrimary)
+                        .tint(BulkUpColors.accentText)
                         .tracking(4)
                         .multilineTextAlignment(.center)
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
-                        .padding(.vertical, Spacing.lg)
-                        .padding(.horizontal, Spacing.xl)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.large)
-                                .fill(BulkUpColors.surfaceElevated)
+                        .focused($codeFocused)
+                        .frame(minHeight: 64)
+                        .background(BulkUpColors.surfaceElevated)
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                                .strokeBorder(BulkUpColors.accent, lineWidth: codeFocused ? 1.5 : 0)
                         )
+                        .accessibilityLabel("Código de amigo")
                         .onChange(of: code) { _, newValue in
-                            let filtered = String(newValue.uppercased().prefix(8))
-                            if filtered != newValue {
-                                code = filtered
-                            }
+                            let filtered = String(newValue.uppercased().filter { $0.isLetter || $0.isNumber }.prefix(8))
+                            if filtered != newValue { code = filtered }
                             errorMessage = nil
                         }
 
-                    if let error = errorMessage {
-                        Text(error)
+                    if let errorMessage {
+                        Text(errorMessage)
                             .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.error)
+                            .foregroundColor(BulkUpColors.warning)
                     }
 
                     if success {
                         HStack(spacing: Spacing.sm) {
-                            Image(systemName: "checkmark.circle.fill")
-                            Text("Amigo agregado exitosamente")
-                        }
-                        .font(BulkUpFont.body())
-                        .foregroundColor(BulkUpColors.success)
-                    }
-
-                    Button {
-                        addFriend()
-                    } label: {
-                        HStack(spacing: Spacing.sm) {
-                            if isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                            } else {
-                                Image(systemName: "person.badge.plus")
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .fill(BulkUpColors.complete)
+                                    .frame(width: 22, height: 22)
+                                Image(systemName: "checkmark")
+                                    .font(.system(.caption2, weight: .bold))
+                                    .foregroundColor(Color.onFill(BulkUpColors.complete))
                             }
-                            Text(isLoading ? "Agregando..." : "Agregar Amigo")
-                                .fontWeight(.semibold)
+                            Text("Ya sois amigos.")
+                                .font(BulkUpFont.body())
+                                .foregroundColor(BulkUpColors.textPrimary)
                         }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .background(code.count == 8 && !isLoading ? BulkUpColors.accent : BulkUpColors.textTertiary)
-                        .foregroundColor(Color.onFill(code.count == 8 && !isLoading ? BulkUpColors.accent : BulkUpColors.textTertiary))
-                        .cornerRadius(CornerRadius.medium)
+                        .transition(.opacity)
                     }
-                    .disabled(code.count != 8 || isLoading)
-                }
-                .padding(.horizontal, 24)
 
-                Spacer()
-            }
-            .padding()
-            .background(BulkUpColors.background.ignoresSafeArea())
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancelar") {
-                        dismiss()
+                    Button { addFriend() } label: {
+                        HStack(spacing: Spacing.sm) {
+                            if isLoading { ProgressView().tint(BulkUpColors.onAccent) }
+                            Text(isLoading ? "Añadiendo…" : "Añadir")
+                                .font(.system(.headline, weight: .semibold))
+                        }
+                        .foregroundColor(BulkUpColors.onAccent)
+                        .frame(maxWidth: .infinity, minHeight: 54)
+                        .background(BulkUpColors.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
                     }
+                    .buttonStyle(.plain)
+                    .pressable()
+                    .disabled(!canAdd)
+                    .opacity(canAdd ? 1 : 0.5)
                 }
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.sm)
+                .measureHeight($contentHeight)
             }
+            .scrollDismissesKeyboard(.interactively)
         }
-        .presentationDetents([.medium])
+        .presentationDetents(contentHeight > 0 ? [.height(contentHeight), .large] : [.medium, .large])
+        .presentationDragIndicator(.visible)
+        .presentationBackground(BulkUpColors.background)
+        .onAppear { codeFocused = true }
     }
 
     private func addFriend() {
         guard let userId = authManager.user?.id else { return }
         isLoading = true
         errorMessage = nil
+        codeFocused = false
 
         Task {
             let result = await friendsManager.addFriend(userId: userId, code: code)
             isLoading = false
             if result {
-                success = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    dismiss()
-                }
+                withAnimation(.easeOut(duration: 0.2)) { success = true }
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                dismiss()
             } else {
-                errorMessage = friendsManager.errorMessage ?? NSLocalizedString("Error al agregar amigo", comment: "")
+                errorMessage = friendsManager.errorMessage ?? NSLocalizedString("Código inválido o ya sois amigos", comment: "")
             }
         }
     }

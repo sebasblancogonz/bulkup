@@ -165,6 +165,7 @@ class User {
         self.dateOfBirth = profile.dateOfBirth
         self.profileImageURL = profile.profileImageURL?.replacingOccurrences(of: "http://", with: "https://")
         self.nextReviewDate = profile.nextReviewDate
+        self.createdAt = profile.createdAt
         self.updatedAt = profile.updatedAt
     }
 
@@ -174,6 +175,7 @@ class User {
         self.dateOfBirth = auth.dateOfBirth
         self.profileImageURL = auth.profileImageURL?.replacingOccurrences(of: "http://", with: "https://")
         self.token = auth.token
+        self.createdAt = auth.createdAt
         self.updatedAt = Date()
     }
 }
