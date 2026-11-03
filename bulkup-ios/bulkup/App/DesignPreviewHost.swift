@@ -246,9 +246,12 @@ struct LiveActivityPreview: View {
                     .font(.system(size: 84, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.9))
                     .padding(.top, 60)
+                // Clip the card at its own height (the system rounds the real card
+                // itself); the 160pt cap is the lock screen's, checked by eye.
                 WorkoutActivityCard(state: state)
-                    .frame(maxHeight: 160)
+                    .fixedSize(horizontal: false, vertical: true)
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .frame(maxHeight: 160, alignment: .top)
                     .padding(.horizontal, 14)
                 Spacer()
             }
