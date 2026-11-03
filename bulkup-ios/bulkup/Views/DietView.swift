@@ -35,6 +35,10 @@ struct DietView: View {
                 multiDayContent
             }
         }
+        // The page container keeps its pages inside the safe area, so the meal
+        // list stopped above the floating tab bar instead of scrolling under it
+        // like Entreno. Each page already pads its own bottom.
+        .ignoresSafeArea(.container, edges: .bottom)
         .onAppear {
             clampDayIndex()
             loadTrackingForCurrentDay()
@@ -49,26 +53,30 @@ struct DietView: View {
                 dayStrip
                     .padding(.horizontal, Spacing.screenH)
                     .padding(.bottom, Spacing.md)
-            }
 
-            TabView(selection: $currentDayIndex) {
-                ForEach(Array(dietManager.dietData.enumerated()), id: \.offset) { index, day in
-                    dayPage(day, index: index)
-                        .tag(index)
+                TabView(selection: $currentDayIndex) {
+                    ForEach(Array(dietManager.dietData.enumerated()), id: \.offset) { index, day in
+                        dayPage(day, index: index)
+                            .tag(index)
+                    }
                 }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .onChange(of: currentDayIndex) { _, newIndex in
+                    guard !dietManager.dietData.isEmpty else { return }
+                    let clamped = min(max(newIndex, 0), dietManager.dietData.count - 1)
+                    if clamped != newIndex { currentDayIndex = clamped }
+                    expandedMeals = []
+                    loadTrackingForCurrentDay()
+                }
+            } else {
+                // One day needs no pager, and a single-page pager that extends
+                // under the tab bar hides the day header.
+                dayPage(dietManager.dietData[0], index: 0)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .onChange(of: currentDayIndex) { _, newIndex in
-                guard !dietManager.dietData.isEmpty else { return }
-                let clamped = min(max(newIndex, 0), dietManager.dietData.count - 1)
-                if clamped != newIndex { currentDayIndex = clamped }
-                expandedMeals = []
-                loadTrackingForCurrentDay()
-            }
-            .onChange(of: dietManager.dietData) { _, _ in
-                clampDayIndex()
-                expandedMeals = []
-            }
+        }
+        .onChange(of: dietManager.dietData) { _, _ in
+            clampDayIndex()
+            expandedMeals = []
         }
     }
 

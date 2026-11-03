@@ -178,7 +178,6 @@ struct TrainingView: View {
                 mainContentView
             }
         }
-        .background(BulkUpGround())
         .onAppear {
             if trainingManager.trainingData.isEmpty
                 && !trainingManager.isLoading

@@ -97,6 +97,7 @@ struct TrainingHubView: View {
             }
 
         }
+        .background(BulkUpGround())
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingTemplateWizard) {
@@ -202,7 +203,6 @@ struct TrainingHubView: View {
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.sm)
         .padding(.top, Spacing.md)
-        .background(BulkUpColors.background)
     }
 
     // MARK: - Actions (from the sheet and the empty hub)
@@ -258,7 +258,6 @@ struct TrainingPlanLibraryView: View {
                 plansList
             }
         }
-        .background(BulkUpColors.background)
         .onAppear {
             loadTrainingPlans()
         }
