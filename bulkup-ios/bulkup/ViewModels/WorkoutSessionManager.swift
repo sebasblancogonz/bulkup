@@ -870,7 +870,8 @@ class WorkoutSessionManager: ObservableObject {
 
     // MARK: - Rest Timer
 
-    func startRestTimer(seconds: Int, nextSetInfo: String?, showSheet: Bool = true) {
+    /// Rest shows as the pinned banner by default; the sheet opens on tap.
+    func startRestTimer(seconds: Int, nextSetInfo: String?, showSheet: Bool = false) {
         restTimer?.cancel()
         restTimerTotal = seconds
         restTimerRemaining = seconds
@@ -905,7 +906,8 @@ class WorkoutSessionManager: ObservableObject {
         restTimer?.cancel()
         restEndTime = nil
         if haptic {
-            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            // End of rest is a "go", not a warning.
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
         }
     }
 

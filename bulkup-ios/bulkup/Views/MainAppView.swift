@@ -64,6 +64,7 @@ struct MainAppView: View {
     @State private var selectedTab: AppTab = .today
     @State private var showingNotifications = false
     @State private var showWorkoutMenu = false
+    @State private var showDiscardConfirm = false
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
@@ -200,6 +201,12 @@ struct MainAppView: View {
             .padding(.bottom, 16)
         }
         .padding(.horizontal, Spacing.screenH)
+        .alert("¿Descartar entreno?", isPresented: $showDiscardConfirm) {
+            Button("Descartar", role: .destructive) { workoutSession.discardWorkout() }
+            Button("Cancelar", role: .cancel) {}
+        } message: {
+            Text("Se perderá todo el progreso de esta sesión.")
+        }
     }
 
     /// Isolated so the 1 Hz elapsed tick re-renders only this label,
@@ -265,7 +272,7 @@ struct MainAppView: View {
                 color: BulkUpColors.error
             ) {
                 closeMenu()
-                workoutSession.discardWorkout()
+                showDiscardConfirm = true
             }
         }
         .padding(.bottom, Spacing.sm)

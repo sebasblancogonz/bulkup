@@ -29,7 +29,7 @@ struct MealCardView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             collapsedRow
 
             if isExpanded {
@@ -117,7 +117,7 @@ struct MealCardView: View {
                     }
 
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(.caption2, weight: .semibold))
                         .foregroundColor(BulkUpColors.textTertiary)
                         .frame(width: 24, height: 24)
                 }
@@ -181,6 +181,7 @@ struct MealCardView: View {
                 .onAppear { trackingNotes = record.notes ?? "" }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.leading, trackingRecord != nil ? Spacing.md + 26 + Spacing.md : Spacing.md)
         .padding(.trailing, Spacing.md)
         .padding(.bottom, Spacing.md)

@@ -346,8 +346,11 @@ The instrument of the app (`ExerciseCardView.swift`). Columns SERIE / KG / REPS 
 - **Context menu:** record / view video and remove set live behind a long press; a sky `video.fill` glyph marks a row that has one.
 - **Completion:** success notification haptic; rest starts.
 
+### Session Finish (signature)
+`TrainingView.swift` `finishButton`, pinned as a bottom safe-area inset for the whole session over a 28pt fade into the ground. Quiet while exercises remain: `surfaceElevated` slab, SF headline, "Finalizar entreno", and a confirmation that counts what is left ("Quedan 2 ejercicios sin terminar"). The moment the last non-skipped exercise is checked it springs (0.35s / 0.85) to lime with "Todo hecho · finalizar entreno" and a success haptic, and finishes in one tap. Pause keeps only Pausar / Descartar; Descartar always confirms, from the header and from the floating menu alike. Rest shows as the pinned banner by default; the sheet opens on tap; the end of rest is a success haptic, not a warning.
+
 ### Rest Timer (signature)
-Sheet on surface: "Descanso" in 15pt semibold secondary, countdown in JetBrains Mono 64 semibold with `numericText` transition, a 4pt rule in line that drains lime linearly over the rest, "Siguiente 3 · 62,5 kg × 8" in SF numeric, then outline "Saltar" and secondary "+30 s". Banner variant when dismissed: raised 12pt slab with lift, timer glyph in lime-text, 17pt mono time, native `ProgressView` tinted lime, "Saltar" and "+30 s" as 13pt text buttons.
+Sheet on surface: "Descanso" in 15pt semibold secondary, countdown in JetBrains Mono 64 semibold with `numericText` transition, a 4pt rule in line that drains lime linearly over the rest, "Siguiente 3 · 62,5 kg × 8" in SF numeric, then outline "Saltar" and secondary "+30 s". Banner (the default while resting): raised 12pt slab with lift, timer glyph in lime-text, 17pt mono time, native `ProgressView` tinted lime, "Saltar" and "+30 s" as 13pt text buttons.
 
 ### Workout Summary (signature)
 Delta-first peak-end on a flat ground with a lime 16 % → 0 % vertical glow over the top 420pt. A 56pt sky square with a graphite check springs in (0.5s / 0.6), the rest fades and rises in at 0.5s / 0.85 after a 0.35s delay, and a success haptic fires on appear. Order: done mark, "ENTRENO COMPLETADO" poster, the volume in mono 44, the delta sentence in SF title3 semibold (lime-text when improved, secondary otherwise), the stats strip, then "Guardar y salir" (primary) and a secondary.

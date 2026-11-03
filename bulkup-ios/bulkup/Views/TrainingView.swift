@@ -10,6 +10,7 @@ struct TrainingView: View {
     @State private var selectedDay = ""
     @State private var expandedDay: Int? = nil
     @State private var expandedExercises: Set<String> = []
+    @State private var showFinishConfirm = false
     @State private var currentDayIndex = 0
 
     // Date navigation
@@ -204,6 +205,7 @@ struct TrainingView: View {
             #if DEBUG
             if DesignPreview.isActive { expandFirstIncomplete() }
             #endif
+            consumePendingExercise()
         }
         // A session restored after process death keeps its own day (e.g. the user
         // was doing yesterday's workout). currentDate resets to today on relaunch,
@@ -267,6 +269,11 @@ struct TrainingView: View {
             if workoutSession.isActive {
                 finishWorkoutSession()
             }
+        }
+        // Hoy asks for a specific exercise card: consume the intent whenever it
+        // changes while on screen, and on appear for a cold tab.
+        .onReceive(trainingManager.$pendingExerciseToOpen) { _ in
+            consumePendingExercise()
         }
         // Exercise progress navigation (driven by the visible "Ver progreso" button in ExerciseCardView)
         .navigationDestination(item: $progressExercise) { selection in
@@ -426,6 +433,13 @@ struct TrainingView: View {
                 .toolbar(.hidden, for: .navigationBar)
                 // Rest countdown stays pinned on top while the sheet is dismissed,
                 // so it survives scrolling through the exercise list.
+                // The way out of a session is always on screen: quiet while
+                // sets remain, lime the moment the last one is checked.
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    if workoutSession.isActive, !workoutSession.showSummary {
+                        finishButton
+                    }
+                }
                 .safeAreaInset(edge: .top, spacing: 0) {
                     if workoutSession.isActive, workoutSession.restTimerActive,
                        !workoutSession.restSheetVisible {
@@ -576,6 +590,79 @@ struct TrainingView: View {
         .lift(stroke: BulkUpColors.complete.opacity(0.6))
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.md)
+    }
+
+    // MARK: - Finish (always visible during a session)
+
+    /// Exercises of the session's day still to do (skipped ones don't count).
+    private var pendingExerciseCount: Int {
+        guard let trainingDay = workoutSession.currentDayName ?? currentTrainingDay,
+              let dayData = trainingManager.trainingData.first(where: { $0.day == trainingDay }) else { return 0 }
+        let normalizedDay = dayData.day.lowercased().folding(options: .diacriticInsensitive, locale: .current)
+        return dayData.exercises.filter { ex in
+            if workoutSession.isExerciseSkipped(day: normalizedDay, exerciseIndex: ex.orderIndex) { return false }
+            let total = trainingManager.effectiveSets(for: ex, day: normalizedDay)
+            return !workoutSession.isExerciseComplete(day: normalizedDay, exerciseIndex: ex.orderIndex, totalSets: total)
+        }.count
+    }
+
+    private var finishButton: some View {
+        let done = pendingExerciseCount == 0
+        return Button {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            if done { finishWorkoutSession() } else { showFinishConfirm = true }
+        } label: {
+            Text(done ? LocalizedStringKey("Todo hecho · finalizar entreno") : LocalizedStringKey("Finalizar entreno"))
+                .font(.system(.headline, weight: .semibold))
+                .foregroundColor(done ? BulkUpColors.onAccent : BulkUpColors.textPrimary)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 54)
+                .background(done ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                .lift(CornerRadius.medium)
+                .contentTransition(.opacity)
+        }
+        .pressable()
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: done)
+        .onChange(of: done) { _, now in
+            if now { UINotificationFeedbackGenerator().notificationOccurred(.success) }
+        }
+        .padding(.horizontal, Spacing.screenH)
+        .padding(.top, Spacing.sm)
+        .padding(.bottom, Spacing.sm)
+        // The list fades out under the button instead of showing through it.
+        .background {
+            VStack(spacing: 0) {
+                LinearGradient(colors: [.clear, BulkUpColors.background], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 28)
+                BulkUpColors.background
+            }
+            .padding(.top, -28)
+            .ignoresSafeArea(edges: .bottom)
+            .allowsHitTesting(false)
+        }
+        .confirmationDialog("Finalizar entreno", isPresented: $showFinishConfirm, titleVisibility: .visible) {
+            Button("Finalizar igualmente") { finishWorkoutSession() }
+            Button("Cancelar", role: .cancel) {}
+        } message: {
+            Text(String(format: NSLocalizedString("Quedan %lld ejercicios sin terminar", comment: ""), pendingExerciseCount))
+        }
+    }
+
+    /// Open the exercise card Hoy asked for (today's day), then clear the intent.
+    private func consumePendingExercise() {
+        guard let pending = trainingManager.pendingExerciseToOpen else { return }
+        trainingManager.pendingExerciseToOpen = nil
+        currentDate = Date()
+        viewMode = .day
+        guard let dayData = trainingManager.trainingData.first(where: { $0.day == pending.day }),
+              let exercise = dayData.exercises.first(where: { $0.orderIndex == pending.orderIndex }) else {
+            expandFirstIncomplete()
+            return
+        }
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
+            expandedExercises.insert(exerciseRowId(exercise, day: pending.day))
+        }
     }
 
     private func expandFirstIncomplete() {

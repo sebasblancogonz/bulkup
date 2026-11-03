@@ -520,6 +520,8 @@ class TrainingManager: ObservableObject {
     /// Key: "planId|week|foldedDay|exerciseIndex" → delta (negative allowed;
     /// the effective count never drops below 1). Persisted in UserDefaults.
     @Published private(set) var setCountDeltas: [String: Int] = TrainingManager.loadSetCountDeltas()
+    /// Hoy asks Entreno to open one exercise card; Entreno consumes it on appear.
+    @Published var pendingExerciseToOpen: (day: String, orderIndex: Int)?
 
     private static let setCountDeltasKey = "setCountDeltas"
 

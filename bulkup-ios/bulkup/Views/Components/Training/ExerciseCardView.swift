@@ -820,7 +820,7 @@ struct ExerciseWeightLogger: View {
         HStack(spacing: 0) {
             Text("SERIE")
                 .frame(width: 44, alignment: .leading)
-            Text("PESO")
+            Text("KG")
                 .frame(width: 64, alignment: .center)
             Text("REPS")
                 .frame(width: 56, alignment: .center)
@@ -979,7 +979,7 @@ struct ExerciseWeightLogger: View {
             )
             weightValue = trainingManager.weights[key] ?? 0
             if weightValue > 0, setIndex < weightTexts.count {
-                weightTexts[setIndex] = formatWeight(weightValue)
+                weightTexts[setIndex] = Self.rawWeightString(weightValue)
             }
         }
         guard !exercise.weightTracking || weightValue > 0 else {
@@ -992,9 +992,12 @@ struct ExerciseWeightLogger: View {
         let nextSetIdx = setIndex + 1
         let nextInfo: String?
         if nextSetIdx < totalSetsCount {
-            let weightStr = safeGetWeightText(nextSetIdx)
+            // Typed kilos first, last session's otherwise; never an empty slot.
+            let typed = Double(safeGetWeightText(nextSetIdx)) ?? 0
+            let kilos = typed > 0 ? typed : (safeGetPrevWeight(nextSetIdx) ?? 0)
+            let weightStr = kilos > 0 ? formatWeight(kilos) : "—"
             let repsStr = safeGetRepsText(nextSetIdx)
-            nextInfo = String(format: NSLocalizedString("Serie %lld · %@kg × %@", comment: ""), nextSetIdx + 1, weightStr, repsStr)
+            nextInfo = String(format: NSLocalizedString("Serie %lld · %@ kg × %@", comment: ""), nextSetIdx + 1, weightStr, repsStr)
         } else {
             nextInfo = nil
         }
@@ -1048,7 +1051,7 @@ struct ExerciseWeightLogger: View {
         guard setIndex < weightTexts.count else { return }
         let current = Double(weightTexts[setIndex]) ?? (safeGetPrevWeight(setIndex) ?? 0)
         let newVal = max(0, current + delta)
-        weightTexts[setIndex] = formatWeight(newVal)
+        weightTexts[setIndex] = Self.rawWeightString(newVal)
         trainingManager.updateWeight(
             day: normalizedDay,
             exerciseIndex: exercise.orderIndex,
@@ -1213,7 +1216,7 @@ struct ExerciseWeightLogger: View {
                 weekStart: currentWeekString
             )
             if let w = trainingManager.weights[key], w > 0 {
-                return formatWeight(w)
+                return Self.rawWeightString(w)
             }
             return ""
         }
@@ -1325,14 +1328,18 @@ struct ExerciseWeightLogger: View {
         Binding(
             get: {
                 guard setIndex < weightTexts.count else { return "" }
-                return weightTexts[setIndex]
+                // Shown with the locale's separator; stored with "." (see set).
+                return weightTexts[setIndex].replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ".")
             },
             set: { newValue in
                 guard setIndex < weightTexts.count else { return }
                 // The decimal pad shows the locale separator (a comma in es),
                 // but Double(_:) only parses ".". Accept the comma and store a
                 // period so the value parses and the field stays consistent.
-                let normalized = newValue.replacingOccurrences(of: ",", with: ".")
+                var normalized = newValue.replacingOccurrences(of: ",", with: ".")
+                if let sep = Locale.current.decimalSeparator, sep != "." {
+                    normalized = normalized.replacingOccurrences(of: sep, with: ".")
+                }
                 weightTexts[setIndex] = normalized
                 let weight = Double(normalized) ?? 0
                 trainingManager.updateWeight(
@@ -1354,7 +1361,7 @@ struct ExerciseWeightLogger: View {
         for i in 0..<totalSetsCount {
             if let prev = safeGetPrevWeight(i), prev > 0,
                i < weightTexts.count, weightTexts[i].isEmpty {
-                weightTexts[i] = formatWeight(prev)
+                weightTexts[i] = Self.rawWeightString(prev)
                 trainingManager.updateWeight(
                     day: normalizedDay,
                     exerciseIndex: exercise.orderIndex,
@@ -1397,8 +1404,33 @@ struct ExerciseWeightLogger: View {
 
     private func formatWeight(_ w: Double) -> String { Self.formatWeightString(w) }
 
+    private static let displayWeightFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.minimumFractionDigits = 0
+        f.maximumFractionDigits = 2
+        f.usesGroupingSeparator = false
+        return f
+    }()
+
+    /// Kilos for the eye: the locale's decimal separator ("62,5" in es).
     static func formatWeightString(_ w: Double) -> String {
-        String(format: "%.1f", w).replacingOccurrences(of: ".0", with: "")
+        displayWeightFormatter.string(from: NSNumber(value: w)) ?? rawWeightString(w)
+    }
+
+    private static let rawWeightFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.numberStyle = .decimal
+        f.minimumFractionDigits = 0
+        f.maximumFractionDigits = 2
+        f.usesGroupingSeparator = false
+        return f
+    }()
+
+    /// Kilos for the model: always "." so `Double(_:)` parses it back.
+    static func rawWeightString(_ w: Double) -> String {
+        rawWeightFormatter.string(from: NSNumber(value: w)) ?? String(format: "%.2f", w)
     }
 
     /// Reps actually logged for this week win over the plan's prescription;
@@ -1415,7 +1447,7 @@ struct ExerciseWeightLogger: View {
     static func mergingEmptyWeights(_ texts: [String], from stored: [Double?]) -> [String] {
         zip(texts, stored).map { text, weight in
             guard text.isEmpty, let w = weight, w > 0 else { return text }
-            return formatWeightString(w)
+            return rawWeightString(w)
         }
     }
 

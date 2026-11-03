@@ -89,7 +89,7 @@ struct DietFidelityView: View {
                         .font(BulkUpFont.numeric(.headline, weight: .semibold))
                         .foregroundColor(fidelityText == "—" ? BulkUpColors.textSecondary : BulkUpColors.accentText)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(.caption, weight: .semibold))
                         .foregroundColor(BulkUpColors.textTertiary)
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }

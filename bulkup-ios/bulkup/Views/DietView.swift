@@ -166,7 +166,7 @@ struct DietView: View {
               if DesignPreview.screen == "diet-detail" {
                   expandedMeals = [sortedMeals.indices.contains(2) ? sortedMeals[2].order : 0]
                   DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                      withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
+                      withAnimation { proxy.scrollTo("meals", anchor: .top) }
                   }
               }
               #endif
@@ -222,6 +222,7 @@ struct DietView: View {
 
     private static let kcalFormatter: NumberFormatter = {
         let f = NumberFormatter()
+        f.locale = LanguageManager.shared.locale
         f.numberStyle = .decimal
         f.maximumFractionDigits = 0
         return f

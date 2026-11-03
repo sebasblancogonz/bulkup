@@ -64,8 +64,10 @@ struct ActiveWorkoutHeader: View {
                     .frame(width: 36, height: 36)
                     .background(session.isPaused ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
-            .accessibilityLabel(session.isPaused ? "Continuar" : "Pausar o finalizar")
+            .accessibilityLabel(session.isPaused ? "Continuar" : "Pausar")
         }
         .padding(.horizontal, Spacing.screenH)
         .padding(.vertical, Spacing.sm)
@@ -82,17 +84,13 @@ struct ActiveWorkoutHeader: View {
                 }
             }
 
-            Button("Finalizar entreno") {
-                onFinish()
-            }
-
             Button("Descartar", role: .destructive) {
                 showDiscardConfirm = true
             }
 
             Button("Cancelar", role: .cancel) {}
         }
-        .alert("Descartar entreno?", isPresented: $showDiscardConfirm) {
+        .alert("¿Descartar entreno?", isPresented: $showDiscardConfirm) {
             Button("Descartar", role: .destructive) {
                 onDiscard()
             }

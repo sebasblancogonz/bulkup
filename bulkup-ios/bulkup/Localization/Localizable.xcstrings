@@ -4366,6 +4366,16 @@
         }
       }
     },
+    "Finalizar igualmente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish anyway"
+          }
+        }
+      }
+    },
     "Foto de tu dieta" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7058,6 +7068,16 @@
         }
       }
     },
+    "Quedan %lld ejercicios sin terminar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld exercises still unfinished"
+          }
+        }
+      }
+    },
     "Quitar serie" : {
       "localizations" : {
         "en" : {
@@ -7866,6 +7886,16 @@
         }
       }
     },
+    "Serie %lld · %@ kg × %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set %lld · %@ kg × %@"
+          }
+        }
+      }
+    },
     "Serie %lld · %@kg × %@" : {
       "localizations" : {
         "en" : {
@@ -8497,6 +8527,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tap to get started"
+          }
+        }
+      }
+    },
+    "Todo hecho · finalizar entreno" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All done · finish workout"
           }
         }
       }
@@ -9437,6 +9477,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How was the workout?"
+          }
+        }
+      }
+    },
+    "¿Descartar entreno?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard workout?"
           }
         }
       }
