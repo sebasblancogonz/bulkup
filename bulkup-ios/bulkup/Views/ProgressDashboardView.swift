@@ -2,7 +2,8 @@
 //  ProgressDashboardView.swift
 //  bulkup
 //
-//  Unified progress dashboard aggregating all user metrics.
+//  Progress: the week as one strip of numbers, then the body, the records and
+//  the ranking as three lifted slabs of rows. Operate, not a scoreboard.
 //
 
 import SwiftUI
@@ -21,77 +22,60 @@ struct ProgressDashboardView: View {
     @State private var showingAddFriend = false
     @State private var showingMyCode = false
     @State private var showingSubscription = false
-    @State private var showingRMTracker = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 36) {
-                    // Hero: three big rings (this week) — Whoop-style
-                    heroRings
-                        .padding(.top, Spacing.lg)
+                VStack(alignment: .leading, spacing: Spacing.sectionGap) {
+                    header
+                    weekStrip
 
-                    // Premium: Body, PR, Friends — quiet minimal cards
                     if storeKit.isSubscribed {
-                        bodyStatsCard
-
-                        personalRecordsCard
-
-                        friendsLeaderboardCard
+                        bodySlab
+                        recordsSlab
+                        rankingSlab
                     } else {
-                        premiumProgressTeaser
+                        lockedSlab
+                        SubscriptionRequiredView(
+                            onSubscribe: { showingSubscription = true },
+                            title: "Cuerpo, récords y ranking",
+                            subtitle: "Medidas corporales, récords personales y ranking con amigos, en el mismo sitio que tu semana.",
+                            features: [
+                                "Seguimiento de composición corporal",
+                                "Récords personales (RM)",
+                                "Ranking y competencia con amigos",
+                            ],
+                            compact: true
+                        )
                     }
                 }
                 .padding(.horizontal, Spacing.screenH)
-                .padding(.top, Spacing.md)
+                .padding(.top, Spacing.sm)
                 .padding(.bottom, Spacing.xl)
             }
-            .background(BulkUpColors.background.ignoresSafeArea())
-            .navigationTitle("Progreso")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if storeKit.isSubscribed {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        HStack(spacing: 12) {
-                            Button(action: { showingMyCode = true }) {
-                                Image(systemName: "person.text.rectangle")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(BulkUpColors.accentText)
-                            }
-                            Button(action: { showingAddFriend = true }) {
-                                Image(systemName: "person.badge.plus")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(BulkUpColors.accentText)
-                            }
-                        }
-                    }
-                }
-            }
+            .background(BulkUpGround())
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingAddFriend) {
-                AddFriendView()
-                    .environmentObject(authManager)
+                AddFriendView().environmentObject(authManager)
             }
             .sheet(isPresented: $showingMyCode) {
                 MyFriendCodeView()
             }
             .sheet(isPresented: $showingSubscription) {
-                SubscriptionView()
-                    .environmentObject(authManager)
+                SubscriptionView().environmentObject(authManager)
             }
-            .task {
-                await loadAllData()
-            }
-            .refreshable {
-                await loadAllData()
-            }
+            .task { await loadAllData() }
+            .refreshable { await loadAllData() }
         }
     }
 
-    // MARK: - Data Loading
+    // MARK: - Data
 
     private func loadAllData() async {
+        #if DEBUG
+        if DesignPreview.isActive { return }
+        #endif
         guard let userId = authManager.user?.id else { return }
-
         await withTaskGroup(of: Void.self) { group in
             group.addTask { await bodyManager.loadLatestMeasurements(userId: userId) }
             group.addTask { await bodyManager.loadMeasurementsHistory(userId: userId) }
@@ -103,706 +87,384 @@ struct ProgressDashboardView: View {
         }
     }
 
-    // MARK: - Hero rings (this week)
+    // MARK: - Header
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Progreso")
+                .titleVoice(.largeTitle)
+                .foregroundColor(BulkUpColors.textPrimary)
+            Text(weekRangeText)
+                .font(BulkUpFont.numeric(.subheadline))
+                .foregroundColor(BulkUpColors.textSecondary)
+        }
+    }
+
+    /// "Semana del 2 al 8 nov"
+    private var weekRangeText: String {
+        var cal = Calendar(identifier: .iso8601)
+        cal.locale = LanguageManager.shared.locale
+        let today = Date()
+        let start = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) ?? today
+        let end = cal.date(byAdding: .day, value: 6, to: start) ?? today
+        let sameMonth = cal.component(.month, from: start) == cal.component(.month, from: end)
+        let day = DateFormatter()
+        day.locale = LanguageManager.shared.locale
+        day.dateFormat = sameMonth ? "d" : "d MMM"
+        let dayMonth = DateFormatter()
+        dayMonth.locale = LanguageManager.shared.locale
+        dayMonth.dateFormat = "d MMM"
+        return String(format: NSLocalizedString("Semana del %@ al %@", comment: ""),
+                      day.string(from: start), dayMonth.string(from: end))
+    }
+
+    // MARK: - This week
 
     private var workoutsTotal: Int { trainingManager.trainingData.count }
     private var workoutsDone: Int { trainingManager.trainingData.filter { isDayCompleted($0) }.count }
     private var streak: Int { friendsManager.myStreak?.currentStreak ?? 0 }
+    private var longestStreak: Int { friendsManager.myStreak?.longestStreak ?? 0 }
 
-    private var heroRings: some View {
-        HStack(alignment: .top, spacing: Spacing.sm) {
-            MetricRing(
-                value: workoutsTotal > 0 ? "\(workoutsDone)/\(workoutsTotal)" : "0",
-                label: "ENTRENOS",
-                progress: workoutsTotal > 0 ? Double(workoutsDone) / Double(workoutsTotal) : 0,
-                dimmed: workoutsTotal == 0
-            )
-            MetricRing(
-                value: weeklyCompliancePercent.map { String(format: "%.0f%%", $0) } ?? "—",
-                label: "DIETA",
-                progress: (weeklyCompliancePercent ?? 0) / 100,
-                dimmed: weeklyCompliancePercent == nil
-            )
-            MetricRing(
+    private var weeklyCompliancePercent: Double? {
+        let expected = DietCompliance.expectedMealsLast7(dietData: dietManager.dietData)
+        return DietCompliance.percent(completedLast7: mealManager.weeklyCompletedMeals, expectedLast7: expected)
+    }
+
+    private var weekStrip: some View {
+        StatsStrip(cells: [
+            StatCell(
+                value: workoutsTotal > 0 ? "\(workoutsDone)/\(workoutsTotal)" : "—",
+                label: "Entrenos",
+                detail: workoutsTotal > 0 ? nil : NSLocalizedString("Sin plan activo", comment: ""),
+                progress: workoutsTotal > 0 ? Double(workoutsDone) / Double(workoutsTotal) : nil
+            ),
+            StatCell(
+                value: weeklyCompliancePercent.map { "\(Int($0.rounded())) %" } ?? "—",
+                label: "Comidas hechas",
+                detail: weeklyCompliancePercent == nil ? NSLocalizedString("Sin plan activo", comment: "") : nil,
+                progress: weeklyCompliancePercent.map { $0 / 100 }
+            ),
+            StatCell(
                 value: "\(streak)",
-                label: "RACHA",
-                progress: min(Double(streak) / 7.0, 1),
-                dimmed: streak == 0
-            )
-        }
-        .frame(maxWidth: .infinity)
+                label: "Días seguidos",
+                detail: longestStreak > streak
+                    ? String(format: NSLocalizedString("Mejor racha %lld", comment: ""), longestStreak)
+                    : (streak > 0 ? NSLocalizedString("Tu mejor racha", comment: "") : nil),
+                progress: longestStreak > 0 ? Double(streak) / Double(longestStreak) : nil
+            ),
+        ])
     }
 
-    // MARK: - Section 1: Weekly Summary
+    // MARK: - Body
 
-    private var weeklySummaryCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack {
-                Image(systemName: "calendar")
-                    .foregroundColor(BulkUpColors.accentText)
-                    .font(BulkUpFont.cardTitle())
-
-                Text("Resumen Semanal")
-                    .sectionHeader()
-
-                Spacer()
-            }
-
-            HStack(spacing: 0) {
-                // Training days
-                VStack(spacing: 4) {
-                    Text(weeklyTrainingText)
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundColor(BulkUpColors.training)
-                    Text("Entrenos")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(BulkUpColors.training.opacity(0.08))
-                .cornerRadius(CornerRadius.small)
-
-                Spacer().frame(width: 8)
-
-                // Meal compliance
-                VStack(spacing: 4) {
-                    Text(weeklyComplianceText)
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundColor(BulkUpColors.diet)
-                    Text("Cumplimiento")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(BulkUpColors.diet.opacity(0.08))
-                .cornerRadius(CornerRadius.small)
-
-                Spacer().frame(width: 8)
-
-                // Streak
-                VStack(spacing: 4) {
-                    HStack(spacing: 3) {
-                        Image(systemName: "flame.fill")
-                            .foregroundColor(BulkUpColors.accentText)
-                            .font(.system(size: 12))
-                        Text("\(friendsManager.myStreak?.currentStreak ?? 0)")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(BulkUpColors.accentText)
-                    }
-                    Text("Racha")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(BulkUpColors.accent.opacity(0.08))
-                .cornerRadius(CornerRadius.small)
-            }
-        }
-        .accentCardStyle(color: BulkUpColors.accent)
-    }
-
-    // MARK: - Premium Teaser
-
-    private var premiumProgressTeaser: some View {
-        VStack(spacing: Spacing.lg) {
-            // Blurred preview of body stats
-            VStack(alignment: .leading, spacing: Spacing.md) {
-                HStack {
-                    Image(systemName: "scalemass.fill")
-                        .foregroundColor(BulkUpColors.training)
-                    Text("Medidas Corporales")
-                        .font(BulkUpFont.cardTitle())
-                        .fontWeight(.bold)
-                        .foregroundColor(BulkUpColors.textPrimary)
-                    Spacer()
-                    Text("PRO")
-                        .font(BulkUpFont.caption())
-                        .fontWeight(.bold)
-                        .foregroundColor(BulkUpColors.onAccent)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(BulkUpColors.secondary)
-                        .cornerRadius(4)
-                }
-
-                HStack(spacing: 0) {
-                    VStack(spacing: 4) {
-                        Text("--.- kg")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(BulkUpColors.training.opacity(0.3))
-                        Text("Peso")
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(BulkUpColors.training.opacity(0.05))
-                    .cornerRadius(CornerRadius.small)
-
-                    Spacer().frame(width: 8)
-
-                    VStack(spacing: 4) {
-                        Text("--.-%")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(BulkUpColors.accent.opacity(0.3))
-                        Text("% Grasa")
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(BulkUpColors.accent.opacity(0.05))
-                    .cornerRadius(CornerRadius.small)
-
-                    Spacer().frame(width: 8)
-
-                    VStack(spacing: 4) {
-                        Text("--.- kg")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(BulkUpColors.success.opacity(0.3))
-                        Text("Masa Magra")
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(BulkUpColors.success.opacity(0.05))
-                    .cornerRadius(CornerRadius.small)
-                }
-            }
-            .cardStyle()
-            .opacity(0.6)
-
-            // Blurred preview of PR
-            VStack(alignment: .leading, spacing: Spacing.md) {
-                HStack {
-                    Image(systemName: "trophy.fill")
-                        .foregroundColor(BulkUpColors.accentText)
-                    Text("Récords Personales")
-                        .font(BulkUpFont.cardTitle())
-                        .fontWeight(.bold)
-                        .foregroundColor(BulkUpColors.textPrimary)
-                    Spacer()
-                    Text("PRO")
-                        .font(BulkUpFont.caption())
-                        .fontWeight(.bold)
-                        .foregroundColor(BulkUpColors.onAccent)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(BulkUpColors.secondary)
-                        .cornerRadius(4)
-                }
-
-                HStack(spacing: 8) {
-                    Image(systemName: "lock.fill")
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .font(BulkUpFont.caption())
-                    Text("Registra y sigue tus PR con PRO")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-            }
-            .cardStyle()
-            .opacity(0.6)
-
-            // Blurred preview of friends
-            VStack(alignment: .leading, spacing: Spacing.md) {
-                HStack {
-                    Image(systemName: "person.2.fill")
-                        .foregroundColor(BulkUpColors.accentText)
-                    Text("Ranking")
-                        .font(BulkUpFont.cardTitle())
-                        .fontWeight(.bold)
-                        .foregroundColor(BulkUpColors.textPrimary)
-                    Spacer()
-                    Text("PRO")
-                        .font(BulkUpFont.caption())
-                        .fontWeight(.bold)
-                        .foregroundColor(BulkUpColors.onAccent)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(BulkUpColors.secondary)
-                        .cornerRadius(4)
-                }
-
-                HStack(spacing: 8) {
-                    Image(systemName: "lock.fill")
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .font(BulkUpFont.caption())
-                    Text("Compite con amigos con PRO")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-            }
-            .cardStyle()
-            .opacity(0.6)
-
-            // CTA
-            SubscriptionRequiredView(
-                onSubscribe: { showingSubscription = true },
-                title: "Desbloquea el Progreso Completo",
-                subtitle: "Medidas corporales, récords personales y ranking con amigos",
-                features: [
-                    "Seguimiento de composición corporal",
-                    "Récords personales (RM)",
-                    "Ranking y competencia con amigos"
-                ],
-                compact: true
-            )
-        }
-    }
-
-    // MARK: - Section 2: Body Stats
-
-    private var bodyStatsCard: some View {
+    private var bodySlab: some View {
         NavigationLink(destination: BodyMeasurementsView().environmentObject(authManager)) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    MicroLabel("Cuerpo")
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                HStack(spacing: Spacing.sm) {
+                    Text("Cuerpo")
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textPrimary)
                     Spacer()
+                    if let m = bodyManager.currentMeasurements {
+                        Text(shortDate(m.fecha))
+                            .font(BulkUpFont.numeric(.footnote))
+                            .foregroundColor(BulkUpColors.textSecondary)
+                    }
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(.caption, weight: .semibold))
                         .foregroundColor(BulkUpColors.textTertiary)
                 }
 
                 if let m = bodyManager.currentMeasurements {
-                    HStack(alignment: .top, spacing: 0) {
-                        bodyStat(value: String(format: "%.1f", m.peso), unit: "kg", label: "Peso", trend: weightTrend)
-                        bodyStat(value: bodyManager.bodyComposition.map { String(format: "%.1f", $0.bodyFatPercentage) } ?? "—", unit: "%", label: "Grasa", trend: bodyFatTrend)
-                        bodyStat(value: bodyManager.bodyComposition.map { String(format: "%.1f", $0.leanMass) } ?? "—", unit: "kg", label: "Masa magra", trend: nil)
-                    }
+                    StatsStrip(cells: [
+                        StatCell(value: BulkUpFormat.decimal(m.peso), unit: "kg", label: "Peso",
+                                 detail: weightTrend.map { BulkUpFormat.signed($0) + " kg" }),
+                        StatCell(value: bodyManager.bodyComposition.map { BulkUpFormat.decimal($0.bodyFatPercentage) } ?? "—",
+                                 unit: "%", label: "Grasa"),
+                        StatCell(value: bodyManager.bodyComposition.map { BulkUpFormat.decimal($0.leanMass) } ?? "—",
+                                 unit: "kg", label: "Masa magra"),
+                    ], bare: true)
+                } else if bodyManager.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.sm)
                 } else {
-                    Text("Agrega tus medidas para ver tu progreso")
+                    Text("Añade tu primera medida y verás aquí peso, grasa y masa magra.")
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .whoopCard()
+            .padding(Spacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .slab()
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
-    private func bodyStat(value: String, unit: String, label: String, trend: Double?) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .firstTextBaseline, spacing: 3) {
-                Text(value)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+    // MARK: - Records
+
+    private var recentRecords: [PersonalRecord] {
+        Array(rmManager.bestRecords.sorted { $0.dateValue > $1.dateValue }.prefix(3))
+    }
+
+    private var recordsSlab: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("Récords")
+                    .font(BulkUpFont.cardTitle())
                     .foregroundColor(BulkUpColors.textPrimary)
-                Text(unit)
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
-                if let trend, trend != 0 {
-                    Image(systemName: trend > 0 ? "arrow.up" : "arrow.down")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(trend < 0 ? BulkUpColors.accent : BulkUpColors.textTertiary)
-                }
-            }
-            Text(LocalizedStringKey(label))
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(BulkUpColors.textSecondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Section 3: Training Progress
-
-    private var trainingProgressCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack {
-                Image(systemName: "dumbbell.fill")
-                    .foregroundColor(BulkUpColors.training)
-
-                Text("Entrenamiento")
-                    .sectionHeader()
-
                 Spacer()
-            }
-
-            if !trainingManager.trainingData.isEmpty {
-                // Active plan name
-                if let firstDay = trainingManager.trainingData.first,
-                   let _ = firstDay.planId {
-                    Text("Plan activo")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-
-                // This week's days
-                let weekDays = trainingManager.trainingData
-                HStack(spacing: 6) {
-                    ForEach(weekDays, id: \.day) { day in
-                        let isDone = isDayCompleted(day)
-                        VStack(spacing: 4) {
-                            Image(systemName: isDone ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(isDone ? BulkUpColors.success : BulkUpColors.textTertiary)
-                                .font(.system(size: 16))
-                            Text(dayAbbreviation(day.day))
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(isDone ? BulkUpColors.textPrimary : BulkUpColors.textSecondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                }
-
-                // Streak
-                HStack(spacing: 6) {
-                    Image(systemName: "flame.fill")
-                        .foregroundColor(BulkUpColors.accentText)
-                        .font(BulkUpFont.caption())
-                    Text(String(format: NSLocalizedString("Racha actual: %lld días", comment: ""), friendsManager.myStreak?.currentStreak ?? 0))
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-            } else {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .font(BulkUpFont.caption())
-                    Text("No hay plan de entrenamiento activo")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-            }
-        }
-        .cardStyle()
-    }
-
-    // MARK: - Section 4: Meal Compliance
-
-    /// Weekly compliance: meals completed in the last 7 days vs. meals the active
-    /// plan expects over those 7 days (single-template plans apply every day).
-    /// nil when the plan expects no measurable meals → UI shows "—".
-    private var weeklyCompliancePercent: Double? {
-        let expected = DietCompliance.expectedMealsLast7(dietData: dietManager.dietData)
-        return DietCompliance.percent(
-            completedLast7: mealManager.weeklyCompletedMeals,
-            expectedLast7: expected
-        )
-    }
-
-    private var mealComplianceCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack {
-                Image(systemName: "fork.knife")
-                    .foregroundColor(BulkUpColors.diet)
-
-                Text("Alimentacion")
-                    .sectionHeader()
-
-                Spacer()
-            }
-
-            if let stats = mealManager.complianceStats {
-                HStack(spacing: 0) {
-                    // Today
-                    VStack(spacing: 4) {
-                        Text(mealManager.todayComplianceSummary)
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(BulkUpColors.diet)
-                        Text("Hoy")
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(BulkUpColors.diet.opacity(0.08))
-                    .cornerRadius(CornerRadius.small)
-
-                    Spacer().frame(width: 8)
-
-                    // Weekly compliance (meals done vs. meals the plan expects over 7 days)
-                    let weekly = weeklyCompliancePercent
-                    let weeklyColor = (weekly ?? 0) >= 80 ? BulkUpColors.success : BulkUpColors.warning
-                    VStack(spacing: 4) {
-                        Text(weekly.map { String(format: "%.0f%%", $0) } ?? "—")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(weekly == nil ? BulkUpColors.textSecondary : weeklyColor)
-                        Text("Semanal")
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background((weekly == nil ? BulkUpColors.textSecondary : weeklyColor).opacity(0.08))
-                    .cornerRadius(CornerRadius.small)
-
-                    Spacer().frame(width: 8)
-
-                    // Streak
-                    VStack(spacing: 4) {
-                        HStack(spacing: 3) {
-                            Image(systemName: "flame.fill")
-                                .foregroundColor(BulkUpColors.accentText)
-                                .font(.system(size: 12))
-                            Text("\(stats.currentStreak)")
-                                .font(.system(size: 15, weight: .bold, design: .rounded))
-                                .foregroundColor(BulkUpColors.accentText)
-                        }
-                        Text("Racha")
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(BulkUpColors.accent.opacity(0.08))
-                    .cornerRadius(CornerRadius.small)
-                }
-            } else if !dietManager.dietData.isEmpty {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .font(BulkUpFont.caption())
-                    Text("Marca tus comidas para ver estadísticas de cumplimiento")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-            } else {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .font(BulkUpFont.caption())
-                    Text("No hay plan de dieta activo")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-            }
-        }
-        .cardStyle()
-    }
-
-    // MARK: - Section 5: Personal Records
-
-    private var personalRecordsCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack {
-                MicroLabel("Récords Personales")
-
-                Spacer()
-
-                Button { showingRMTracker = true } label: {
+                NavigationLink(destination: RMTrackerView().environmentObject(authManager)) {
                     Text(rmManager.bestRecords.isEmpty ? "Registrar" : "Ver todos")
-                        .font(BulkUpFont.caption())
+                        .font(.system(.footnote, weight: .semibold))
                         .foregroundColor(BulkUpColors.accentText)
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.xs)
 
-            if rmManager.bestRecords.isEmpty {
-                Button { showingRMTracker = true } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "plus.circle")
-                            .foregroundColor(BulkUpColors.accentText)
-                            .font(BulkUpFont.caption())
-                        Text("Registra tus levantamientos")
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
-                        Spacer()
+            if rmManager.isLoading && rmManager.bestRecords.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.md)
+            } else if recentRecords.isEmpty {
+                NavigationLink(destination: RMTrackerView().environmentObject(authManager)) {
+                    SlabRow(showsSeparator: false) {
+                        HStack {
+                            Text("Registra tu primer récord")
+                                .font(BulkUpFont.body())
+                                .foregroundColor(BulkUpColors.textPrimary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(.caption, weight: .semibold))
+                                .foregroundColor(BulkUpColors.textTertiary)
+                        }
                     }
-                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             } else {
-                let recentRecords = Array(
-                    rmManager.bestRecords
-                        .sorted { $0.dateValue > $1.dateValue }
-                        .prefix(3)
-                )
-
-                ForEach(recentRecords) { record in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(exerciseName(for: record.exerciseId))
-                                .font(BulkUpFont.body())
-                                .foregroundColor(BulkUpColors.textPrimary)
-                                .lineLimit(1)
-                            Text(formatRecordDate(record.date))
-                                .font(BulkUpFont.caption())
-                                .foregroundColor(BulkUpColors.textSecondary)
+                ForEach(Array(recentRecords.enumerated()), id: \.element.id) { i, record in
+                    SlabRow(showsSeparator: i < recentRecords.count - 1) {
+                        HStack(alignment: .center, spacing: Spacing.sm) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(exerciseName(for: record.exerciseId))
+                                    .font(.system(.subheadline, weight: .semibold))
+                                    .foregroundColor(BulkUpColors.textPrimary)
+                                    .lineLimit(1)
+                                Text(formatRecordDate(record.date))
+                                    .font(BulkUpFont.numeric(.footnote))
+                                    .foregroundColor(BulkUpColors.textSecondary)
+                            }
+                            Spacer(minLength: Spacing.sm)
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("\(BulkUpFormat.decimal(record.weight)) kg × \(record.reps)")
+                                    .font(BulkUpFont.mono(17, weight: .semibold))
+                                    .foregroundColor(BulkUpColors.textPrimary)
+                                    .lineLimit(1)
+                                if let rm = RMCalculator.calculateHybridRM(weight: record.weight, reps: record.reps) {
+                                    Text("1RM \(BulkUpFormat.decimal(rm, fraction: 0)) kg")
+                                        .font(BulkUpFont.numeric(.footnote))
+                                        .foregroundColor(BulkUpColors.textSecondary)
+                                }
+                            }
                         }
-
-                        Spacer()
-
-                        Text(String(format: "%.1f kg", record.weight))
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(BulkUpColors.accentText)
-                    }
-                    .padding(.vertical, 4)
-
-                    if record.id != recentRecords.last?.id {
-                        Divider()
                     }
                 }
             }
         }
-        .whoopCard()
-        .sheet(isPresented: $showingRMTracker) {
-            RMTrackerView()
-                .environmentObject(authManager)
-        }
+        .slab()
     }
 
-    // MARK: - Section 6: Friends & Leaderboard
+    // MARK: - Ranking
 
-    private var friendsLeaderboardCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
+    private var rankingSlab: some View {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
-                MicroLabel("Ranking")
+                Text("Ranking")
+                    .font(BulkUpFont.cardTitle())
+                    .foregroundColor(BulkUpColors.textPrimary)
                 Spacer()
-            }
-
-            if friendsManager.isLoading {
-                HStack {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
+                if !friendsManager.friends.isEmpty {
+                    Text("Días seguidos")
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textTertiary)
                 }
-                .padding(.vertical, 20)
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.md)
+            .padding(.bottom, Spacing.sm)
+
+            if friendsManager.isLoading && friendsManager.friends.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.lg)
             } else if friendsManager.friends.isEmpty {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(BulkUpColors.textSecondary)
-                        .font(BulkUpFont.caption())
-                    Text("Agrega amigos para ver el ranking")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                }
-
-                HStack(spacing: 12) {
-                    Button(action: { showingMyCode = true }) {
-                        Label("Mi Código", systemImage: "person.text.rectangle")
-                            .font(BulkUpFont.dataLabel())
-                            .foregroundColor(BulkUpColors.accentText)
-                    }
-
-                    Button(action: { showingAddFriend = true }) {
-                        Label("Agregar", systemImage: "person.badge.plus")
-                            .font(BulkUpFont.dataLabel())
-                            .foregroundColor(BulkUpColors.accentText)
-                    }
-                }
-                .padding(.top, 4)
-            } else {
-                // My entry
-                if let myStreak = friendsManager.myStreak {
-                    compactLeaderboardRow(
-                        rank: calculateMyRank(),
-                        name: authManager.user?.name ?? "Yo",
-                        imageURL: authManager.user?.safeProfileImageURL,
-                        streak: myStreak.currentStreak,
-                        isMe: true
-                    )
-                }
-
-                // Top 5 friends
-                let topFriends = Array(friendsManager.friends.prefix(5))
-                ForEach(Array(topFriends.enumerated()), id: \.element.id) { index, friend in
-                    compactLeaderboardRow(
-                        rank: calculateFriendRank(index: index),
-                        name: friend.name,
-                        imageURL: friend.profileImageURL,
-                        streak: friend.currentStreak,
-                        isMe: false
-                    )
-                }
-
-                if friendsManager.friends.count > 5 {
-                    HStack {
-                        Spacer()
-                        Text("Ver leaderboard completo")
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.accentText)
-                        Spacer()
-                    }
-                    .padding(.top, 4)
-                }
-            }
-        }
-        .whoopCard()
-    }
-
-    // MARK: - Compact Leaderboard Row
-
-    private func compactLeaderboardRow(rank: Int, name: String, imageURL: String?, streak: Int, isMe: Bool) -> some View {
-        HStack(spacing: 10) {
-            Text("#\(rank)")
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundColor(rank <= 3 ? BulkUpColors.accent : BulkUpColors.textSecondary)
-                .frame(width: 28)
-
-            if let urlString = imageURL, let url = URL(string: urlString) {
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    avatarPlaceholder(name: name)
-                }
-                .frame(width: 28, height: 28)
-                .clipShape(Circle())
-            } else {
-                avatarPlaceholder(name: name)
-            }
-
-            Text(name)
-                .font(BulkUpFont.body())
-                .fontWeight(isMe ? .bold : .medium)
-                .foregroundColor(BulkUpColors.textPrimary)
-                .lineLimit(1)
-
-            if isMe {
-                Text("(tu)")
+                Text("Añade amigos para ver quién lleva más días seguidos.")
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.bottom, Spacing.sm)
+            } else {
+                let rows = leaderboardRows
+                ForEach(Array(rows.enumerated()), id: \.element.id) { i, row in
+                    leaderboardRow(row, showsSeparator: i < rows.count - 1)
+                }
             }
 
-            Spacer()
+            // Footer links, in the row grammar of the exercise card.
+            HStack(spacing: Spacing.md) {
+                Button { showingMyCode = true } label: {
+                    Text("Mi código")
+                        .font(.system(.footnote, weight: .semibold))
+                        .foregroundColor(BulkUpColors.accentText)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                Button { showingAddFriend = true } label: {
+                    Text("Añadir amigo")
+                        .font(.system(.footnote, weight: .semibold))
+                        .foregroundColor(BulkUpColors.accentText)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.md)
+            .overlay(alignment: .top) {
+                Rectangle().fill(BulkUpColors.line).frame(height: 1).padding(.leading, Spacing.md)
+            }
+        }
+        .slab()
+    }
 
-            HStack(spacing: 3) {
-                Image(systemName: "flame.fill")
-                    .foregroundColor(streak > 0 ? BulkUpColors.accent : BulkUpColors.textTertiary)
-                    .font(.system(size: 11))
-                Text("\(streak)")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
+    private struct LeaderboardRow: Identifiable {
+        let id: String
+        let rank: Int
+        let name: String
+        let imageURL: String?
+        let streak: Int
+        let isMe: Bool
+    }
+
+    /// Me plus the top five friends, sorted by streak, ranks shared on ties.
+    private var leaderboardRows: [LeaderboardRow] {
+        var all: [LeaderboardRow] = friendsManager.friends.map {
+            LeaderboardRow(id: $0.id, rank: 0, name: $0.name, imageURL: $0.profileImageURL, streak: $0.currentStreak, isMe: false)
+        }
+        if let me = friendsManager.myStreak {
+            all.append(LeaderboardRow(id: "me", rank: 0, name: authManager.user?.name ?? NSLocalizedString("Yo", comment: ""),
+                                      imageURL: authManager.user?.safeProfileImageURL, streak: me.currentStreak, isMe: true))
+        }
+        let sorted = all.sorted { $0.streak > $1.streak }
+        var ranked: [LeaderboardRow] = []
+        for (i, row) in sorted.enumerated() {
+            let rank = (i > 0 && sorted[i - 1].streak == row.streak) ? ranked[i - 1].rank : i + 1
+            ranked.append(LeaderboardRow(id: row.id, rank: rank, name: row.name, imageURL: row.imageURL, streak: row.streak, isMe: row.isMe))
+        }
+        // Keep me visible even past the top six.
+        let top = Array(ranked.prefix(6))
+        if top.contains(where: \.isMe) { return top }
+        return top + ranked.filter(\.isMe)
+    }
+
+    private func leaderboardRow(_ row: LeaderboardRow, showsSeparator: Bool) -> some View {
+        SlabRow(showsSeparator: showsSeparator, minHeight: 48) {
+            HStack(spacing: Spacing.sm + 2) {
+                Text("\(row.rank)")
+                    .font(BulkUpFont.numeric(.footnote, weight: .semibold))
+                    .foregroundColor(row.isMe ? BulkUpColors.textPrimary : BulkUpColors.textTertiary)
+                    .frame(width: 18, alignment: .leading)
+                avatar(name: row.name, url: row.imageURL)
+                Text(row.name)
+                    .font(.system(.subheadline, weight: row.isMe ? .semibold : .regular))
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .lineLimit(1)
+                if row.isMe {
+                    Text("(tú)")
+                        .font(BulkUpFont.caption())
+                        .foregroundColor(BulkUpColors.textSecondary)
+                }
+                Spacer(minLength: Spacing.sm)
+                Text("\(row.streak)")
+                    .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textPrimary)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(isMe ? BulkUpColors.accent.opacity(0.1) : BulkUpColors.surfaceElevated)
-        )
+        .background(row.isMe ? BulkUpColors.surfaceElevated : Color.clear)
     }
 
-    private func avatarPlaceholder(name: String) -> some View {
+    private func avatar(name: String, url: String?) -> some View {
         ZStack {
-            Circle()
-                .fill(BulkUpColors.accent.opacity(0.3))
-                .frame(width: 28, height: 28)
-
-            Text(name.prefix(1).uppercased())
-                .font(.system(size: 12, weight: .bold))
-                .foregroundColor(BulkUpColors.accentText)
+            Circle().fill(BulkUpColors.surfaceElevated)
+            if let url, let u = URL(string: url) {
+                AsyncImage(url: u) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    initial(name)
+                }
+            } else {
+                initial(name)
+            }
         }
+        .frame(width: 28, height: 28)
+        .clipShape(Circle())
+    }
+
+    private func initial(_ name: String) -> some View {
+        Text(name.prefix(1).uppercased())
+            .font(.system(.caption, weight: .semibold))
+            .foregroundColor(BulkUpColors.textPrimary)
+    }
+
+    // MARK: - Locked (free tier)
+
+    private var lockedSlab: some View {
+        VStack(spacing: 0) {
+            let items: [(LocalizedStringKey, String)] = [
+                ("Medidas corporales", "scalemass"),
+                ("Récords personales", "trophy"),
+                ("Ranking con amigos", "person.2"),
+            ]
+            ForEach(Array(items.enumerated()), id: \.offset) { i, item in
+                Button { showingSubscription = true } label: {
+                    SlabRow(showsSeparator: i < items.count - 1, minHeight: 48) {
+                        HStack(spacing: Spacing.sm + 2) {
+                            Image(systemName: "lock.fill")
+                                .font(.system(.footnote, weight: .semibold))
+                                .foregroundColor(BulkUpColors.textTertiary)
+                                .frame(width: 20)
+                            Text(item.0)
+                                .font(BulkUpFont.body())
+                                .foregroundColor(BulkUpColors.textPrimary)
+                            Spacer()
+                            Text("PRO")
+                                .font(.system(.caption2, weight: .semibold))
+                                .foregroundColor(BulkUpColors.onAccent)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(BulkUpColors.accent)
+                                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                            Image(systemName: "chevron.right")
+                                .font(.system(.caption, weight: .semibold))
+                                .foregroundColor(BulkUpColors.textTertiary)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .slab()
     }
 
     // MARK: - Helpers
-
-    private var weeklyTrainingText: String {
-        let totalDays = trainingManager.trainingData.count
-        guard totalDays > 0 else { return "0/0" }
-        let completedDays = trainingManager.trainingData.filter { isDayCompleted($0) }.count
-        return String(format: NSLocalizedString("%1$d/%2$d dias", comment: ""), completedDays, totalDays)
-    }
-
-    private var weeklyComplianceText: String {
-        // Use the completion-based weekly percent (meals done vs. meals the plan
-        // expects over 7 days). Returns nil — shown as "—" — when the plan expects
-        // no meals yet, so a fresh account no longer reads 100%.
-        weeklyCompliancePercent.map { String(format: "%.0f%%", $0) } ?? "—"
-    }
 
     private var weightTrend: Double? {
         let history = bodyManager.measurementsHistory
@@ -811,82 +473,43 @@ struct ProgressDashboardView: View {
         return sorted[0].peso - sorted[1].peso
     }
 
-    private var bodyFatTrend: Double? {
-        return nil
-    }
-
     private func isDayCompleted(_ day: TrainingDay) -> Bool {
         for exercise in day.exercises {
-            if trainingManager.hasWeightForExercise(
-                exerciseName: exercise.name,
-                day: day.day,
-                week: trainingManager.selectedWeek
-            ) {
+            if trainingManager.hasWeightForExercise(exerciseName: exercise.name, day: day.day, week: trainingManager.selectedWeek) {
                 return true
             }
         }
-        // Also count days finished via a saved session with no logged weight
-        // (skipped or bodyweight exercises), including sessions from other devices.
         return trainingManager.isDayCompleted(day: day.day)
-    }
-
-    private func dayAbbreviation(_ day: String) -> String {
-        let abbrevs: [String: String] = [
-            "lunes": "L",
-            "martes": "M",
-            "miercoles": "X",
-            "miércoles": "X",
-            "jueves": "J",
-            "viernes": "V",
-            "sabado": "S",
-            "sábado": "S",
-            "domingo": "D"
-        ]
-        return abbrevs[day.lowercased()] ?? String(day.prefix(1).uppercased())
     }
 
     private func exerciseName(for exerciseId: String) -> String {
         if let exercise = rmManager.getExerciseById(exerciseId) {
             return exercise.nameEs.isEmpty ? exercise.name : exercise.nameEs
         }
-        return "Ejercicio"
+        return NSLocalizedString("Ejercicio", comment: "")
+    }
+
+    private func shortDate(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = LanguageManager.shared.locale
+        f.dateFormat = "d MMM"
+        return f.string(from: date)
     }
 
     private func formatRecordDate(_ dateString: String) -> String {
-        let isoFormatter = ISO8601DateFormatter()
-        guard let date = isoFormatter.date(from: dateString) else {
-            let df = DateFormatter()
-            df.dateFormat = "yyyy-MM-dd"
-            df.locale = Locale(identifier: "en_US_POSIX")
-            guard let date = df.date(from: dateString) else { return dateString }
-            return formatDate(date)
-        }
+        let iso = ISO8601DateFormatter()
+        if let date = iso.date(from: dateString) { return formatDate(date) }
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd"
+        df.locale = Locale(identifier: "en_US_POSIX")
+        guard let date = df.date(from: dateString) else { return dateString }
         return formatDate(date)
     }
 
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMM yyyy"
-        formatter.locale = LanguageManager.shared.locale
-        return formatter.string(from: date)
-    }
-
-    private func calculateMyRank() -> Int {
-        let myStreak = friendsManager.myStreak?.currentStreak ?? 0
-        let higher = friendsManager.friends.filter { $0.currentStreak > myStreak }.count
-        return higher + 1
-    }
-
-    private func calculateFriendRank(index: Int) -> Int {
-        let myStreak = friendsManager.myStreak?.currentStreak ?? 0
-        let friend = friendsManager.friends[index]
-        let myRank = calculateMyRank()
-        let friendRank = index + 1
-        if friend.currentStreak < myStreak {
-            return friendRank + 1
-        } else if friend.currentStreak == myStreak {
-            return friendRank >= myRank ? friendRank + 1 : friendRank
-        }
-        return friendRank
+        let f = DateFormatter()
+        f.dateFormat = "d MMM yyyy"
+        f.locale = LanguageManager.shared.locale
+        return f.string(from: date)
     }
 }

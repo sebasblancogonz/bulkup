@@ -2,7 +2,9 @@
 //  BodyMeasurementsView.swift
 //  bulkup
 //
-//  Created by sebastian.blanco on 25/8/25.
+//  Body: the latest measurement as a strip of numbers, the weight as one
+//  quiet line, the history as rows in a slab. Deltas are signed and neutral:
+//  in a bulk, going up is the plan.
 //
 
 import SwiftUI
@@ -21,7 +23,7 @@ struct BodyMeasurementsView: View {
         if !storeKit.isSubscribed {
             SubscriptionRequiredView(
                 onSubscribe: { showingSubscription = true },
-                title: "Medidas Corporales",
+                title: "Medidas corporales",
                 subtitle: "Haz seguimiento de tu composición corporal y progreso físico",
                 features: [
                     "Registro de peso, cintura, cuello y mas",
@@ -35,211 +37,227 @@ struct BodyMeasurementsView: View {
                     .environmentObject(authManager)
             }
         } else {
-        ScrollView {
-            VStack(spacing: 20) {
-                if measurementsManager.isLoading && measurementsManager.measurementsHistory.isEmpty {
-                    ProgressView("Cargando medidas...")
-                        .frame(maxWidth: .infinity, minHeight: 200)
-                } else if measurementsManager.measurementsHistory.isEmpty {
-                    // Estado vacío
-                    emptyStateView
-                } else {
-                    // Vista de resumen con gráfico
-                    if let latest = measurementsManager.measurementsHistory.first {
-                        summaryCard(for: latest)
-                    }
-
-                    // Lista de registros
-                    measurementsListView
-                }
-            }
-            .padding()
-        }
-        .background(BulkUpColors.background.ignoresSafeArea())
-        .navigationTitle("Medidas Corporales")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showingAddMeasurements = true
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.accentText)
-                }
-            }
-        }
-        .sheet(isPresented: $showingAddMeasurements) {
-            AddMeasurementsView()
-                .environmentObject(measurementsManager)
-                .environmentObject(authManager)
-        }
-        .sheet(item: $selectedMeasurement) { measurement in
-            MeasurementDetailView(
-                measurement: measurement,
-                previousMeasurement: getPreviousMeasurement(for: measurement)
-            )
-            .environmentObject(measurementsManager)
-            .environmentObject(authManager)
-        }
-        .onAppear {
-            if !hasAppeared {
-                hasAppeared = true
-                Task {
-                    await loadInitialData()
-                }
-            }
-        }
-        .refreshable {
-            await loadInitialData()
-        }
-        } // else (subscribed)
-    }
-
-    // MARK: - Empty State
-    private var emptyStateView: some View {
-        EmptyStateView(
-            icon: "figure.arms.open",
-            title: "No hay medidas registradas",
-            subtitle: "Agrega tus primeras medidas para comenzar a hacer seguimiento de tu progreso",
-            color: BulkUpColors.accent,
-            actionTitle: "Agregar Primera Medida",
-            actionIcon: "plus.circle.fill",
-            action: { showingAddMeasurements = true }
-        )
-    }
-
-    // MARK: - Summary Card
-    private func summaryCard(for measurement: BodyMeasurements) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.lg) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Última Medición")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                    Text(measurement.fecha.formatted(date: .abbreviated, time: .omitted))
-                        .font(BulkUpFont.cardTitle())
-                        .foregroundColor(BulkUpColors.textPrimary)
-                }
-
-                Spacer()
-
-                // Indicador de cambio si hay medición previa
-                if let previous = getPreviousMeasurement(for: measurement) {
-                    let weightDiff = measurement.peso - previous.peso
-                    HStack(spacing: 4) {
-                        Image(systemName: weightDiff > 0 ? "arrow.up.circle.fill" : weightDiff < 0 ? "arrow.down.circle.fill" : "equal.circle.fill")
-                            .foregroundColor(weightDiff > 0 ? BulkUpColors.error : weightDiff < 0 ? BulkUpColors.success : BulkUpColors.textSecondary)
-                        Text(String(format: "%.1f kg", abs(weightDiff)))
-                            .font(BulkUpFont.dataLabel())
-                            .foregroundColor(BulkUpColors.textPrimary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.sectionGap) {
+                    if measurementsManager.isLoading && measurementsManager.measurementsHistory.isEmpty {
+                        ProgressView()
+                            .frame(maxWidth: .infinity, minHeight: 200)
+                    } else if measurementsManager.measurementsHistory.isEmpty {
+                        emptyState
+                    } else {
+                        if let latest = measurementsManager.measurementsHistory.first {
+                            summarySlab(for: latest)
+                        }
+                        if measurementsManager.measurementsHistory.count > 1 {
+                            weightChart
+                        }
+                        historySlab
                     }
                 }
+                .padding(.horizontal, Spacing.screenH)
+                .padding(.top, Spacing.sm)
+                .padding(.bottom, Spacing.xl)
             }
-
-            // Métricas principales
-            HStack(spacing: 20) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Peso")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                    Text(String(format: "%.1f kg", measurement.peso))
-                        .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.textPrimary)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("IMC")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                    let imc = measurement.peso / pow(measurement.altura / 100, 2)
-                    Text(String(format: "%.1f", imc))
-                        .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(imcColor(imc))
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Cintura")
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-                    Text(String(format: "%.0f cm", measurement.cintura))
-                        .font(BulkUpFont.sectionHeader())
-                        .foregroundColor(BulkUpColors.textPrimary)
-                }
-
-                Spacer()
-            }
-
-            // Mini gráfico de progreso
-            if measurementsManager.measurementsHistory.count > 1 {
-                progressChart
-            }
-        }
-        .cardStyle()
-        .onTapGesture {
-            selectedMeasurement = measurement
-        }
-    }
-
-    // MARK: - Progress Chart
-    private var progressChart: some View {
-        let recentMeasurements = Array(measurementsManager.measurementsHistory.prefix(7).reversed())
-
-        return VStack(alignment: .leading, spacing: 8) {
-            Text("Progreso de Peso")
-                .font(BulkUpFont.caption())
-                .foregroundColor(BulkUpColors.textSecondary)
-
-            Chart(recentMeasurements, id: \.id) { measurement in
-                LineMark(
-                    x: .value("Fecha", measurement.fecha),
-                    y: .value("Peso", measurement.peso)
-                )
-                .foregroundStyle(BulkUpColors.training)
-
-                PointMark(
-                    x: .value("Fecha", measurement.fecha),
-                    y: .value("Peso", measurement.peso)
-                )
-                .foregroundStyle(BulkUpColors.training)
-                .symbolSize(30)
-            }
-            .frame(height: 80)
-            .chartXAxis {
-                AxisMarks(values: .automatic(desiredCount: 3)) { _ in
-                    AxisGridLine()
-                    AxisValueLabel(format: .dateTime.day().month(.abbreviated))
+            .background(BulkUpGround())
+            .navigationTitle("Medidas corporales")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { showingAddMeasurements = true } label: {
+                        Image(systemName: "plus")
+                            .font(.system(.body, weight: .semibold))
+                            .foregroundColor(BulkUpColors.accentText)
+                    }
+                    .accessibilityLabel("Añadir medida")
                 }
             }
-            .chartYAxis {
-                AxisMarks(position: .leading) { _ in
-                    AxisGridLine()
-                    AxisValueLabel()
-                }
+            .sheet(isPresented: $showingAddMeasurements) {
+                AddMeasurementsView()
+                    .environmentObject(measurementsManager)
+                    .environmentObject(authManager)
             }
-        }
-    }
-
-    // MARK: - Measurements List
-    private var measurementsListView: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("Historial de Mediciones")
-                .sectionHeader()
-
-            ForEach(measurementsManager.measurementsHistory, id: \.id) { measurement in
-                MeasurementRowView(
+            .sheet(item: $selectedMeasurement) { measurement in
+                MeasurementDetailView(
                     measurement: measurement,
                     previousMeasurement: getPreviousMeasurement(for: measurement)
                 )
-                .onTapGesture {
-                    selectedMeasurement = measurement
+                .environmentObject(measurementsManager)
+                .environmentObject(authManager)
+            }
+            .onAppear {
+                if !hasAppeared {
+                    hasAppeared = true
+                    Task { await loadInitialData() }
                 }
             }
+            .refreshable { await loadInitialData() }
         }
     }
 
-    // MARK: - Helper Functions
+    // MARK: - Empty
+
+    private var emptyState: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("Sin medidas todavía")
+                .font(BulkUpFont.cardTitle())
+                .foregroundColor(BulkUpColors.textPrimary)
+            Text("Registra peso, cintura y cuello y verás aquí tu evolución y tu composición corporal.")
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Button { showingAddMeasurements = true } label: {
+                Text("Añadir primera medida")
+                    .primaryButtonStyle()
+            }
+            .pressable()
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .slab()
+    }
+
+    // MARK: - Latest
+
+    private func summarySlab(for m: BodyMeasurements) -> some View {
+        let previous = getPreviousMeasurement(for: m)
+        let imc = m.peso / pow(m.altura / 100, 2)
+        return Button { selectedMeasurement = m } label: {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                HStack(spacing: Spacing.sm) {
+                    Text("Última medición")
+                        .font(BulkUpFont.cardTitle())
+                        .foregroundColor(BulkUpColors.textPrimary)
+                    Spacer()
+                    Text(m.fecha.formatted(.dateTime.day().month(.abbreviated).year().locale(LanguageManager.shared.locale)))
+                        .font(BulkUpFont.numeric(.footnote))
+                        .foregroundColor(BulkUpColors.textSecondary)
+                    Image(systemName: "chevron.right")
+                        .font(.system(.caption, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textTertiary)
+                }
+                StatsStrip(cells: [
+                    StatCell(value: BulkUpFormat.decimal(m.peso), unit: "kg", label: "Peso",
+                             detail: previous.map { BulkUpFormat.signed(m.peso - $0.peso) + " kg" }),
+                    StatCell(value: BulkUpFormat.decimal(imc), label: "IMC",
+                             detail: previous.map { BulkUpFormat.signed(imc - $0.peso / pow($0.altura / 100, 2)) }),
+                    StatCell(value: BulkUpFormat.decimal(m.cintura, fraction: 0), unit: "cm", label: "Cintura",
+                             detail: previous.map { BulkUpFormat.signed(m.cintura - $0.cintura, fraction: 0) + " cm" }),
+                ], bare: true)
+                if let c = measurementsManager.bodyComposition {
+                    Text(String(format: NSLocalizedString("Grasa %@ %% · Masa magra %@ kg", comment: ""),
+                                BulkUpFormat.decimal(c.bodyFatPercentage), BulkUpFormat.decimal(c.leanMass)))
+                        .font(BulkUpFont.numeric(.footnote))
+                        .foregroundColor(BulkUpColors.textSecondary)
+                }
+            }
+            .padding(Spacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .slab()
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Weight line
+
+    private var recent: [BodyMeasurements] {
+        Array(measurementsManager.measurementsHistory.prefix(12).reversed())
+    }
+
+    private var weightChart: some View {
+        let points = recent
+        let weights = points.map(\.peso)
+        let lo = (weights.min() ?? 0) - 1
+        let hi = (weights.max() ?? 0) + 1
+        return VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Peso")
+                    .font(BulkUpFont.cardTitle())
+                    .foregroundColor(BulkUpColors.textPrimary)
+                Spacer()
+                Text(String(format: NSLocalizedString("Últimas %lld mediciones", comment: ""), points.count))
+                    .font(BulkUpFont.numeric(.footnote))
+                    .foregroundColor(BulkUpColors.textSecondary)
+            }
+            Chart {
+                ForEach(points, id: \.id) { m in
+                    LineMark(x: .value("Fecha", m.fecha), y: .value("Peso", m.peso))
+                        .foregroundStyle(BulkUpColors.complete)
+                        .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                        .interpolationMethod(.monotone)
+                    PointMark(x: .value("Fecha", m.fecha), y: .value("Peso", m.peso))
+                        .foregroundStyle(BulkUpColors.complete)
+                        .symbolSize(m.id == points.last?.id ? 110 : 52)
+                }
+                if let last = points.last {
+                    PointMark(x: .value("Fecha", last.fecha), y: .value("Peso", last.peso))
+                        .foregroundStyle(.clear)
+                        .annotation(position: .top, spacing: 6) {
+                            Text("\(BulkUpFormat.decimal(last.peso)) kg")
+                                .font(BulkUpFont.numeric(.caption2, weight: .semibold))
+                                .foregroundColor(BulkUpColors.textPrimary)
+                        }
+                }
+            }
+            .chartYScale(domain: lo...hi)
+            .chartXAxis {
+                AxisMarks(values: .automatic(desiredCount: 3)) { _ in
+                    AxisGridLine(stroke: StrokeStyle(lineWidth: 1)).foregroundStyle(BulkUpColors.line)
+                    AxisValueLabel(format: .dateTime.day().month(.abbreviated).locale(LanguageManager.shared.locale))
+                        .font(.system(.caption2))
+                        .foregroundStyle(BulkUpColors.textTertiary)
+                }
+            }
+            .chartYAxis {
+                AxisMarks(position: .trailing, values: .automatic(desiredCount: 3)) { _ in
+                    AxisGridLine(stroke: StrokeStyle(lineWidth: 1)).foregroundStyle(BulkUpColors.line)
+                    AxisValueLabel()
+                        .font(.system(.caption2).monospacedDigit())
+                        .foregroundStyle(BulkUpColors.textTertiary)
+                }
+            }
+            .chartPlotStyle { $0.padding(.top, 14) }
+            .frame(height: 150)
+        }
+        .padding(Spacing.md)
+        .slab()
+    }
+
+    // MARK: - History
+
+    private var historySlab: some View {
+        let history = measurementsManager.measurementsHistory
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("Historial")
+                    .font(BulkUpFont.cardTitle())
+                    .foregroundColor(BulkUpColors.textPrimary)
+                Spacer()
+                Text(String(format: NSLocalizedString("%lld mediciones", comment: ""), history.count))
+                    .font(BulkUpFont.numeric(.footnote))
+                    .foregroundColor(BulkUpColors.textSecondary)
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.md)
+            .padding(.bottom, Spacing.xs)
+
+            ForEach(Array(history.enumerated()), id: \.element.id) { i, m in
+                Button { selectedMeasurement = m } label: {
+                    MeasurementRowView(measurement: m, previousMeasurement: getPreviousMeasurement(for: m),
+                                       showsSeparator: i < history.count - 1)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .slab()
+    }
+
+    // MARK: - Helpers
+
     private func loadInitialData() async {
+        #if DEBUG
+        if DesignPreview.isActive { return }
+        #endif
         guard let userId = authManager.user?.id else { return }
         await measurementsManager.loadMeasurementsHistory(userId: userId)
     }
@@ -251,92 +269,65 @@ struct BodyMeasurementsView: View {
         }
         return measurementsManager.measurementsHistory[index + 1]
     }
-
-    private func imcColor(_ imc: Double) -> Color {
-        switch imc {
-        case ..<18.5: return BulkUpColors.training
-        case 18.5..<25: return BulkUpColors.success
-        case 25..<30: return BulkUpColors.warning
-        default: return BulkUpColors.error
-        }
-    }
 }
 
-// MARK: - Measurement Row View
+// MARK: - Measurement row
 struct MeasurementRowView: View {
     let measurement: BodyMeasurements
     let previousMeasurement: BodyMeasurements?
+    var showsSeparator: Bool = true
 
     var body: some View {
-        HStack {
-            // Fecha
-            VStack(alignment: .leading, spacing: 2) {
-                Text(measurement.fecha.formatted(.dateTime.day().month(.abbreviated)))
-                    .font(BulkUpFont.body())
-                    .foregroundColor(BulkUpColors.textPrimary)
-                Text(measurement.fecha.formatted(.dateTime.year()))
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textSecondary)
+        SlabRow(showsSeparator: showsSeparator) {
+            HStack(spacing: Spacing.sm + 2) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(measurement.fecha.formatted(.dateTime.day().month(.abbreviated).locale(LanguageManager.shared.locale)))
+                        .font(BulkUpFont.numeric(.subheadline, weight: .medium))
+                        .foregroundColor(BulkUpColors.textPrimary)
+                    Text(measurement.fecha.formatted(.dateTime.year()))
+                        .font(BulkUpFont.numeric(.caption2))
+                        .foregroundColor(BulkUpColors.textTertiary)
+                }
+                .frame(width: 62, alignment: .leading)
+
+                MetricChange(value: measurement.peso, previous: previousMeasurement?.peso, unit: "kg", fraction: 1, label: "Peso")
+                MetricChange(value: measurement.cintura, previous: previousMeasurement?.cintura, unit: "cm", fraction: 0, label: "Cintura")
+
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(.caption, weight: .semibold))
+                    .foregroundColor(BulkUpColors.textTertiary)
             }
-            .frame(width: 60, alignment: .leading)
-
-            // Métricas principales
-            HStack(spacing: 20) {
-                MetricChange(
-                    value: measurement.peso,
-                    previous: previousMeasurement?.peso,
-                    format: "%.1f kg",
-                    label: "Peso"
-                )
-
-                MetricChange(
-                    value: measurement.cintura,
-                    previous: previousMeasurement?.cintura,
-                    format: "%.0f cm",
-                    label: "Cintura"
-                )
-            }
-
-            Spacer()
-
-            // Indicador de más detalles
-            Image(systemName: "chevron.right")
-                .font(BulkUpFont.caption())
-                .foregroundColor(BulkUpColors.textSecondary)
+            .contentShape(Rectangle())
         }
-        .flatCardStyle()
     }
 }
 
-// MARK: - Metric Change View
+/// A value with its unit and a signed, neutral delta from the previous entry.
 struct MetricChange: View {
     let value: Double
     let previous: Double?
-    let format: String
-    let label: String
+    var unit: String = "kg"
+    var fraction: Int = 1
+    let label: LocalizedStringKey
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label)
-                .font(BulkUpFont.caption())
-                .foregroundColor(BulkUpColors.textSecondary)
-
-            HStack(spacing: 4) {
-                Text(String(format: format, value))
-                    .font(BulkUpFont.body())
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("\(BulkUpFormat.decimal(value, fraction: fraction)) \(unit)")
+                    .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textPrimary)
-
-                if let prev = previous {
-                    let diff = value - prev
-                    if abs(diff) > 0.01 {
-                        Text(String(format: diff > 0 ? "+%.1f" : "%.1f", diff))
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(diff > 0 ? BulkUpColors.error : BulkUpColors.success)
-                            .fontWeight(.medium)
-                    }
+                if let previous, abs(value - previous) >= pow(10, -Double(fraction)) / 2 {
+                    Text(BulkUpFormat.signed(value - previous, fraction: fraction))
+                        .font(BulkUpFont.numeric(.caption2, weight: .medium))
+                        .foregroundColor(BulkUpColors.textTertiary)
                 }
             }
+            Text(label)
+                .font(.system(.caption2))
+                .foregroundColor(BulkUpColors.textTertiary)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

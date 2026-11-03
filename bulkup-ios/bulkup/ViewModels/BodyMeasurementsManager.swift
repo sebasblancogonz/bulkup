@@ -87,6 +87,9 @@ class BodyMeasurementsManager: ObservableObject {
 
     // MARK: - Load Latest Measurements
     func loadLatestMeasurements(userId: String) async {
+        #if DEBUG
+        if DesignPreview.isActive { return }   // seeded locally, no network
+        #endif
         cancelCurrentTask()
 
         isLoading = true
@@ -123,6 +126,9 @@ class BodyMeasurementsManager: ObservableObject {
 
     // MARK: - Load Measurements History
     func loadMeasurementsHistory(userId: String) async {
+        #if DEBUG
+        if DesignPreview.isActive { return }
+        #endif
         cancelCurrentTask()
 
         isLoading = true

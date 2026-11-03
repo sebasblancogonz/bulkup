@@ -168,6 +168,9 @@ class MealTrackingManager: ObservableObject {
     // MARK: - Load compliance stats
 
     func loadComplianceStats(userId: String) async {
+        #if DEBUG
+        if DesignPreview.isActive { return }
+        #endif
         do {
             complianceStats = try await apiService.getComplianceStats(userId: userId)
         } catch {

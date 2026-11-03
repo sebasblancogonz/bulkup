@@ -170,6 +170,9 @@ class StoreKitManager: ObservableObject {
     /// if the product list failed to load (offline, App Store hiccup) a paying
     /// user must still be recognised as subscribed.
     func updateSubscriptionStatus() async {
+        #if DEBUG
+        if DesignPreview.isActive { return }   // keep the seeded status
+        #endif
         print("🔄 Updating subscription status...")
 
         var hasActive = false

@@ -66,6 +66,63 @@ enum DesignPreview {
         dm.setDietData(makeDiet(), planId: nil)
         dm.activePlanName = "Volumen 3.200 kcal"
         seedMealTracking()
+        seedProgress(subscribed: screen != "progress-free")
+    }
+
+    /// Progress: a lifter with ten weeks of measurements, three PRs, two
+    /// friends and a 12-day streak. `subscribed: false` shows the PRO teaser.
+    @MainActor
+    private static func seedProgress(subscribed: Bool) {
+        StoreKitManager.shared.hasActiveSubscription = subscribed
+
+        let bm = BodyMeasurementsManager.shared
+        let cal = Calendar.current
+        let samples: [(weeks: Int, peso: Double, cintura: Double)] = [
+            (0, 82.4, 86), (1, 82.9, 86), (2, 83.3, 87), (4, 83.1, 87), (6, 84.0, 88), (8, 84.6, 88), (10, 85.2, 89),
+        ]
+        let history: [BodyMeasurements] = samples.map { s in
+            let date = cal.date(byAdding: .day, value: -7 * (10 - s.weeks), to: Date())!
+            return BodyMeasurements(id: "m\(s.weeks)", userId: "design-preview", peso: s.peso, altura: 181, edad: 29, sexo: "male",
+                                    cintura: s.cintura, cuello: 40, cadera: 98, brazo: 37.5, muslo: 60, pantorrilla: 39,
+                                    fecha: date, createdAt: date, updatedAt: date)
+        }
+        bm.measurementsHistory = history.reversed()   // newest first, like the API
+        bm.currentMeasurements = history.last
+        bm.bodyComposition = BodyComposition(bodyFatPercentage: 14.8, fatMass: 12.6, leanMass: 72.6, bodyWater: 52.0, skeletalMuscle: 40.1)
+        bm.isLoading = false
+
+        let rm = RMManager.shared
+        rm.exercises = [
+            RMExercise(id: "e1", name: "Bench Press", nameEs: "Press de banca", category: "powerlifting", categoryEs: "Powerlifting"),
+            RMExercise(id: "e2", name: "Squat", nameEs: "Sentadilla", category: "powerlifting", categoryEs: "Powerlifting"),
+            RMExercise(id: "e3", name: "Deadlift", nameEs: "Peso muerto", category: "powerlifting", categoryEs: "Powerlifting"),
+            RMExercise(id: "e4", name: "Overhead Press", nameEs: "Press militar", category: "strength", categoryEs: "Fuerza"),
+            RMExercise(id: "e5", name: "Barbell Row", nameEs: "Remo con barra", category: "strength", categoryEs: "Fuerza"),
+        ]
+        let iso = ISO8601DateFormatter()
+        func day(_ ago: Int) -> String { iso.string(from: cal.date(byAdding: .day, value: -ago, to: Date())!) }
+        rm.records = [
+            PersonalRecord(id: "r1", exerciseId: "e1", weight: 100, reps: 3, date: day(2), notes: nil),
+            PersonalRecord(id: "r2", exerciseId: "e2", weight: 140, reps: 2, date: day(9), notes: nil),
+            PersonalRecord(id: "r3", exerciseId: "e3", weight: 170, reps: 1, date: day(16), notes: nil),
+            PersonalRecord(id: "r4", exerciseId: "e1", weight: 95, reps: 5, date: day(30), notes: nil),
+        ]
+        rm.bestRecords = Array(rm.records.prefix(3))
+        rm.stats = RecordStats(totalRecords: 14, exercisesWithRM: 3, recordsThisMonth: 2)
+        rm.isLoading = false
+
+        let fm = FriendsManager.shared
+        fm.myStreak = TrainingStreakResponse(userId: "design-preview", currentStreak: 12, longestStreak: 21, totalDays: 86)
+        fm.friends = [
+            FriendProfile(userId: "f1", name: "Marta", profileImageURL: nil, currentStreak: 18, longestStreak: 30, totalDays: 140),
+            FriendProfile(userId: "f2", name: "Dani", profileImageURL: nil, currentStreak: 7, longestStreak: 12, totalDays: 54),
+        ]
+        fm.todayCompleted = true
+        fm.isLoading = false
+
+        let mm = MealTrackingManager.shared
+        mm.complianceStats = ComplianceStatsResponse(totalMeals: 35, completedMeals: 27, complianceRate: 0.77, currentStreak: 4, daysTracked: 7)
+        mm.weeklyCompletedMeals = 27
     }
 
     /// Two meals ticked today so the diet screen shows every row state.
@@ -181,6 +238,14 @@ struct DesignPreviewHost: View {
                         BulkUpGround()
                         SubscriptionRequiredView(onSubscribe: {})
                     }
+                case "body":
+                    NavigationStack {
+                        BodyMeasurementsView().environmentObject(authManager)
+                    }
+                case "records":
+                    NavigationStack {
+                        RMTrackerView().environmentObject(authManager)
+                    }
                 case "live", "live-rest", "live-done":
                     LiveActivityPreview(state: DesignPreview.activityState(for: screen))
                 case "summary":
@@ -220,6 +285,10 @@ struct DesignPreviewHost: View {
             if screen == "training" || screen == "workout" || screen == "rest" {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 NotificationCenter.default.post(name: .navigateToTraining, object: nil)
+            }
+            if screen == "progress" || screen == "progress-free" {
+                try? await Task.sleep(nanoseconds: 600_000_000)
+                NotificationCenter.default.post(name: .navigateToProgress, object: nil)
             }
             if screen == "diet" || screen == "diet-detail" {
                 try? await Task.sleep(nanoseconds: 600_000_000)

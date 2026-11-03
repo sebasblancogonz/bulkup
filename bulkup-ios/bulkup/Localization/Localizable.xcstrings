@@ -419,6 +419,16 @@
         }
       }
     },
+    "%lld mediciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld measurements"
+          }
+        }
+      }
+    },
     "%lld opc." : {
       "localizations" : {
         "en" : {
@@ -1329,6 +1339,16 @@
         }
       }
     },
+    "Apunta tu mejor serie en banca, sentadilla o peso muerto y verás aquí tu 1RM estimado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log your best set on bench, squat or deadlift and your estimated 1RM shows up here."
+          }
+        }
+      }
+    },
     "Archivo PDF" : {
       "localizations" : {
         "en" : {
@@ -1371,6 +1391,16 @@
         }
       }
     },
+    "Añade amigos para ver quién lleva más días seguidos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add friends to see who has the longest streak."
+          }
+        }
+      }
+    },
     "Añade tu primer día para comenzar" : {
       "localizations" : {
         "en" : {
@@ -1387,6 +1417,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add your first record for this exercise"
+          }
+        }
+      }
+    },
+    "Añade tu primera medida y verás aquí peso, grasa y masa magra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your first measurement to see weight, body fat and lean mass here."
           }
         }
       }
@@ -1427,6 +1467,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add Exercise"
+          }
+        }
+      }
+    },
+    "Añadir amigo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add friend"
+          }
+        }
+      }
+    },
+    "Añadir medida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add measurement"
+          }
+        }
+      }
+    },
+    "Añadir primer récord" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add first record"
+          }
+        }
+      }
+    },
+    "Añadir primera medida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add first measurement"
+          }
+        }
+      }
+    },
+    "Añadir récord" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add record"
           }
         }
       }
@@ -1655,6 +1745,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "BulkUp · v%@"
+          }
+        }
+      }
+    },
+    "Buscar ejercicio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search exercise"
           }
         }
       }
@@ -2133,6 +2233,16 @@
         }
       }
     },
+    "Comidas hechas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meals done"
+          }
+        }
+      }
+    },
     "Comidas y horarios" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2594,6 +2704,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Body"
+          }
+        }
+      }
+    },
+    "Cuerpo, récords y ranking" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Body, records and ranking"
           }
         }
       }
@@ -3190,6 +3310,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Training days"
+          }
+        }
+      }
+    },
+    "Días seguidos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Days in a row"
           }
         }
       }
@@ -4078,6 +4208,16 @@
         }
       }
     },
+    "Este mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This month"
+          }
+        }
+      }
+    },
     "Estimando…" : {
       "localizations" : {
         "en" : {
@@ -4592,6 +4732,16 @@
         }
       }
     },
+    "Grasa %@ %% · Masa magra %@ kg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Body fat %@ %% · Lean mass %@ kg"
+          }
+        }
+      }
+    },
     "Grasas" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4751,6 +4901,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Track your body composition and physical progress"
+          }
+        }
+      }
+    },
+    "Historial" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
           }
         }
       }
@@ -5518,6 +5678,16 @@
         }
       }
     },
+    "Medidas corporales" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Body measurements"
+          }
+        }
+      }
+    },
     "Medidas corporales y composición" : {
       "localizations" : {
         "en" : {
@@ -5545,6 +5715,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Body measurements, personal records and friend rankings"
+          }
+        }
+      }
+    },
+    "Medidas corporales, récords personales y ranking con amigos, en el mismo sitio que tu semana." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Body measurements, personal records and a ranking with friends, next to your week."
           }
         }
       }
@@ -5577,6 +5757,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Best streak"
+          }
+        }
+      }
+    },
+    "Mejor racha %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best streak %lld"
           }
         }
       }
@@ -5630,6 +5820,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "My Subscription"
+          }
+        }
+      }
+    },
+    "Mi código" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My code"
           }
         }
       }
@@ -5864,6 +6064,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You need body measurements and a review date to see projections"
+          }
+        }
+      }
+    },
+    "Ningún ejercicio coincide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No exercise matches"
           }
         }
       }
@@ -7385,6 +7595,26 @@
         }
       }
     },
+    "Registra peso, cintura y cuello y verás aquí tu evolución y tu composición corporal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log weight, waist and neck and you will see your trend and body composition here."
+          }
+        }
+      }
+    },
+    "Registra tu primer récord" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log your first record"
+          }
+        }
+      }
+    },
     "Registra tus levantamientos" : {
       "localizations" : {
         "en" : {
@@ -7472,6 +7702,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Log weight, waist, neck, and more"
+          }
+        }
+      }
+    },
+    "Registros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entries"
           }
         }
       }
@@ -7649,6 +7889,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record deleted"
+          }
+        }
+      }
+    },
+    "Récords" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records"
           }
         }
       }
@@ -7882,6 +8132,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Week of %@"
+          }
+        }
+      }
+    },
+    "Semana del %@ al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Week of %@ to %@"
           }
         }
       }
@@ -8148,6 +8408,26 @@
         }
       }
     },
+    "Sin medidas todavía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No measurements yet"
+          }
+        }
+      }
+    },
+    "Sin plan activo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No active plan"
+          }
+        }
+      }
+    },
     "Sin plan de dieta" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8187,6 +8467,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No records logged"
+          }
+        }
+      }
+    },
+    "Sin récords todavía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No records yet"
           }
         }
       }
@@ -8722,6 +9012,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your training and nutrition companion."
+          }
+        }
+      }
+    },
+    "Tu mejor racha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your best streak"
           }
         }
       }
@@ -9698,6 +9998,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Latest Measurement"
+          }
+        }
+      }
+    },
+    "Última medición" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latest measurement"
+          }
+        }
+      }
+    },
+    "Últimas %lld mediciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last %lld measurements"
           }
         }
       }

@@ -42,9 +42,9 @@ struct RMTrackerView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        Group {
             ZStack {
-                BulkUpColors.background.ignoresSafeArea()
+                BulkUpGround()
 
                 if !storeKit.isSubscribed {
                     SubscriptionRequiredView(
@@ -79,13 +79,14 @@ struct RMTrackerView: View {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button(action: { showAddRecord() }) {
                             Image(systemName: "plus")
-                                .font(BulkUpFont.sectionHeader())
+                                .font(.system(.body, weight: .semibold))
                                 .foregroundColor(BulkUpColors.accentText)
                         }
+                        .accessibilityLabel("Añadir récord")
                     }
                 }
             }
-            .navigationTitle("Tus PR")
+            .navigationTitle("Récords personales")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showAddForm) {
                 AddRecordFormView(
@@ -103,6 +104,9 @@ struct RMTrackerView: View {
             }
         }
         .task {
+            #if DEBUG
+            if DesignPreview.isActive { return }
+            #endif
             if storeKit.isSubscribed, let token = authManager.user?.token {
                 await rmManager.loadInitialDataWithCache(token: token)
             }
@@ -112,16 +116,18 @@ struct RMTrackerView: View {
 
     private var mainContentWithRefresh: some View {
             ScrollView {
-                LazyVStack(spacing: Spacing.lg) {
-                    // Stats Cards
-                    StatsCardsView(stats: rmManager.stats)
-                        .padding(.horizontal, Spacing.screenH)
+                LazyVStack(spacing: Spacing.md) {
+                    StatsStrip(cells: [
+                        StatCell(value: "\(rmManager.stats.totalRecords)", label: "Registros"),
+                        StatCell(value: "\(rmManager.stats.exercisesWithRM)", label: "Ejercicios con RM"),
+                        StatCell(value: "\(rmManager.stats.recordsThisMonth)", label: "Este mes"),
+                    ])
+                    .padding(.horizontal, Spacing.screenH)
+                    .padding(.bottom, Spacing.sm)
 
-                    // Search Bar
                     SearchBar(text: $searchTerm)
                         .padding(.horizontal, Spacing.screenH)
 
-                    // Exercise Cards
                     exerciseCardsGrid
 
                     // Espacio extra para el tab bar
@@ -145,10 +151,11 @@ struct RMTrackerView: View {
                                     .font(BulkUpFont.caption())
                                     .foregroundColor(BulkUpColors.textSecondary)
                             }
-                            .padding(8)
-                            .background(BulkUpColors.surface)
-                            .cornerRadius(CornerRadius.medium)
-                            .overlay(RoundedRectangle(cornerRadius: CornerRadius.medium).stroke(BulkUpColors.border, lineWidth: 0.5))
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.vertical, Spacing.sm)
+                            .background(BulkUpColors.surfaceElevated)
+                            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                            .lift(CornerRadius.medium)
 
                             Spacer()
                         }
@@ -221,20 +228,54 @@ struct RMTrackerView: View {
         }
     }
 
+    @ViewBuilder
     private var exerciseCardsGrid: some View {
-        LazyVStack(spacing: Spacing.sm) {
-            ForEach(filteredExercises) { exercise in
+        if rmManager.records.isEmpty && searchTerm.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                Text("Sin récords todavía")
+                    .font(BulkUpFont.cardTitle())
+                    .foregroundColor(BulkUpColors.textPrimary)
+                Text("Apunta tu mejor serie en banca, sentadilla o peso muerto y verás aquí tu 1RM estimado.")
+                    .font(BulkUpFont.body())
+                    .foregroundColor(BulkUpColors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button { showAddRecord() } label: {
+                    Text("Añadir primer récord")
+                        .primaryButtonStyle()
+                }
+                .pressable()
+            }
+            .padding(Spacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .slab()
+            .padding(.horizontal, Spacing.screenH)
+        } else {
+            exerciseRows
+        }
+    }
+
+    private var exerciseRows: some View {
+        let exercises = filteredExercises
+        return LazyVStack(spacing: 0) {
+            ForEach(Array(exercises.enumerated()), id: \.element.id) { i, exercise in
                 RMExerciseCardView(
                     exercise: exercise,
                     rmManager: rmManager,
                     bestRecord: rmManager.getBestRecordForExercise(exercise.id),
-                    totalRecords: rmManager.getRecordsForExercise(exercise.id)
-                        .count,
+                    totalRecords: rmManager.getRecordsForExercise(exercise.id).count,
+                    showsSeparator: i < exercises.count - 1,
                     onEdit: { record in editRecord(record) },
                     onDelete: { record in deleteRecord(record) }
                 )
             }
+            if exercises.isEmpty {
+                Text("Ningún ejercicio coincide")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+                    .frame(maxWidth: .infinity, minHeight: 52)
+            }
         }
+        .slab()
         .padding(.horizontal, Spacing.screenH)
     }
 
@@ -296,24 +337,31 @@ struct SearchBar: View {
     @Binding var text: String
 
     var body: some View {
-        HStack {
+        HStack(spacing: Spacing.sm) {
             Image(systemName: "magnifyingglass")
+                .font(.system(.subheadline, weight: .semibold))
                 .foregroundColor(BulkUpColors.textTertiary)
 
-            TextField("Buscar ejercicio...", text: $text)
+            TextField("Buscar ejercicio", text: $text)
                 .textFieldStyle(PlainTextFieldStyle())
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textPrimary)
 
             if !text.isEmpty {
                 Button(action: { text = "" }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(BulkUpColors.textTertiary)
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(BulkUpColors.surfaceElevated)
-        .cornerRadius(CornerRadius.medium)
+        .padding(.horizontal, Spacing.md)
+        .frame(height: 44)
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+        .lift(CornerRadius.medium)
     }
 }
 
@@ -323,89 +371,77 @@ struct RMExerciseCardView: View {
     let rmManager: RMManager
     let bestRecord: PersonalRecord?
     let totalRecords: Int
+    var showsSeparator: Bool = true
     let onEdit: (PersonalRecord) -> Void
     let onDelete: (PersonalRecord) -> Void
 
     @State private var showDeleteConfirmation = false
 
     var body: some View {
-        HStack(spacing: Spacing.md) {
-            // Main row — tap to open the exercise history/detail.
-            NavigationLink(
-                destination: ExerciseDetailView(exercise: exercise, rmManager: rmManager)
-            ) {
-                HStack(spacing: Spacing.md) {
-                    ZStack {
-                        Circle()
-                            .fill(bestRecord != nil ? BulkUpColors.accent.opacity(0.15) : BulkUpColors.surfaceElevated)
-                            .frame(width: 44, height: 44)
-                        Image(systemName: bestRecord != nil ? "trophy.fill" : "dumbbell")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(bestRecord != nil ? BulkUpColors.accent : BulkUpColors.textTertiary)
-                    }
-
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(exercise.nameEs)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(BulkUpColors.textPrimary)
-                            .lineLimit(1)
-                        Text(metaLine)
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
-                            .lineLimit(1)
-                    }
-
-                    Spacer(minLength: Spacing.sm)
-
-                    if let record = bestRecord {
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text("\(record.weight, specifier: "%g") kg × \(record.reps)")
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
+        SlabRow(showsSeparator: showsSeparator, minHeight: 60) {
+            HStack(spacing: Spacing.sm) {
+                // Main row — tap to open the exercise history/detail.
+                NavigationLink(
+                    destination: ExerciseDetailView(exercise: exercise, rmManager: rmManager)
+                ) {
+                    HStack(spacing: Spacing.sm) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(exercise.nameEs)
+                                .font(.system(.subheadline, weight: .semibold))
                                 .foregroundColor(BulkUpColors.textPrimary)
                                 .lineLimit(1)
-                            if let rm = RMCalculator.calculateHybridRM(weight: record.weight, reps: record.reps) {
-                                Text("1RM \(rm, specifier: "%g") kg")
-                                    .font(BulkUpFont.caption())
-                                    .foregroundColor(BulkUpColors.success)
-                            }
+                            Text(metaLine)
+                                .font(BulkUpFont.numeric(.footnote))
+                                .foregroundColor(BulkUpColors.textSecondary)
+                                .lineLimit(1)
                         }
-                    } else {
-                        Text("Añadir")
-                            .font(BulkUpFont.caption())
-                            .fontWeight(.medium)
-                            .foregroundColor(BulkUpColors.accentText)
-                    }
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
 
-            // Edit / delete live in a menu so the row stays clean.
-            if let record = bestRecord {
-                Menu {
-                    Button { onEdit(record) } label: { Label("Editar", systemImage: "pencil") }
-                    Button(role: .destructive) { showDeleteConfirmation = true } label: {
-                        Label("Eliminar", systemImage: "trash")
+                        Spacer(minLength: Spacing.sm)
+
+                        if let record = bestRecord {
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("\(BulkUpFormat.decimal(record.weight)) kg × \(record.reps)")
+                                    .font(BulkUpFont.mono(17, weight: .semibold))
+                                    .foregroundColor(BulkUpColors.textPrimary)
+                                    .lineLimit(1)
+                                if let rm = RMCalculator.calculateHybridRM(weight: record.weight, reps: record.reps) {
+                                    Text("1RM \(BulkUpFormat.decimal(rm, fraction: 0)) kg")
+                                        .font(BulkUpFont.numeric(.footnote))
+                                        .foregroundColor(BulkUpColors.textSecondary)
+                                }
+                            }
+                        } else {
+                            Text("Añadir")
+                                .font(.system(.footnote, weight: .semibold))
+                                .foregroundColor(BulkUpColors.accentText)
+                        }
                     }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(BulkUpColors.textTertiary)
-                        .frame(width: 32, height: 44)
-                        .contentShape(Rectangle())
+                    .contentShape(Rectangle())
                 }
-            } else {
-                Image(systemName: "chevron.right")
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textTertiary)
-                    .frame(width: 32, height: 44)
+                .buttonStyle(.plain)
+
+                // Edit / delete live in a menu so the row stays clean.
+                if let record = bestRecord {
+                    Menu {
+                        Button { onEdit(record) } label: { Label("Editar", systemImage: "pencil") }
+                        Button(role: .destructive) { showDeleteConfirmation = true } label: {
+                            Label("Eliminar", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.system(.subheadline, weight: .semibold))
+                            .foregroundColor(BulkUpColors.textTertiary)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.system(.caption, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textTertiary)
+                        .frame(width: 44, height: 44)
+                }
             }
         }
-        .padding(.horizontal, Spacing.md)
-        .padding(.vertical, Spacing.sm)
-        .background(BulkUpColors.surface)
-        .cornerRadius(CornerRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: CornerRadius.large).stroke(BulkUpColors.border, lineWidth: 0.5))
         .confirmationDialog(
             "¿Eliminar récord?",
             isPresented: $showDeleteConfirmation,
@@ -435,7 +471,9 @@ struct RMExerciseCardView: View {
         }
 
         let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .short
+        displayFormatter.locale = LanguageManager.shared.locale
+        // Short: the row's meta line shares its width with a mono value and a menu.
+        displayFormatter.dateFormat = "d MMM"
         return displayFormatter.string(from: date)
     }
 }
