@@ -1111,8 +1111,9 @@ struct ExerciseWeightLogger: View {
 
     // MARK: - Add / remove sets (this week only; the plan is untouched)
 
-    /// "Añadir serie" / "Quitar serie" row shared by both modes. Removing goes
-    /// through a confirmation when the last set already has data.
+    /// "Añadir serie" / "Quitar serie" row shared by both modes. Quitar drops
+    /// the last set and confirms when it already has data; any set can also be
+    /// removed from its long-press menu.
     private var setCountControls: some View {
         HStack(spacing: Spacing.md) {
             Button(action: addSet) {
@@ -1123,7 +1124,26 @@ struct ExerciseWeightLogger: View {
                         .font(.system(.footnote, weight: .semibold))
                 }
                 .foregroundColor(BulkUpColors.textPrimary)
-                .padding(.vertical, Spacing.xs)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if totalSetsCount > 1 {
+                Button {
+                    requestRemoveSet(at: totalSetsCount - 1)
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "minus.circle")
+                            .font(.system(.footnote, weight: .semibold))
+                        Text("Quitar serie")
+                            .font(.system(.footnote, weight: .semibold))
+                    }
+                    .foregroundColor(BulkUpColors.textSecondary)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
 
             Spacer()
