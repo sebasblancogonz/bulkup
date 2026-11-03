@@ -69,7 +69,7 @@ struct DietHubView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(BulkUpGround())
+        .background(BulkUpColors.background)
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showingImport) {
             ImportPlanView()
@@ -166,6 +166,7 @@ struct DietHubView: View {
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.sm)
         .padding(.top, Spacing.md)
+        .background(BulkUpColors.background)
     }
 
     // MARK: - Plan Header
@@ -212,6 +213,7 @@ struct DietHubView: View {
                 .environmentObject(dietManager)
                 .environmentObject(authManager)
         }
+        .background(BulkUpGround())
     }
 
     // MARK: - Loading View

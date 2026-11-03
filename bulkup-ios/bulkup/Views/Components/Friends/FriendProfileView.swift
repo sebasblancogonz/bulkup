@@ -116,7 +116,7 @@ struct FriendProfileView: View {
 
     private func statsStrip(_ profile: FriendPublicProfile) -> some View {
         StatsStrip(cells: [
-            StatCell(value: "\(profile.streak.currentStreak)", unit: nil, label: "Días seguidos",
+            StatCell(value: "\(profile.streak.currentStreak)", unit: nil, label: "Entrenos seguidos",
                      detail: String(format: NSLocalizedString("Mejor %lld", comment: ""), profile.streak.longestStreak)),
             StatCell(value: "\(profile.streak.totalDays)", unit: nil, label: "Entrenos", detail: nil),
             StatCell(value: "\(profile.workoutsLast7Days)", unit: nil, label: "Esta semana",

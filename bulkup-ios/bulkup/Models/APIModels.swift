@@ -786,6 +786,8 @@ struct TrainingStreakResponse: Codable {
     let currentStreak: Int
     let longestStreak: Int
     let totalDays: Int
+    /// Rest days the streak tolerates between two workouts (7 minus the plan's days).
+    var restDaysAllowed: Int? = nil
 }
 
 struct LeaderboardResponse: Codable {

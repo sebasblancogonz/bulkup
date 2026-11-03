@@ -11,7 +11,6 @@ class MealTrackingManager: ObservableObject {
     static let shared = MealTrackingManager(modelContext: ModelContainer.bulkUpContainer.mainContext)
 
     @Published var todayTracking: [MealTrackingRecord] = []
-    @Published var complianceStats: ComplianceStatsResponse?
     /// Completed-meal count over the last 7 days (server). Paired with the plan's
     /// expected meals to compute weekly compliance — see DietCompliance.
     @Published var weeklyCompletedMeals: Int = 0
@@ -172,11 +171,6 @@ class MealTrackingManager: ObservableObject {
         if DesignPreview.isActive { return }
         #endif
         do {
-            complianceStats = try await apiService.getComplianceStats(userId: userId)
-        } catch {
-            // Silently fail
-        }
-        do {
             weeklyCompletedMeals = try await apiService.getComplianceStats(userId: userId, days: 7)?.completedMeals ?? 0
         } catch {
             // Silently fail
@@ -184,17 +178,6 @@ class MealTrackingManager: ObservableObject {
     }
 
     // MARK: - Computed properties
-
-    var todayComplianceRate: Double {
-        guard !todayTracking.isEmpty else { return 0 }
-        return Double(todayTracking.filter { $0.completed }.count) / Double(todayTracking.count)
-    }
-
-    var todayComplianceSummary: String {
-        let completed = todayTracking.filter { $0.completed }.count
-        let total = todayTracking.count
-        return String(format: NSLocalizedString("%1$d/%2$d comidas", comment: ""), completed, total)
-    }
 
     func trackingRecord(for mealOrder: Int, date: String) -> MealTrackingRecord? {
         todayTracking.first { $0.mealOrder == mealOrder && $0.date == date }
@@ -211,7 +194,7 @@ class MealTrackingManager: ObservableObject {
         }
         try? modelContext.save()
         todayTracking = []
-        complianceStats = nil
+        weeklyCompletedMeals = 0
     }
 
     // MARK: - Private

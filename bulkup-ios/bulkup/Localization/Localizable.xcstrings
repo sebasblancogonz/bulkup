@@ -79,16 +79,6 @@
         }
       }
     },
-    "%1$d/%2$d comidas" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$d/%2$d meals"
-          }
-        }
-      }
-    },
     "%1$d/%2$d días" : {
       "localizations" : {
         "en" : {
@@ -369,16 +359,6 @@
         }
       }
     },
-    "%lld días seguidos" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld days in a row"
-          }
-        }
-      }
-    },
     "%lld días · %lld comidas" : {
       "localizations" : {
         "en" : {
@@ -445,6 +425,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld in the library"
+          }
+        }
+      }
+    },
+    "%lld entrenos seguidos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld workouts in a row"
           }
         }
       }
@@ -541,16 +531,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld%%"
-          }
-        }
-      }
-    },
-    "%lld-day streak" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld-day streak"
           }
         }
       }
@@ -1471,12 +1451,12 @@
         }
       }
     },
-    "Añade amigos para ver quién lleva más días seguidos." : {
+    "Añade amigos para ver quién lleva más entrenos seguidos." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add friends to see who has the longest streak."
+            "value" : "Add friends to see who has the longest run of workouts."
           }
         }
       }
@@ -3584,16 +3564,6 @@
         }
       }
     },
-    "Días seguidos" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Days in a row"
-          }
-        }
-      }
-    },
     "Días total" : {
       "localizations" : {
         "en" : {
@@ -4257,6 +4227,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Workouts"
+          }
+        }
+      }
+    },
+    "Entrenos seguidos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Workouts in a row"
           }
         }
       }
@@ -10696,6 +10676,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "reps"
+          }
+        }
+      }
+    },
+    "seguidos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in a row"
           }
         }
       }

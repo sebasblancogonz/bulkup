@@ -174,7 +174,7 @@ struct UserProfileView: View {
 
     private var statsStrip: some View {
         StatsStrip(cells: [
-            StatCell(value: "\(calculateStreak())", unit: nil, label: "Días seguidos",
+            StatCell(value: "\(calculateStreak())", unit: nil, label: "Entrenos seguidos",
                      detail: String(format: NSLocalizedString("Mejor %lld", comment: ""), friendsManager.myStreak?.longestStreak ?? 0)),
             StatCell(value: "\(calculateWorkouts())", unit: nil, label: "Entrenos", detail: nil),
             StatCell(value: "\(calculateDaysActive())", unit: nil, label: "Días en la app", detail: nil),
@@ -211,7 +211,7 @@ struct UserProfileView: View {
                     .foregroundColor(BulkUpColors.textPrimary)
                 Spacer()
                 if !friendsManager.friends.isEmpty {
-                    Text("Días seguidos")
+                    Text("Entrenos seguidos")
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textTertiary)
                 }
@@ -254,7 +254,7 @@ struct UserProfileView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityElement(children: .combine)
-                    .accessibilityValue(Text(String(format: NSLocalizedString("%lld días seguidos", comment: ""), friend.currentStreak)))
+                    .accessibilityValue(Text(String(format: NSLocalizedString("%lld entrenos seguidos", comment: ""), friend.currentStreak)))
                     .accessibilityHint("Abre su perfil")
                 }
             }

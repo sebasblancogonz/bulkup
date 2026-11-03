@@ -150,7 +150,7 @@ struct ProgressDashboardView: View {
             ),
             StatCell(
                 value: "\(streak)",
-                label: "Días seguidos",
+                label: "Entrenos seguidos",
                 detail: longestStreak > streak
                     ? String(format: NSLocalizedString("Mejor racha %lld", comment: ""), longestStreak)
                     : (streak > 0 ? NSLocalizedString("Tu mejor racha", comment: "") : nil),
@@ -294,7 +294,7 @@ struct ProgressDashboardView: View {
                     .foregroundColor(BulkUpColors.textPrimary)
                 Spacer()
                 if !friendsManager.friends.isEmpty {
-                    Text("Días seguidos")
+                    Text("Entrenos seguidos")
                         .font(BulkUpFont.caption())
                         .foregroundColor(BulkUpColors.textTertiary)
                 }
@@ -308,7 +308,7 @@ struct ProgressDashboardView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.lg)
             } else if friendsManager.friends.isEmpty {
-                Text("Añade amigos para ver quién lleva más días seguidos.")
+                Text("Añade amigos para ver quién lleva más entrenos seguidos.")
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
                     .padding(.horizontal, Spacing.md)
@@ -380,7 +380,7 @@ struct ProgressDashboardView: View {
 
     @ViewBuilder
     private func leaderboardRow(_ row: LeaderboardRow, showsSeparator: Bool) -> some View {
-        let value = Text(String(format: NSLocalizedString("%lld días seguidos", comment: ""), row.streak))
+        let value = Text(String(format: NSLocalizedString("%lld entrenos seguidos", comment: ""), row.streak))
         if row.isMe {
             leaderboardRowContent(row, showsSeparator: showsSeparator)
                 .accessibilityElement(children: .combine)

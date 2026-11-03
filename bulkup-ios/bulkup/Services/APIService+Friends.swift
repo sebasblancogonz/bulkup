@@ -9,6 +9,15 @@ import Foundation
 
 extension APIService {
 
+    /// Today's date in the user's time zone, "yyyy-MM-dd". The server computes
+    /// streaks and windows against this day instead of its own (UTC) clock.
+    static var localToday: String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: Date())
+    }
+
     // MARK: - Friend Code
 
     func getMyFriendCode() async throws -> String {
@@ -46,7 +55,7 @@ extension APIService {
 
     func getFriends() async throws -> [FriendProfile] {
         let response: APIResponse<[FriendProfile]> = try await request(
-            endpoint: "friends",
+            endpoint: "friends?today=\(Self.localToday)",
             method: .GET
         )
         return response.data ?? []
@@ -54,7 +63,7 @@ extension APIService {
 
     func getFriendProfile(friendId: String) async throws -> FriendPublicProfile {
         let response: APIResponse<FriendPublicProfile> = try await request(
-            endpoint: "friends/\(friendId)/profile",
+            endpoint: "friends/\(friendId)/profile?today=\(Self.localToday)",
             method: .GET
         )
         guard let data = response.data else {
@@ -67,7 +76,7 @@ extension APIService {
 
     func getLeaderboard() async throws -> LeaderboardResponse {
         let response: APIResponse<LeaderboardResponse> = try await request(
-            endpoint: "friends/leaderboard",
+            endpoint: "friends/leaderboard?today=\(Self.localToday)",
             method: .GET
         )
         guard let data = response.data else {
@@ -109,7 +118,7 @@ extension APIService {
 
     func getMyStreak() async throws -> TrainingStreakResponse {
         let response: APIResponse<TrainingStreakResponse> = try await request(
-            endpoint: "training/streak",
+            endpoint: "training/streak?today=\(Self.localToday)",
             method: .GET
         )
         guard let data = response.data else {

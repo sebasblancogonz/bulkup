@@ -119,9 +119,12 @@ struct TodayView: View {
         measurementsManager.currentMeasurements?.peso
     }
 
+    /// Same formula as Progreso: meals done over the last 7 days against the
+    /// meals the plan expects, so untracked days count against you.
     private var weeklyComplianceRate: Double? {
-        guard let stats = mealTrackingManager.complianceStats else { return nil }
-        return stats.complianceRate
+        let expected = DietCompliance.expectedMealsLast7(dietData: dietManager.dietData)
+        return DietCompliance.percent(completedLast7: mealTrackingManager.weeklyCompletedMeals, expectedLast7: expected)
+            .map { $0 / 100 }
     }
 
     private var weeklyTrainingSummary: (completed: Int, total: Int) {
@@ -244,11 +247,11 @@ struct TodayView: View {
                         .font(.system(.caption2, weight: .bold))
                     Text("\(streakCount)")
                         .font(BulkUpFont.numeric(.footnote, weight: .semibold))
-                    Text("días")
+                    Text("seguidos")
                         .font(.system(.footnote, weight: .medium))
                 }
                 .foregroundColor(BulkUpColors.accentText)
-                .accessibilityLabel(Text("\(streakCount)-day streak"))
+                .accessibilityLabel(Text(String(format: NSLocalizedString("%lld entrenos seguidos", comment: ""), streakCount)))
             }
 
             if friendsManager.todayCompleted {

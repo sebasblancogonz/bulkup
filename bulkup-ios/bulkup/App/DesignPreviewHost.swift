@@ -68,7 +68,7 @@ enum DesignPreview {
         _ = thisWeek
 
         let dm = DietManager.shared
-        dm.setDietData(screen == "diet-empty" ? [] : makeDiet(), planId: nil)
+        dm.setDietData(screen == "diet-empty" ? [] : (screen == "diet-week" ? makeWeekDiet() : makeDiet()), planId: nil)
         dm.activePlanName = "Volumen 3.200 kcal"
         dm.isLoading = false
         seedMealTracking()
@@ -127,7 +127,6 @@ enum DesignPreview {
         fm.isLoading = false
 
         let mm = MealTrackingManager.shared
-        mm.complianceStats = ComplianceStatsResponse(totalMeals: 35, completedMeals: 27, complianceRate: 0.77, currentStreak: 4, daysTracked: 7)
         mm.weeklyCompletedMeals = 27
     }
 
@@ -266,6 +265,21 @@ enum DesignPreview {
             ])
         }
         return [today] + rest
+    }
+
+    /// Monday to Sunday, each day a copy of the sample, so the day strip shows.
+    private static func makeWeekDiet() -> [DietDay] {
+        ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"].map { name in
+            let template = makeDiet()[0]
+            let day = DietDay(day: name, meals: template.meals, supplements: template.supplements)
+            day.hasMacros = template.hasMacros
+            day.macroCalories = template.macroCalories
+            day.macroProtein = template.macroProtein
+            day.macroCarbs = template.macroCarbs
+            day.macroFat = template.macroFat
+            day.allowsCheatMeal = template.allowsCheatMeal
+            return day
+        }
     }
 
     private static func makeDiet() -> [DietDay] {
@@ -451,7 +465,7 @@ struct DesignPreviewHost: View {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 NotificationCenter.default.post(name: .navigateToProfile, object: nil)
             }
-            if screen == "diet" || screen == "diet-detail" || screen == "diet-empty" {
+            if screen == "diet" || screen == "diet-detail" || screen == "diet-empty" || screen == "diet-week" {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 NotificationCenter.default.post(name: .navigateToDiet, object: nil)
             }

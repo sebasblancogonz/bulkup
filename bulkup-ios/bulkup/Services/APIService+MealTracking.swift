@@ -22,7 +22,7 @@ extension APIService {
 
     func getMealTracking(userId: String, date: String) async throws -> DailyMealTrackingResponse? {
         let response: APIResponse<DailyMealTrackingResponse> = try await request(
-            endpoint: "diet/tracking?userId=\(userId)&date=\(date)",
+            endpoint: "diet/tracking?date=\(date)",
             method: .GET
         )
         return response.data
@@ -30,7 +30,7 @@ extension APIService {
 
     func getMealTrackingHistory(userId: String, from: String, to: String) async throws -> [DailyMealTrackingResponse] {
         let response: APIResponse<[DailyMealTrackingResponse]> = try await request(
-            endpoint: "diet/tracking/history?userId=\(userId)&from=\(from)&to=\(to)",
+            endpoint: "diet/tracking/history?from=\(from)&to=\(to)",
             method: .GET
         )
         return response.data ?? []
@@ -38,7 +38,7 @@ extension APIService {
 
     func getComplianceStats(userId: String, days: Int = 30) async throws -> ComplianceStatsResponse? {
         let response: APIResponse<ComplianceStatsResponse> = try await request(
-            endpoint: "diet/tracking/stats?userId=\(userId)&days=\(days)",
+            endpoint: "diet/tracking/stats?days=\(days)&today=\(Self.localToday)",
             method: .GET
         )
         return response.data
