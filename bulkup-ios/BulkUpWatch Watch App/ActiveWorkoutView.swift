@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// One set at a time: the exercise, the set line and the clock, the metrics
+/// when HealthKit is running, the kilos and reps as raised mono fields, the
+/// lime CTA, the progress rule, and a quiet way out.
 struct ActiveWorkoutView: View {
     @EnvironmentObject var wc: WatchWCManager
     @EnvironmentObject var metrics: WorkoutMetricsManager
@@ -9,99 +12,105 @@ struct ActiveWorkoutView: View {
     var body: some View {
         Group {
             if let restEnd = live.restEndDate, restEnd > Date() {
-                RestTimerView(end: restEnd)
+                RestTimerView(end: restEnd, start: live.restStartDate, next: live.current, unit: live.weightUnit)
             } else if let s = live.current {
                 ScrollView {
-                    VStack(spacing: 12) {
-                        // Full exercise name — wraps instead of truncating.
-                        Text(s.exerciseName)
-                            .font(.headline)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity)
-
-                        Text("SERIE \(s.setIndex + 1) / \(s.setsTotalForExercise)")
-                            .font(.caption2).fontWeight(.semibold).monospacedDigit()
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, 10).padding(.vertical, 3)
-                            .background(Color.lime, in: Capsule())
-
-                        HStack(spacing: 4) {
-                            Image(systemName: "stopwatch")
-                            Text(timerInterval: live.startDate...Date.distantFuture, countsDown: false)
-                                .monospacedDigit()
+                    VStack(spacing: 6) {
+                        VStack(spacing: 2) {
+                            Text(s.exerciseName)
+                                .font(.brandTitle(.headline))
+                                .foregroundStyle(Brand.textPrimary)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity)
+                            HStack(spacing: 6) {
+                                Text("Serie \(s.setIndex + 1) de \(s.setsTotalForExercise)")
+                                    .font(.footnote.monospacedDigit())
+                                    .foregroundStyle(Brand.textSecondary)
+                                Text("·").foregroundStyle(Brand.textTertiary)
+                                WatchElapsed(start: live.startDate)
+                            }
                         }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+
+                        WatchValueField(value: BrandFormat.weight(s.weight), unit: LocalizedStringKey(live.weightUnit),
+                                        size: 22,
+                                        minus: { wc.adjustWeight(-live.weightStep) },
+                                        plus: { wc.adjustWeight(live.weightStep) })
+                        WatchValueField(value: "\(s.reps)", unit: "reps", size: 18, height: 40,
+                                        minus: { wc.adjustReps(-1) }, plus: { wc.adjustReps(1) })
+
+                        WatchPrimaryButton(title: s.needsWeight ? "Ajusta el peso" : "Completar serie",
+                                           enabled: !s.needsWeight) {
+                            wc.completeSet()
+                        }
 
                         if metrics.isRunning {
-                            HStack(spacing: 16) {
-                                Label("\(metrics.heartRate)", systemImage: "heart.fill")
-                                    .foregroundStyle(.red)
-                                Label("\(Int(metrics.activeEnergy)) kcal", systemImage: "flame.fill")
-                                    .foregroundStyle(.orange)
+                            HStack(spacing: 14) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "heart.fill").font(.system(size: 10, weight: .semibold))
+                                    Text("\(metrics.heartRate)")
+                                }
+                                HStack(spacing: 4) {
+                                    Image(systemName: "flame.fill").font(.system(size: 10, weight: .semibold))
+                                    Text("\(Int(metrics.activeEnergy)) kcal")
+                                }
                             }
-                            .font(.caption).monospacedDigit()
-                            .padding(.vertical, 6).frame(maxWidth: .infinity)
-                            .background(Color.card, in: RoundedRectangle(cornerRadius: 10))
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(Brand.textSecondary)
+                            .padding(.top, 2)
                         }
 
-                        stepper(label: "\(fmt(s.weight)) \(live.weightUnit)",
-                                emphasized: true,
-                                minus: { wc.adjustWeight(-live.weightStep) },
-                                plus: { wc.adjustWeight(live.weightStep) })
-                        stepper(label: "\(s.reps) reps",
-                                emphasized: false,
-                                minus: { wc.adjustReps(-1) }, plus: { wc.adjustReps(1) })
-
-                        if s.needsWeight {
-                            Text("Ajusta el peso")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                        VStack(spacing: 5) {
+                            GeometryReader { geo in
+                                let fraction = live.sets.isEmpty ? 0 : Double(live.completedCount) / Double(live.sets.count)
+                                ZStack(alignment: .leading) {
+                                    Capsule().fill(Brand.line)
+                                    Capsule().fill(Brand.lime).frame(width: max(0, geo.size.width * fraction))
+                                }
+                            }
+                            .frame(height: 3)
+                            Text("\(live.completedCount)/\(live.sets.count) series")
+                                .font(.caption2.monospacedDigit())
+                                .foregroundStyle(Brand.textTertiary)
                         }
-                        Button { wc.completeSet() } label: {
-                            Label("Complete set", systemImage: "checkmark")
-                                .fontWeight(.semibold).frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent).tint(Color.lime).foregroundStyle(.black)
-                        .disabled(s.needsWeight)
+                        .padding(.top, 2)
 
-                        ProgressView(value: Double(live.completedCount), total: Double(max(live.sets.count, 1)))
-                            .tint(Color.lime)
-                        Text("\(live.completedCount)/\(live.sets.count) sets")
-                            .font(.caption2).foregroundStyle(.secondary)
-
-                        Button(finishing ? "Finishing…" : "Finish") {
+                        Button {
                             finishing = true
                             Task {
                                 let m = await metrics.end()
                                 wc.finishWorkout(metrics: m)
                             }
+                        } label: {
+                            Text(finishing ? "Guardando..." : "Finalizar")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(Brand.textSecondary)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 44)
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                         .disabled(finishing)
-                        .font(.caption).foregroundStyle(.secondary)
-                        .padding(.top, 2)
-                    }.padding()
+                    }
+                    .padding(.horizontal, 2)
                 }
             } else {
-                Text("Workout complete").padding()
+                VStack(spacing: 10) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Brand.sky)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(Brand.onLime)
+                    }
+                    .frame(width: 32, height: 32)
+                    Text("Entreno completado")
+                        .font(.headline)
+                        .foregroundStyle(Brand.textPrimary)
+                }
+                .padding()
             }
         }
         .onAppear { metrics.start() }
         .onDisappear { Task { _ = await metrics.end() } }
     }
-
-    private func stepper(label: String, emphasized: Bool,
-                         minus: @escaping () -> Void, plus: @escaping () -> Void) -> some View {
-        HStack(spacing: 8) {
-            Button { minus() } label: { Image(systemName: "minus") }.buttonStyle(.bordered)
-            Text(label)
-                .font(emphasized ? .title3 : .body).fontWeight(.medium).monospacedDigit()
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 6)
-                .background(Color.card, in: RoundedRectangle(cornerRadius: 8))
-            Button { plus() } label: { Image(systemName: "plus") }.buttonStyle(.bordered)
-        }
-    }
-    private func fmt(_ w: Double) -> String { w == w.rounded() ? String(format: "%.0f", w) : String(format: "%.1f", w) }
 }

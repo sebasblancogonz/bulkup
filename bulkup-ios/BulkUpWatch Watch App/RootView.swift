@@ -15,10 +15,9 @@ struct RootView: View {
             TodayView(plan: wc.ctx?.todaysPlan, meals: wc.ctx?.meals ?? [])
         } else {
             VStack(spacing: 10) {
-                Image(systemName: "dumbbell.fill").font(.title2).foregroundStyle(Color.lime)
-                Text("Open BulkUp on your iPhone")
+                Text("Abre BulkUp en el iPhone")
                     .font(.footnote).multilineTextAlignment(.center)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Brand.textSecondary)
             }.padding()
         }
     }

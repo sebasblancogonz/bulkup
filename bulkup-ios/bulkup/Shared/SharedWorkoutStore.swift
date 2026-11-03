@@ -33,6 +33,13 @@ struct LiveWorkout: Codable, Equatable {
 
     var completedCount: Int { sets.filter(\.completed).count }
     var isFinished: Bool { cursor >= sets.count }
+    /// The rest's start, derived from its end and the rest of the set that
+    /// earned it (the last completed one). Nil when no rest is running.
+    var restStartDate: Date? {
+        guard let end = restEndDate else { return nil }
+        let seconds = sets.last(where: \.completed)?.restSeconds ?? 0
+        return end.addingTimeInterval(-TimeInterval(max(seconds, 1)))
+    }
     var current: LiveSet? { sets.indices.contains(cursor) ? sets[cursor] : nil }
 
     mutating func advanceCursor() {

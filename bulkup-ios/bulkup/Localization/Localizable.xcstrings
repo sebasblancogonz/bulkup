@@ -203,16 +203,16 @@
     },
     "%@, %@" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@, %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
           }
         }
       }
@@ -239,16 +239,16 @@
     },
     "%g kg × %lld" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$g kg × %2$lld"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%g kg × %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$g kg × %2$lld"
           }
         }
       }
@@ -439,6 +439,16 @@
         }
       }
     },
+    "%lld series · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sets · %@"
+          }
+        }
+      }
+    },
     "%lld × %@" : {
       "localizations" : {
         "en" : {
@@ -528,6 +538,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld/%lld exercises logged"
+          }
+        }
+      }
+    },
+    "%lld/%lld series" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld/%lld sets"
           }
         }
       }
@@ -826,6 +846,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abductors"
+          }
+        }
+      }
+    },
+    "Abre BulkUp en el iPhone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open BulkUp on your iPhone"
           }
         }
       }
@@ -1155,6 +1185,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Isolation"
+          }
+        }
+      }
+    },
+    "Ajusta el peso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set the weight"
           }
         }
       }
@@ -7886,6 +7926,36 @@
         }
       }
     },
+    "Serie %lld de %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set %lld of %lld"
+          }
+        }
+      }
+    },
+    "Serie %lld de %lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set %lld of %lld · %@"
+          }
+        }
+      }
+    },
+    "Serie %lld · %@ %@ × %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set %lld · %@ %@ × %lld"
+          }
+        }
+      }
+    },
     "Serie %lld · %@ kg × %@" : {
       "localizations" : {
         "en" : {
@@ -7952,6 +8022,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Next"
+          }
+        }
+      }
+    },
+    "Siguiente · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next · %@"
+          }
+        }
+      }
+    },
+    "Siguiente · Serie %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next · Set %lld"
+          }
+        }
+      }
+    },
+    "Siguiente · Serie %lld · %@ %@ × %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next · Set %lld · %@ %@ × %lld"
           }
         }
       }
@@ -9675,16 +9775,16 @@
     },
     "🏆 %@ kg × %lld" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "🏆 %1$@ kg × %2$lld"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "🏆 %@ kg × %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "🏆 %1$@ kg × %2$lld"
           }
         }
       }

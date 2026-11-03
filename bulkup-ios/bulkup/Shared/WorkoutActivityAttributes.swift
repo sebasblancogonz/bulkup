@@ -26,6 +26,9 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         // Rest
         var isResting: Bool
         var restEndDate: Date?
+        /// When the rest began (end minus the completed set's rest), so the
+        /// card can drain a `ProgressView(timerInterval:)` without updates.
+        var restStartDate: Date?
 
         // Terminal
         var isFinished: Bool
@@ -45,7 +48,7 @@ extension WorkoutActivityAttributes.ContentState {
             needsWeight: cur?.needsWeight ?? false,
             completedSets: w.completedCount, totalSets: w.sets.count,
             isResting: w.restEndDate.map { $0 > Date() } ?? false,
-            restEndDate: w.restEndDate, isFinished: w.isFinished
+            restEndDate: w.restEndDate, restStartDate: w.restStartDate, isFinished: w.isFinished
         )
     }
 }

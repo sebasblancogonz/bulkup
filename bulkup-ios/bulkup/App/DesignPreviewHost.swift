@@ -31,6 +31,7 @@ enum DesignPreview {
 
     @MainActor
     static func seed() {
+        BrandFonts.register()   // before any `Font.brandMono` resolves in the harness
         let auth = AuthManager.shared
         auth.user = User(id: "design-preview", email: "preview@example.com", name: "Sebas Blanco")
         auth.isAuthenticated = true
@@ -180,6 +181,8 @@ struct DesignPreviewHost: View {
                         BulkUpGround()
                         SubscriptionRequiredView(onSubscribe: {})
                     }
+                case "live", "live-rest", "live-done":
+                    LiveActivityPreview(state: DesignPreview.activityState(for: screen))
                 case "summary":
                     WorkoutSummaryView(
                         summary: WorkoutSummary(duration: 3140, totalVolume: 6240, totalSets: 18,
@@ -223,6 +226,55 @@ struct DesignPreviewHost: View {
                 NotificationCenter.default.post(name: .navigateToDiet, object: nil)
             }
         }
+    }
+}
+
+// MARK: - Live Activity stand-in
+/// The lock-screen card at the system's size (full width minus 14pt margins,
+/// 160pt max height, 24pt radius) on a neutral wallpaper. The widget process
+/// itself cannot be screenshotted from a script.
+struct LiveActivityPreview: View {
+    let state: WorkoutActivityAttributes.ContentState
+
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: [Color(hex: "#3A4256"), Color(hex: "#151822")],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+            VStack(spacing: 24) {
+                Text("9:41")
+                    .font(.system(size: 84, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .padding(.top, 60)
+                WorkoutActivityCard(state: state)
+                    .frame(maxHeight: 160)
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .padding(.horizontal, 14)
+                Spacer()
+            }
+        }
+    }
+}
+
+extension DesignPreview {
+    static func activityState(for screen: String) -> WorkoutActivityAttributes.ContentState {
+        var s = WorkoutActivityAttributes.ContentState(
+            workoutName: "Pecho y hombros", startDate: Date().addingTimeInterval(-1265), isPaused: false,
+            exerciseName: "Press inclinado en multipower", setIndex: 2, setsTotal: 4,
+            weight: 62.5, reps: 8, weightUnit: "kg", needsWeight: false,
+            completedSets: 4, totalSets: 18, isResting: false, restEndDate: nil, restStartDate: nil, isFinished: false
+        )
+        switch screen {
+        case "live-rest":
+            s.isResting = true
+            s.restEndDate = Date().addingTimeInterval(67)
+            s.restStartDate = Date().addingTimeInterval(-23)
+        case "live-done":
+            s.isFinished = true
+            s.completedSets = 18
+        default: break
+        }
+        return s
     }
 }
 #endif

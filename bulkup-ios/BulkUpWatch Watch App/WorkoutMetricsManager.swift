@@ -27,6 +27,14 @@ final class WorkoutMetricsManager: NSObject, ObservableObject {
     }
 
     func start() {
+        #if DEBUG
+        if WatchDesignPreview.isActive {
+            heartRate = 142
+            activeEnergy = 186
+            isRunning = true
+            return
+        }
+        #endif
         guard HKHealthStore.isHealthDataAvailable(), session == nil else { return }
         heartRate = 0
         activeEnergy = 0

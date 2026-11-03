@@ -79,6 +79,10 @@
 		161B707F2FF1321200316A4B /* Exceptions for "bulkup" folder in "BulkUpWatch Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Localization/Localizable.xcstrings,
+				"Resources/Fonts/JetBrainsMono-Medium.ttf",
+				"Resources/Fonts/JetBrainsMono-SemiBold.ttf",
+				Shared/BrandPalette.swift,
 				Shared/SharedWorkoutStore.swift,
 				Shared/TodaysPlan.swift,
 				Shared/WatchMessage.swift,
@@ -96,8 +100,13 @@
 		16B2C0E22FE59389000B7A44 /* Exceptions for "bulkup" folder in "BulkUpWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Localization/Localizable.xcstrings,
+				"Resources/Fonts/JetBrainsMono-Medium.ttf",
+				"Resources/Fonts/JetBrainsMono-SemiBold.ttf",
+				Shared/BrandPalette.swift,
 				Shared/SharedWorkoutStore.swift,
 				Shared/WorkoutActivityAttributes.swift,
+				Shared/WorkoutActivityViews.swift,
 				Shared/WorkoutLiveActivityIntents.swift,
 			);
 			target = 16B2C0BD2FE59083000B7A44 /* BulkUpWidgetsExtension */;

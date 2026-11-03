@@ -11,12 +11,21 @@ import SwiftUI
 struct BulkUpWatch_Watch_AppApp: App {
     @StateObject private var wc = WatchWCManager()
     @StateObject private var metrics = WorkoutMetricsManager()
+
+    init() { BrandFonts.register() }
+
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(wc)
                 .environmentObject(metrics)
                 .onAppear {
+                    #if DEBUG
+                    if WatchDesignPreview.isActive {
+                        WatchDesignPreview.seed(into: wc)
+                        return
+                    }
+                    #endif
                     wc.activate()
                     metrics.requestAuthorization()
                 }
