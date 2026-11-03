@@ -24,13 +24,32 @@ struct DietFidelityView: View {
                 Button {
                     showingSubscription = true
                 } label: {
-                    Label("Fidelidad a la dieta (PRO)", systemImage: "chart.pie.fill")
-                        .font(BulkUpFont.cardTitle())
-                        .foregroundColor(BulkUpColors.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(BulkUpColors.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
+                    HStack(spacing: Spacing.md) {
+                        Image(systemName: "lock.fill")
+                            .font(.system(.footnote, weight: .semibold))
+                            .foregroundColor(BulkUpColors.textSecondary)
+                            .frame(width: 24)
+                        Text("Fidelidad a la dieta")
+                            .font(.system(.subheadline, weight: .semibold))
+                            .foregroundColor(BulkUpColors.textPrimary)
+                        Text("PRO")
+                            .font(.system(.caption2, weight: .bold))
+                            .foregroundColor(BulkUpColors.onAccent)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(BulkUpColors.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(.caption, weight: .semibold))
+                            .foregroundColor(BulkUpColors.textTertiary)
+                    }
+                    .padding(.horizontal, Spacing.md)
+                    .frame(minHeight: 48)
+                    .background(BulkUpColors.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+                    .lift()
+                    .contentShape(Rectangle())
                 }
                 .sheet(isPresented: $showingSubscription) {
                     SubscriptionView()
@@ -59,15 +78,16 @@ struct DietFidelityView: View {
             } label: {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "chart.pie.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(BulkUpColors.accentText)
+                        .font(.system(.footnote, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textSecondary)
+                        .frame(width: 24)
                     Text("Fidelidad a la dieta")
-                        .font(BulkUpFont.body())
+                        .font(.system(.subheadline, weight: .semibold))
                         .foregroundColor(BulkUpColors.textPrimary)
                     Spacer()
                     Text(fidelityText)
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundColor(fidelityText == "—" ? BulkUpColors.textSecondary : BulkUpColors.accent)
+                        .font(BulkUpFont.numeric(.headline, weight: .semibold))
+                        .foregroundColor(fidelityText == "—" ? BulkUpColors.textSecondary : BulkUpColors.accentText)
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(BulkUpColors.textTertiary)
@@ -118,9 +138,10 @@ struct DietFidelityView: View {
             }
         }
         .padding(.horizontal, Spacing.md)
-        .padding(.vertical, isExpanded ? Spacing.md : Spacing.sm)
+        .padding(.vertical, isExpanded ? Spacing.md : Spacing.sm + 4)
         .background(BulkUpColors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .lift()
         .sheet(isPresented: $showingLog) {
             LogSkippedDayView()
         }

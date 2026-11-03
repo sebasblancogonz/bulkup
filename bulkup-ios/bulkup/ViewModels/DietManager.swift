@@ -69,6 +69,9 @@ class DietManager: ObservableObject {
     }
     
     func loadActiveDietPlan(userId: String) async {
+        #if DEBUG
+        if DesignPreview.isActive { return }   // seeded locally, no network
+        #endif
         isLoading = true
         errorMessage = nil
 

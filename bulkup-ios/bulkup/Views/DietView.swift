@@ -2,7 +2,8 @@
 //  DietView.swift
 //  bulkup
 //
-//  Created by sebastianblancogonz on 17/8/25.
+//  The day's meals as a checklist read at the table: the next meal steps
+//  forward, the rest wait. Graphite & Voltage, light instead of lines.
 //
 
 import SwiftData
@@ -21,12 +22,15 @@ struct DietView: View {
         return formatter.string(from: Date())
     }
 
+    /// One plan for every day of the week ("Dieta Semanal").
+    private var isWeeklyPlan: Bool {
+        dietManager.dietData.count == 1 && dietManager.dietData[0].day == "Dieta Semanal"
+    }
+
     var body: some View {
         Group {
-            if dietManager.dietData.count == 1
-                && dietManager.dietData[0].day == "Dieta Semanal"
-            {
-                singleDayContent(dietManager.dietData[0])
+            if isWeeklyPlan {
+                dayPage(dietManager.dietData[0], index: nil)
             } else if dietManager.dietData.count > 0 {
                 multiDayContent
             }
@@ -37,66 +41,19 @@ struct DietView: View {
         }
     }
 
-    // MARK: - Single Day (Weekly Plan)
-
-    private func singleDayContent(_ day: DietDay) -> some View {
-        let sortedMeals = day.meals.sorted { $0.orderIndex < $1.orderIndex }
-        let completedCount = mealTrackingManager.todayTracking.filter { $0.completed }.count
-        let allComplete = completedCount == sortedMeals.count && sortedMeals.count > 0
-
-        return ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                dayHeader(
-                    title: "Plan Semanal",
-                    completedCount: completedCount,
-                    totalCount: sortedMeals.count
-                )
-                .padding(.horizontal, Spacing.screenH)
-                .padding(.top, Spacing.xl)
-                .padding(.bottom, Spacing.xl)
-
-                // Celebration banner
-                if allComplete {
-                    celebrationBanner
-                        .padding(.horizontal, Spacing.screenH)
-                        .padding(.bottom, Spacing.md)
-                }
-
-                // Daily macros
-                dailyMacrosCard(day)
-                    .padding(.bottom, Spacing.md)
-
-                mealList(meals: sortedMeals, dayName: day.day)
-
-                // Cheat meal section
-                cheatMealSection(day)
-                    .padding(.top, Spacing.md)
-
-                if !day.supplements.isEmpty {
-                    supplementsList(day.supplements)
-                        .padding(.top, Spacing.sectionGap)
-                }
-
-                Color.clear.frame(height: 100)
-            }
-        }
-        .refreshable {
-            if let user = authManager.user {
-                await dietManager.loadActiveDietPlan(userId: user.id)
-                loadTrackingForCurrentDay()
-            }
-        }
-    }
-
     // MARK: - Multi Day Content
 
     private var multiDayContent: some View {
         VStack(spacing: 0) {
-            dayPillStrip
+            if dietManager.dietData.count > 1 {
+                dayStrip
+                    .padding(.horizontal, Spacing.screenH)
+                    .padding(.bottom, Spacing.md)
+            }
 
             TabView(selection: $currentDayIndex) {
                 ForEach(Array(dietManager.dietData.enumerated()), id: \.offset) { index, day in
-                    dayPageContent(day, index: index)
+                    dayPage(day, index: index)
                         .tag(index)
                 }
             }
@@ -115,12 +72,12 @@ struct DietView: View {
         }
     }
 
-    // MARK: - Day Pill Strip
+    // MARK: - Day strip (lifted slab, selected day a lime square)
 
-    private var dayPillStrip: some View {
+    private var dayStrip: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Spacing.sm) {
+                HStack(spacing: Spacing.xs) {
                     ForEach(Array(dietManager.dietData.enumerated()), id: \.offset) { index, day in
                         let isSelected = index == currentDayIndex
 
@@ -130,21 +87,21 @@ struct DietView: View {
                             }
                         } label: {
                             Text(abbreviatedDayName(day.day))
-                                .font(BulkUpFont.dataLabel())
+                                .font(.system(.subheadline, weight: isSelected ? .bold : .medium))
                                 .foregroundColor(isSelected ? BulkUpColors.onAccent : BulkUpColors.textSecondary)
-                                .padding(.horizontal, Spacing.md)
-                                .padding(.vertical, Spacing.sm)
+                                .frame(minWidth: 44, minHeight: 36)
+                                .padding(.horizontal, Spacing.xs)
                                 .background(
-                                    Capsule()
-                                        .fill(isSelected ? BulkUpColors.accent : BulkUpColors.surfaceElevated)
+                                    RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                                        .fill(isSelected ? BulkUpColors.accent : Color.clear)
                                 )
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .id(index)
                     }
                 }
-                .padding(.horizontal, Spacing.screenH)
-                .padding(.vertical, Spacing.sm)
+                .padding(Spacing.xs)
             }
             .onChange(of: currentDayIndex) { _, newIndex in
                 withAnimation(.easeInOut(duration: 0.2)) {
@@ -152,52 +109,68 @@ struct DietView: View {
                 }
             }
         }
-        .background(BulkUpColors.background)
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .lift()
     }
 
-    // MARK: - Day Page Content
+    // MARK: - Day page
 
-    private func dayPageContent(_ day: DietDay, index: Int) -> some View {
+    private func dayPage(_ day: DietDay, index: Int?) -> some View {
         let sortedMeals = day.meals.sorted { $0.orderIndex < $1.orderIndex }
         let completedCount = mealTrackingManager.todayTracking.filter { $0.completed }.count
         let allComplete = completedCount == sortedMeals.count && sortedMeals.count > 0
+        let title: String = index == nil
+            ? NSLocalizedString("Plan semanal", comment: "")
+            : formatDayName(day.day)
+        let subtitle: String? = (index != nil && dietManager.dietData.count > 1)
+            ? String(format: NSLocalizedString("Día %lld de %lld", comment: ""), (index ?? 0) + 1, dietManager.dietData.count)
+            : nil
 
-        return ScrollView(.vertical, showsIndicators: false) {
+        return ScrollViewReader { proxy in
+          ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                dayHeader(
-                    title: LocalizedStringKey(formatDayName(day.day)),
-                    completedCount: completedCount,
-                    totalCount: sortedMeals.count,
-                    subtitle: "Día \(index + 1) de \(dietManager.dietData.count)"
-                )
-                .padding(.horizontal, Spacing.screenH)
-                .padding(.top, Spacing.lg)
-                .padding(.bottom, Spacing.xl)
+                dayProgress(title: title, subtitle: subtitle,
+                            completed: completedCount, total: sortedMeals.count, allComplete: allComplete)
+                    .padding(.horizontal, Spacing.screenH)
+                    .padding(.top, Spacing.sm)
+                    .padding(.bottom, Spacing.lg)
 
-                // Celebration banner
-                if allComplete {
-                    celebrationBanner
+                if day.hasMacros {
+                    macroStrip(day)
                         .padding(.horizontal, Spacing.screenH)
-                        .padding(.bottom, Spacing.md)
+                        .padding(.bottom, Spacing.lg)
                 }
 
-                // Daily macros
-                dailyMacrosCard(day)
-                    .padding(.bottom, Spacing.md)
-
                 mealList(meals: sortedMeals, dayName: day.day)
+                    .padding(.horizontal, Spacing.screenH)
+                    .id("meals")
 
-                // Cheat meal section
-                cheatMealSection(day)
-                    .padding(.top, Spacing.md)
+                if day.allowsCheatMeal {
+                    cheatMealSection
+                        .padding(.horizontal, Spacing.screenH)
+                        .padding(.top, Spacing.lg)
+                }
 
                 if !day.supplements.isEmpty {
                     supplementsList(day.supplements)
                         .padding(.top, Spacing.sectionGap)
                 }
 
-                Color.clear.frame(height: 100)
+                Color.clear.frame(height: 100).id("bottom")
             }
+          }
+          .onAppear {
+              #if DEBUG
+              // Design review: open the next meal and show the lower half of the page.
+              if DesignPreview.screen == "diet-detail" {
+                  expandedMeals = [sortedMeals.indices.contains(2) ? sortedMeals[2].order : 0]
+                  DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                      withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
+                  }
+              }
+              #endif
+          }
         }
         .refreshable {
             if let user = authManager.user {
@@ -207,72 +180,112 @@ struct DietView: View {
         }
     }
 
-    // MARK: - Day Header
+    // MARK: - Day progress (title, count, lime rule → sky when done)
 
-    private func dayHeader(title: LocalizedStringKey, completedCount: Int, totalCount: Int, subtitle: LocalizedStringKey? = nil) -> some View {
-        VStack(spacing: 16) {
-            VStack(spacing: 2) {
-                Text(title)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(BulkUpColors.textPrimary)
-                if let subtitle = subtitle {
-                    Text(subtitle)
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textTertiary)
+    private func dayProgress(title: String, subtitle: String?, completed: Int, total: Int, allComplete: Bool) -> some View {
+        let progress: CGFloat = total > 0 ? CGFloat(completed) / CGFloat(total) : 0
+        return VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(alignment: .lastTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(.title3, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textPrimary)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(BulkUpFont.numeric(.footnote))
+                            .foregroundColor(BulkUpColors.textTertiary)
+                    }
+                }
+                Spacer(minLength: Spacing.md)
+                if total > 0 {
+                    Text(allComplete ? "Dieta completada hoy" : "\(completed)/\(total) comidas")
+                        .font(BulkUpFont.numeric(.subheadline, weight: .semibold))
+                        .foregroundColor(allComplete ? BulkUpColors.complete : BulkUpColors.textSecondary)
+                        .contentTransition(.numericText())
                 }
             }
 
-            MetricRing(
-                value: totalCount > 0 ? "\(completedCount)/\(totalCount)" : "—",
-                label: "COMIDAS HOY",
-                progress: totalCount > 0 ? Double(completedCount) / Double(totalCount) : 0,
-                size: 124,
-                dimmed: totalCount == 0
-            )
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    // MARK: - Progress Bar
-
-    private func progressBar(completed: Int, total: Int) -> some View {
-        let progress: CGFloat = total > 0 ? CGFloat(completed) / CGFloat(total) : 0
-
-        return GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(BulkUpColors.surfaceElevated)
-                    .frame(height: 4)
-
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(BulkUpColors.accent)
-                    .frame(width: geo.size.width * progress, height: 4)
-                    .animation(.easeOut(duration: 0.5), value: progress)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Rectangle().fill(BulkUpColors.line)
+                    Rectangle()
+                        .fill(allComplete ? BulkUpColors.complete : BulkUpColors.accent)
+                        .frame(width: geo.size.width * progress)
+                        .animation(.easeOut(duration: 0.4), value: progress)
+                }
             }
+            .frame(height: 3)
         }
-        .frame(height: 4)
     }
 
-    // MARK: - Celebration Banner
+    // MARK: - Macros: one lifted strip of evidence
 
-    private var celebrationBanner: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 14))
-                .foregroundColor(BulkUpColors.accentText)
-            Text("¡Dieta completada hoy!")
+    private static let kcalFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.maximumFractionDigits = 0
+        return f
+    }()
+
+    private func macroStrip(_ day: DietDay) -> some View {
+        HStack(alignment: .top, spacing: 0) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(Self.kcalFormatter.string(from: NSNumber(value: day.macroCalories)) ?? "\(day.macroCalories)")
+                    .font(BulkUpFont.mono(22, weight: .semibold, relativeTo: .title2))
+                    .foregroundColor(BulkUpColors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                Text("kcal")
+                    .font(BulkUpFont.caption())
+                    .foregroundColor(BulkUpColors.textSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            macroDivider
+            macroCell(grams: day.macroProtein, label: "Proteína")
+            macroDivider
+            macroCell(grams: day.macroCarbs, label: "Carbos")
+            macroDivider
+            macroCell(grams: day.macroFat, label: "Grasas")
+        }
+        .padding(Spacing.md)
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .lift()
+    }
+
+    private var macroDivider: some View {
+        Rectangle()
+            .fill(BulkUpColors.line)
+            .frame(width: 1, height: 36)
+            .padding(.trailing, Spacing.sm + 4)
+    }
+
+    private func macroCell(grams: Int, label: LocalizedStringKey) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text("\(grams) g")
+                .font(BulkUpFont.numeric(.headline, weight: .semibold))
+                .foregroundColor(BulkUpColors.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Text(label)
                 .font(BulkUpFont.caption())
                 .foregroundColor(BulkUpColors.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
-        .frame(maxWidth: .infinity)
-        .transition(.opacity)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Meal List
+    // MARK: - Meal list: one slab, the next meal raised
 
     private func mealList(meals: [Meal], dayName: String) -> some View {
-        VStack(spacing: Spacing.sm) {
-            ForEach(meals, id: \.id) { meal in
+        let nextOrder = meals.first { meal in
+            !(mealTrackingManager.trackingRecord(for: meal.order, date: todayDateString)?.completed ?? false)
+        }?.order
+
+        return VStack(spacing: 0) {
+            ForEach(Array(meals.enumerated()), id: \.element.id) { index, meal in
                 let record = mealTrackingManager.trackingRecord(for: meal.order, date: todayDateString)
                 let isExpanded = expandedMeals.contains(meal.order)
 
@@ -280,6 +293,8 @@ struct DietView: View {
                     meal: meal,
                     trackingRecord: record,
                     isExpanded: isExpanded,
+                    isNext: meal.order == nextOrder,
+                    showsSeparator: index < meals.count - 1,
                     onToggleExpand: {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                             if expandedMeals.contains(meal.order) {
@@ -310,16 +325,18 @@ struct DietView: View {
                 )
             }
         }
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .lift()
     }
 
-    // MARK: - Supplements List
+    // MARK: - Supplements
 
     private func supplementsList(_ supplements: [Supplement]) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("SUPLEMENTOS")
-                .font(BulkUpFont.sectionLabel())
-                .tracking(1.5)
-                .foregroundColor(BulkUpColors.textSecondary)
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("Suplementos")
+                .font(.system(.headline, weight: .semibold))
+                .foregroundColor(BulkUpColors.textPrimary)
                 .padding(.horizontal, Spacing.screenH)
 
             SupplementsView(supplements: supplements)
@@ -327,122 +344,54 @@ struct DietView: View {
         }
     }
 
-    // MARK: - Daily Macros Card
+    // MARK: - Cheat meal (quiet lifted card)
 
-    @ViewBuilder
-    private func dailyMacrosCard(_ day: DietDay) -> some View {
-        if day.hasMacros {
-            VStack(alignment: .leading, spacing: 16) {
-                MicroLabel("Macros diarios")
-
-                // Calories hero
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("\(day.macroCalories)")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundColor(BulkUpColors.textPrimary)
-                    Text("kcal")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(BulkUpColors.textSecondary)
-                    Spacer()
-                }
-
-                // Quiet macro stats — monochrome, no multicolor bars
-                HStack(spacing: 0) {
-                    macroStat(value: "\(day.macroProtein)", label: "Proteína")
-                    macroStat(value: "\(day.macroCarbs)", label: "Carbos")
-                    macroStat(value: "\(day.macroFat)", label: "Grasas")
-                }
-            }
-            .whoopCard()
-            .padding(.horizontal, Spacing.screenH)
-        }
-    }
-
-    private func macroStat(value: String, label: String) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text(value)
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
+    private var cheatMealSection: some View {
+        let isEmpty = mealTrackingManager.cheatMealLog.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return VStack(alignment: .leading, spacing: Spacing.md) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Comida libre")
+                    .font(.system(.headline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textPrimary)
-                Text("g")
+                Text("Permitida hoy · anota qué comiste")
                     .font(BulkUpFont.caption())
                     .foregroundColor(BulkUpColors.textSecondary)
             }
-            Text(LocalizedStringKey(label))
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(BulkUpColors.textSecondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
 
-    // MARK: - Cheat Meal Section
+            TextEditor(text: $mealTrackingManager.cheatMealLog)
+                .font(BulkUpFont.body())
+                .foregroundColor(BulkUpColors.textPrimary)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 72, maxHeight: 140)
+                .padding(Spacing.sm)
+                .background(BulkUpColors.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous))
 
-    @ViewBuilder
-    private func cheatMealSection(_ day: DietDay) -> some View {
-        if day.allowsCheatMeal {
-            VStack(alignment: .leading, spacing: Spacing.md) {
-                HStack(spacing: Spacing.sm) {
-                    Text("🍕")
-                        .font(.system(size: 16))
-                    Text("COMIDA LIBRE")
-                        .font(BulkUpFont.sectionLabel())
-                        .tracking(1.5)
-                        .foregroundColor(BulkUpColors.textSecondary)
-                    Spacer()
-                    PillBadge(text: "Permitida", color: BulkUpColors.success, icon: "checkmark.circle")
-                }
-
-                Text("Registra lo que comiste en tu comida libre")
-                    .font(BulkUpFont.caption())
-                    .foregroundColor(BulkUpColors.textTertiary)
-
-                TextEditor(text: $mealTrackingManager.cheatMealLog)
-                    .font(BulkUpFont.body())
-                    .foregroundColor(BulkUpColors.textPrimary)
-                    .scrollContentBackground(.hidden)
-                    .frame(minHeight: 60, maxHeight: 120)
-                    .padding(Spacing.sm)
-                    .background(BulkUpColors.surfaceElevated)
-                    .cornerRadius(CornerRadius.small)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.small)
-                            .stroke(BulkUpColors.textTertiary.opacity(0.15), lineWidth: 1)
-                    )
-
-                // Save button
-                HStack {
-                    Spacer()
-                    Button {
-                        if let userId = authManager.user?.id {
-                            Task {
-                                await mealTrackingManager.saveCheatMealLog(userId: userId, date: todayDateString)
-                            }
+            HStack {
+                Spacer()
+                Button {
+                    if let userId = authManager.user?.id {
+                        Task {
+                            await mealTrackingManager.saveCheatMealLog(userId: userId, date: todayDateString)
                         }
-                    } label: {
-                        HStack(spacing: Spacing.xs) {
-                            Image(systemName: "square.and.arrow.down")
-                                .font(.system(size: 11, weight: .medium))
-                            Text("Guardar")
-                                .font(.system(size: 12, weight: .medium))
-                        }
-                        .foregroundColor(BulkUpColors.accentText)
-                        .padding(.horizontal, Spacing.md)
-                        .padding(.vertical, Spacing.sm)
-                        .background(BulkUpColors.accent.opacity(0.1))
-                        .cornerRadius(CornerRadius.small)
                     }
-                    .disabled(mealTrackingManager.cheatMealLog.isEmpty)
+                } label: {
+                    Text("Guardar")
+                        .font(.system(.footnote, weight: .semibold))
+                        .foregroundColor(BulkUpColors.textPrimary)
+                        .padding(.horizontal, Spacing.md)
+                        .frame(minHeight: 36)
+                        .background(BulkUpColors.surfaceElevated)
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
                 }
+                .disabled(isEmpty)
+                .opacity(isEmpty ? 0.5 : 1)
             }
-            .padding(Spacing.md)
-            .background(BulkUpColors.surface)
-            .cornerRadius(CornerRadius.large)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(BulkUpColors.border, lineWidth: 0.5)
-            )
-            .padding(.horizontal, Spacing.screenH)
         }
+        .padding(Spacing.md)
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .lift()
     }
 
     // MARK: - Helpers
@@ -459,7 +408,7 @@ struct DietView: View {
         guard let userId = authManager.user?.id else { return }
 
         let dayData: DietDay?
-        if dietManager.dietData.count == 1 && dietManager.dietData[0].day == "Dieta Semanal" {
+        if isWeeklyPlan {
             dayData = dietManager.dietData.first
         } else if currentDayIndex < dietManager.dietData.count {
             dayData = dietManager.dietData[currentDayIndex]
@@ -499,55 +448,5 @@ struct DietView: View {
 
     private func formatDayName(_ day: String) -> String {
         return WeekdayLabel.localized(day)
-    }
-}
-
-// MARK: - Macro Bar
-
-private struct MacroBar: View {
-    let label: String
-    let grams: Int
-    let color: Color
-    let total: Int
-
-    private var caloriesFromMacro: Int {
-        switch label {
-        case "Grasas": return grams * 9
-        default: return grams * 4
-        }
-    }
-
-    private var percentage: CGFloat {
-        guard total > 0 else { return 0 }
-        return CGFloat(caloriesFromMacro) / CGFloat(total)
-    }
-
-    var body: some View {
-        VStack(spacing: Spacing.xs) {
-            Text("\(grams)g")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
-                .foregroundColor(BulkUpColors.textPrimary)
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(color.opacity(0.15))
-                        .frame(height: 6)
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(color)
-                        .frame(width: geo.size.width * min(percentage, 1.0), height: 6)
-                }
-            }
-            .frame(height: 6)
-
-            Text(LocalizedStringKey(label))
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(BulkUpColors.textTertiary)
-
-            Text("\(Int(percentage * 100))%")
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(color)
-        }
-        .frame(maxWidth: .infinity)
     }
 }

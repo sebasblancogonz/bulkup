@@ -3,7 +3,7 @@
 //  bulkup
 //
 //  Debug-only design review harness. Launch the app with
-//  `--design-preview <today|training|workout|rest|summary|paywall|gate>` and
+//  `--design-preview <today|training|workout|rest|summary|paywall|gate|diet>` and
 //  the screen renders with seeded local data: no account, no network, no
 //  StoreKit. Used to screenshot the simulator in both appearances.
 //
@@ -64,6 +64,25 @@ enum DesignPreview {
         let dm = DietManager.shared
         dm.setDietData(makeDiet(), planId: nil)
         dm.activePlanName = "Volumen 3.200 kcal"
+        seedMealTracking()
+    }
+
+    /// Two meals ticked today so the diet screen shows every row state.
+    @MainActor
+    private static func seedMealTracking() {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        let today = f.string(from: Date())
+        let context = ModelContainer.bulkUpContainer.mainContext
+        var records: [MealTrackingRecord] = []
+        for (i, type) in ["desayuno", "media mañana", "comida", "merienda", "cena"].enumerated() {
+            let r = MealTrackingRecord(date: today, dayName: todayName, planId: nil, mealType: type, mealOrder: i)
+            r.completed = i < 2
+            context.insert(r)
+            records.append(r)
+        }
+        try? context.save()
+        MealTrackingManager.shared.todayTracking = records
     }
 
     private static func makeDays() -> [TrainingDay] {
@@ -89,14 +108,42 @@ enum DesignPreview {
     }
 
     private static func makeDiet() -> [DietDay] {
-        let meals = [
-            Meal(type: "desayuno", time: "08:00", order: 0),
-            Meal(type: "media mañana", time: "11:00", order: 1),
-            Meal(type: "comida", time: "14:00", order: 2),
-            Meal(type: "merienda", time: "17:30", order: 3),
-            Meal(type: "cena", time: "21:00", order: 4),
+        let breakfast = Meal(type: "desayuno", time: "08:00", order: 0)
+        breakfast.options = [
+            MealOption(optionDescription: "Avena con proteína y fruta",
+                       ingredients: ["80 g de avena", "1 scoop de proteína", "1 plátano", "200 ml de leche"]),
+            MealOption(optionDescription: "Tostadas con huevo y aguacate",
+                       ingredients: ["2 rebanadas de pan integral", "3 huevos", "½ aguacate"]),
         ]
-        return [DietDay(day: todayName, meals: meals)]
+        let midMorning = Meal(type: "media mañana", time: "11:00", order: 1)
+        midMorning.options = [MealOption(optionDescription: "Yogur griego con nueces", ingredients: ["200 g de yogur griego", "30 g de nueces"])]
+        let lunch = Meal(type: "comida", time: "14:00", notes: "Pesar el arroz en crudo.", order: 2)
+        lunch.options = [
+            MealOption(optionDescription: "Pollo con arroz y verduras",
+                       ingredients: ["200 g de pechuga de pollo", "120 g de arroz", "Verduras al gusto", "1 cda de aceite de oliva"],
+                       instructions: ["Cocer el arroz.", "Pollo a la plancha con especias.", "Saltear las verduras."]),
+        ]
+        lunch.conditions = MealConditions(
+            trainingDays: ConditionalMeal(mealDescription: "Añade 50 g más de arroz", ingredients: []),
+            nonTrainingDays: ConditionalMeal(mealDescription: "Arroz a 80 g", ingredients: [])
+        )
+        let snack = Meal(type: "merienda", time: "17:30", order: 3)
+        snack.options = [MealOption(optionDescription: "Batido de proteína y tortitas de arroz", ingredients: ["1 scoop", "3 tortitas de arroz"])]
+        let dinner = Meal(type: "cena", time: "21:00", order: 4)
+        dinner.options = [MealOption(optionDescription: "Salmón con patata y ensalada", ingredients: ["180 g de salmón", "250 g de patata", "Ensalada verde"])]
+
+        let day = DietDay(day: todayName, meals: [breakfast, midMorning, lunch, snack, dinner], supplements: [
+            Supplement(name: "Creatina monohidrato", dosage: "5 g", timing: "Con la comida", frequency: "Diario"),
+            Supplement(name: "Omega 3", dosage: "2 cápsulas", timing: "Con la cena", frequency: "Diario"),
+            Supplement(name: "Vitamina D3", dosage: "2.000 UI", timing: "Desayuno", frequency: "Diario"),
+        ])
+        day.hasMacros = true
+        day.macroCalories = 3200
+        day.macroProtein = 180
+        day.macroCarbs = 400
+        day.macroFat = 90
+        day.allowsCheatMeal = true
+        return [day]
     }
 
     static let paywallPlans: [PlanRowContent.Model] = [
@@ -170,6 +217,10 @@ struct DesignPreviewHost: View {
             if screen == "training" || screen == "workout" || screen == "rest" {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 NotificationCenter.default.post(name: .navigateToTraining, object: nil)
+            }
+            if screen == "diet" || screen == "diet-detail" {
+                try? await Task.sleep(nanoseconds: 600_000_000)
+                NotificationCenter.default.post(name: .navigateToDiet, object: nil)
             }
         }
     }

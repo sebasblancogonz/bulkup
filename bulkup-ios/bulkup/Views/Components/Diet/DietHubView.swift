@@ -27,8 +27,8 @@ struct DietHubView: View {
 
         var displayName: LocalizedStringKey {
             switch self {
-            case .active: return "Plan Activo"
-            case .library: return "Mis Planes"
+            case .active: return "Plan activo"
+            case .library: return "Mis planes"
             }
         }
 
@@ -58,7 +58,7 @@ struct DietHubView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(BulkUpColors.background)
+        .background(BulkUpGround())
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showingCreateDietPlan) {
             CreateDietPlanView()
@@ -94,7 +94,7 @@ struct DietHubView: View {
     // MARK: - Section Picker
 
     private var sectionPicker: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: Spacing.sm) {
             HStack(spacing: 0) {
                 ForEach(DietHubSection.allCases, id: \.self) { section in
                     let isActive = selectedView == section
@@ -103,22 +103,28 @@ struct DietHubView: View {
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: section.icon)
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(.footnote, weight: .semibold))
                             Text(section.displayName)
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.system(.subheadline, weight: .bold))
                         }
-                        .foregroundColor(isActive ? Color.onFill(BulkUpColors.accent) : BulkUpColors.textSecondary)
+                        .foregroundColor(isActive ? BulkUpColors.accentText : BulkUpColors.textSecondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
+                        .frame(minHeight: 40)
                         .background(
-                            isActive ? Capsule().fill(BulkUpColors.accent) : Capsule().fill(Color.clear)
+                            RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                                .fill(isActive ? BulkUpColors.accent.opacity(0.16) : Color.clear)
                         )
-                        .contentShape(Capsule())
+                        .contentShape(RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous))
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(3)
-            .background(Capsule().fill(BulkUpColors.surface))
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
+                    .fill(BulkUpColors.surface)
+            )
+            .lift(CornerRadius.medium)
 
             Menu {
                 if selectedView == .active {
@@ -135,18 +141,17 @@ struct DietHubView: View {
                 }
             } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(BulkUpColors.textSecondary)
-                    .frame(width: 36, height: 36)
-                    .background(BulkUpColors.surfaceElevated)
-                    .clipShape(Circle())
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(BulkUpColors.textPrimary)
+                    .frame(width: 46, height: 46)
+                    .background(BulkUpColors.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+                    .lift(CornerRadius.medium)
             }
-            .padding(.leading, Spacing.sm)
         }
         .padding(.horizontal, Spacing.screenH)
         .padding(.bottom, Spacing.sm)
         .padding(.top, Spacing.md)
-        .background(BulkUpColors.background)
     }
 
     // MARK: - Plan Header
@@ -154,18 +159,25 @@ struct DietHubView: View {
     private var planHeader: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(dietManager.activePlanName ?? NSLocalizedString("Plan de Dieta", comment: ""))
-                .font(BulkUpFont.sectionHeader())
+                .titleVoice(.largeTitle)
                 .foregroundColor(BulkUpColors.textPrimary)
-                .lineLimit(1)
+                .lineLimit(2)
+                .minimumScaleFactor(0.7)
 
-            Text("\(dietManager.dietData.count) días · \(totalMealCount) comidas")
-                .font(BulkUpFont.caption())
-                .foregroundColor(BulkUpColors.textSecondary)
+            if dietManager.dietData.count > 1 {
+                Text("\(dietManager.dietData.count) días · \(totalMealCount) comidas")
+                    .font(BulkUpFont.numeric(.subheadline, weight: .medium))
+                    .foregroundColor(BulkUpColors.textSecondary)
+            } else {
+                Text("\(totalMealCount) comidas al día")
+                    .font(BulkUpFont.numeric(.subheadline, weight: .medium))
+                    .foregroundColor(BulkUpColors.textSecondary)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.screenH)
-        .padding(.top, Spacing.md)
-        .padding(.bottom, Spacing.sm)
+        .padding(.top, Spacing.sm)
+        .padding(.bottom, Spacing.md)
     }
 
     private var totalMealCount: Int {
@@ -180,7 +192,7 @@ struct DietHubView: View {
 
             DietFidelityView()
                 .padding(.horizontal, Spacing.screenH)
-                .padding(.bottom, Spacing.md)
+                .padding(.bottom, Spacing.lg)
 
             DietView()
                 .environmentObject(dietManager)
@@ -216,29 +228,15 @@ struct DietHubView: View {
             VStack(spacing: Spacing.xl) {
                 VStack(spacing: Spacing.lg) {
                     ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        BulkUpColors.diet.opacity(0.2), BulkUpColors.diet.opacity(0.05),
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 100, height: 100)
+                        RoundedRectangle(cornerRadius: CornerRadius.xl, style: .continuous)
+                            .fill(BulkUpColors.surface)
+                            .frame(width: 88, height: 88)
+                            .lift(CornerRadius.xl)
 
                         Image(systemName: "leaf.fill")
-                            .font(.system(size: 50))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [BulkUpColors.diet, BulkUpColors.diet.opacity(0.7)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .font(.system(.largeTitle, weight: .semibold))
+                            .foregroundColor(BulkUpColors.accentText)
                     }
-                    .shadow(color: BulkUpColors.diet.opacity(0.2), radius: 20, x: 0, y: 10)
                 }
 
                 VStack(spacing: Spacing.md) {
@@ -265,19 +263,13 @@ struct DietHubView: View {
                     } label: {
                         HStack(spacing: 14) {
                             ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [BulkUpColors.diet.opacity(0.2), BulkUpColors.diet.opacity(0.08)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 48, height: 48)
+                                RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
+                                    .fill(BulkUpColors.surfaceElevated)
+                                    .frame(width: 44, height: 44)
 
                                 Image(systemName: "sparkles")
-                                    .font(.system(size: 22, weight: .medium))
-                                    .foregroundColor(BulkUpColors.diet)
+                                    .font(.system(.title3, weight: .medium))
+                                    .foregroundColor(BulkUpColors.accentText)
                             }
 
                             VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -288,13 +280,12 @@ struct DietHubView: View {
 
                                     if !storeKit.isSubscribed {
                                         Text("PRO")
-                                            .font(BulkUpFont.caption())
-                                            .fontWeight(.bold)
+                                            .font(.system(.caption2, weight: .bold))
                                             .foregroundColor(BulkUpColors.onAccent)
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
-                                            .background(BulkUpColors.secondary)
-                                            .cornerRadius(4)
+                                            .background(BulkUpColors.accent)
+                                            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                                     }
                                 }
 
@@ -306,19 +297,15 @@ struct DietHubView: View {
                             Spacer()
 
                             Image(systemName: storeKit.isSubscribed ? "chevron.right" : "lock.fill")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(storeKit.isSubscribed ? BulkUpColors.diet.opacity(0.5) : BulkUpColors.secondary.opacity(0.6))
+                                .font(.system(.footnote, weight: .semibold))
+                                .foregroundColor(BulkUpColors.textTertiary)
                         }
-                        .padding(Spacing.lg)
+                        .padding(Spacing.md)
                         .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.large)
+                            RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous)
                                 .fill(BulkUpColors.surface)
                         )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: CornerRadius.large)
-                                .stroke(BulkUpColors.diet.opacity(0.3), lineWidth: 1.5)
-                        )
-                        .shadow(color: BulkUpColors.diet.opacity(0.15), radius: 8, x: 0, y: 4)
+                        .lift(stroke: BulkUpColors.accent.opacity(0.5))
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -345,10 +332,10 @@ struct DietHubView: View {
                         Image(systemName: "folder.fill")
                             .font(BulkUpFont.body())
 
-                        Text("Ver Mis Planes")
-                            .fontWeight(.medium)
+                        Text("Ver mis planes")
+                            .fontWeight(.semibold)
                     }
-                    .foregroundColor(BulkUpColors.diet)
+                    .foregroundColor(BulkUpColors.accentText)
                 }
                 .padding(.top, Spacing.xs)
             }
@@ -362,13 +349,13 @@ struct DietHubView: View {
     private func dietCreationOptionRow(icon: String, title: String, subtitle: String) -> some View {
         HStack(spacing: 14) {
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
                     .fill(BulkUpColors.surfaceElevated)
                     .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(BulkUpColors.diet)
+                    .font(.system(.title3, weight: .medium))
+                    .foregroundColor(BulkUpColors.textPrimary)
             }
 
             VStack(alignment: .leading, spacing: 3) {
@@ -388,16 +375,12 @@ struct DietHubView: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(BulkUpColors.textTertiary)
         }
-        .padding(.horizontal, Spacing.screenH)
-        .padding(.vertical, 14)
+        .padding(Spacing.md)
         .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
+            RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous)
                 .fill(BulkUpColors.surface)
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .stroke(BulkUpColors.surfaceElevated, lineWidth: 1)
-        )
+        .lift()
         .contentShape(Rectangle())
     }
 }
@@ -604,11 +587,11 @@ struct DietPlanCard: View {
                     if plan.isActive {
                         HStack(spacing: Spacing.xs) {
                             Circle()
-                                .fill(BulkUpColors.diet)
+                                .fill(BulkUpColors.complete)
                                 .frame(width: 8, height: 8)
-                            Text("Plan Activo")
+                            Text("Plan activo")
                                 .font(BulkUpFont.caption())
-                                .foregroundColor(BulkUpColors.diet)
+                                .foregroundColor(BulkUpColors.complete)
                                 .fontWeight(.medium)
                         }
                     }

@@ -2,75 +2,71 @@
 //  SupplementsView.swift
 //  bulkup
 //
-//  Created by sebastianblancogonz on 17/8/25.
+//  Supplements as rows of one lifted slab: name, when, and the dose in
+//  tabular figures on a quiet chip.
 //
 
 import SwiftUI
 import SwiftData
 
-// MARK: - Supplements — card-based, first-class tracked items
 struct SupplementsView: View {
     let supplements: [Supplement]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
+        VStack(spacing: 0) {
             ForEach(supplements.indices, id: \.self) { index in
-                SupplementRow(supplement: supplements[index])
+                SupplementRow(supplement: supplements[index], showsSeparator: index < supplements.count - 1)
             }
         }
+        .background(BulkUpColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large, style: .continuous))
+        .lift()
     }
 }
 
-// MARK: - Single supplement card
 struct SupplementRow: View {
     let supplement: Supplement
+    var showsSeparator: Bool = true
 
     var body: some View {
         HStack(spacing: Spacing.md) {
-            // Icon
-            Image(systemName: "pills.fill")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(BulkUpColors.accentText)
+            Image(systemName: "pills")
+                .font(.system(.footnote, weight: .semibold))
+                .foregroundColor(BulkUpColors.textSecondary)
                 .frame(width: 24)
 
-            // Name + timing
             VStack(alignment: .leading, spacing: 2) {
                 Text(supplement.name)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(.subheadline, weight: .semibold))
                     .foregroundColor(BulkUpColors.textPrimary)
 
                 HStack(spacing: 4) {
                     Text(supplement.timing)
-                        .font(BulkUpFont.caption())
-                        .foregroundColor(BulkUpColors.textSecondary)
-
                     if !supplement.frequency.isEmpty {
                         Text("·")
-                            .foregroundColor(BulkUpColors.textTertiary)
                         Text(supplement.frequency)
-                            .font(BulkUpFont.caption())
-                            .foregroundColor(BulkUpColors.textSecondary)
                     }
                 }
+                .font(BulkUpFont.caption())
+                .foregroundColor(BulkUpColors.textSecondary)
             }
 
-            Spacer()
+            Spacer(minLength: Spacing.sm)
 
-            // Dosage pill
             Text(supplement.dosage)
-                .font(BulkUpFont.badge())
-                .foregroundColor(BulkUpColors.accentText)
+                .font(BulkUpFont.numeric(.footnote, weight: .semibold))
+                .foregroundColor(BulkUpColors.textPrimary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(BulkUpColors.accent.opacity(0.12))
-                .clipShape(Capsule())
+                .background(BulkUpColors.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         }
-        .padding(Spacing.md)
-        .background(BulkUpColors.surface)
-        .cornerRadius(CornerRadius.large)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .stroke(BulkUpColors.border, lineWidth: 0.5)
-        )
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, 12)
+        .overlay(alignment: .bottom) {
+            if showsSeparator {
+                Rectangle().fill(BulkUpColors.line).frame(height: 1).padding(.leading, Spacing.md)
+            }
+        }
     }
 }

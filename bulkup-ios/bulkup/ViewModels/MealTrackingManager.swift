@@ -29,6 +29,9 @@ class MealTrackingManager: ObservableObject {
     // MARK: - Load tracking for a specific date
 
     func loadTracking(userId: String, date: String, dayName: String, planId: String?, meals: [Meal]) async {
+        #if DEBUG
+        if DesignPreview.isActive { return }   // seeded locally, no network
+        #endif
         isLoading = true
 
         // 1. Create local records for each meal if they don't exist

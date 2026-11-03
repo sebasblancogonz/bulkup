@@ -299,6 +299,16 @@
         }
       }
     },
+    "%lld comidas al día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld meals a day"
+          }
+        }
+      }
+    },
     "%lld comidas por dia" : {
       "localizations" : {
         "en" : {
@@ -2053,6 +2063,26 @@
         }
       }
     },
+    "Comida libre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free meal"
+          }
+        }
+      }
+    },
+    "Comida registrada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meal logged"
+          }
+        }
+      }
+    },
     "Comidas" : {
       "localizations" : {
         "en" : {
@@ -2912,6 +2942,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diet"
+          }
+        }
+      }
+    },
+    "Dieta completada hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diet completed today"
           }
         }
       }
@@ -5271,6 +5311,16 @@
         }
       }
     },
+    "Marcar comida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark meal"
+          }
+        }
+      }
+    },
     "Marcar como completado" : {
       "localizations" : {
         "en" : {
@@ -6235,6 +6285,16 @@
         }
       }
     },
+    "Opción %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Option %lld"
+          }
+        }
+      }
+    },
     "Oscuro" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6424,6 +6484,16 @@
         }
       }
     },
+    "Permitida hoy · anota qué comiste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allowed today · note what you ate"
+          }
+        }
+      }
+    },
     "Personalización" : {
       "localizations" : {
         "en" : {
@@ -6564,6 +6634,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plan imported successfully"
+          }
+        }
+      }
+    },
+    "Plan semanal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly plan"
           }
         }
       }
@@ -8716,6 +8796,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View full leaderboard"
+          }
+        }
+      }
+    },
+    "Ver mis planes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See my plans"
           }
         }
       }

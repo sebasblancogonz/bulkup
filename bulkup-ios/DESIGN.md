@@ -355,6 +355,9 @@ Delta-first peak-end on a flat ground with a lime 16 % → 0 % vertical glow ove
 ### Plan Row (paywall)
 Surface slab, 16pt radius, 64pt min height, `.lift()`. Selected: lime 10 % tint over surface plus a 1pt lime stroke, radio with lime ring and 12pt lime dot. Unselected: plain surface, radio ring in text tertiary. Price in mono 17 semibold; per-month in SF numeric caption, lime-text on the best-value row.
 
+### Meal Checklist (signature)
+`DietView.swift` + `MealCardView.swift` + `SupplementsView.swift`. The day's meals are one lifted slab of rows: a 26pt square sky check (6pt radius, 44pt hit area), the meal name in SF headline, the first option as a caption hint, the time in tabular footnote, a chevron. The first meal not yet ticked sits on a raised `surfaceElevated` row, exactly like the active set in the set table; ticked rows strike through in `textSecondary`. Above the list: the day name in SF title3 semibold with "2/5 comidas" in tabular SF and a 3pt lime rule that turns sky when the day is done; then one lifted macro strip (kcal in JetBrains Mono 22, protein/carbs/fat in tabular SF headline). Cheat meal and supplements are quiet lifted slabs with sentence-case headings and doses on `surfaceElevated` chips. No ring, no emoji, no uppercase labels, no lime for "done".
+
 ### Calendar Day
 Letter in caption2 (bold on today, text primary; medium text tertiary otherwise), 32pt square with 8pt radius filled lime on today with the day number in SF numeric bold graphite, and a 5pt sky dot beneath a logged day.
 
