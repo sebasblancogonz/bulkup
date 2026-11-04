@@ -3,7 +3,7 @@
 //  bulkup
 //
 //  Debug-only design review harness. Launch the app with
-//  `--design-preview <today|training|workout|rest|summary|paywall|gate|diet>` and
+//  `--design-preview <today|training|workout|rest|summary|paywall|gate|diet|health>` and
 //  the screen renders with seeded local data: no account, no network, no
 //  StoreKit. Used to screenshot the simulator in both appearances.
 //
@@ -453,9 +453,15 @@ struct DesignPreviewHost: View {
                 }
             }
             ready = true
-            if screen == "training" || screen == "workout" || screen == "rest" || screen == "training-empty" {
+            if screen == "training" || screen == "workout" || screen == "rest" || screen == "training-empty" || screen == "health" {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 NotificationCenter.default.post(name: .navigateToTraining, object: nil)
+            }
+            if screen == "health" {
+                // Exercises the HealthKit wiring: the permission sheet proves the
+                // entitlement and usage strings are in place for the iOS target.
+                try? await Task.sleep(nanoseconds: 800_000_000)
+                await HealthStore.shared.requestAuthorizationIfNeeded()
             }
             if screen == "progress" || screen == "progress-free" {
                 try? await Task.sleep(nanoseconds: 600_000_000)

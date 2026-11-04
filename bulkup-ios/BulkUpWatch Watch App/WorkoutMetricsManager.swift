@@ -13,6 +13,10 @@ final class WorkoutMetricsManager: NSObject, ObservableObject {
     private let store = HKHealthStore()
     private var session: HKWorkoutSession?
     private var builder: HKLiveWorkoutBuilder?
+    private var sessionStart: Date?
+    /// The iPhone writes its own strength workout when it believes the watch
+    /// didn't run; both apps share this bundle prefix.
+    nonisolated private static let bundlePrefix = "com.whitesolutions.bulkup"
 
     // nonisolated: read from the nonisolated HKLiveWorkoutBuilderDelegate callback
     // (HKQuantityType is Sendable). Needed under the watch target's MainActor-by-default.
@@ -22,7 +26,8 @@ final class WorkoutMetricsManager: NSObject, ObservableObject {
     func requestAuthorization() {
         guard HKHealthStore.isHealthDataAvailable() else { return }
         let share: Set = [HKQuantityType.workoutType(), energyType]
-        let read: Set = [hrType, energyType]
+        // Workouts are read to spot one the iPhone already saved for this session.
+        let read: Set<HKObjectType> = [hrType, energyType, HKObjectType.workoutType()]
         store.requestAuthorization(toShare: share, read: read) { _, _ in }
     }
 
@@ -50,6 +55,7 @@ final class WorkoutMetricsManager: NSObject, ObservableObject {
             session = s
             builder = b
             let start = Date()
+            sessionStart = start
             s.startActivity(with: start)
             b.beginCollection(withStart: start) { _, _ in }
             isRunning = true
@@ -59,17 +65,31 @@ final class WorkoutMetricsManager: NSObject, ObservableObject {
     }
 
     /// Ends the session, saves the HKWorkout to Health, and returns the summary.
+    /// If the iPhone already saved a workout for this span (it finished the
+    /// session while the watch was unreachable), the watch's copy is discarded
+    /// so Fitness shows one workout, not two.
     func end() async -> WorkoutMetrics? {
         guard let s = session, let b = builder else { return nil }
         session = nil; builder = nil; isRunning = false
+        let start = sessionStart ?? b.startDate ?? Date()
+        sessionStart = nil
         let end = Date()
         s.end()
         let avg = stat(b, hrType, .discreteAverage)
         let mx  = stat(b, hrType, .discreteMax)
         let kcal = b.statistics(for: energyType)?.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0
+        let phoneSaved = await hasPhoneWorkout(between: start, and: end)
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             b.endCollection(withEnd: end) { _, _ in
-                b.finishWorkout { _, _ in cont.resume() }
+                if phoneSaved {
+                    b.discardWorkout()
+                    cont.resume()
+                } else {
+                    b.finishWorkout { _, error in
+                        if let error { print("HealthKit: finishWorkout failed: \(error.localizedDescription)") }
+                        cont.resume()
+                    }
+                }
             }
         }
         return WorkoutMetrics(
@@ -77,6 +97,21 @@ final class WorkoutMetricsManager: NSObject, ObservableObject {
             maxHeartRate: Int(mx.rounded()),
             activeEnergyKcal: kcal
         )
+    }
+
+    private func hasPhoneWorkout(between start: Date, and end: Date) async -> Bool {
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
+        let samples: [HKSample] = await withCheckedContinuation { cont in
+            let q = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate,
+                                  limit: 20, sortDescriptors: nil) { _, result, _ in
+                cont.resume(returning: result ?? [])
+            }
+            store.execute(q)
+        }
+        return samples.contains {
+            let id = $0.sourceRevision.source.bundleIdentifier
+            return id.hasPrefix(Self.bundlePrefix) && !id.hasSuffix(".watchkitapp")
+        }
     }
 
     private func stat(_ b: HKLiveWorkoutBuilder, _ t: HKQuantityType, _ k: HKStatisticsOptions) -> Double {

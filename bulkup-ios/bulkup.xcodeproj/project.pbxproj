@@ -706,6 +706,8 @@
 				"GOTIFY_CLIENT_TOKEN[arch=*]" = Cg1tfc.fA2fV4cz;
 				INFOPLIST_FILE = bulkup/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BulkUp lee tus entrenos guardados para no duplicarlos en Salud.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BulkUp guarda tus entrenos en Salud para que aparezcan en Fitness.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -751,6 +753,8 @@
 				"GOTIFY_CLIENT_TOKEN[arch=*]" = Cg1tfc.fA2fV4cz;
 				INFOPLIST_FILE = bulkup/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BulkUp lee tus entrenos guardados para no duplicarlos en Salud.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BulkUp guarda tus entrenos en Salud para que aparezcan en Fitness.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

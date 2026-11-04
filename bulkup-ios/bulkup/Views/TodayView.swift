@@ -543,6 +543,7 @@ struct TodayView: View {
     private func startOrResumeSession(day: TrainingDay, dayLabel: String) {
         if !workoutSession.isActive {
             workoutSession.startWorkout(dayName: day.day, workoutName: dayLabel, trainingManager: trainingManager)
+            Task { await HealthStore.shared.requestAuthorizationIfNeeded() }
         }
         openInTraining(day: day.day, orderIndex: firstIncompleteOrderIndex(day))
     }

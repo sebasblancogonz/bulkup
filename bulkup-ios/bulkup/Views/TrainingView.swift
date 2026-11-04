@@ -527,6 +527,7 @@ struct TrainingView: View {
                    let dayData = trainingManager.trainingData.first(where: { $0.day == trainingDay }) {
                     let dayLabel = dayData.workoutName ?? formatDayName(dayData.day)
                     workoutSession.startWorkout(dayName: trainingDay, workoutName: dayLabel, trainingManager: trainingManager)
+                    Task { await HealthStore.shared.requestAuthorizationIfNeeded() }
                     expandFirstIncomplete()
                 }
             }

@@ -88,6 +88,8 @@ class WorkoutSessionManager: ObservableObject {
     private var restEndTime: Date?
     private var pauseStartTime: Date?
     private var totalPausedSeconds: TimeInterval = 0
+    /// Closed pause spans, for the HealthKit workout's pause/resume events.
+    private var pausedIntervals: [DateInterval] = []
 
     // MARK: - Session Lifecycle
 
@@ -104,6 +106,7 @@ class WorkoutSessionManager: ObservableObject {
         actualReps.removeAll()
         exerciseOverrides.removeAll()
         totalPausedSeconds = 0
+        pausedIntervals = []
         summaryData = nil
         showSummary = false
 
@@ -168,6 +171,7 @@ class WorkoutSessionManager: ObservableObject {
         skippedExercises.removeAll()
         actualReps.removeAll()
         totalPausedSeconds = 0 // ponytail: pause spans don't survive relaunch; elapsed runs from startDate
+        pausedIntervals = []
         summaryData = nil
         showSummary = false
         let day = live.dayName.lowercased()
@@ -223,7 +227,9 @@ class WorkoutSessionManager: ObservableObject {
 
     func resumeWorkout() {
         if let pauseStart = pauseStartTime {
-            totalPausedSeconds += Date().timeIntervalSince(pauseStart)
+            let now = Date()
+            totalPausedSeconds += now.timeIntervalSince(pauseStart)
+            pausedIntervals.append(DateInterval(start: pauseStart, end: max(pauseStart, now)))
         }
         isPaused = false
         pauseStartTime = nil
@@ -254,7 +260,22 @@ class WorkoutSessionManager: ObservableObject {
         }
         SharedWorkoutStore.save(nil)
         PhoneWCManager.shared.broadcast()
+        saveToHealth(end: Date(), duration: duration)
         return summary
+    }
+
+    /// Hands the finished session to HealthKit so it shows up in Fitness. When
+    /// the watch finished the session it already saved its own workout (with
+    /// heart rate and energy), so the phone only writes when the watch didn't.
+    private func saveToHealth(end: Date, duration: Int) {
+        guard pendingWatchMetrics == nil else { return }
+        let start = startTime ?? end.addingTimeInterval(-Double(max(duration, 60)))
+        var pauses = pausedIntervals
+        if isPaused, let pauseStart = pauseStartTime, pauseStart < end {
+            pauses.append(DateInterval(start: pauseStart, end: end))
+        }
+        let session = HealthStore.Session(start: start, end: end, pauses: pauses, activeEnergyKcal: nil)
+        Task { await HealthStore.shared.saveWorkoutIfNeeded(session) }
     }
 
     func discardWorkout() {
@@ -393,6 +414,7 @@ class WorkoutSessionManager: ObservableObject {
         nextSetInfo = nil
         totalPausedSeconds = 0
         pauseStartTime = nil
+        pausedIntervals = []
         summaryData = nil
         showSummary = false
         saveState = .idle
